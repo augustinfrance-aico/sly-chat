@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Didier Carrette — Artisan Menuisier | Lyon & Beaujolais</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --bg:#faf8f5;
+            --white:#ffffff;
+            --surface:#f3efe9;
+            --border:#e2ddd4;
+            --text:#2c2418;
+            --text2:#6b5d4d;
+            --text3:#9a8b78;
+            --wood:#8b6914;
+            --wood2:#a67c00;
+            --woodLight:rgba(139,105,20,0.08);
+            --woodLight2:rgba(139,105,20,0.15);
+            --oak:#c49a3c;
+            --dark:#3d2e14;
+            --green:#4a7c59;
+            --greenLight:rgba(74,124,89,0.1);
+            --warm:#d4a853;
+            --gold:#d4a853;
+            --goldLight:rgba(212,168,83,0.1);
+            --goldBorder:rgba(212,168,83,0.3);
+            --maaf:#e4032e;
+            --maafLight:rgba(228,3,46,0.06);
+            --maafBorder:rgba(228,3,46,0.15);
+        }
+        body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;overflow-x:hidden}
+
+        .topbar{height:6px;background:linear-gradient(90deg,var(--dark),var(--wood),var(--oak),var(--wood),var(--dark))}
+        .container{max-width:960px;margin:0 auto;padding:0 32px}
+
+        /* NAV */
+        nav{background:var(--white);border-bottom:1px solid var(--border);padding:16px 0;position:sticky;top:0;z-index:100;
+            box-shadow:0 1px 8px rgba(44,36,24,0.04)}
+        nav .inner{max-width:960px;margin:0 auto;padding:0 32px;display:flex;justify-content:space-between;align-items:center}
+        .nav-brand{display:flex;align-items:center;gap:12px}
+        .nav-logo{width:40px;height:40px;border-radius:8px;background:var(--wood);display:flex;align-items:center;justify-content:center;
+            color:#fff;font-size:18px;font-weight:800}
+        .nav-name{font-size:16px;font-weight:700;color:var(--text)}
+        .nav-name span{font-weight:400;color:var(--text3);font-size:13px;display:block;margin-top:-2px}
+        .nav-links{display:flex;gap:24px}
+        .nav-links a{text-decoration:none;font-size:13px;font-weight:600;color:var(--text2);transition:color 0.2s}
+        .nav-links a:hover{color:var(--wood)}
+
+        /* HERO */
+        .hero{padding:80px 0 40px;text-align:center}
+        .hero-badge{display:inline-flex;align-items:center;gap:8px;
+            background:var(--greenLight);border:1px solid rgba(74,124,89,0.2);
+            padding:6px 16px;border-radius:100px;font-size:12px;font-weight:600;color:var(--green);margin-bottom:24px}
+        .hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+        .hero h1{font-size:clamp(28px,5vw,46px);font-weight:800;line-height:1.15;letter-spacing:-0.5px;margin-bottom:16px;color:var(--dark)}
+        .hero h1 .accent{color:var(--wood)}
+        .hero p{font-size:16px;color:var(--text2);max-width:580px;margin:0 auto 32px}
+        .hero-photo{width:140px;height:140px;border-radius:50%;object-fit:cover;object-position:center top;
+            border:4px solid var(--white);box-shadow:0 4px 20px rgba(44,36,24,0.12),0 0 0 3px var(--oak);
+            margin:0 auto 24px;display:block}
+
+        /* TRUST BADGES — TOP SECTION */
+        .trust-section{padding:0 0 50px}
+        .trust-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:700px;margin:0 auto}
+        .trust-card{border-radius:16px;padding:28px;text-align:center;position:relative;overflow:hidden;transition:all 0.4s}
+        .trust-card:hover{transform:translateY(-4px)}
+        .trust-card.gold{
+            background:linear-gradient(135deg,#fdf8ec,#fef3d4,#fdf8ec);
+            border:2px solid var(--goldBorder);
+            box-shadow:0 4px 20px rgba(212,168,83,0.12)}
+        .trust-card.gold:hover{box-shadow:0 12px 36px rgba(212,168,83,0.2)}
+        .trust-card.maaf{
+            background:linear-gradient(135deg,#fef5f6,#fde8eb,#fef5f6);
+            border:2px solid var(--maafBorder);
+            box-shadow:0 4px 20px rgba(228,3,46,0.06)}
+        .trust-card.maaf:hover{box-shadow:0 12px 36px rgba(228,3,46,0.12)}
+
+        .trust-shield{width:72px;height:72px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;
+            font-size:32px;position:relative}
+        .trust-shield.gold-shield{background:linear-gradient(135deg,#f0d068,#d4a853,#c49a3c);
+            box-shadow:0 4px 16px rgba(212,168,83,0.3);color:#fff}
+        .trust-shield.maaf-shield{background:linear-gradient(135deg,#f06070,#e4032e,#c0021f);
+            box-shadow:0 4px 16px rgba(228,3,46,0.25);color:#fff}
+        .trust-shield .shield-ring{position:absolute;inset:-4px;border-radius:50%;border:2px solid;animation:shieldGlow 3s ease-in-out infinite}
+        .trust-shield.gold-shield .shield-ring{border-color:rgba(212,168,83,0.4)}
+        .trust-shield.maaf-shield .shield-ring{border-color:rgba(228,3,46,0.25)}
+        @keyframes shieldGlow{0%,100%{opacity:0.5;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
+
+        .trust-card .trust-title{font-size:18px;font-weight:800;color:var(--dark);margin-bottom:4px}
+        .trust-card .trust-year{display:inline-block;font-size:12px;font-weight:700;padding:3px 12px;border-radius:100px;margin-bottom:12px}
+        .trust-card.gold .trust-year{background:rgba(212,168,83,0.15);color:#96780a}
+        .trust-card.maaf .trust-year{background:rgba(228,3,46,0.1);color:var(--maaf)}
+        .trust-card .trust-desc{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:14px}
+        .trust-card .trust-stat{display:flex;align-items:center;justify-content:center;gap:8px;
+            font-size:12px;font-weight:700;padding:8px 16px;border-radius:10px}
+        .trust-card.gold .trust-stat{background:rgba(212,168,83,0.1);color:#96780a}
+        .trust-card.maaf .trust-stat{background:rgba(228,3,46,0.06);color:var(--maaf)}
+        .trust-stat .stat-icon{font-size:16px}
+
+        /* XP BAR under trust */
+        .trust-xp{max-width:700px;margin:20px auto 0;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px 24px;
+            display:flex;align-items:center;gap:16px}
+        .trust-xp .xp-info{flex-shrink:0}
+        .trust-xp .xp-info .xp-title{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+        .trust-xp .xp-info .xp-val{font-size:20px;font-weight:800;color:var(--wood)}
+        .trust-xp .xp-bar-wrap{flex:1}
+        .trust-xp .xp-bar{height:10px;background:var(--surface);border-radius:10px;overflow:hidden}
+        .trust-xp .xp-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--wood),var(--oak),var(--gold));
+            transition:width 2s cubic-bezier(0.16,1,0.3,1)}
+        .trust-xp .xp-label{text-align:right;font-size:10px;color:var(--text3);margin-top:4px}
+
+        /* STATS */
+        .stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--border);border-radius:14px;overflow:hidden;margin-bottom:60px}
+        .stat-item{background:var(--white);padding:24px 16px;text-align:center}
+        .stat-item .stat-num{font-size:28px;font-weight:800;color:var(--wood)}
+        .stat-item .stat-label{font-size:12px;color:var(--text3);font-weight:500}
+
+        /* SECTION */
+        .section{padding:60px 0}
+        .section-divider{width:60px;height:3px;background:linear-gradient(90deg,var(--wood),var(--oak));border-radius:3px;margin-bottom:16px}
+        .section-title{font-size:12px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--wood);margin-bottom:8px}
+        .section h2{font-size:clamp(22px,3.5vw,32px);font-weight:800;color:var(--dark);margin-bottom:8px}
+        .section .section-desc{color:var(--text2);font-size:15px;max-width:550px;margin-bottom:40px}
+        .divider{border:none;border-top:1px solid var(--border);margin:0}
+
+        /* ABOUT */
+        .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+        .about-text{font-size:15px;color:var(--text2);line-height:1.8}
+        .about-text strong{color:var(--text)}
+        .about-highlights{display:grid;gap:12px}
+        .highlight{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:20px;
+            display:flex;align-items:center;gap:14px;transition:all 0.3s}
+        .highlight:hover{border-color:var(--oak);transform:translateY(-2px);box-shadow:0 8px 24px rgba(44,36,24,0.06)}
+        .highlight .h-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+            font-size:20px;flex-shrink:0;background:var(--woodLight)}
+        .highlight h4{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px}
+        .highlight p{font-size:12px;color:var(--text3)}
+
+        /* SERVICES */
+        .services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:20px}
+        .service{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:28px;transition:all 0.3s;position:relative;overflow:hidden}
+        .service:hover{border-color:var(--oak);transform:translateY(-4px);box-shadow:0 12px 32px rgba(44,36,24,0.08)}
+        .service::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+            background:linear-gradient(90deg,var(--wood),var(--oak));opacity:0;transition:opacity 0.3s}
+        .service:hover::before{opacity:1}
+        .service .s-icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+            font-size:24px;margin-bottom:16px;background:var(--woodLight);border:1px solid var(--woodLight2)}
+        .service h3{font-size:17px;font-weight:700;margin-bottom:8px;color:var(--dark)}
+        .service p{font-size:13px;color:var(--text2);line-height:1.7}
+        .service .s-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+        .service .s-tags span{background:var(--surface);border:1px solid var(--border);padding:3px 10px;border-radius:6px;
+            font-size:11px;color:var(--text3);font-weight:500}
+
+        /* REALISATIONS */
+        .projects-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+        .project{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:all 0.3s}
+        .project:hover{border-color:var(--oak);transform:translateY(-4px);box-shadow:0 12px 32px rgba(44,36,24,0.08)}
+        .project-img{height:200px;display:flex;align-items:center;justify-content:center;font-size:48px;position:relative}
+        .project-img.wood-bg{background:linear-gradient(135deg,#d4a853 0%,#c49a3c 30%,#8b6914 70%,#3d2e14 100%)}
+        .project-img.oak-bg{background:linear-gradient(135deg,#e8c36a 0%,#c49a3c 40%,#a67c00 100%)}
+        .project-img.dark-bg{background:linear-gradient(135deg,#6b5d4d 0%,#3d2e14 60%,#2c2418 100%)}
+        .project-img.warm-bg{background:linear-gradient(135deg,#f0d68a 0%,#d4a853 50%,#8b6914 100%)}
+        .project-img .p-label{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.5);color:#fff;
+            padding:3px 10px;border-radius:6px;font-size:10px;font-weight:600;letter-spacing:0.5px}
+        .project-body{padding:20px}
+        .project-body h4{font-size:16px;font-weight:700;color:var(--dark);margin-bottom:6px}
+        .project-body p{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:12px}
+        .project-tags{display:flex;flex-wrap:wrap;gap:6px}
+        .project-tags span{background:var(--woodLight);border:1px solid var(--woodLight2);padding:3px 10px;border-radius:6px;
+            font-size:11px;color:var(--wood);font-weight:600}
+        .project-difficulty{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+        .project-difficulty .diff-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap}
+        .project-difficulty .diff-bar{flex:1;height:6px;background:var(--surface);border-radius:6px;overflow:hidden}
+        .project-difficulty .diff-fill{height:100%;border-radius:6px}
+        .diff-fill.high{background:linear-gradient(90deg,var(--oak),#e4032e)}
+        .diff-fill.very-high{background:linear-gradient(90deg,#e4032e,#a00020)}
+        .project-difficulty .diff-score{font-size:13px;font-weight:800;min-width:36px;text-align:right}
+        .diff-score.high{color:var(--oak)}
+        .diff-score.very-high{color:#e4032e}
+        .project-photo{height:220px;overflow:hidden;position:relative}
+        .project-photo img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s}
+        .project:hover .project-photo img{transform:scale(1.05)}
+        .project-photo .p-label{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.55);color:#fff;
+            padding:4px 12px;border-radius:6px;font-size:10px;font-weight:600;letter-spacing:0.5px;backdrop-filter:blur(4px)}
+
+        /* TIMELINE */
+        .timeline{position:relative;padding-left:28px}
+        .timeline::before{content:'';position:absolute;left:8px;top:8px;bottom:8px;width:2px;background:var(--border)}
+        .tl-item{position:relative;margin-bottom:28px}
+        .tl-item:last-child{margin-bottom:0}
+        .tl-item::before{content:'';position:absolute;left:-24px;top:8px;width:12px;height:12px;border-radius:50%;
+            background:var(--white);border:3px solid var(--oak)}
+        .tl-item.current::before{background:var(--wood);border-color:var(--wood);box-shadow:0 0 0 4px var(--woodLight2)}
+        .tl-date{font-size:12px;font-weight:700;color:var(--wood);margin-bottom:4px}
+        .tl-item h4{font-size:15px;font-weight:700;color:var(--dark);margin-bottom:2px}
+        .tl-item .tl-company{font-size:13px;color:var(--text3);margin-bottom:6px}
+        .tl-item p{font-size:13px;color:var(--text2);line-height:1.6}
+
+        /* CERTIFICATIONS */
+        .certs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+        .cert{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;transition:all 0.3s}
+        .cert:hover{border-color:var(--oak);transform:translateY(-2px)}
+        .cert .cert-icon{font-size:28px;margin-bottom:8px}
+        .cert h4{font-size:14px;font-weight:700;color:var(--dark);margin-bottom:4px}
+        .cert p{font-size:11px;color:var(--text3)}
+
+        /* CONTACT */
+        .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+        .contact-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:32px}
+        .contact-card h3{font-size:18px;font-weight:700;color:var(--dark);margin-bottom:16px}
+        .contact-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+        .contact-item:last-child{border:none}
+        .contact-item .c-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+            font-size:18px;flex-shrink:0;background:var(--woodLight)}
+        .contact-item .c-label{font-size:11px;color:var(--text3);font-weight:500}
+        .contact-item .c-value{font-size:14px;font-weight:600;color:var(--text)}
+        .contact-cta{background:linear-gradient(135deg,var(--wood),var(--oak));border-radius:14px;padding:32px;
+            display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+        .contact-cta h3{font-size:22px;font-weight:800;color:#fff;margin-bottom:8px}
+        .contact-cta p{font-size:14px;color:rgba(255,255,255,0.8);margin-bottom:20px}
+        .contact-cta .cta-btn{display:inline-block;background:#fff;color:var(--wood);padding:12px 32px;
+            border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;transition:all 0.3s}
+        .contact-cta .cta-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.2)}
+        .contact-cta .cta-phone{margin-top:14px;font-size:20px;font-weight:800;color:#fff;letter-spacing:1px}
+
+        footer{text-align:center;padding:32px;border-top:1px solid var(--border);font-size:12px;color:var(--text3)}
+
+        @media(max-width:768px){
+            .about-grid{grid-template-columns:1fr}
+            .contact-grid{grid-template-columns:1fr}
+            .stats-bar{grid-template-columns:repeat(2,1fr)}
+            .trust-grid{grid-template-columns:1fr}
+            .trust-xp{flex-direction:column;text-align:center}
+            .nav-links{display:none}
+            .container{padding:0 20px}
+        }
+
+        .fade-up{opacity:0;transform:translateY(20px);transition:all 0.6s cubic-bezier(0.16,1,0.3,1)}
+        .fade-up.visible{opacity:1;transform:translateY(0)}
+    </style>
+</head>
+<body>
+
+<div class="topbar"></div>
+
+<!-- NAV -->
+<nav>
+    <div class="inner">
+        <div class="nav-brand">
+            <div class="nav-logo">DC</div>
+            <div class="nav-name">Didier Carrette<span>Artisan Menuisier — Lyon & Beaujolais</span></div>
+        </div>
+        <div class="nav-links">
+            <a href="#accueil">Accueil</a>
+            <a href="#services">Services</a>
+            <a href="#realisations">Realisations</a>
+            <a href="#parcours">Parcours</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="accueil">
+    <div class="container">
+        <div class="hero-badge"><span class="dot"></span> Disponible pour vos projets</div>
+        <h1>Artisan menuisier<br>avec <span class="accent">40 ans de metier</span></h1>
+        <p>Menuiseries interieures et exterieures, dressings sur mesure, parquets, placards, restauration. Un savoir-faire artisanal adosse a 15 ans d'experience commerciale dans le secteur.</p>
+    </div>
+</section>
+
+<!-- TRUST BADGES — ZONE PREMIUM -->
+<section class="trust-section">
+    <div class="container">
+        <div class="trust-grid fade-up">
+
+            <!-- ARTISAN REFERENCE 2026 -->
+            <div class="trust-card maaf">
+                <div class="trust-shield maaf-shield">
+                    <div class="shield-ring"></div>
+                    &#128737;
+                </div>
+                <div class="trust-title">Artisan Reference</div>
+                <span class="trust-year">2026</span>
+                <p class="trust-desc">Distinction MAAF : assure depuis plus de <strong>5 ans</strong>, avec <strong>zero sinistre declare</strong> en garantie decennale. Gage de fiabilite et de travail soigne.</p>
+                <div class="trust-stat">
+                    <span class="stat-icon">&#128170;</span>
+                    0 sinistre — 5+ ans d'assurance
+                </div>
+            </div>
+
+            <!-- ARTISAN CONFIANCE 2024 -->
+            <div class="trust-card gold">
+                <div class="trust-shield gold-shield">
+                    <div class="shield-ring"></div>
+                    &#11088;
+                </div>
+                <div class="trust-title">Artisan Confiance</div>
+                <span class="trust-year">2024</span>
+                <p class="trust-desc">Distinction MAAF : assure depuis plus de <strong>10 ans</strong>, avec <strong>zero sinistre declare</strong> en garantie decennale. Le plus haut niveau de confiance.</p>
+                <div class="trust-stat">
+                    <span class="stat-icon">&#127942;</span>
+                    0 sinistre — 10+ ans d'assurance
+                </div>
+            </div>
+
+        </div>
+
+        <!-- XP BAR CONFIANCE -->
+        <div class="trust-xp fade-up">
+            <div class="xp-info">
+                <div class="xp-title">Indice de confiance</div>
+                <div class="xp-val">Niveau MAX</div>
+            </div>
+            <div class="xp-bar-wrap">
+                <div class="xp-bar">
+                    <div class="xp-fill" style="width:0%"></div>
+                </div>
+                <div class="xp-label">10+ ans assure MAAF — 0 sinistre — Garantie decennale active</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- STATS -->
+<section style="padding:0 0 60px">
+    <div class="container">
+        <div class="stats-bar fade-up">
+            <div class="stat-item">
+                <div class="stat-num">40+</div>
+                <div class="stat-label">Annees d'experience</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">20+</div>
+                <div class="stat-label">Ans dans la menuiserie</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">15+</div>
+                <div class="stat-label">Ans en commerce</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">CAP</div>
+                <div class="stat-label">Ecole Boulle — Paris</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ABOUT -->
+<section class="section" id="about">
+    <div class="container">
+        <div class="section-divider"></div>
+        <div class="section-title">A propos</div>
+        <h2>L'artisanat rencontre l'experience terrain</h2>
+        <p class="section-desc">Un profil rare : la precision de l'artisan et le sens du client d'un ancien responsable de magasin.</p>
+
+        <div class="about-grid fade-up">
+            <div class="about-text">
+                <p>Je suis <strong>artisan menuisier installe depuis 2003</strong> dans la region lyonnaise et le Beaujolais. Je realise la depose et repose de menuiseries interieures et exterieures, la pose de parquets, la creation de dressings et placards sur mesure, ainsi que la restauration d'huisseries.</p>
+                <br>
+                <p>Avant de m'installer a mon compte, j'ai passe <strong>15 ans en responsabilite commerciale</strong> chez Lapeyre et dans le secteur de la menuiserie industrielle. Je connais les materiaux, les fournisseurs, les normes — et surtout, je sais ecouter un client pour traduire son besoin en realisation concrete.</p>
+                <br>
+                <p>Ancien ebeniste de formation, je maitrise aussi la <strong>restauration de meubles anciens</strong> et le travail du bois noble. C'est cette double casquette — artisan minutieux et professionnel structure — qui fait ma difference.</p>
+            </div>
+            <div class="about-highlights">
+                <div class="highlight">
+                    <div class="h-icon">&#128296;</div>
+                    <div>
+                        <h4>Artisan depuis 2003</h4>
+                        <p>Plus de 20 ans a mon compte, interventions Lyon & Beaujolais</p>
+                    </div>
+                </div>
+                <div class="highlight">
+                    <div class="h-icon">&#127979;</div>
+                    <div>
+                        <h4>Ancien responsable de magasin</h4>
+                        <p>Vial, Bati Eco, Lapeyre — gestion, commerce, equipes</p>
+                    </div>
+                </div>
+                <div class="highlight">
+                    <div class="h-icon">&#127942;</div>
+                    <div>
+                        <h4>Forme a l'Ecole Boulle</h4>
+                        <p>CAP Menuisier & Agencement — Paris, reference nationale</p>
+                    </div>
+                </div>
+                <div class="highlight">
+                    <div class="h-icon">&#129717;</div>
+                    <div>
+                        <h4>Ebeniste de formation</h4>
+                        <p>Restauration de meubles anciens, travail du bois noble</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- SERVICES -->
+<section class="section" id="services">
+    <div class="container">
+        <div class="section-divider"></div>
+        <div class="section-title">Services</div>
+        <h2>Ce que je fais pour vous</h2>
+        <p class="section-desc">De la fenetre au dressing, du parquet a la restauration — tout le bois, c'est mon domaine.</p>
+
+        <div class="services-grid">
+            <div class="service fade-up">
+                <div class="s-icon">&#128422;</div>
+                <h3>Menuiseries Exterieures</h3>
+                <p>Depose et repose de fenetres, portes d'entree, volets, baies vitrees. Renovation ou neuf. Materiaux adaptes a votre habitat et a votre budget.</p>
+                <div class="s-tags">
+                    <span>Fenetres</span>
+                    <span>Portes</span>
+                    <span>Volets</span>
+                    <span>Baies vitrees</span>
+                </div>
+            </div>
+            <div class="service fade-up">
+                <div class="s-icon">&#128682;</div>
+                <h3>Menuiseries Interieures</h3>
+                <p>Portes interieures, huisseries, encadrements, moulures. Remplacement sans degradation du bati existant. Finitions soignees, proprete du chantier.</p>
+                <div class="s-tags">
+                    <span>Portes</span>
+                    <span>Huisseries</span>
+                    <span>Moulures</span>
+                    <span>Encadrements</span>
+                </div>
+            </div>
+            <div class="service fade-up">
+                <div class="s-icon">&#128715;</div>
+                <h3>Dressings & Placards</h3>
+                <p>Amenagement sur mesure de vos espaces de rangement. Dressings, placards sous pente, bibliotheques, niches. Conception adaptee a votre interieur.</p>
+                <div class="s-tags">
+                    <span>Sur mesure</span>
+                    <span>Dressings</span>
+                    <span>Placards</span>
+                    <span>Rangements</span>
+                </div>
+            </div>
+            <div class="service fade-up">
+                <div class="s-icon">&#9632;</div>
+                <h3>Parquets</h3>
+                <p>Pose, depose, renovation de parquets massifs, contrecolles et stratifies. Preparation du support, pose clouee, collee ou flottante. Finitions huilees ou vitrifees.</p>
+                <div class="s-tags">
+                    <span>Massif</span>
+                    <span>Contrecolle</span>
+                    <span>Stratifie</span>
+                    <span>Renovation</span>
+                </div>
+            </div>
+            <div class="service fade-up">
+                <div class="s-icon">&#129717;</div>
+                <h3>Ebenisterie & Restauration</h3>
+                <p>Restauration de meubles anciens, travaux d'ebenisterie, sculpture sur bois. Formation Ecole Boulle. Respect des techniques traditionnelles et du bois d'origine.</p>
+                <div class="s-tags">
+                    <span>Meubles anciens</span>
+                    <span>Ebenisterie</span>
+                    <span>Sculpture bois</span>
+                </div>
+            </div>
+            <div class="service fade-up">
+                <div class="s-icon">&#128170;</div>
+                <h3>Conseil & Accompagnement</h3>
+                <p>40 ans d'experience dans le secteur, ancien responsable de magasin : je vous conseille sur les materiaux, les solutions adaptees a votre budget, et je coordonne le chantier de A a Z.</p>
+                <div class="s-tags">
+                    <span>Conseil</span>
+                    <span>Materiaux</span>
+                    <span>Suivi chantier</span>
+                    <span>Budget</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- REALISATIONS -->
+<section class="section" id="realisations">
+    <div class="container">
+        <div class="section-divider"></div>
+        <div class="section-title">Realisations</div>
+        <h2>Projets & Realisations</h2>
+        <p class="section-desc">Quelques exemples de travaux realises dans la region lyonnaise et le Beaujolais.</p>
+
+        <div class="projects-grid">
+
+            <!-- Projet 1 : Placard sur mesure sous pente -->
+            <div class="project fade-up">
+                <div class="project-photo">
+                    <img src="projet1.jpg" alt="Placard sur mesure sous pente — Didier Carrette" loading="lazy">
+                    <span class="p-label">SUR MESURE</span>
+                </div>
+                <div class="project-body">
+                    <h4>Placard sur mesure — Amenagement sous pente</h4>
+                    <p>Creation complete d'un placard encastre dans un espace sous pente. Etageres, penderie et rangements optimises. Finition blanc laque, charnieres invisibles.</p>
+                    <div class="project-tags">
+                        <span>Sur mesure</span>
+                        <span>Sous pente</span>
+                        <span>Rangement</span>
+                    </div>
+                    <div class="project-difficulty">
+                        <span class="diff-label">Difficulte</span>
+                        <div class="diff-bar"><div class="diff-fill high" style="width:85%"></div></div>
+                        <span class="diff-score high">8.5/10</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projet 2 : Porte encastree -->
+            <div class="project fade-up">
+                <div class="project-photo">
+                    <img src="projet2.jpg" alt="Porte encastree sur mesure — Didier Carrette" loading="lazy">
+                    <span class="p-label">ENCASTREMENT</span>
+                </div>
+                <div class="project-body">
+                    <h4>Porte encastree — Espace atypique</h4>
+                    <p>Fabrication et pose d'une porte sur mesure encastree dans un espace non standard. Ajustement au millimetre, poignee inox. Finition blanc mat.</p>
+                    <div class="project-tags">
+                        <span>Porte sur mesure</span>
+                        <span>Sur mesure</span>
+                        <span>Encastrement</span>
+                    </div>
+                    <div class="project-difficulty">
+                        <span class="diff-label">Difficulte</span>
+                        <div class="diff-bar"><div class="diff-fill high" style="width:80%"></div></div>
+                        <span class="diff-score high">8.0/10</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projet 3 : Depose/repose parquet chene colle -->
+            <div class="project fade-up">
+                <div class="project-photo">
+                    <img src="projet3.jpg" alt="Depose repose parquet chene colle — Didier Carrette" loading="lazy">
+                    <span class="p-label">PARQUET CHENE</span>
+                </div>
+                <div class="project-body">
+                    <h4>Depose & repose parquet chene colle</h4>
+                    <p>Depose du parquet existant autour d'un sol en tomettes. Decapage complet de la dalle. Repose de parquet a coller en chene massif. Integration d'un meuble de rangement vitre.</p>
+                    <div class="project-tags">
+                        <span>Parquet chene</span>
+                        <span>Depose/repose</span>
+                        <span>Decapage dalle</span>
+                    </div>
+                    <div class="project-difficulty">
+                        <span class="diff-label">Difficulte</span>
+                        <div class="diff-bar"><div class="diff-fill very-high" style="width:92%"></div></div>
+                        <span class="diff-score very-high">9.2/10</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projet 4 : Sinistre assurance degat des eaux -->
+            <div class="project fade-up">
+                <div class="project-photo">
+                    <img src="projet4.jpg" alt="Sinistre assurance degat des eaux — Didier Carrette" loading="lazy">
+                    <span class="p-label">SINISTRE</span>
+                </div>
+                <div class="project-body">
+                    <h4>Sinistre assurance — Degat des eaux</h4>
+                    <p>Intervention post-sinistre : depose du parquet endommage, sechage, preparation du support, repose complete. Coordination avec l'assurance. Chantier sous contrainte de delai.</p>
+                    <div class="project-tags">
+                        <span>Sinistre</span>
+                        <span>Assurance</span>
+                        <span>Parquet</span>
+                        <span>Urgence</span>
+                    </div>
+                    <div class="project-difficulty">
+                        <span class="diff-label">Difficulte</span>
+                        <div class="diff-bar"><div class="diff-fill very-high" style="width:90%"></div></div>
+                        <span class="diff-score very-high">9.0/10</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- PARCOURS -->
+<section class="section" id="parcours">
+    <div class="container">
+        <div class="section-divider"></div>
+        <div class="section-title">Parcours</div>
+        <h2>40 ans dans le bois et le commerce</h2>
+        <p class="section-desc">De l'ebenisterie a la responsabilite de magasin, puis artisan a mon compte.</p>
+
+        <div class="timeline fade-up">
+            <div class="tl-item current">
+                <div class="tl-date">2003 — Aujourd'hui</div>
+                <h4>Artisan Menuisier</h4>
+                <div class="tl-company">Societe CHANGER LA — Region lyonnaise & Beaujolais</div>
+                <p>Depose et repose de menuiseries interieures et exterieures. Parquets, dressings, placards sur mesure. Remplacement d'huisseries sans degradation.</p>
+            </div>
+            <div class="tl-item">
+                <div class="tl-date">2001 — 2003</div>
+                <h4>Directeur de Magasin</h4>
+                <div class="tl-company">VIAL — Saint-Priest</div>
+                <p>Direction complete du point de vente. Gestion du personnel, actions commerciales, analyse concurrence, gestion des stocks.</p>
+            </div>
+            <div class="tl-item">
+                <div class="tl-date">1997 — 2000</div>
+                <h4>Directeur de Magasin</h4>
+                <div class="tl-company">Bati Eco — Caluire-et-Cuire</div>
+                <p>Direction du magasin et supervision de 5 ateliers de menuiseries pour l'ensemble du groupe. Actions commerciales, suivi de la concurrence.</p>
+            </div>
+            <div class="tl-item">
+                <div class="tl-date">1992 — 1997</div>
+                <h4>Responsable Adjoint</h4>
+                <div class="tl-company">Menuiseries Lapeyre — Saint-Priest</div>
+                <p>Gestion des stocks, litiges clients, formation et encadrement des forces commerciales. Conduite de reunions.</p>
+            </div>
+            <div class="tl-item">
+                <div class="tl-date">1989 — 1992</div>
+                <h4>Responsable des Approvisionnements</h4>
+                <div class="tl-company">Menuiseries Lapeyre — Gournay-sur-Marne</div>
+                <p>Gestion quantitative et qualitative du stock. Formation technique des vendeurs.</p>
+            </div>
+            <div class="tl-item">
+                <div class="tl-date">1984 — 1989</div>
+                <h4>Vendeur</h4>
+                <div class="tl-company">Menuiseries Lapeyre — Limonest</div>
+                <p>Vente aux particuliers et professionnels. Animation des stands aux Foires de Lyon et Saint-Etienne.</p>
+            </div>
+            <div class="tl-item">
+                <div class="tl-date">1982 — 1984</div>
+                <h4>Ebeniste</h4>
+                <div class="tl-company">Entreprise Froget et Aubert — Romaneche-Thorins & Besancon</div>
+                <p>Restauration de meubles anciens. Mise en place des salons professionnels.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- CERTIFICATIONS -->
+<section class="section">
+    <div class="container">
+        <div class="section-divider"></div>
+        <div class="section-title">Certifications & Formations</div>
+        <h2>Qualifications reconnues</h2>
+
+        <div class="certs-grid fade-up" style="margin-top:32px">
+            <div class="cert">
+                <div class="cert-icon">&#127891;</div>
+                <h4>CAP Menuisier & Agencement</h4>
+                <p>Ecole Boulle — Paris (1980)</p>
+            </div>
+            <div class="cert">
+                <div class="cert-icon">&#127897;</div>
+                <h4>Formation Dale Carnegie</h4>
+                <p>Communication & management (1997)</p>
+            </div>
+            <div class="cert">
+                <div class="cert-icon">&#128188;</div>
+                <h4>Formation Vente — Lapeyre</h4>
+                <p>Techniques commerciales terrain</p>
+            </div>
+            <div class="cert">
+                <div class="cert-icon">&#127979;</div>
+                <h4>Formation Management — Lapeyre</h4>
+                <p>Direction d'equipes & magasin</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- CONTACT -->
+<section class="section" id="contact">
+    <div class="container">
+        <div class="section-divider"></div>
+        <div class="section-title">Contact</div>
+        <h2>Parlons de votre projet</h2>
+        <p class="section-desc">Un devis, une question, un conseil — n'hesitez pas a me contacter.</p>
+
+        <div class="contact-grid fade-up">
+            <div class="contact-card">
+                <h3>Coordonnees</h3>
+                <div class="contact-item">
+                    <div class="c-icon">&#128100;</div>
+                    <div>
+                        <div class="c-label">Nom</div>
+                        <div class="c-value">Didier Carrette</div>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="c-icon">&#128222;</div>
+                    <div>
+                        <div class="c-label">Telephone</div>
+                        <div class="c-value">06 07 80 32 80</div>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="c-icon">&#128205;</div>
+                    <div>
+                        <div class="c-label">Adresse</div>
+                        <div class="c-value">427 Route de Mussy — 69620 Sainte-Paule</div>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="c-icon">&#128663;</div>
+                    <div>
+                        <div class="c-label">Zone d'intervention</div>
+                        <div class="c-value">Lyon, Beaujolais & environs</div>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="c-icon">&#9993;</div>
+                    <div>
+                        <div class="c-label">Email</div>
+                        <div class="c-value">carrettedidier@yahoo.com</div>
+                    </div>
+                </div>
+            </div>
+            <div class="contact-cta">
+                <h3>Un projet en tete ?</h3>
+                <p>Devis gratuit, reponse rapide. Appelez directement ou laissez un message.</p>
+                <a href="tel:0607803280" class="cta-btn">Appeler maintenant</a>
+                <div class="cta-phone">06 07 80 32 80</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <p>Didier Carrette — Artisan Menuisier | Sainte-Paule (69) | Lyon & Beaujolais | 2026</p>
+</footer>
+
+<script>
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+// Animate XP bar
+const xpObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting && !entry.target.dataset.animated) {
+            entry.target.dataset.animated = 'true';
+            const fill = entry.target.querySelector('.xp-fill');
+            if (fill) {
+                setTimeout(() => { fill.style.width = '98%'; }, 300);
+            }
+        }
+    });
+}, { threshold: 0.5 });
+document.querySelectorAll('.trust-xp').forEach(el => xpObserver.observe(el));
+</script>
+
+</body>
+</html>
