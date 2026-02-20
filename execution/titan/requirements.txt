@@ -1,0 +1,7 @@
+anthropic
+feedparser
+gTTS
+python-dotenv
+requests
+groq
+google-genai

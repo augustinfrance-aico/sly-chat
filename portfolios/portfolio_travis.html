@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AICO — Coaching Bot MVP Portfolio</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            padding: 60px 40px 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .header .tag {
+            display: inline-block;
+            background: #1a3a2a;
+            color: #4ade80;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 6px 14px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+        .header p {
+            font-size: 17px;
+            color: #999;
+            max-width: 600px;
+        }
+
+        /* Section */
+        .section {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 40px 50px;
+        }
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #4ade80;
+            margin-bottom: 24px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        /* Requirement Match */
+        .match-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 10px;
+        }
+        .match-card {
+            background: #111;
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .match-card .check {
+            color: #4ade80;
+            font-size: 18px;
+            margin-right: 8px;
+        }
+        .match-card h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            display: inline;
+        }
+        .match-card p {
+            font-size: 13px;
+            color: #888;
+            margin-top: 6px;
+        }
+
+        /* Projects */
+        .project {
+            background: #111;
+            border: 1px solid #1a1a1a;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        .project-label {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin-bottom: 14px;
+        }
+        .label-live {
+            background: #1a3a2a;
+            color: #4ade80;
+        }
+        .label-bot {
+            background: #1a2a3a;
+            color: #60a5fa;
+        }
+        .project h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        .project .subtitle {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 18px;
+        }
+        .project .stats {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 18px;
+        }
+        .project .stat {
+            text-align: center;
+        }
+        .project .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .project .stat-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .tech-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+        }
+        .tech-tag {
+            background: #1a1a1a;
+            color: #aaa;
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 4px;
+            border: 1px solid #222;
+        }
+
+        /* Flow Diagram */
+        .flow {
+            background: #111;
+            border: 1px solid #1a1a1a;
+            border-radius: 10px;
+            padding: 30px;
+        }
+        .flow h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+        .flow-steps {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .flow-step {
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+        }
+        .flow-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        .flow-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .flow-desc {
+            font-size: 11px;
+            color: #666;
+            margin-top: 2px;
+        }
+        .flow-arrow {
+            color: #4ade80;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        /* Answers */
+        .answers {
+            display: grid;
+            gap: 16px;
+        }
+        .answer {
+            background: #111;
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+            padding: 22px;
+        }
+        .answer .q {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .answer .a {
+            font-size: 15px;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        /* Footer */
+        .footer {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px;
+            text-align: center;
+            border-top: 1px solid #1a1a1a;
+        }
+        .footer p {
+            color: #666;
+            font-size: 14px;
+        }
+        .footer a {
+            color: #4ade80;
+            text-decoration: none;
+        }
+
+        @media (max-width: 600px) {
+            .header { padding: 40px 20px 30px; }
+            .section { padding: 0 20px 40px; }
+            .match-grid { grid-template-columns: 1fr; }
+            .header h1 { font-size: 28px; }
+            .flow-steps { flex-direction: column; }
+            .flow-arrow { transform: rotate(90deg); }
+            .project .stats { gap: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="tag">Portfolio for Travis</div>
+        <h1>Coaching Bot MVP — Proof of Work</h1>
+        <p>I've already built the exact components your project needs. Here's the evidence.</p>
+    </div>
+
+    <!-- Your Requirements = My Experience -->
+    <div class="section">
+        <div class="section-title">Your Requirements — Covered</div>
+        <div class="match-grid">
+            <div class="match-card">
+                <span class="check">&#10003;</span>
+                <h3>Telegram Bot Interface</h3>
+                <p>Built TITAN — a 50-module Telegram bot running in production with 250+ commands. Polling-based, async, secure.</p>
+            </div>
+            <div class="match-card">
+                <span class="check">&#10003;</span>
+                <h3>Backend Gateway API</h3>
+                <p>Python backend with FastAPI. Message routing, middleware, webhook endpoints. All env-based config.</p>
+            </div>
+            <div class="match-card">
+                <span class="check">&#10003;</span>
+                <h3>Stripe Webhooks</h3>
+                <p>Signature verification, checkout.session.completed, subscription updates, payment failures, cancellations.</p>
+            </div>
+            <div class="match-card">
+                <span class="check">&#10003;</span>
+                <h3>Subscription Gating</h3>
+                <p>User status check before every action. Inactive users get a checkout link. Active users get routed to AI.</p>
+            </div>
+            <div class="match-card">
+                <span class="check">&#10003;</span>
+                <h3>AI API Integration</h3>
+                <p>Claude AI integration with structured prompts. No data storage. Stateless calls. Configurable system prompts.</p>
+            </div>
+            <div class="match-card">
+                <span class="check">&#10003;</span>
+                <h3>Secure Key Handling</h3>
+                <p>All API keys in .env files. python-dotenv for loading. No hardcoded secrets. Authorized user validation.</p>
+            </div>
+            <div class="match-card">
+                <span class="check">&#10003;</span>
+                <h3>Crisis Keyword Logic</h3>
+                <p>Priority keyword detection before AI routing. Intercepts flagged messages and returns safety response immediately.</p>
+            </div>
+            <div class="match-card">
+                <span class="check">&#10003;</span>
+                <h3>Database (User/Sub)</h3>
+                <p>Simple DB: user_id, stripe_customer_id, subscription_id, status. PostgreSQL or SQLite for MVP.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project 1: TITAN -->
+    <div class="section">
+        <div class="section-title">Proof — Live Projects</div>
+
+        <div class="project">
+            <div class="project-label label-bot">Telegram Bot — Production</div>
+            <h3>TITAN — Personal AI Agent</h3>
+            <p class="subtitle">A 50-module AI assistant accessible entirely through Telegram. Built with Python, async architecture, Claude AI backend.</p>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">50</div>
+                    <div class="stat-label">Modules</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">250+</div>
+                    <div class="stat-label">Commands</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">1,600+</div>
+                    <div class="stat-label">Lines of Code</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">24/7</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+            </div>
+            <p class="subtitle">Features directly relevant to your project:</p>
+            <ul style="color:#aaa; font-size:14px; margin-left:18px; margin-top:8px; line-height:2;">
+                <li>Telegram Bot API — polling, message handling, typing indicators</li>
+                <li>AI routing — user message &#8594; Claude API &#8594; structured response</li>
+                <li>User authorization — only allowed chat IDs can interact</li>
+                <li>Module routing — intelligent dispatch based on message content</li>
+                <li>Environment-based config — all keys in .env, loaded via python-dotenv</li>
+                <li>Memory system — persistent user data (same pattern as your user DB)</li>
+            </ul>
+            <div class="tech-tags">
+                <span class="tech-tag">Python</span>
+                <span class="tech-tag">asyncio</span>
+                <span class="tech-tag">Telegram Bot API</span>
+                <span class="tech-tag">Claude AI</span>
+                <span class="tech-tag">python-dotenv</span>
+                <span class="tech-tag">JSON storage</span>
+            </div>
+        </div>
+
+        <div class="project">
+            <div class="project-label label-live">Live — Paying Client</div>
+            <h3>Moldova News Automation</h3>
+            <p class="subtitle">Automated daily news pipeline delivering 7 AI-generated posts to Telegram. Runs daily for a paying client.</p>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">7</div>
+                    <div class="stat-label">Daily Posts</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Languages</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Manual Work</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">Live</div>
+                    <div class="stat-label">In Production</div>
+                </div>
+            </div>
+            <p class="subtitle">Relevant overlap with your project:</p>
+            <ul style="color:#aaa; font-size:14px; margin-left:18px; margin-top:8px; line-height:2;">
+                <li>Telegram delivery — scheduled messages to channel/users</li>
+                <li>API integrations — OpenAI for translation/summarization</li>
+                <li>Webhook handling — n8n triggers + webhook endpoints</li>
+                <li>Scheduling — cron-based daily automation</li>
+                <li>Error recovery — handles API failures gracefully</li>
+            </ul>
+            <div class="tech-tags">
+                <span class="tech-tag">n8n</span>
+                <span class="tech-tag">Telegram API</span>
+                <span class="tech-tag">OpenAI</span>
+                <span class="tech-tag">Google Sheets</span>
+                <span class="tech-tag">Railway</span>
+                <span class="tech-tag">Webhooks</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Your MVP Flow -->
+    <div class="section">
+        <div class="section-title">Your MVP — How I'd Build It</div>
+        <div class="flow">
+            <h3>User Flow</h3>
+            <div class="flow-steps">
+                <div class="flow-step">
+                    <div class="flow-icon">&#128172;</div>
+                    <div class="flow-name">User Messages</div>
+                    <div class="flow-desc">Telegram Bot</div>
+                </div>
+                <div class="flow-arrow">&#8594;</div>
+                <div class="flow-step">
+                    <div class="flow-icon">&#128270;</div>
+                    <div class="flow-name">Check Status</div>
+                    <div class="flow-desc">DB Lookup</div>
+                </div>
+                <div class="flow-arrow">&#8594;</div>
+                <div class="flow-step">
+                    <div class="flow-icon">&#128179;</div>
+                    <div class="flow-name">Gate or Route</div>
+                    <div class="flow-desc">Stripe / AI</div>
+                </div>
+                <div class="flow-arrow">&#8594;</div>
+                <div class="flow-step">
+                    <div class="flow-icon">&#129302;</div>
+                    <div class="flow-name">AI Response</div>
+                    <div class="flow-desc">Structured Prompt</div>
+                </div>
+                <div class="flow-arrow">&#8594;</div>
+                <div class="flow-step">
+                    <div class="flow-icon">&#9989;</div>
+                    <div class="flow-name">Delivered</div>
+                    <div class="flow-desc">Telegram</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Direct Answers -->
+    <div class="section">
+        <div class="section-title">Your Questions — Direct Answers</div>
+        <div class="answers">
+            <div class="answer">
+                <div class="q">1. Have you implemented Stripe subscription webhooks before?</div>
+                <div class="a">Yes. Signature verification, checkout sessions, subscription lifecycle events (created, updated, deleted), payment failure handling.</div>
+            </div>
+            <div class="answer">
+                <div class="q">2. Have you built Telegram bots tied to backend APIs?</div>
+                <div class="a">Yes — TITAN is a 50-module Telegram bot with a full Python backend, Claude AI integration, and 250+ commands. Running in production. I can demo it live.</div>
+            </div>
+            <div class="answer">
+                <div class="q">3. Rough fixed-price estimate for this scope?</div>
+                <div class="a">Fixed-price delivery. Let's jump on a quick call to lock in the details and firm number.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Built by <strong style="color:#fff;">Augus</strong> — AICO Automation</p>
+        <p style="margin-top:8px;">Ready to start. Let's talk.</p>
+    </div>
+
+</body>
+</html>

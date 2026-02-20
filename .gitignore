@@ -1,0 +1,7 @@
+.env
+.tmp/
+.vscode/
+.claude/
+__pycache__/
+*.pyc
+node_modules/

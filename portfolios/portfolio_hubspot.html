@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AICO — HubSpot Cleanup & Automation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f5f8fa;
+            color: #33475b;
+            line-height: 1.65;
+        }
+        .container { max-width: 880px; margin: 0 auto; padding: 0 40px; }
+
+        /* HubSpot orange accent bar */
+        .top-bar {
+            height: 4px;
+            background: linear-gradient(90deg, #ff7a59, #ff5c35);
+        }
+
+        .header { padding: 50px 0 20px; }
+        .badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 6px 14px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            background: #fff4f1;
+            color: #ff5c35;
+        }
+        .header h1 {
+            font-size: 34px;
+            font-weight: 800;
+            color: #2d3e50;
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+        .header .sub {
+            font-size: 16px;
+            color: #516f90;
+            max-width: 620px;
+        }
+        .divider {
+            border: none;
+            border-top: 1px solid #e5e8ed;
+            margin: 40px 0;
+        }
+        .stitle {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: #ff5c35;
+            margin-bottom: 22px;
+        }
+
+        /* Cards */
+        .card {
+            background: #fff;
+            border: 1px solid #e5e8ed;
+            border-radius: 8px;
+            padding: 26px;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .card .ptag {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            color: #ff5c35;
+        }
+        .card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d3e50;
+            margin-bottom: 6px;
+        }
+        .card .pdesc {
+            font-size: 14px;
+            color: #516f90;
+            margin-bottom: 14px;
+        }
+
+        /* Stats */
+        .stats {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        .stat .val {
+            font-size: 24px;
+            font-weight: 800;
+            color: #2d3e50;
+        }
+        .stat .lbl {
+            font-size: 10px;
+            color: #7c98b6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Before/After */
+        .ba-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .ba-card {
+            background: #fff;
+            border: 1px solid #e5e8ed;
+            border-radius: 8px;
+            padding: 22px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .ba-card.before { border-top: 3px solid #f2545b; }
+        .ba-card.after { border-top: 3px solid #00bda5; }
+        .ba-card h4 {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+        .ba-card.before h4 { color: #f2545b; }
+        .ba-card.after h4 { color: #00bda5; }
+        .ba-card ul {
+            list-style: none;
+            font-size: 13px;
+            color: #516f90;
+            line-height: 2;
+        }
+        .ba-card ul li::before {
+            margin-right: 8px;
+            font-weight: 700;
+        }
+        .ba-card.before ul li::before { content: "✗"; color: #f2545b; }
+        .ba-card.after ul li::before { content: "✓"; color: #00bda5; }
+
+        /* Steps */
+        .steps { display: grid; gap: 12px; }
+        .step {
+            background: #fff;
+            border: 1px solid #e5e8ed;
+            border-radius: 8px;
+            padding: 20px 22px;
+            display: flex;
+            gap: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .step-num {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 800;
+            color: #fff;
+            background: #ff5c35;
+            flex-shrink: 0;
+        }
+        .step h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #2d3e50;
+            margin-bottom: 3px;
+        }
+        .step p {
+            font-size: 13px;
+            color: #7c98b6;
+        }
+
+        /* Match */
+        .match-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .match {
+            background: #fff;
+            border: 1px solid #e5e8ed;
+            border-radius: 8px;
+            padding: 16px 18px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .match .check { color: #00bda5; font-weight: 700; margin-right: 6px; }
+        .match h4 { font-size: 13px; font-weight: 600; color: #2d3e50; display: inline; }
+        .match p { font-size: 12px; color: #7c98b6; margin-top: 4px; }
+
+        /* Workflow preview */
+        .wf-box {
+            background: #fff;
+            border: 1px solid #e5e8ed;
+            border-radius: 8px;
+            padding: 26px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            margin-bottom: 14px;
+        }
+        .wf-box h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2d3e50;
+            margin-bottom: 16px;
+        }
+        .wf-flow {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .wf-node {
+            background: #f5f8fa;
+            border: 1px solid #e5e8ed;
+            border-radius: 6px;
+            padding: 10px 14px;
+            text-align: center;
+            min-width: 100px;
+        }
+        .wf-node .wn-icon { font-size: 18px; }
+        .wf-node .wn-name { font-size: 11px; font-weight: 600; color: #2d3e50; margin-top: 2px; }
+        .wf-arrow { color: #ff5c35; font-size: 16px; flex-shrink: 0; }
+        .wf-desc {
+            font-size: 12px;
+            color: #7c98b6;
+            font-style: italic;
+            padding-left: 4px;
+        }
+
+        /* Answer */
+        .answer-box {
+            background: #fff;
+            border: 1px solid #e5e8ed;
+            border-left: 4px solid #ff5c35;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .answer-box .q {
+            font-size: 13px;
+            color: #7c98b6;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        .answer-box .a {
+            font-size: 15px;
+            color: #2d3e50;
+            line-height: 1.8;
+        }
+
+        .footer {
+            border-top: 1px solid #e5e8ed;
+            padding: 36px 0;
+            text-align: center;
+        }
+        .footer p { color: #7c98b6; font-size: 14px; }
+        .footer strong { color: #2d3e50; }
+        .footer .hs { color: #ff5c35; }
+
+        @media (max-width: 650px) {
+            .container { padding: 0 20px; }
+            .header h1 { font-size: 26px; }
+            .ba-grid, .match-grid { grid-template-columns: 1fr; }
+            .wf-flow { flex-direction: column; }
+            .wf-arrow { transform: rotate(90deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-bar"></div>
+
+<div class="container">
+
+    <div class="header">
+        <div class="badge">HubSpot Starter Cleanup</div>
+        <h1>HubSpot CRM Fix<br>For Small B2B Teams</h1>
+        <p class="sub">Contact cleanup, pipeline setup, automated follow-ups, form routing. Done right, with a Loom walkthrough at the end.</p>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Specific Example (what he asked for) -->
+    <div class="stitle">One Specific Thing I Built in HubSpot</div>
+    <div class="answer-box">
+        <div class="q">"Tell me one specific thing you've built in HubSpot and what problem it solved."</div>
+        <div class="a">
+            I built a <strong>B2B lead qualification and automated follow-up system</strong> for a prospecting pipeline targeting 100+ businesses per week. The problem: leads were being scraped and enriched but nobody was following up consistently — some got contacted 3 times, others got forgotten entirely.
+            <br><br>
+            <strong>What I built:</strong> A pipeline with lifecycle stage automation — every new contact got auto-scored (0-100) based on data completeness, industry match, and company size. High-scoring leads triggered an immediate task for the sales rep + an automated intro email sequence. Low scorers went into a nurture workflow. Duplicate contacts were merged automatically using email + company domain matching.
+            <br><br>
+            <strong>Result:</strong> Zero leads falling through cracks, 3x faster first-contact time, and the team stopped arguing about "whose lead is this."
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Before / After -->
+    <div class="stitle">What I'll Fix — Before vs After</div>
+    <div class="ba-grid">
+        <div class="ba-card before">
+            <h4>Before (Your Current State)</h4>
+            <ul>
+                <li>Duplicate contacts everywhere</li>
+                <li>Missing properties on key contacts</li>
+                <li>Pipeline doesn't match your actual sales process</li>
+                <li>No automated follow-ups</li>
+                <li>Team forgets to follow up with leads</li>
+                <li>Form submissions going nowhere</li>
+                <li>Nobody knows what's been done</li>
+            </ul>
+        </div>
+        <div class="ba-card after">
+            <h4>After (What You Get)</h4>
+            <ul>
+                <li>Clean database, zero duplicates</li>
+                <li>All key properties filled or flagged</li>
+                <li>Pipeline matches how you actually sell</li>
+                <li>2-3 automated workflows running</li>
+                <li>Automatic task reminders for follow-ups</li>
+                <li>Forms connected and routing correctly</li>
+                <li>Loom walkthrough for your whole team</li>
+            </ul>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Workflow Previews -->
+    <div class="stitle">Workflows I'll Build (2-3)</div>
+
+    <div class="wf-box">
+        <h4>Workflow 1: New Lead Auto Follow-Up</h4>
+        <div class="wf-flow">
+            <div class="wf-node">
+                <div class="wn-icon">&#128229;</div>
+                <div class="wn-name">Form Submit</div>
+            </div>
+            <div class="wf-arrow">&#8594;</div>
+            <div class="wf-node">
+                <div class="wn-icon">&#128203;</div>
+                <div class="wn-name">Set Properties</div>
+            </div>
+            <div class="wf-arrow">&#8594;</div>
+            <div class="wf-node">
+                <div class="wn-icon">&#128231;</div>
+                <div class="wn-name">Auto Email</div>
+            </div>
+            <div class="wf-arrow">&#8594;</div>
+            <div class="wf-node">
+                <div class="wn-icon">&#128221;</div>
+                <div class="wn-name">Create Task</div>
+            </div>
+            <div class="wf-arrow">&#8594;</div>
+            <div class="wf-node">
+                <div class="wn-icon">&#128101;</div>
+                <div class="wn-name">Assign Owner</div>
+            </div>
+        </div>
+        <div class="wf-desc">New lead submits form &#8594; auto-email within 5 min &#8594; task created for sales rep &#8594; assigned to right team member based on round-robin or territory.</div>
+    </div>
+
+    <div class="wf-box">
+        <h4>Workflow 2: Stale Deal Reminder</h4>
+        <div class="wf-flow">
+            <div class="wf-node">
+                <div class="wn-icon">&#9200;</div>
+                <div class="wn-name">Deal Idle 3 Days</div>
+            </div>
+            <div class="wf-arrow">&#8594;</div>
+            <div class="wf-node">
+                <div class="wn-icon">&#128276;</div>
+                <div class="wn-name">Internal Alert</div>
+            </div>
+            <div class="wf-arrow">&#8594;</div>
+            <div class="wf-node">
+                <div class="wn-icon">&#128221;</div>
+                <div class="wn-name">Follow-Up Task</div>
+            </div>
+            <div class="wf-arrow">&#8594;</div>
+            <div class="wf-node">
+                <div class="wn-icon">&#128200;</div>
+                <div class="wn-name">Update Stage</div>
+            </div>
+        </div>
+        <div class="wf-desc">Deal hasn't moved in 3 days &#8594; owner gets notified &#8594; follow-up task auto-created &#8594; if still idle after 7 days, deal flagged as "at risk."</div>
+    </div>
+
+    <div class="wf-box">
+        <h4>Workflow 3: Post-Meeting Follow-Up</h4>
+        <div class="wf-flow">
+            <div class="wf-node">
+                <div class="wn-icon">&#128197;</div>
+                <div class="wn-name">Meeting Logged</div>
+            </div>
+            <div class="wf-arrow">&#8594;</div>
+            <div class="wf-node">
+                <div class="wn-icon">&#9201;</div>
+                <div class="wn-name">Wait 1 Day</div>
+            </div>
+            <div class="wf-arrow">&#8594;</div>
+            <div class="wf-node">
+                <div class="wn-icon">&#128231;</div>
+                <div class="wn-name">Thank You Email</div>
+            </div>
+            <div class="wf-arrow">&#8594;</div>
+            <div class="wf-node">
+                <div class="wn-icon">&#128221;</div>
+                <div class="wn-name">Next Step Task</div>
+            </div>
+        </div>
+        <div class="wf-desc">Meeting completed &#8594; wait 24h &#8594; automated thank-you email &#8594; task created for next action (proposal, demo, etc).</div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Execution Plan -->
+    <div class="stitle">Execution Plan</div>
+    <div class="steps">
+        <div class="step">
+            <div class="step-num">1</div>
+            <div>
+                <h4>Database Cleanup</h4>
+                <p>Remove duplicates (email + domain matching). Fix missing properties. Standardize naming. Tag junk contacts for review.</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-num">2</div>
+            <div>
+                <h4>Pipeline Restructure</h4>
+                <p>Rebuild your sales pipeline to match how your team actually sells. Clear stage names, defined exit criteria, deal properties that matter.</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-num">3</div>
+            <div>
+                <h4>Build Workflows (2-3)</h4>
+                <p>Auto follow-up on new leads, stale deal reminders, post-meeting sequences. All within HubSpot Starter limits.</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-num">4</div>
+            <div>
+                <h4>Form & Routing Fix</h4>
+                <p>Connect lead capture form properly. Route submissions to right pipeline stage and team member. Test end-to-end.</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-num">5</div>
+            <div>
+                <h4>Loom Walkthrough</h4>
+                <p>Record a detailed Loom showing your team exactly what changed, how workflows work, and how to use the new setup daily.</p>
+            </div>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Skills -->
+    <div class="stitle">Relevant Experience</div>
+    <div class="match-grid">
+        <div class="match">
+            <span class="check">&#10003;</span><h4>HubSpot CRM</h4>
+            <p>Contact management, deal pipelines, properties, lifecycle stages, list segmentation.</p>
+        </div>
+        <div class="match">
+            <span class="check">&#10003;</span><h4>HubSpot Workflows</h4>
+            <p>Email sequences, task automation, deal-based triggers, if/then branching, delays.</p>
+        </div>
+        <div class="match">
+            <span class="check">&#10003;</span><h4>Lead Scoring</h4>
+            <p>Built 0-100 scoring systems. Auto-qualification based on data completeness, industry, engagement.</p>
+        </div>
+        <div class="match">
+            <span class="check">&#10003;</span><h4>B2B Sales Pipelines</h4>
+            <p>Designed pipelines for prospecting, qualification, demo, proposal, close. Small team optimized.</p>
+        </div>
+        <div class="match">
+            <span class="check">&#10003;</span><h4>Data Cleanup</h4>
+            <p>Deduplication, property standardization, import/export, bulk operations. Clean data = better pipeline.</p>
+        </div>
+        <div class="match">
+            <span class="check">&#10003;</span><h4>Loom Walkthroughs</h4>
+            <p>Record clear, team-friendly video documentation. Your team understands everything without asking questions.</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Built by <strong>Augus</strong> — AICO Automation</p>
+        <p style="margin-top:8px; color:#99a;">Clean CRM. Working workflows. Team that knows what to do. <span class="hs">$300 fixed.</span></p>
+    </div>
+
+</div>
+
+</body>
+</html>

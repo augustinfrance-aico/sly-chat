@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AICO — Portfolios</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0a0a0f;
+  color: #e0e0e0;
+  min-height: 100vh;
+}
+.header {
+  text-align: center;
+  padding: 60px 20px 40px;
+  background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.header h1 {
+  font-size: 2.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 10px;
+}
+.header p {
+  color: #888;
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+.stat {
+  text-align: center;
+}
+.stat-num {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #667eea;
+}
+.stat-label {
+  font-size: 0.8rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 24px;
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 24px;
+}
+.card {
+  background: #12121a;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(102,126,234,0.15);
+  border-color: rgba(102,126,234,0.3);
+}
+.card-color {
+  height: 6px;
+}
+.card-body {
+  padding: 24px;
+}
+.card-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+.card h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #fff;
+}
+.card p {
+  font-size: 0.9rem;
+  color: #888;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+.card-tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.card-tech span {
+  padding: 3px 8px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: #aaa;
+}
+.footer {
+  text-align: center;
+  padding: 40px 20px;
+  color: #444;
+  font-size: 0.85rem;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>AICO Portfolios</h1>
+  <p>Automation, AI & Integration — Tous mes projets et demos pour clients Upwork</p>
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">10</div>
+      <div class="stat-label">Portfolios</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">50+</div>
+      <div class="stat-label">Modules Titan</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">250+</div>
+      <div class="stat-label">Commandes Bot</div>
+    </div>
+  </div>
+</div>
+
+<div class="grid">
+
+  <a class="card" href="portfolio_travis.html">
+    <div class="card-color" style="background: linear-gradient(90deg, #667eea, #764ba2);"></div>
+    <div class="card-body">
+      <span class="card-tag" style="background: rgba(102,126,234,0.15); color: #667eea;">Coaching Bot</span>
+      <h3>Travis — Paid Coaching Platform</h3>
+      <p>Telegram bot + Stripe payments + AI coaching sessions. Full MVP with subscription management.</p>
+      <div class="card-tech">
+        <span>Telegram</span><span>Stripe</span><span>Claude AI</span><span>Python</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="card" href="proposal_quiz.html">
+    <div class="card-color" style="background: linear-gradient(90deg, #8b5cf6, #a855f7);"></div>
+    <div class="card-body">
+      <span class="card-tag" style="background: rgba(139,92,246,0.15); color: #a855f7;">Quiz Funnel</span>
+      <h3>Quiz Funnel — Typeform + Stan Store</h3>
+      <p>14 questions, 5 categories, scoring engine, redirect automatique vers Stan Store.</p>
+      <div class="card-tech">
+        <span>Typeform</span><span>Stan Store</span><span>n8n</span><span>Webhooks</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="card" href="portfolio_broker_bot.html">
+    <div class="card-color" style="background: linear-gradient(90deg, #3b82f6, #1d4ed8);"></div>
+    <div class="card-body">
+      <span class="card-tag" style="background: rgba(59,130,246,0.15); color: #3b82f6;">Broker Bot</span>
+      <h3>Broker Onboarding — Telegram + AI</h3>
+      <p>Bot d'onboarding intelligent pour courtiers. AI conversationnel + dashboard admin.</p>
+      <div class="card-tech">
+        <span>Telegram</span><span>Claude AI</span><span>Dashboard</span><span>n8n</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="card" href="portfolio_flight_finder.html">
+    <div class="card-color" style="background: linear-gradient(90deg, #0ea5e9, #0284c7);"></div>
+    <div class="card-body">
+      <span class="card-tag" style="background: rgba(14,165,233,0.15); color: #0ea5e9;">Flight Finder</span>
+      <h3>Flight Finder — Texas to Australia</h3>
+      <p>Moteur de recherche de vols avec scoring, alertes, et optimisation multi-criteres.</p>
+      <div class="card-tech">
+        <span>Python</span><span>Flight APIs</span><span>Scoring Engine</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="card" href="portfolio_hubspot.html">
+    <div class="card-color" style="background: linear-gradient(90deg, #ff5c35, #ff8c69);"></div>
+    <div class="card-body">
+      <span class="card-tag" style="background: rgba(255,92,53,0.15); color: #ff5c35;">CRM Cleanup</span>
+      <h3>HubSpot CRM Cleanup — $300</h3>
+      <p>Nettoyage contacts, deduplication, workflows automatises, dashboards custom.</p>
+      <div class="card-tech">
+        <span>HubSpot</span><span>CRM</span><span>Workflows</span><span>Dashboards</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="card" href="portfolio_babysitting.html">
+    <div class="card-color" style="background: linear-gradient(90deg, #22c55e, #16a34a);"></div>
+    <div class="card-body">
+      <span class="card-tag" style="background: rgba(34,197,94,0.15); color: #22c55e;">Spreadsheets</span>
+      <h3>Babysitting Business — Google Sheets</h3>
+      <p>Planning, facturation, rapports automatises. Templates Google Sheets professionnels.</p>
+      <div class="card-tech">
+        <span>Google Sheets</span><span>Formulas</span><span>Templates</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="card" href="portfolio_ecole_danse.html">
+    <div class="card-color" style="background: linear-gradient(90deg, #f43f5e, #e11d48);"></div>
+    <div class="card-body">
+      <span class="card-tag" style="background: rgba(244,63,94,0.15); color: #f43f5e;">Archive</span>
+      <h3>Ecole de Danse — Automatisation</h3>
+      <p>Systeme de reservation, gestion eleves, paiements et communication automatisee.</p>
+      <div class="card-tech">
+        <span>n8n</span><span>Automation</span><span>CRM</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="card" href="portfolio_kpi_dashboard.html">
+    <div class="card-color" style="background: linear-gradient(90deg, #f59e0b, #d97706);"></div>
+    <div class="card-body">
+      <span class="card-tag" style="background: rgba(245,158,11,0.15); color: #f59e0b;">Archive</span>
+      <h3>KPI Dashboard — Data Visualization</h3>
+      <p>Dashboard KPI interactif avec graphiques temps reel et alertes automatiques.</p>
+      <div class="card-tech">
+        <span>Dashboard</span><span>Charts</span><span>KPIs</span><span>Data</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="card" href="portfolio_ghl.html">
+    <div class="card-color" style="background: linear-gradient(90deg, #14b8a6, #0d9488);"></div>
+    <div class="card-body">
+      <span class="card-tag" style="background: rgba(20,184,166,0.15); color: #14b8a6;">Archive</span>
+      <h3>GoHighLevel — CRM Automation</h3>
+      <p>Configuration GHL complete : pipelines, automations, SMS/email sequences.</p>
+      <div class="card-tech">
+        <span>GoHighLevel</span><span>CRM</span><span>Automation</span><span>SMS</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="card" href="portfolio_aico.html">
+    <div class="card-color" style="background: linear-gradient(90deg, #667eea, #764ba2);"></div>
+    <div class="card-body">
+      <span class="card-tag" style="background: rgba(102,126,234,0.15); color: #667eea;">Archive</span>
+      <h3>AICO — Portfolio General</h3>
+      <p>Presentation generale : AI, automation, integrations. Vue d'ensemble des competences.</p>
+      <div class="card-tech">
+        <span>AI</span><span>Automation</span><span>Integration</span><span>Full Stack</span>
+      </div>
+    </div>
+  </a>
+
+</div>
+
+<div class="footer">
+  AICO — Augus | AI & Automation Freelancer | 2026
+</div>
+
+</body>
+</html>

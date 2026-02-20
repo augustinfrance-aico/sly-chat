@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AICO — Quiz Funnel Build</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .header {
+            padding: 60px 40px 40px;
+            max-width: 850px;
+            margin: 0 auto;
+        }
+        .tag {
+            display: inline-block;
+            background: #2a1a3a;
+            color: #c084fc;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 6px 14px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 34px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+        .header p {
+            font-size: 16px;
+            color: #888;
+            max-width: 580px;
+        }
+
+        .section {
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 0 40px 50px;
+        }
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #c084fc;
+            margin-bottom: 24px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        /* Deliverables */
+        .steps {
+            display: grid;
+            gap: 14px;
+        }
+        .step {
+            background: #111;
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+            padding: 20px 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        .step-num {
+            background: #2a1a3a;
+            color: #c084fc;
+            font-size: 14px;
+            font-weight: 700;
+            min-width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .step h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 3px;
+        }
+        .step p {
+            font-size: 13px;
+            color: #777;
+        }
+
+        /* Flow */
+        .flow-box {
+            background: #111;
+            border: 1px solid #1a1a1a;
+            border-radius: 10px;
+            padding: 30px;
+        }
+        .flow-box h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .flow-item {
+            background: #1a1a1a;
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 16px 20px;
+            text-align: center;
+            min-width: 120px;
+        }
+        .flow-item .icon { font-size: 24px; margin-bottom: 6px; }
+        .flow-item .name { font-size: 13px; font-weight: 600; color: #fff; }
+        .flow-item .desc { font-size: 11px; color: #666; margin-top: 2px; }
+        .flow-arrow { color: #c084fc; font-size: 20px; flex-shrink: 0; }
+
+        /* Specs */
+        .specs {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px;
+        }
+        .spec {
+            background: #111;
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+            padding: 22px;
+            text-align: center;
+        }
+        .spec .val {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .spec .label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        /* Tools */
+        .tools {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .tool {
+            background: #1a1a1a;
+            border: 1px solid #222;
+            color: #aaa;
+            font-size: 13px;
+            padding: 6px 16px;
+            border-radius: 6px;
+        }
+
+        .footer {
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 40px;
+            text-align: center;
+            border-top: 1px solid #1a1a1a;
+        }
+        .footer p { color: #666; font-size: 14px; }
+
+        @media (max-width: 600px) {
+            .header { padding: 40px 20px 30px; }
+            .section { padding: 0 20px 40px; }
+            .header h1 { font-size: 26px; }
+            .specs { grid-template-columns: 1fr; }
+            .flow-row { flex-direction: column; }
+            .flow-arrow { transform: rotate(90deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="tag">Quiz Funnel Setup</div>
+        <h1>14-Question Scored Quiz — Ready in 48h</h1>
+        <p>Your copy is written. I handle the build, scoring logic, result pages, and embed-ready delivery.</p>
+    </div>
+
+    <!-- Specs -->
+    <div class="section">
+        <div class="section-title">Project Specs</div>
+        <div class="specs">
+            <div class="spec">
+                <div class="val">14</div>
+                <div class="label">Questions</div>
+            </div>
+            <div class="spec">
+                <div class="val">5</div>
+                <div class="label">Result Categories</div>
+            </div>
+            <div class="spec">
+                <div class="val">48h</div>
+                <div class="label">Delivery</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deliverables -->
+    <div class="section">
+        <div class="section-title">What You Get</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <div>
+                    <h3>Quiz Built in Typeform</h3>
+                    <p>14 multiple choice questions, clean professional layout, mobile-friendly. Your copy goes in as-is.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div>
+                    <h3>Scoring Logic Configured</h3>
+                    <p>A maps to Category 1, B to Category 2, etc. Highest score determines the result. No manual calculation.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div>
+                    <h3>5 Custom Result Pages</h3>
+                    <p>One page per category. Clean, branded, with your content. Each user sees their personalized result.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">4</div>
+                <div>
+                    <h3>Embed-Ready Link</h3>
+                    <p>Direct link + embed code that works with Stan Store out of the box. Copy, paste, done.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">5</div>
+                <div>
+                    <h3>Tested & QA'd</h3>
+                    <p>Every answer path tested. All 5 results verified. Mobile + desktop checked before delivery.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flow -->
+    <div class="section">
+        <div class="section-title">User Flow</div>
+        <div class="flow-box">
+            <h3>Quiz Experience</h3>
+            <div class="flow-row">
+                <div class="flow-item">
+                    <div class="icon">&#128279;</div>
+                    <div class="name">Stan Store</div>
+                    <div class="desc">User clicks link</div>
+                </div>
+                <div class="flow-arrow">&#8594;</div>
+                <div class="flow-item">
+                    <div class="icon">&#9997;</div>
+                    <div class="name">14 Questions</div>
+                    <div class="desc">Multiple choice</div>
+                </div>
+                <div class="flow-arrow">&#8594;</div>
+                <div class="flow-item">
+                    <div class="icon">&#9881;</div>
+                    <div class="name">Scoring</div>
+                    <div class="desc">A-E tallied</div>
+                </div>
+                <div class="flow-arrow">&#8594;</div>
+                <div class="flow-item">
+                    <div class="icon">&#127942;</div>
+                    <div class="name">Result Page</div>
+                    <div class="desc">1 of 5 categories</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tools -->
+    <div class="section">
+        <div class="section-title">Tools Used</div>
+        <div class="tools">
+            <div class="tool">Typeform</div>
+            <div class="tool">Scoring Logic</div>
+            <div class="tool">Stan Store Embed</div>
+            <div class="tool">Mobile Responsive</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Built by <strong style="color:#fff;">Augus</strong> — AICO Automation</p>
+        <p style="margin-top:8px;">Your copy, my build. Ready in 48h.</p>
+    </div>
+
+</body>
+</html>

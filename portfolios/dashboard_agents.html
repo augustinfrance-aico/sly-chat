@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AICO — Mon Arsenal d'Agents IA</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --bg:#06080d;
+            --surface:#0d1117;
+            --surface2:#161b22;
+            --border:#21262d;
+            --border2:#30363d;
+            --text:#f0f6fc;
+            --text2:#8b949e;
+            --text3:#6e7681;
+            --cyan:#58a6ff;
+            --green:#3fb950;
+            --orange:#d29922;
+            --pink:#f778ba;
+            --purple:#bc8cff;
+            --red:#f85149;
+            --yellow:#e3b341;
+        }
+        body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+
+        /* BG */
+        .bg-grid{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;
+            background-image:linear-gradient(rgba(88,166,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(88,166,255,0.03) 1px,transparent 1px);
+            background-size:60px 60px}
+        .bg-glow{position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:600px;
+            background:radial-gradient(ellipse,rgba(88,166,255,0.06) 0%,transparent 70%);pointer-events:none;z-index:0}
+
+        .container{max-width:1100px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+
+        /* NAV */
+        nav{position:fixed;top:0;width:100%;z-index:100;padding:12px 0;
+            background:rgba(6,8,13,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+        nav .inner{max-width:1100px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center}
+        .logo{font-size:18px;font-weight:800;letter-spacing:-0.5px}
+        .logo .ai{color:var(--cyan)}
+        .logo .sub{color:var(--text3);font-weight:400;font-size:12px;margin-left:8px}
+        .nav-status{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--green)}
+        .nav-status .pulse{width:8px;height:8px;border-radius:50%;background:var(--green);
+            animation:pulse 2s infinite;box-shadow:0 0 8px rgba(63,185,80,0.5)}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+        /* HERO */
+        .hero{padding:140px 0 60px;text-align:center}
+        .hero-badge{display:inline-flex;align-items:center;gap:8px;
+            background:rgba(88,166,255,0.08);border:1px solid rgba(88,166,255,0.15);
+            padding:6px 16px;border-radius:100px;font-size:12px;font-weight:600;color:var(--cyan);margin-bottom:24px}
+        .hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+        .hero h1{font-size:clamp(32px,5.5vw,56px);font-weight:800;line-height:1.1;letter-spacing:-1.5px;margin-bottom:20px}
+        .hero h1 .gr{background:linear-gradient(135deg,var(--cyan),var(--purple),var(--pink));
+            -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .hero .sub{font-size:17px;color:var(--text2);max-width:660px;margin:0 auto 16px}
+        .hero .sub strong{color:var(--text)}
+        .hero .sub2{font-size:14px;color:var(--text3);max-width:550px;margin:0 auto 40px}
+
+        /* LIVE TERMINAL */
+        .terminal{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;max-width:720px;margin:0 auto 60px;text-align:left}
+        .terminal-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--border)}
+        .terminal-bar .dots{display:flex;gap:6px}
+        .terminal-bar .dots span{width:12px;height:12px;border-radius:50%}
+        .terminal-bar .dots .r{background:#f85149}
+        .terminal-bar .dots .y{background:#d29922}
+        .terminal-bar .dots .g{background:#3fb950}
+        .terminal-bar .title{margin-left:8px;font-size:12px;color:var(--text3);font-weight:500}
+        .terminal-body{padding:20px;font-family:'SF Mono','Fira Code','Cascadia Code',monospace;font-size:13px;line-height:2}
+        .terminal-body .line{opacity:0;animation:typeIn 0.3s forwards}
+        .prompt{color:var(--green)}
+        .cmd{color:var(--text)}
+        .comment{color:var(--text3)}
+        .output{color:var(--cyan)}
+        .success{color:var(--green)}
+        .warn{color:var(--orange)}
+        .pk{color:var(--pink)}
+        .line:nth-child(1){animation-delay:0.2s}
+        .line:nth-child(2){animation-delay:0.7s}
+        .line:nth-child(3){animation-delay:1.2s}
+        .line:nth-child(4){animation-delay:1.7s}
+        .line:nth-child(5){animation-delay:2.2s}
+        .line:nth-child(6){animation-delay:2.8s}
+        .line:nth-child(7){animation-delay:3.4s}
+        .line:nth-child(8){animation-delay:4.0s}
+        .line:nth-child(9){animation-delay:4.5s}
+        @keyframes typeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+        /* SCORE BAR */
+        .score-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--border);border-radius:14px;overflow:hidden;margin-bottom:80px}
+        .score-item{background:var(--surface);padding:28px 16px;text-align:center;position:relative;overflow:hidden}
+        .score-item::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:60px;height:2px;border-radius:0 0 4px 4px}
+        .score-item:nth-child(1)::before{background:var(--cyan)}
+        .score-item:nth-child(2)::before{background:var(--green)}
+        .score-item:nth-child(3)::before{background:var(--purple)}
+        .score-item:nth-child(4)::before{background:var(--pink)}
+        .score-num{font-size:32px;font-weight:800;letter-spacing:-1px;margin-bottom:2px}
+        .score-num.c{color:var(--cyan)}
+        .score-num.g{color:var(--green)}
+        .score-num.p{color:var(--purple)}
+        .score-num.pk{color:var(--pink)}
+        .score-label{font-size:12px;color:var(--text3);font-weight:500}
+        .score-xp{font-size:10px;color:var(--text3);margin-top:4px;opacity:0.7}
+
+        /* SECTION */
+        .section{padding:40px 0 80px}
+        .section-head{margin-bottom:48px}
+        .section-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin-bottom:12px}
+        .section-tag .bar{width:20px;height:2px;background:var(--cyan);border-radius:2px}
+        .section-head h2{font-size:clamp(24px,3.5vw,36px);font-weight:800;letter-spacing:-0.5px;margin-bottom:8px}
+        .section-head p{color:var(--text2);font-size:15px;max-width:600px}
+
+        /* WEAPON CARDS */
+        .weapons-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
+        .weapon-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;
+            transition:all 0.3s;position:relative;overflow:hidden}
+        .weapon-card:hover{border-color:var(--cyan);transform:translateY(-4px);
+            box-shadow:0 16px 48px rgba(0,0,0,0.3),0 0 0 1px rgba(88,166,255,0.1)}
+        .weapon-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+            background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0;transition:opacity 0.3s}
+        .weapon-card:hover::after{opacity:1}
+        .weapon-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+        .weapon-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
+        .weapon-icon.blue{background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.15)}
+        .weapon-icon.green{background:rgba(63,185,80,0.1);border:1px solid rgba(63,185,80,0.15)}
+        .weapon-icon.purple{background:rgba(188,140,255,0.1);border:1px solid rgba(188,140,255,0.15)}
+        .weapon-icon.pink{background:rgba(247,120,186,0.1);border:1px solid rgba(247,120,186,0.15)}
+        .weapon-icon.orange{background:rgba(210,153,34,0.1);border:1px solid rgba(210,153,34,0.15)}
+        .weapon-icon.red{background:rgba(248,81,73,0.1);border:1px solid rgba(248,81,73,0.15)}
+        .weapon-level{font-size:10px;font-weight:700;letter-spacing:0.5px;padding:3px 10px;border-radius:100px;text-transform:uppercase}
+        .weapon-level.legendary{background:linear-gradient(135deg,rgba(227,179,65,0.15),rgba(247,120,186,0.15));color:var(--yellow);border:1px solid rgba(227,179,65,0.25)}
+        .weapon-level.epic{background:rgba(188,140,255,0.12);color:var(--purple);border:1px solid rgba(188,140,255,0.2)}
+        .weapon-level.rare{background:rgba(88,166,255,0.12);color:var(--cyan);border:1px solid rgba(88,166,255,0.2)}
+        .weapon-card h3{font-size:18px;font-weight:700;margin-bottom:6px}
+        .weapon-card .weapon-sub{font-size:12px;color:var(--cyan);font-weight:600;margin-bottom:10px}
+        .weapon-card .weapon-desc{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.7}
+        .weapon-perks{list-style:none}
+        .weapon-perks li{padding:5px 0;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px}
+        .weapon-perks li .check{color:var(--green);font-weight:700;font-size:14px}
+        .weapon-perks li strong{color:var(--text)}
+        .xp-bar-container{margin-top:14px}
+        .xp-label{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:4px}
+        .xp-bar{height:4px;background:var(--surface2);border-radius:4px;overflow:hidden}
+        .xp-fill{height:100%;border-radius:4px;transition:width 1.5s ease-out}
+        .xp-fill.c{background:linear-gradient(90deg,var(--cyan),var(--purple))}
+        .xp-fill.g{background:linear-gradient(90deg,var(--green),var(--cyan))}
+        .xp-fill.p{background:linear-gradient(90deg,var(--purple),var(--pink))}
+        .xp-fill.o{background:linear-gradient(90deg,var(--orange),var(--yellow))}
+        .xp-fill.pk{background:linear-gradient(90deg,var(--pink),var(--purple))}
+        .xp-fill.r{background:linear-gradient(90deg,var(--red),var(--orange))}
+
+        /* MULTIPLIER */
+        .multiplier{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;margin-top:24px;text-align:center}
+        .multiplier h3{font-size:20px;font-weight:700;margin-bottom:24px}
+        .multi-grid{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:16px;align-items:center;max-width:700px;margin:0 auto}
+        .multi-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:24px 16px;text-align:center}
+        .multi-card .big{font-size:36px;font-weight:800;letter-spacing:-1px;margin-bottom:4px}
+        .multi-card .big.c{color:var(--cyan)}
+        .multi-card .big.g{color:var(--green)}
+        .multi-card .big.pk{color:var(--pink)}
+        .multi-card .mlabel{font-size:12px;color:var(--text3)}
+        .multi-op{font-size:28px;font-weight:800;color:var(--text3)}
+
+        /* PROOF SECTION */
+        .proof-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-top:24px}
+        .proof-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:all 0.3s}
+        .proof-card:hover{border-color:var(--green);transform:translateY(-3px)}
+        .proof-top{padding:20px 24px;border-bottom:1px solid var(--border)}
+        .proof-top .ptag{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+        .proof-top .ptag.live{color:var(--green)}
+        .proof-top .ptag.done{color:var(--cyan)}
+        .proof-top h4{font-size:16px;font-weight:700}
+        .proof-top .pclient{font-size:12px;color:var(--text3);margin-top:4px}
+        .proof-body{padding:16px 24px}
+        .proof-body .pflow{font-family:'SF Mono','Fira Code',monospace;font-size:11px;color:var(--cyan);line-height:1.9;margin-bottom:12px}
+        .proof-stats{display:flex;gap:16px;flex-wrap:wrap}
+        .proof-stat{font-size:12px;color:var(--text2)}
+        .proof-stat strong{color:var(--green);font-size:14px}
+
+        /* COMPARISON */
+        .compare{display:grid;grid-template-columns:1fr auto 1fr;gap:0;margin-top:24px;border-radius:16px;overflow:hidden;border:1px solid var(--border)}
+        .compare-side{padding:32px;background:var(--surface)}
+        .compare-side.old{opacity:0.7}
+        .compare-side h3{font-size:16px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+        .compare-side h3 .icon{font-size:20px}
+        .compare-vs{background:var(--surface2);display:flex;align-items:center;justify-content:center;padding:0 20px;
+            font-size:14px;font-weight:800;color:var(--text3);border-left:1px solid var(--border);border-right:1px solid var(--border)}
+        .compare-list{list-style:none}
+        .compare-list li{padding:10px 0;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+        .compare-list li:last-child{border:none}
+        .compare-list li .val{margin-left:auto;font-weight:700;font-size:12px;white-space:nowrap}
+        .compare-list li .val.bad{color:var(--red)}
+        .compare-list li .val.good{color:var(--green)}
+        .compare-list li .val.meh{color:var(--orange)}
+        .compare-list li strong{color:var(--text)}
+
+        /* LEADERBOARD */
+        .leaderboard{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-top:24px}
+        .lb-header{display:grid;grid-template-columns:40px 2fr 1.2fr 1fr 80px;padding:12px 20px;background:var(--surface2);
+            font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border)}
+        .lb-row{display:grid;grid-template-columns:40px 2fr 1.2fr 1fr 80px;padding:14px 20px;border-bottom:1px solid var(--border);
+            font-size:13px;transition:background 0.2s;align-items:center}
+        .lb-row:last-child{border:none}
+        .lb-row:hover{background:rgba(88,166,255,0.03)}
+        .lb-rank{font-weight:800;font-size:14px}
+        .lb-rank.gold{color:var(--yellow)}
+        .lb-rank.silver{color:var(--text2)}
+        .lb-rank.bronze{color:var(--orange)}
+        .lb-name{font-weight:600;display:flex;align-items:center;gap:8px}
+        .lb-name .av{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+        .lb-val{color:var(--text2)}
+        .lb-val.good{color:var(--green);font-weight:600}
+        .lb-badge{font-size:10px;font-weight:700;padding:4px 10px;border-radius:100px;text-align:center}
+        .lb-badge.legendary{background:linear-gradient(135deg,rgba(227,179,65,0.12),rgba(247,120,186,0.12));color:var(--yellow);border:1px solid rgba(227,179,65,0.2)}
+        .lb-badge.epic{background:rgba(188,140,255,0.12);color:var(--purple);border:1px solid rgba(188,140,255,0.2)}
+        .lb-badge.rare{background:rgba(88,166,255,0.12);color:var(--cyan);border:1px solid rgba(88,166,255,0.2)}
+
+        /* ACHIEVEMENTS */
+        .achievements{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:24px}
+        .achieve{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;
+            display:flex;align-items:center;gap:14px;transition:all 0.3s}
+        .achieve:hover{border-color:var(--cyan);transform:translateY(-2px)}
+        .achieve .trophy{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+            font-size:22px;flex-shrink:0;background:var(--surface2);border:1px solid var(--border)}
+        .achieve .trophy.gold{background:rgba(227,179,65,0.1);border-color:rgba(227,179,65,0.2)}
+        .achieve .trophy.blue{background:rgba(88,166,255,0.1);border-color:rgba(88,166,255,0.2)}
+        .achieve .trophy.green{background:rgba(63,185,80,0.1);border-color:rgba(63,185,80,0.2)}
+        .achieve .trophy.pink{background:rgba(247,120,186,0.1);border-color:rgba(247,120,186,0.2)}
+        .achieve h4{font-size:14px;font-weight:700;margin-bottom:2px}
+        .achieve p{font-size:11px;color:var(--text3)}
+        .achieve .xp-reward{font-size:10px;font-weight:700;color:var(--cyan);margin-top:4px}
+
+        /* CTA */
+        .cta-section{text-align:center;padding:80px 24px;position:relative}
+        .cta-section::before{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+            width:600px;height:300px;background:radial-gradient(ellipse,rgba(88,166,255,0.06),transparent);pointer-events:none}
+        .cta-section h2{font-size:clamp(24px,4vw,38px);font-weight:800;letter-spacing:-0.5px;margin-bottom:12px}
+        .cta-section h2 .gr{background:linear-gradient(135deg,var(--cyan),var(--purple));
+            -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .cta-section p{color:var(--text2);font-size:15px;margin-bottom:32px;max-width:520px;margin-left:auto;margin-right:auto}
+        .cta-btn{display:inline-flex;align-items:center;gap:8px;
+            background:linear-gradient(135deg,var(--cyan),var(--purple));color:#fff;
+            padding:14px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;
+            transition:all 0.3s;border:none;cursor:pointer}
+        .cta-btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(88,166,255,0.25)}
+        .cta-badges{margin-top:24px;display:flex;justify-content:center;gap:24px;flex-wrap:wrap}
+        .cta-badges span{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px}
+        .cta-badges span::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--green)}
+
+        footer{text-align:center;padding:32px 24px;border-top:1px solid var(--border);font-size:12px;color:var(--text3)}
+
+        @media(max-width:768px){
+            .score-bar{grid-template-columns:repeat(2,1fr)}
+            .weapons-grid{grid-template-columns:1fr}
+            .compare{grid-template-columns:1fr}
+            .compare-vs{padding:12px;border-left:none;border-right:none;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+            .lb-header,.lb-row{grid-template-columns:30px 1.5fr 1fr 80px}
+            .lb-header>:nth-child(4),.lb-row>:nth-child(4){display:none}
+            .multi-grid{grid-template-columns:1fr;gap:10px}
+            .multi-op{font-size:20px}
+            .proof-grid{grid-template-columns:1fr}
+        }
+
+        .fade-up{opacity:0;transform:translateY(24px);transition:all 0.6s cubic-bezier(0.16,1,0.3,1)}
+        .fade-up.visible{opacity:1;transform:translateY(0)}
+    </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<!-- NAV -->
+<nav>
+    <div class="inner">
+        <div class="logo"><span class="ai">AICO</span> <span class="sub">Automation & AI Workflows</span></div>
+        <div class="nav-status"><span class="pulse"></span> Systeme operationnel</div>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-badge"><span class="dot"></span> Freelance Augmente par l'IA</div>
+        <h1>Un freelance classique travaille seul.<br>Moi, j'ai <span class="gr">un arsenal d'agents.</span></h1>
+        <p class="sub">Je ne suis pas juste un developpeur. J'utilise des <strong>agents IA autonomes</strong>, de l'<strong>orchestration multi-outils</strong>, et des <strong>pipelines automatises</strong> pour livrer plus vite, mieux, et a moindre cout.</p>
+        <p class="sub2">Voici les outils que j'utilise au quotidien — et ce que ca change concretement pour vous.</p>
+
+        <!-- TERMINAL -->
+        <div class="terminal">
+            <div class="terminal-bar">
+                <div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+                <span class="title">aico ~ session de travail type</span>
+            </div>
+            <div class="terminal-body">
+                <div class="line"><span class="prompt">$</span> <span class="cmd">claude "Analyse cette annonce et propose un workflow n8n adapte"</span></div>
+                <div class="line"><span class="comment"># Claude Code lance ses agents...</span></div>
+                <div class="line"><span class="output">[Agent Research]</span> Analyse du brief client terminee — 8 exigences identifiees</div>
+                <div class="line"><span class="output">[Agent Architect]</span> Schema workflow propose — 12 noeuds, 3 APIs</div>
+                <div class="line"><span class="output">[Agent Code]</span> Scripts Python generes — 3 fichiers, 247 lignes</div>
+                <div class="line"><span class="output">[Agent Deploy]</span> Workflow n8n deploye sur Railway — <span class="warn">URL en production</span></div>
+                <div class="line"><span class="output">[Agent Test]</span> Tests end-to-end passes — <span class="success">12/12 OK</span></div>
+                <div class="line"><span class="comment"># Temps total: 18 minutes. Un humain seul: 2-3 jours.</span></div>
+                <div class="line"><span class="success">Workflow livre, teste, en production.</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SCORE BAR -->
+<section style="padding:0 0 80px">
+    <div class="container">
+        <div class="score-bar fade-up">
+            <div class="score-item">
+                <div class="score-num c">10x</div>
+                <div class="score-label">Plus rapide</div>
+                <div class="score-xp">IA + Agents + Automation</div>
+            </div>
+            <div class="score-item">
+                <div class="score-num g">48h</div>
+                <div class="score-label">Premier livrable</div>
+                <div class="score-xp">Prototype fonctionnel</div>
+            </div>
+            <div class="score-item">
+                <div class="score-num p">10+</div>
+                <div class="score-label">Projets en production</div>
+                <div class="score-xp">Workflows actifs 24/7</div>
+            </div>
+            <div class="score-item">
+                <div class="score-num pk">0</div>
+                <div class="score-label">Tache manuelle restante</div>
+                <div class="score-xp">Tout est automatise</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ARSENAL -->
+<section class="section">
+    <div class="container">
+        <div class="section-head fade-up">
+            <div class="section-tag"><span class="bar"></span> MON ARSENAL</div>
+            <h2>Les armes que j'utilise pour vos projets</h2>
+            <p>Chaque outil a son role. Ensemble, ils forment un systeme qui decuple ma capacite de livraison.</p>
+        </div>
+
+        <div class="weapons-grid">
+
+            <!-- Claude Code -->
+            <div class="weapon-card fade-up">
+                <div class="weapon-header">
+                    <div class="weapon-icon purple">&#129302;</div>
+                    <span class="weapon-level legendary">LEGENDAIRE</span>
+                </div>
+                <h3>Claude Code</h3>
+                <div class="weapon-sub">Agent IA Autonome — Terminal</div>
+                <p class="weapon-desc">Un agent IA qui code, debug, refactorise et deploie directement depuis mon terminal. Il lit votre codebase, comprend le contexte, et produit du code propre en quelques secondes.</p>
+                <ul class="weapon-perks">
+                    <li><span class="check">&#10003;</span> <strong>Genere du code</strong> a partir d'un brief en langage naturel</li>
+                    <li><span class="check">&#10003;</span> <strong>Debug automatique</strong> — lit les erreurs, corrige, relance</li>
+                    <li><span class="check">&#10003;</span> <strong>Multi-fichier</strong> — edite 20 fichiers en une commande</li>
+                    <li><span class="check">&#10003;</span> <strong>Sous-agents</strong> — lance des agents specialises en parallele</li>
+                </ul>
+                <div class="xp-bar-container">
+                    <div class="xp-label"><span>Puissance</span><span>99%</span></div>
+                    <div class="xp-bar"><div class="xp-fill p" style="width:99%"></div></div>
+                </div>
+            </div>
+
+            <!-- Claude AI -->
+            <div class="weapon-card fade-up">
+                <div class="weapon-header">
+                    <div class="weapon-icon pink">&#9889;</div>
+                    <span class="weapon-level legendary">LEGENDAIRE</span>
+                </div>
+                <h3>Claude AI (Opus)</h3>
+                <div class="weapon-sub">Cerveau Strategique — Raisonnement</div>
+                <p class="weapon-desc">Le modele le plus puissant d'Anthropic. Je l'utilise pour l'analyse strategique, la redaction, la traduction, le raisonnement complexe. Il comprend le contexte business.</p>
+                <ul class="weapon-perks">
+                    <li><span class="check">&#10003;</span> <strong>Raisonnement expert</strong> — analyse des briefs complexes</li>
+                    <li><span class="check">&#10003;</span> <strong>Redaction</strong> — emails, propositions, documentation</li>
+                    <li><span class="check">&#10003;</span> <strong>Traduction</strong> — RO/RU/EN/FR avec contexte metier</li>
+                    <li><span class="check">&#10003;</span> <strong>Strategie</strong> — recommandations business, plans d'action</li>
+                </ul>
+                <div class="xp-bar-container">
+                    <div class="xp-label"><span>Intelligence</span><span>98%</span></div>
+                    <div class="xp-bar"><div class="xp-fill pk" style="width:98%"></div></div>
+                </div>
+            </div>
+
+            <!-- n8n -->
+            <div class="weapon-card fade-up">
+                <div class="weapon-header">
+                    <div class="weapon-icon orange">&#128279;</div>
+                    <span class="weapon-level legendary">LEGENDAIRE</span>
+                </div>
+                <h3>n8n</h3>
+                <div class="weapon-sub">Orchestration Workflows — Automation</div>
+                <p class="weapon-desc">La colonne vertebrale de mes automatisations. Workflows visuels qui connectent des centaines d'APIs. Deploye sur Railway, tourne 24/7, zero maintenance cote client.</p>
+                <ul class="weapon-perks">
+                    <li><span class="check">&#10003;</span> <strong>500+ integrations</strong> — Google, Telegram, HubSpot, Slack...</li>
+                    <li><span class="check">&#10003;</span> <strong>Self-hosted</strong> — vos donnees restent chez vous</li>
+                    <li><span class="check">&#10003;</span> <strong>Triggers temps reel</strong> — webhooks, crons, events</li>
+                    <li><span class="check">&#10003;</span> <strong>Zero downtime</strong> — deploiement Railway stable</li>
+                </ul>
+                <div class="xp-bar-container">
+                    <div class="xp-label"><span>Maitrise</span><span>96%</span></div>
+                    <div class="xp-bar"><div class="xp-fill o" style="width:96%"></div></div>
+                </div>
+            </div>
+
+            <!-- Python -->
+            <div class="weapon-card fade-up">
+                <div class="weapon-header">
+                    <div class="weapon-icon green">&#128011;</div>
+                    <span class="weapon-level epic">EPIQUE</span>
+                </div>
+                <h3>Python</h3>
+                <div class="weapon-sub">Scripts d'Execution — Back-end</div>
+                <p class="weapon-desc">Pour tout ce que les no-code ne font pas : scraping avance, traitement de donnees, logique metier complexe, APIs custom. Scripts deterministes, rapides, testables.</p>
+                <ul class="weapon-perks">
+                    <li><span class="check">&#10003;</span> <strong>Scraping</strong> — extraction de donnees web a grande echelle</li>
+                    <li><span class="check">&#10003;</span> <strong>Data processing</strong> — nettoyage, transformation, enrichissement</li>
+                    <li><span class="check">&#10003;</span> <strong>APIs custom</strong> — endpoints sur mesure quand il en faut</li>
+                    <li><span class="check">&#10003;</span> <strong>Deploiement cloud</strong> — Modal, Railway, serverless</li>
+                </ul>
+                <div class="xp-bar-container">
+                    <div class="xp-label"><span>Maitrise</span><span>90%</span></div>
+                    <div class="xp-bar"><div class="xp-fill g" style="width:90%"></div></div>
+                </div>
+            </div>
+
+            <!-- Google Sheets -->
+            <div class="weapon-card fade-up">
+                <div class="weapon-header">
+                    <div class="weapon-icon blue">&#128202;</div>
+                    <span class="weapon-level epic">EPIQUE</span>
+                </div>
+                <h3>Google Sheets + Apps Script</h3>
+                <div class="weapon-sub">Dashboards & Databases — Data Layer</div>
+                <p class="weapon-desc">Pas besoin d'une BDD quand Google Sheets fait le job. Dashboards KPI, CRMs, bases de donnees avec Apps Script pour l'automatisation native.</p>
+                <ul class="weapon-perks">
+                    <li><span class="check">&#10003;</span> <strong>Dashboards KPI</strong> — formules avancees, mise en forme auto</li>
+                    <li><span class="check">&#10003;</span> <strong>Apps Script</strong> — triggers, macros, auto-routing</li>
+                    <li><span class="check">&#10003;</span> <strong>CRM maison</strong> — suivi clients, leads, pipeline</li>
+                    <li><span class="check">&#10003;</span> <strong>Connecte a tout</strong> — n8n, Zapier, APIs</li>
+                </ul>
+                <div class="xp-bar-container">
+                    <div class="xp-label"><span>Maitrise</span><span>92%</span></div>
+                    <div class="xp-bar"><div class="xp-fill c" style="width:92%"></div></div>
+                </div>
+            </div>
+
+            <!-- Infra -->
+            <div class="weapon-card fade-up">
+                <div class="weapon-header">
+                    <div class="weapon-icon red">&#9729;</div>
+                    <span class="weapon-level rare">RARE</span>
+                </div>
+                <h3>Railway + Modal + APIs</h3>
+                <div class="weapon-sub">Infrastructure Cloud — Deploiement</div>
+                <p class="weapon-desc">Deploiement en 1 commande. Railway pour les services persistants (n8n), Modal pour les webhooks serverless, APIs REST pour connecter les briques entre elles.</p>
+                <ul class="weapon-perks">
+                    <li><span class="check">&#10003;</span> <strong>Railway</strong> — hosting n8n, apps, services 24/7</li>
+                    <li><span class="check">&#10003;</span> <strong>Modal</strong> — cloud functions, webhooks serverless</li>
+                    <li><span class="check">&#10003;</span> <strong>APIs</strong> — Telegram, OpenAI, Google, HubSpot...</li>
+                    <li><span class="check">&#10003;</span> <strong>CI/CD</strong> — deploiement automatise, zero friction</li>
+                </ul>
+                <div class="xp-bar-container">
+                    <div class="xp-label"><span>Maitrise</span><span>85%</span></div>
+                    <div class="xp-bar"><div class="xp-fill r" style="width:85%"></div></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- MULTIPLIER -->
+<section class="section" style="padding-top:0">
+    <div class="container">
+        <div class="section-head fade-up">
+            <div class="section-tag"><span class="bar"></span> LE MULTIPLICATEUR</div>
+            <h2>C'est pas juste des outils. C'est un systeme.</h2>
+            <p>La vraie puissance n'est pas dans chaque outil individuellement — c'est quand ils travaillent ensemble.</p>
+        </div>
+
+        <div class="multiplier fade-up">
+            <h3>Capacite de livraison</h3>
+            <div class="multi-grid">
+                <div class="multi-card">
+                    <div class="big c">1</div>
+                    <div class="mlabel">Freelance</div>
+                </div>
+                <div class="multi-op">x</div>
+                <div class="multi-card">
+                    <div class="big p">6</div>
+                    <div class="mlabel">Outils IA / Agents</div>
+                </div>
+                <div class="multi-op">=</div>
+                <div class="multi-card" style="border-color:var(--green)">
+                    <div class="big g">10x</div>
+                    <div class="mlabel">Capacite de livraison</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PROOF: PROJETS REELS -->
+<section class="section" style="padding-top:0">
+    <div class="container">
+        <div class="section-head fade-up">
+            <div class="section-tag"><span class="bar"></span> EN PRODUCTION</div>
+            <h2>Des projets reels, pas des demos</h2>
+            <p>Tout ce qui est ici tourne en production. Chez de vrais clients. En ce moment.</p>
+        </div>
+
+        <div class="proof-grid fade-up">
+            <div class="proof-card">
+                <div class="proof-top">
+                    <div class="ptag live">EN PRODUCTION 24/7</div>
+                    <h4>Pipeline News Automatise</h4>
+                    <div class="pclient">Client B2B — Portail media Moldavie</div>
+                </div>
+                <div class="proof-body">
+                    <div class="pflow">
+Schedule Trigger > Scrape Sources > AI Summary<br>
+> Translate RO/RU > Format > Telegram Push<br>
+> 7 news/jour, 7j/7, 0 intervention
+                    </div>
+                    <div class="proof-stats">
+                        <div class="proof-stat"><strong>7</strong> news/jour</div>
+                        <div class="proof-stat"><strong>3</strong> langues</div>
+                        <div class="proof-stat"><strong>0</strong> manuel</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="proof-card">
+                <div class="proof-top">
+                    <div class="ptag done">LIVRE + OPERATIONNEL</div>
+                    <h4>Lead Generation B2B</h4>
+                    <div class="pclient">Pipeline complet — Prospection juridique</div>
+                </div>
+                <div class="proof-body">
+                    <div class="pflow">
+Google Maps Scraping > Data Enrichment<br>
+> LinkedIn Lookup > Lead Scoring (0-100)<br>
+> AI Email Perso > CRM Google Sheets
+                    </div>
+                    <div class="proof-stats">
+                        <div class="proof-stat"><strong>100+</strong> leads/sem</div>
+                        <div class="proof-stat"><strong>A/B/C</strong> scoring</div>
+                        <div class="proof-stat"><strong>AI</strong> emails</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="proof-card">
+                <div class="proof-top">
+                    <div class="ptag done">LIVRE + OPERATIONNEL</div>
+                    <h4>Email Marketing Automation</h4>
+                    <div class="pclient">Ecole de danse — 7 sequences, AI-written</div>
+                </div>
+                <div class="proof-body">
+                    <div class="pflow">
+WooCommerce Events > Mailchimp Sequences<br>
+> Welcome + Trial + Upsell + Reactivation<br>
+> Newsletter bi-weekly + Monthly Report
+                    </div>
+                    <div class="proof-stats">
+                        <div class="proof-stat"><strong>7</strong> sequences</div>
+                        <div class="proof-stat"><strong>5x</strong> plus rapide</div>
+                        <div class="proof-stat"><strong>AI</strong> redaction</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="proof-card">
+                <div class="proof-top">
+                    <div class="ptag live">EN PRODUCTION 24/7</div>
+                    <h4>AI News Pipeline Multi-Format</h4>
+                    <div class="pclient">Content factory — Texte + Audio + Video</div>
+                </div>
+                <div class="proof-body">
+                    <div class="pflow">
+Daily Trigger > Scrape News > Claude Summary<br>
+> Markdown + Audio TTS + Video MP4<br>
+> 4 formats de sortie, 100% automatise
+                    </div>
+                    <div class="proof-stats">
+                        <div class="proof-stat"><strong>4</strong> formats</div>
+                        <div class="proof-stat"><strong>100%</strong> auto</div>
+                        <div class="proof-stat"><strong>Daily</strong> output</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- COMPARISON -->
+<section class="section" style="padding-top:0">
+    <div class="container">
+        <div class="section-head fade-up">
+            <div class="section-tag"><span class="bar"></span> POURQUOI MOI</div>
+            <h2>Freelance classique vs. Agent-Powered</h2>
+        </div>
+
+        <div class="compare fade-up">
+            <div class="compare-side old">
+                <h3><span class="icon">&#128104;</span> Freelance classique</h3>
+                <ul class="compare-list">
+                    <li><strong>Prototype</strong> <span class="val bad">1-2 semaines</span></li>
+                    <li><strong>Redaction emails/contenu</strong> <span class="val bad">45 min/piece</span></li>
+                    <li><strong>Debug complexe</strong> <span class="val bad">Heures</span></li>
+                    <li><strong>Multi-langue</strong> <span class="val meh">Sous-traite</span></li>
+                    <li><strong>Documentation</strong> <span class="val bad">Souvent oubliee</span></li>
+                    <li><strong>Scalabilite</strong> <span class="val bad">Lineaire</span></li>
+                    <li><strong>Disponibilite</strong> <span class="val meh">Heures bureau</span></li>
+                </ul>
+            </div>
+            <div class="compare-vs">VS</div>
+            <div class="compare-side">
+                <h3><span class="icon">&#129302;</span> Moi + Mes Agents</h3>
+                <ul class="compare-list">
+                    <li><strong>Prototype</strong> <span class="val good">48h</span></li>
+                    <li><strong>Redaction emails/contenu</strong> <span class="val good">5 min/piece</span></li>
+                    <li><strong>Debug complexe</strong> <span class="val good">Minutes</span></li>
+                    <li><strong>Multi-langue</strong> <span class="val good">Natif (AI)</span></li>
+                    <li><strong>Documentation</strong> <span class="val good">Auto-generee</span></li>
+                    <li><strong>Scalabilite</strong> <span class="val good">Exponentielle</span></li>
+                    <li><strong>Disponibilite</strong> <span class="val good">Workflows 24/7</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- LEADERBOARD OUTILS -->
+<section class="section" style="padding-top:0">
+    <div class="container">
+        <div class="section-head fade-up">
+            <div class="section-tag"><span class="bar"></span> CLASSEMENT</div>
+            <h2>Leaderboard de l'arsenal</h2>
+            <p>Frequence d'utilisation et impact reel sur mes projets.</p>
+        </div>
+
+        <div class="leaderboard fade-up">
+            <div class="lb-header">
+                <div>#</div>
+                <div>Outil</div>
+                <div>Utilisation</div>
+                <div>Impact Projet</div>
+                <div>Tier</div>
+            </div>
+            <div class="lb-row">
+                <div class="lb-rank gold">1</div>
+                <div class="lb-name"><div class="av" style="background:rgba(188,140,255,0.1)">&#129302;</div> Claude Code</div>
+                <div class="lb-val good">Quotidien</div>
+                <div class="lb-val good">Critique</div>
+                <div><span class="lb-badge legendary">LEGENDARY</span></div>
+            </div>
+            <div class="lb-row">
+                <div class="lb-rank gold">2</div>
+                <div class="lb-name"><div class="av" style="background:rgba(247,120,186,0.1)">&#9889;</div> Claude AI (Opus)</div>
+                <div class="lb-val good">Quotidien</div>
+                <div class="lb-val good">Critique</div>
+                <div><span class="lb-badge legendary">LEGENDARY</span></div>
+            </div>
+            <div class="lb-row">
+                <div class="lb-rank gold">3</div>
+                <div class="lb-name"><div class="av" style="background:rgba(210,153,34,0.1)">&#128279;</div> n8n</div>
+                <div class="lb-val good">Quotidien</div>
+                <div class="lb-val good">Critique</div>
+                <div><span class="lb-badge legendary">LEGENDARY</span></div>
+            </div>
+            <div class="lb-row">
+                <div class="lb-rank silver">4</div>
+                <div class="lb-name"><div class="av" style="background:rgba(63,185,80,0.1)">&#128011;</div> Python</div>
+                <div class="lb-val">Frequent</div>
+                <div class="lb-val good">Haut</div>
+                <div><span class="lb-badge epic">EPIC</span></div>
+            </div>
+            <div class="lb-row">
+                <div class="lb-rank silver">5</div>
+                <div class="lb-name"><div class="av" style="background:rgba(88,166,255,0.1)">&#128202;</div> Google Sheets</div>
+                <div class="lb-val">Frequent</div>
+                <div class="lb-val good">Haut</div>
+                <div><span class="lb-badge epic">EPIC</span></div>
+            </div>
+            <div class="lb-row">
+                <div class="lb-rank bronze">6</div>
+                <div class="lb-name"><div class="av" style="background:rgba(248,81,73,0.1)">&#9729;</div> Railway + Modal</div>
+                <div class="lb-val">Par projet</div>
+                <div class="lb-val">Moyen</div>
+                <div><span class="lb-badge rare">RARE</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ACHIEVEMENTS -->
+<section class="section" style="padding-top:0">
+    <div class="container">
+        <div class="section-head fade-up">
+            <div class="section-tag"><span class="bar"></span> ACHIEVEMENTS</div>
+            <h2>Trophees debloques</h2>
+        </div>
+
+        <div class="achievements fade-up">
+            <div class="achieve">
+                <div class="trophy gold">&#127942;</div>
+                <div>
+                    <h4>Full Pipeline 24/7</h4>
+                    <p>Workflow en production sans interruption depuis 30+ jours</p>
+                    <div class="xp-reward">+1000 XP</div>
+                </div>
+            </div>
+            <div class="achieve">
+                <div class="trophy blue">&#9889;</div>
+                <div>
+                    <h4>Agent-Powered Dev</h4>
+                    <p>Projet entier code avec Claude Code + sous-agents</p>
+                    <div class="xp-reward">+750 XP</div>
+                </div>
+            </div>
+            <div class="achieve">
+                <div class="trophy green">&#127919;</div>
+                <div>
+                    <h4>Zero Manuel</h4>
+                    <p>Client ou plus aucune tache manuelle n'existe</p>
+                    <div class="xp-reward">+500 XP</div>
+                </div>
+            </div>
+            <div class="achieve">
+                <div class="trophy pink">&#127760;</div>
+                <div>
+                    <h4>Polyglotte IA</h4>
+                    <p>Contenu genere en 3+ langues simultanement</p>
+                    <div class="xp-reward">+400 XP</div>
+                </div>
+            </div>
+            <div class="achieve">
+                <div class="trophy gold">&#128293;</div>
+                <div>
+                    <h4>48h Delivery</h4>
+                    <p>Prototype fonctionnel livre en moins de 48 heures</p>
+                    <div class="xp-reward">+600 XP</div>
+                </div>
+            </div>
+            <div class="achieve">
+                <div class="trophy blue">&#128187;</div>
+                <div>
+                    <h4>Stack Master</h4>
+                    <p>Projet utilisant 5+ outils de l'arsenal en synergie</p>
+                    <div class="xp-reward">+800 XP</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+    <div class="container">
+        <h2>Pret a travailler avec <span class="gr">un freelance augmente</span> ?</h2>
+        <p>Memes tarifs qu'un freelance classique. Mais avec la puissance d'un systeme multi-agent derriere chaque livrable.</p>
+        <a href="#" class="cta-btn">Discutons de votre projet</a>
+        <div class="cta-badges">
+            <span>Disponible immediatement</span>
+            <span>Premier resultat en 48h</span>
+            <span>Workflows en production</span>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <p>Augustin — AICO | Automation & AI Workflows | 2026</p>
+</footer>
+
+<script>
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+const xpObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.querySelectorAll('.xp-fill').forEach(fill => {
+                const w = fill.style.width;
+                fill.style.width = '0%';
+                setTimeout(() => { fill.style.width = w; }, 200);
+            });
+        }
+    });
+}, { threshold: 0.3 });
+document.querySelectorAll('.weapon-card').forEach(el => xpObserver.observe(el));
+</script>
+
+</body>
+</html>

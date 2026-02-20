@@ -256,6 +256,16 @@ class TitanTelegram:
                 if file_id:
                     # Save for /fx command
                     self.voice.save_last_voice(chat_id, file_id)
+
+                    # FX MODE: if active, apply effect and send back (skip transcription)
+                    if self.voice.get_fx_mode(chat_id):
+                        self.send_typing(chat_id)
+                        log.info(f"[{user}] FX mode active ({self.voice.get_fx_mode(chat_id)}), applying...")
+                        handled = await self.voice.auto_fx_voice(chat_id, file_id)
+                        if handled:
+                            return
+                        # If FX failed, fall through to normal transcription
+
                     self.send_typing(chat_id)
                     log.info(f"[{user}] Voice message received, transcribing...")
                     text = self.voice.voice_to_text(file_id)
@@ -595,12 +605,23 @@ class TitanTelegram:
                 return result
             return None
 
-        # /fx <effet> — Apply voice FX to last received voice message
+        # /fx <effet> — Activate persistent FX mode OR apply to last voice
         if text.startswith("/fx"):
             args = text[3:].strip()
             if not args or args == "list":
                 return self.voice.list_fx()
-            result = await self.voice.apply_fx_and_send(chat_id, args.lower())
+            fx_arg = args.lower()
+            # /fx stop — desactive le mode
+            if fx_arg in ("stop", "off", "none", "reset"):
+                return self.voice.set_fx_mode(chat_id, "stop")
+            # Activate persistent FX mode
+            mode_result = self.voice.set_fx_mode(chat_id, fx_arg)
+            if mode_result:
+                # Also apply to last voice if available
+                await self.voice.apply_fx_and_send(chat_id, fx_arg)
+                return mode_result
+            # Unknown FX
+            result = await self.voice.apply_fx_and_send(chat_id, fx_arg)
             return result
 
         # ===============

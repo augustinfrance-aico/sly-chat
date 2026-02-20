@@ -1,0 +1,54 @@
+{
+  "identity": {
+    "name": "Augustin",
+    "alias": "boss",
+    "company": "AICO"
+  },
+  "preferences": {
+    "sport": "début d'après-midi, fin ou soir",
+    "horaires_travail": "10h-12h et après-midi",
+    "communication": "préfère recevoir un message à la fois"
+  },
+  "goals": [
+    "rendez-vous pôle emploi",
+    "trouver une formation",
+    "faire du sport quotidiennement",
+    "hygiène dentaire régulière",
+    "trouver des clients pour Lurie",
+    "a un programme à suivre ou établir"
+  ],
+  "interests": [
+    "sport",
+    "IA",
+    "notariat"
+  ],
+  "dislikes": [
+    "recevoir 3 messages d'affilée"
+  ],
+  "relationships": {
+    "Lurie": "cherche des clients pour cette personne/projet",
+    "notomai": "agence IA pour notaires (fondateur/gérant)"
+  },
+  "habits": [],
+  "personality_notes": [
+    "communique de manière fragmentée",
+    "style d'écriture informel",
+    "direct",
+    "pose des limites claires",
+    "entrepreneur",
+    "travaille sur Upwork"
+  ],
+  "life_events": [
+    "recherche d'emploi ou formation en cours",
+    "Voyage à Paris prévu vendredi à mardi"
+  ],
+  "skills": [
+    "Upwork",
+    "Loom",
+    "IA",
+    "freelance",
+    "développement"
+  ],
+  "learning_log": [],
+  "last_updated": "2026-02-17 23:06"
+}

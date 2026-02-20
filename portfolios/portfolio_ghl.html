@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoHighLevel Automation Expert | AICO</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--bg:#0a0b12;--surface:#12141e;--card:#171924;--border:#1f2235;--text:#e8eaf2;--text2:#7880a0;--accent:#4f6ef7;--accent2:#6b8aff;--green:#10b981;--green2:#34d399;--orange:#f59e0b;--red:#ef4444;--purple:#a855f7;--cyan:#06b6d4}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+
+        /* NAV */
+        nav{position:fixed;top:0;width:100%;background:rgba(10,11,18,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);z-index:100;padding:14px 0}
+        nav .inner{max-width:1000px;margin:0 auto;padding:0 28px;display:flex;justify-content:space-between;align-items:center}
+        nav .logo{font-size:18px;font-weight:700;color:var(--accent2)}
+        nav .logo span{color:var(--text2);font-weight:400;font-size:13px;margin-left:8px}
+        nav .tag{background:rgba(16,185,129,0.12);color:var(--green2);padding:4px 14px;border-radius:100px;font-size:11px;font-weight:600;border:1px solid rgba(16,185,129,0.2)}
+
+        /* HERO */
+        .hero{max-width:1000px;margin:0 auto;padding:130px 28px 50px;text-align:center}
+        .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(79,110,247,0.1);border:1px solid rgba(79,110,247,0.2);color:var(--accent2);padding:6px 18px;border-radius:100px;font-size:12px;font-weight:600;margin-bottom:22px}
+        .hero h1{font-size:clamp(26px,5vw,44px);font-weight:800;line-height:1.12;margin-bottom:14px;letter-spacing:-1px}
+        .hero h1 .gr{background:linear-gradient(135deg,var(--accent2),var(--green2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .hero p{font-size:16px;color:var(--text2);max-width:580px;margin:0 auto 30px}
+
+        /* STATS BAR */
+        .stats{display:flex;justify-content:center;gap:40px;flex-wrap:wrap;margin-bottom:20px}
+        .stat{text-align:center}
+        .stat .n{font-size:28px;font-weight:800;color:var(--accent2)}
+        .stat .l{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+
+        /* SECTIONS */
+        section{max-width:1000px;margin:0 auto;padding:40px 28px}
+        .section-title{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent2);font-weight:700;margin-bottom:8px}
+        .section-heading{font-size:clamp(20px,3vw,28px);font-weight:700;margin-bottom:24px;letter-spacing:-0.5px}
+
+        /* SERVICES GRID */
+        .services{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px}
+        .service{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:26px;transition:border-color .3s,transform .3s}
+        .service:hover{border-color:var(--accent);transform:translateY(-2px)}
+        .service .icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
+        .service h3{font-size:16px;font-weight:700;margin-bottom:8px}
+        .service p{font-size:13px;color:var(--text2);line-height:1.5}
+        .service .tag-sm{display:inline-block;margin-top:10px;padding:3px 10px;border-radius:100px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+        .blue-bg{background:rgba(79,110,247,0.1)}
+        .green-bg{background:rgba(16,185,129,0.1)}
+        .orange-bg{background:rgba(245,158,11,0.1)}
+        .purple-bg{background:rgba(168,85,247,0.1)}
+        .cyan-bg{background:rgba(6,182,212,0.1)}
+        .red-bg{background:rgba(239,68,68,0.1)}
+        .tag-blue{background:rgba(79,110,247,0.12);color:var(--accent2)}
+        .tag-green{background:rgba(16,185,129,0.12);color:var(--green2)}
+        .tag-orange{background:rgba(245,158,11,0.12);color:var(--orange)}
+        .tag-purple{background:rgba(168,85,247,0.12);color:var(--purple)}
+
+        /* WORKFLOW DEMOS */
+        .demos{display:flex;flex-direction:column;gap:16px}
+        .demo{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:26px;transition:border-color .3s}
+        .demo:hover{border-color:var(--accent)}
+        .demo-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+        .demo-header h3{font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px}
+        .demo-header .result{padding:4px 12px;border-radius:100px;font-size:11px;font-weight:600}
+        .flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+        .flow-node{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:500;text-align:center;white-space:nowrap}
+        .flow-node.trigger{border-color:var(--orange);color:var(--orange)}
+        .flow-node.action{border-color:var(--accent);color:var(--accent2)}
+        .flow-node.ai{border-color:var(--purple);color:var(--purple)}
+        .flow-node.output{border-color:var(--green);color:var(--green2)}
+        .flow-arrow{color:var(--text2);font-size:14px;flex-shrink:0}
+        .demo-desc{font-size:12px;color:var(--text2);line-height:1.5}
+
+        /* NICHE GRID */
+        .niches{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+        .niche{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;transition:border-color .3s}
+        .niche:hover{border-color:var(--accent)}
+        .niche .emoji{font-size:28px;margin-bottom:8px}
+        .niche .name{font-size:13px;font-weight:600}
+        .niche .sub{font-size:10px;color:var(--text2);margin-top:4px}
+
+        /* TOOLS */
+        .tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+        .tool{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:12px;font-weight:500;color:var(--text2)}
+
+        /* REPLACES SECTION */
+        .replaces{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:start;margin-top:16px}
+        .replaces-col{display:flex;flex-direction:column;gap:6px}
+        .replaces-col h4{font-size:12px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;font-weight:700}
+        .replace-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;display:flex;align-items:center;gap:8px}
+        .replace-item.old{color:var(--text2);text-decoration:line-through;border-color:rgba(239,68,68,0.2)}
+        .replace-item.new{color:var(--green2);border-color:rgba(16,185,129,0.2)}
+        .replaces-arrow{display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--accent2);padding-top:30px}
+
+        /* AI SECTION */
+        .ai-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+        .ai-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;text-align:center;transition:border-color .3s}
+        .ai-card:hover{border-color:var(--purple)}
+        .ai-card .emoji{font-size:32px;margin-bottom:10px}
+        .ai-card h4{font-size:14px;font-weight:700;margin-bottom:6px}
+        .ai-card p{font-size:12px;color:var(--text2);line-height:1.5}
+
+        /* CTA */
+        .cta-section{text-align:center;padding:60px 28px}
+        .cta-section h2{font-size:clamp(22px,4vw,32px);font-weight:800;margin-bottom:10px;letter-spacing:-0.5px}
+        .cta-section p{color:var(--text2);margin-bottom:24px;font-size:15px}
+        .cta-btn{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--green));color:white;padding:14px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;transition:transform .2s,box-shadow .2s}
+        .cta-btn:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(79,110,247,0.3)}
+        .cta-sub{margin-top:16px;display:flex;justify-content:center;gap:24px;flex-wrap:wrap}
+        .cta-sub span{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px}
+        .cta-sub span::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green)}
+
+        footer{text-align:center;padding:24px;border-top:1px solid var(--border);font-size:11px;color:var(--text2)}
+
+        @media(max-width:768px){
+            .stats{gap:24px}
+            .flow{gap:4px}
+            .flow-node{padding:6px 10px;font-size:11px}
+            .replaces{grid-template-columns:1fr;text-align:center}
+            .replaces-arrow{transform:rotate(90deg);padding:0}
+            .niches{grid-template-columns:repeat(3,1fr)}
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="inner">
+        <div class="logo">AICO <span>GoHighLevel Expert</span></div>
+        <div class="tag">Available Now</div>
+    </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+    <div class="hero-badge">&#9889; GoHighLevel + AI Automation</div>
+    <h1>I build systems that <span class="gr">capture, nurture<br>and convert leads</span> on autopilot</h1>
+    <p>GoHighLevel workflows, AI chatbots, CRM pipelines, funnels — everything your business needs to run without you.</p>
+    <div class="stats">
+        <div class="stat"><div class="n">6+</div><div class="l">Automation Projects</div></div>
+        <div class="stat"><div class="n">24/7</div><div class="l">Systems Run Non-Stop</div></div>
+        <div class="stat"><div class="n">&lt;48h</div><div class="l">First Prototype</div></div>
+    </div>
+</div>
+
+<!-- SERVICES -->
+<section>
+    <div class="section-title">What I Build</div>
+    <div class="section-heading">Complete GHL solutions, ready to run</div>
+    <div class="services">
+        <div class="service">
+            <div class="icon blue-bg">&#9889;</div>
+            <h3>Workflow Automation</h3>
+            <p>Lead nurture sequences, appointment reminders, follow-ups, no-show recovery, review requests — all automated with SMS + email + WhatsApp.</p>
+            <span class="tag-sm tag-blue">Most Requested</span>
+        </div>
+        <div class="service">
+            <div class="icon purple-bg">&#129302;</div>
+            <h3>AI Chatbot & Voice Agent</h3>
+            <p>24/7 AI that answers web chat, SMS, and phone calls. Qualifies leads, answers FAQs, books appointments — even at 3am.</p>
+            <span class="tag-sm tag-purple">Highest ROI</span>
+        </div>
+        <div class="service">
+            <div class="icon green-bg">&#128200;</div>
+            <h3>CRM & Pipeline Setup</h3>
+            <p>Custom pipelines, lead scoring, tags, smart lists, opportunity tracking. Your entire sales process visualized and automated.</p>
+            <span class="tag-sm tag-green">Foundation</span>
+        </div>
+        <div class="service">
+            <div class="icon orange-bg">&#127919;</div>
+            <h3>Funnels & Landing Pages</h3>
+            <p>High-converting opt-in pages, booking pages, sales funnels. Mobile-responsive, A/B tested, integrated with your workflows.</p>
+            <span class="tag-sm tag-orange">Conversion</span>
+        </div>
+        <div class="service">
+            <div class="icon cyan-bg">&#128279;</div>
+            <h3>Integrations (API / n8n / Zapier)</h3>
+            <p>Connect GHL to any tool — Google Sheets, Stripe, Shopify, Typeform, Slack, custom APIs. Data flows where it needs to.</p>
+            <span class="tag-sm tag-blue">Advanced</span>
+        </div>
+        <div class="service">
+            <div class="icon red-bg">&#128226;</div>
+            <h3>Reputation Management</h3>
+            <p>Automated Google review requests after every service. AI responds to reviews. Watch your rating climb on autopilot.</p>
+            <span class="tag-sm tag-green">Growth</span>
+        </div>
+    </div>
+</section>
+
+<!-- WORKFLOW DEMOS -->
+<section>
+    <div class="section-title">Live Workflow Examples</div>
+    <div class="section-heading">Automations I build — see the logic</div>
+    <div class="demos">
+
+        <div class="demo">
+            <div class="demo-header">
+                <h3>&#9889; Speed-to-Lead</h3>
+                <span class="result tag-green">+300% conversion</span>
+            </div>
+            <div class="flow">
+                <div class="flow-node trigger">Form Submitted</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node action">SMS (30 sec)</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node action">Email</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node output">Team Alert</div>
+            </div>
+            <p class="demo-desc">Leads that get a response within 5 minutes are 21x more likely to convert. This workflow responds in 30 seconds.</p>
+        </div>
+
+        <div class="demo">
+            <div class="demo-header">
+                <h3>&#128222; Missed Call Text-Back</h3>
+                <span class="result tag-orange">Never lose a lead</span>
+            </div>
+            <div class="flow">
+                <div class="flow-node trigger">Missed Call</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node action">Auto SMS</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node ai">AI Chat</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node output">Book Appointment</div>
+            </div>
+            <p class="demo-desc">62% of calls to small businesses go unanswered. This catches every missed call and converts it into a booked appointment via AI.</p>
+        </div>
+
+        <div class="demo">
+            <div class="demo-header">
+                <h3>&#128197; Appointment Automation</h3>
+                <span class="result tag-green">-80% no-shows</span>
+            </div>
+            <div class="flow">
+                <div class="flow-node trigger">Appointment Booked</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node action">Confirm SMS</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node action">Reminder 24h</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node action">Reminder 1h</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node output">No-Show? &#8594; Rebook</div>
+            </div>
+            <p class="demo-desc">Full appointment lifecycle. Confirmation, reminders, and automatic re-engagement if they don't show up.</p>
+        </div>
+
+        <div class="demo">
+            <div class="demo-header">
+                <h3>&#129302; AI Lead Qualification</h3>
+                <span class="result tag-purple">24/7 autopilot</span>
+            </div>
+            <div class="flow">
+                <div class="flow-node trigger">New Lead (any channel)</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node ai">AI Chatbot</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node ai">Qualify + Score</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node output">Hot? &#8594; Book Call</div>
+            </div>
+            <p class="demo-desc">AI engages every lead on web chat, SMS, or WhatsApp. Asks qualifying questions, scores them, and books calls for hot leads — all without human intervention.</p>
+        </div>
+
+        <div class="demo">
+            <div class="demo-header">
+                <h3>&#11088; Review Automation</h3>
+                <span class="result tag-green">+200% Google reviews</span>
+            </div>
+            <div class="flow">
+                <div class="flow-node trigger">Service Completed</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node action">SMS Review Request</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node action">Reminder Day 3</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node ai">AI Review Response</div>
+            </div>
+            <p class="demo-desc">Automatically ask for reviews after every service. Send a reminder if they didn't. AI responds to every review to boost engagement.</p>
+        </div>
+
+        <div class="demo">
+            <div class="demo-header">
+                <h3>&#128200; Multi-Channel Nurture</h3>
+                <span class="result tag-blue">+40% close rate</span>
+            </div>
+            <div class="flow">
+                <div class="flow-node trigger">New Lead</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node action">Day 1: SMS</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node action">Day 3: Email</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node action">Day 5: SMS</div>
+                <div class="flow-arrow">&#10132;</div>
+                <div class="flow-node output">Day 7: Call Task</div>
+            </div>
+            <p class="demo-desc">Persistent, multi-channel follow-up over 7-14 days. If they engage at any point, the sequence adapts. No lead falls through the cracks.</p>
+        </div>
+    </div>
+</section>
+
+<!-- AI SECTION -->
+<section>
+    <div class="section-title">AI-Powered</div>
+    <div class="section-heading">Intelligent automation, not just triggers</div>
+    <div class="ai-cards">
+        <div class="ai-card">
+            <div class="emoji">&#128172;</div>
+            <h4>Conversation AI</h4>
+            <p>Chat widget + SMS + WhatsApp. Answers questions, qualifies leads, books appointments. Works while you sleep.</p>
+        </div>
+        <div class="ai-card">
+            <div class="emoji">&#128222;</div>
+            <h4>Voice AI</h4>
+            <p>AI answers phone calls in natural voice. Handles bookings, cancellations, and FAQ. Transfers to humans when needed.</p>
+        </div>
+        <div class="ai-card">
+            <div class="emoji">&#129504;</div>
+            <h4>Smart Lead Scoring</h4>
+            <p>AI analyzes behavior, engagement, and responses to score leads 0-100. Hot leads get priority, cold leads get nurtured.</p>
+        </div>
+        <div class="ai-card">
+            <div class="emoji">&#9997;&#65039;</div>
+            <h4>Content AI</h4>
+            <p>AI-generated email copy, SMS messages, social posts — all matching your brand voice. 5x faster content production.</p>
+        </div>
+    </div>
+</section>
+
+<!-- NICHES -->
+<section>
+    <div class="section-title">Industries I Serve</div>
+    <div class="section-heading">Proven systems for your niche</div>
+    <div class="niches">
+        <div class="niche"><div class="emoji">&#127968;</div><div class="name">Real Estate</div><div class="sub">Lead capture + nurture</div></div>
+        <div class="niche"><div class="emoji">&#129463;</div><div class="name">Dental / Medical</div><div class="sub">Appointments + reviews</div></div>
+        <div class="niche"><div class="emoji">&#127947;</div><div class="name">Fitness & Gyms</div><div class="sub">Membership + retention</div></div>
+        <div class="niche"><div class="emoji">&#128188;</div><div class="name">Coaching</div><div class="sub">Funnels + onboarding</div></div>
+        <div class="niche"><div class="emoji">&#128295;</div><div class="name">Home Services</div><div class="sub">Lead gen + follow-up</div></div>
+        <div class="niche"><div class="emoji">&#9878;</div><div class="name">Legal</div><div class="sub">Client intake + CRM</div></div>
+        <div class="niche"><div class="emoji">&#128640;</div><div class="name">Agencies</div><div class="sub">White-label SaaS</div></div>
+    </div>
+</section>
+
+<!-- WHAT I REPLACE -->
+<section>
+    <div class="section-title">Why GoHighLevel</div>
+    <div class="section-heading">One platform replaces everything</div>
+    <div class="replaces">
+        <div class="replaces-col">
+            <h4 style="color:var(--red)">&#10060; Before (paying for all of these)</h4>
+            <div class="replace-item old">HubSpot — CRM ($50/mo)</div>
+            <div class="replace-item old">ClickFunnels — Funnels ($97/mo)</div>
+            <div class="replace-item old">Mailchimp — Email ($30/mo)</div>
+            <div class="replace-item old">Calendly — Booking ($12/mo)</div>
+            <div class="replace-item old">Twilio — SMS ($50+/mo)</div>
+            <div class="replace-item old">ManyChat — Chatbot ($15/mo)</div>
+            <div class="replace-item old">Podium — Reviews ($249/mo)</div>
+            <div class="replace-item old" style="font-weight:700">Total: $500+/month</div>
+        </div>
+        <div class="replaces-arrow">&#10132;</div>
+        <div class="replaces-col">
+            <h4 style="color:var(--green2)">&#9989; After (one platform)</h4>
+            <div class="replace-item new">GoHighLevel — Everything</div>
+            <div class="replace-item new">CRM + Funnels + Email</div>
+            <div class="replace-item new">SMS + Phone + WhatsApp</div>
+            <div class="replace-item new">Calendars + Booking</div>
+            <div class="replace-item new">AI Chatbot + Voice AI</div>
+            <div class="replace-item new">Reviews + Social Media</div>
+            <div class="replace-item new">Courses + Invoicing</div>
+            <div class="replace-item new" style="font-weight:700">Total: $97/month</div>
+        </div>
+    </div>
+</section>
+
+<!-- TOOLS -->
+<section>
+    <div class="section-title">My Stack</div>
+    <div class="section-heading">Tools I work with daily</div>
+    <div class="tools">
+        <div class="tool">GoHighLevel</div>
+        <div class="tool">n8n</div>
+        <div class="tool">Zapier</div>
+        <div class="tool">Make.com</div>
+        <div class="tool">Claude AI</div>
+        <div class="tool">OpenAI</div>
+        <div class="tool">Twilio</div>
+        <div class="tool">Stripe</div>
+        <div class="tool">Google Sheets</div>
+        <div class="tool">Apify</div>
+        <div class="tool">Webhooks</div>
+        <div class="tool">REST APIs</div>
+        <div class="tool">Python</div>
+        <div class="tool">JavaScript</div>
+    </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+    <h2>Ready to automate your business?</h2>
+    <p>Tell me what takes too long. I'll make it run itself.</p>
+    <a href="#" class="cta-btn">Let's talk</a>
+    <div class="cta-sub">
+        <span>Available now</span>
+        <span>First prototype in 48h</span>
+        <span>GHL + AI specialist</span>
+    </div>
+</div>
+
+<footer>Augustin — AICO | GoHighLevel & AI Automation | 2026</footer>
+
+</body>
+</html>

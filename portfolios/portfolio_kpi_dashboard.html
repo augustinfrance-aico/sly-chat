@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPI Dashboard Automation — Proposal | AICO</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--bg:#090b10;--surface:#11131a;--border:#1e2230;--text:#e8eaf0;--text2:#7c819a;--accent:#3b82f6;--accent2:#60a5fa;--green:#22c55e;--orange:#f59e0b;--red:#ef4444}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+        nav{position:fixed;top:0;width:100%;background:rgba(9,11,16,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);z-index:100;padding:14px 0}
+        nav .inner{max-width:900px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center}
+        nav .logo{font-size:18px;font-weight:700;color:var(--accent2)}
+        nav .logo span{color:var(--text2);font-weight:400;font-size:13px;margin-left:6px}
+        section{max-width:900px;margin:0 auto;padding:60px 24px}
+        .hero{padding-top:120px;padding-bottom:30px;text-align:center}
+        .badge{display:inline-block;background:rgba(59,130,246,0.12);color:var(--accent2);padding:5px 16px;border-radius:100px;font-size:12px;font-weight:500;margin-bottom:18px;border:1px solid rgba(59,130,246,0.2)}
+        .hero h1{font-size:clamp(24px,4.5vw,38px);font-weight:700;line-height:1.15;margin-bottom:12px;letter-spacing:-0.5px}
+        .hero h1 .gr{background:linear-gradient(135deg,var(--accent2),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .hero p{font-size:15px;color:var(--text2);max-width:540px;margin:0 auto}
+        .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:18px}
+        .card h3{font-size:17px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+        .card h3 .icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+        .icon.blue{background:rgba(59,130,246,0.12)}
+        .icon.green{background:rgba(34,197,94,0.12)}
+        .icon.orange{background:rgba(245,158,11,0.12)}
+        .icon.red{background:rgba(239,68,68,0.12)}
+        .tag{margin-left:auto;padding:3px 10px;border-radius:100px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;background:rgba(59,130,246,0.12);color:var(--accent2)}
+
+        /* SCHEMA */
+        .schema{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:28px;margin:16px 0}
+        .schema-row{display:flex;align-items:center;gap:12px;padding:8px 0}
+        .schema-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-size:13px;font-weight:500;text-align:center;min-width:120px}
+        .schema-box.input{border-color:var(--orange);color:var(--orange)}
+        .schema-box.process{border-color:var(--accent);color:var(--accent2)}
+        .schema-box.output{border-color:var(--green);color:var(--green)}
+        .schema-arrow{color:var(--text2);font-size:18px}
+        .schema-label{font-size:11px;color:var(--text2);text-align:center;margin-top:2px}
+
+        /* SHEETS MOCKUP */
+        .sheets{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:16px 0}
+        .sheets-tabs{display:flex;background:var(--bg);border-bottom:1px solid var(--border)}
+        .sheets-tab{padding:8px 16px;font-size:11px;font-weight:600;color:var(--text2);border-right:1px solid var(--border);cursor:default}
+        .sheets-tab.active{background:var(--surface);color:var(--accent2);border-bottom:2px solid var(--accent)}
+        .sheets-grid{display:grid;grid-template-columns:120px repeat(5,1fr);font-size:11px}
+        .sheets-grid .cell{padding:8px 10px;border-bottom:1px solid rgba(30,34,48,0.5);border-right:1px solid rgba(30,34,48,0.3);color:var(--text2)}
+        .sheets-grid .cell.header{background:rgba(59,130,246,0.06);color:var(--accent2);font-weight:600}
+        .sheets-grid .cell.label{color:var(--text);font-weight:500}
+        .sheets-grid .cell.good{color:var(--green)}
+        .sheets-grid .cell.warn{color:var(--orange)}
+        .sheets-grid .cell.auto{color:var(--accent2);font-style:italic}
+
+        /* LIST */
+        ul.feat{list-style:none;margin-top:12px}
+        ul.feat li{padding:7px 0;font-size:13px;color:var(--text2);display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(30,34,48,0.4)}
+        ul.feat li:last-child{border:none}
+        ul.feat li strong{color:var(--text)}
+        .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+        .dot.b{background:var(--accent);box-shadow:0 0 6px rgba(59,130,246,0.4)}
+        .dot.g{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,0.4)}
+        .dot.o{background:var(--orange);box-shadow:0 0 6px rgba(245,158,11,0.4)}
+
+        .tl{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+        .tl-item{background:rgba(59,130,246,0.04);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center}
+        .tl-item .w{font-size:10px;text-transform:uppercase;color:var(--accent2);font-weight:600;letter-spacing:.5px;margin-bottom:6px}
+        .tl-item p{font-size:11px;color:var(--text2)}
+
+        .cta-section{text-align:center;padding:40px 24px 60px}
+        .cta-section h2{font-size:26px;font-weight:700;margin-bottom:8px}
+        .cta-section p{color:var(--text2);margin-bottom:20px;font-size:14px}
+        .cta-btn{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--green));color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;transition:transform .2s,box-shadow .2s}
+        .cta-btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(59,130,246,0.25)}
+        .cta-sub{margin-top:14px;display:flex;justify-content:center;gap:20px;flex-wrap:wrap}
+        .cta-sub span{font-size:11px;color:var(--text2)}
+        footer{text-align:center;padding:24px;border-top:1px solid var(--border);font-size:11px;color:var(--text2)}
+        @media(max-width:768px){.schema-row{flex-wrap:wrap}.tl{grid-template-columns:1fr}.sheets-grid{grid-template-columns:100px repeat(3,1fr)}}
+    </style>
+</head>
+<body>
+
+<nav><div class="inner"><div class="logo">AICO <span>Proposal</span></div></div></nav>
+
+<section class="hero">
+    <div class="badge">Google Sheets KPI Automation</div>
+    <h1>Paste your CSV.<br>Everything <span class="gr">updates itself</span>.</h1>
+    <p>One Google Sheet. All your agent KPIs. Fully automated. No formulas to touch, no manual work, ever.</p>
+</section>
+
+<section style="padding-top:0">
+
+    <!-- SCHEMA -->
+    <div class="card">
+        <h3><div class="icon blue">&#9889;</div> How it works</h3>
+        <div class="schema">
+            <div class="schema-row" style="justify-content:center">
+                <div>
+                    <div class="schema-box input">CSV Export</div>
+                    <div class="schema-label">You paste monthly data</div>
+                </div>
+                <div class="schema-arrow">&#10132;</div>
+                <div>
+                    <div class="schema-box process">Apps Script</div>
+                    <div class="schema-label">Auto-detects & routes</div>
+                </div>
+                <div class="schema-arrow">&#10132;</div>
+                <div>
+                    <div class="schema-box process">Master Database</div>
+                    <div class="schema-label">Stores all months</div>
+                </div>
+                <div class="schema-arrow">&#10132;</div>
+                <div>
+                    <div class="schema-box output">KPI Dashboard</div>
+                    <div class="schema-label">Updates instantly</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SHEET MOCKUP -->
+    <div class="card">
+        <h3><div class="icon green">&#128202;</div> What you'll see <span class="tag">Live preview</span></h3>
+        <div class="sheets">
+            <div class="sheets-tabs">
+                <div class="sheets-tab">CSV Import</div>
+                <div class="sheets-tab active">Master Database</div>
+                <div class="sheets-tab">Monthly View</div>
+                <div class="sheets-tab">KPI Dashboard</div>
+            </div>
+            <div class="sheets-grid">
+                <div class="cell header">Month</div>
+                <div class="cell header">Agent</div>
+                <div class="cell header">Chats</div>
+                <div class="cell header">CSAT</div>
+                <div class="cell header">Avg Response</div>
+                <div class="cell header">Refund %</div>
+
+                <div class="cell label">January</div>
+                <div class="cell">Sarah K.</div>
+                <div class="cell">342</div>
+                <div class="cell good">94.2%</div>
+                <div class="cell good">1m 12s</div>
+                <div class="cell good">2.1%</div>
+
+                <div class="cell label">January</div>
+                <div class="cell">Mike D.</div>
+                <div class="cell">287</div>
+                <div class="cell warn">87.5%</div>
+                <div class="cell warn">2m 45s</div>
+                <div class="cell good">1.8%</div>
+
+                <div class="cell label">February</div>
+                <div class="cell">Sarah K.</div>
+                <div class="cell auto">auto</div>
+                <div class="cell auto">auto</div>
+                <div class="cell auto">auto</div>
+                <div class="cell auto">auto</div>
+
+                <div class="cell label">February</div>
+                <div class="cell">Mike D.</div>
+                <div class="cell auto">auto</div>
+                <div class="cell auto">auto</div>
+                <div class="cell auto">auto</div>
+                <div class="cell auto">auto</div>
+            </div>
+        </div>
+        <p style="font-size:11px;color:var(--text2);margin-top:8px;font-style:italic">February row = paste your CSV, everything fills in automatically</p>
+    </div>
+
+    <!-- 3 SHEETS -->
+    <div class="card">
+        <h3><div class="icon blue">&#128196;</div> The 4 sheets I'll build</h3>
+        <ul class="feat">
+            <li><div class="dot b"></div><strong>CSV Import</strong> — You paste your monthly export here. That's it. One action.</li>
+            <li><div class="dot b"></div><strong>Master Database</strong> — Permanent storage. Grows month after month. Never breaks.</li>
+            <li><div class="dot g"></div><strong>Monthly View</strong> — Formatted table per month, per agent. Auto-generated from database.</li>
+            <li><div class="dot o"></div><strong>KPI Dashboard</strong> — All calculations done. Replacements/100 chats, refund rate, SLA %, cost/conversation — everything.</li>
+        </ul>
+    </div>
+
+    <!-- KPIs -->
+    <div class="card">
+        <h3><div class="icon orange">&#128200;</div> KPIs auto-calculated</h3>
+        <ul class="feat">
+            <li><div class="dot o"></div><strong>Replacements per 100 chats</strong> — (faulty + warranty + incorrect) / chats * 100</li>
+            <li><div class="dot o"></div><strong>Gifts $ per 100 chats</strong> — gifts total / chats * 100</li>
+            <li><div class="dot o"></div><strong>Reopened tickets %</strong> — reopened / total conversations</li>
+            <li><div class="dot o"></div><strong>Follow-ups required %</strong> — follow-ups / total conversations</li>
+            <li><div class="dot g"></div><strong>First response within SLA %</strong> — weighted average across agents</li>
+            <li><div class="dot g"></div><strong>Resolution within SLA %</strong> — weighted average across agents</li>
+            <li><div class="dot b"></div><strong>Cost per conversation</strong> — total cost / total conversations</li>
+            <li><div class="dot b"></div><strong>Refund rate %</strong> — refund count / total conversations</li>
+        </ul>
+    </div>
+
+    <!-- TECH -->
+    <div class="card">
+        <h3><div class="icon red">&#9881;</div> Technical approach</h3>
+        <ul class="feat">
+            <li><div class="dot b"></div><strong>Apps Script onEdit trigger</strong> — Detects when CSV is pasted, auto-routes to database</li>
+            <li><div class="dot b"></div><strong>Named ranges</strong> — Clean architecture, no scattered formulas</li>
+            <li><div class="dot g"></div><strong>QUERY + ARRAYFORMULA</strong> — Monthly view pulls from master automatically</li>
+            <li><div class="dot g"></div><strong>Weighted averages</strong> — Correctly calculated (not simple averages)</li>
+            <li><div class="dot o"></div><strong>Scalable to 12+ months</strong> — Add data forever, nothing breaks</li>
+            <li><div class="dot o"></div><strong>Zero manual formulas</strong> — You never type a formula. Ever.</li>
+        </ul>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="card">
+        <h3><div class="icon green">&#128640;</div> Timeline</h3>
+        <div class="tl">
+            <div class="tl-item"><div class="w">Day 1</div><p>Master Database + CSV import + Apps Script auto-routing</p></div>
+            <div class="tl-item"><div class="w">Day 2</div><p>Monthly View + KPI Dashboard + all formulas</p></div>
+            <div class="tl-item"><div class="w">Day 3</div><p>Testing with your real data + final adjustments</p></div>
+        </div>
+    </div>
+
+</section>
+
+<section class="cta-section">
+    <h2>Ready to never touch a formula again?</h2>
+    <p>Paste your CSV. Everything updates. That's it.</p>
+    <a href="#" class="cta-btn">Let's start now</a>
+    <div class="cta-sub">
+        <span>Available immediately</span>
+        <span>Delivered in 3 days</span>
+        <span>Clean architecture guaranteed</span>
+    </div>
+</section>
+
+<footer>Augustin — AICO | Google Sheets Automation | 2026</footer>
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+__pycache__
+*.pyc
+.tmp
+memory/*.json
+Dockerfile
+.dockerignore
