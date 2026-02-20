@@ -23,6 +23,7 @@ MEMORY_DIR.mkdir(exist_ok=True)
 MEMORY_FILE = MEMORY_DIR / "titan_memory.json"
 CONVERSATIONS_FILE = MEMORY_DIR / "conversations.json"
 CONTACTS_FILE = MEMORY_DIR / "contacts.json"
+AUTO_FACTS_FILE = MEMORY_DIR / "auto_facts.json"
 
 
 def _load_json(filepath: Path) -> dict:
@@ -220,3 +221,57 @@ def get_conversation_context(n: int = 5) -> str:
         lines.append(f"Titan: {conv['titan']}")
 
     return "\n".join(lines)
+
+
+# === AUTO FACTS (mémoire automatique extraite des conversations) ===
+
+def save_auto_fact(fact: str, category: str = "general", source: str = "conversation"):
+    """Save an automatically extracted fact."""
+    data = _load_json(AUTO_FACTS_FILE)
+    if "facts" not in data:
+        data["facts"] = []
+
+    # Evite les doublons exacts
+    existing = [f["fact"].lower() for f in data["facts"]]
+    if fact.lower() in existing:
+        return
+
+    data["facts"].append({
+        "fact": fact,
+        "category": category,
+        "source": source,
+        "saved_at": datetime.now().isoformat(),
+    })
+
+    # Garde les 200 derniers faits max
+    if len(data["facts"]) > 200:
+        data["facts"] = data["facts"][-200:]
+
+    _save_json(AUTO_FACTS_FILE, data)
+
+
+def get_auto_facts(n: int = 30) -> list:
+    """Get the most recent auto-extracted facts."""
+    data = _load_json(AUTO_FACTS_FILE)
+    return data.get("facts", [])[-n:]
+
+
+def get_auto_facts_summary(n: int = 20) -> str:
+    """Get auto-facts formatted for the system prompt."""
+    facts = get_auto_facts(n)
+    if not facts:
+        return ""
+    lines = [f"- [{f['category']}] {f['fact']}" for f in facts]
+    return "\n".join(lines)
+
+
+def forget_auto_fact(keyword: str) -> str:
+    """Remove auto-facts containing a keyword."""
+    data = _load_json(AUTO_FACTS_FILE)
+    facts = data.get("facts", [])
+    before = len(facts)
+    data["facts"] = [f for f in facts if keyword.lower() not in f["fact"].lower()]
+    after = len(data["facts"])
+    _save_json(AUTO_FACTS_FILE, data)
+    removed = before - after
+    return f"{removed} fait(s) supprimé(s) contenant '{keyword}'"

@@ -36,12 +36,15 @@ class TitanBrain:
         # Get recent conversation context
         recent_context = memory.get_conversation_context(5)
 
-        # Get relevant memories
+        # Get relevant memories (manual)
         all_memories = memory.list_memories()
         memory_summary = ""
         if all_memories:
             mem_lines = [f"- {m['key']}: {m['value']}" for m in all_memories[:20]]
             memory_summary = "\n".join(mem_lines)
+
+        # Get auto-extracted facts
+        auto_facts_summary = memory.get_auto_facts_summary(20)
 
         # Get contacts
         contacts = memory.list_contacts()
@@ -69,8 +72,11 @@ Date: {datetime.now().strftime('%A %d %B %Y, %H:%M')}
 Uptime: {(datetime.now() - self.boot_time).seconds // 60} minutes
 Modules actifs: {modules_list}
 
-=== MÉMOIRE ===
+=== MÉMOIRE MANUELLE ===
 {memory_summary if memory_summary else "Mémoire vide pour l'instant."}
+
+=== FAITS MÉMORISÉS AUTOMATIQUEMENT ===
+{auto_facts_summary if auto_facts_summary else "Aucun fait auto-mémorisé pour l'instant."}
 
 === CONTACTS CONNUS ===
 {contacts_summary if contacts_summary else "Aucun contact en mémoire."}
@@ -166,17 +172,68 @@ puis enchaîne sur un conseil business, puis une ref à un film.
         return None
 
     async def _auto_remember(self, user_msg: str, reply: str):
-        """Auto-detect things worth remembering."""
+        """Auto-detect things worth remembering from the conversation."""
         msg = user_msg.lower()
+        now = datetime.now().isoformat()
 
-        # Remember contacts mentioned
-        if any(w in msg for w in ["c'est", "il s'appelle", "elle s'appelle", "le client", "contact"]):
-            # Let Claude extract the info naturally, memory module handles it
-            pass
+        # --- Préférences & goûts ---
+        prefs = [
+            ("j'aime ", "goût"),
+            ("j'adore ", "goût"),
+            ("je préfère ", "préférence"),
+            ("mon truc c'est ", "préférence"),
+            ("ma passion ", "passion"),
+        ]
+        for trigger, cat in prefs:
+            if trigger in msg:
+                idx = msg.index(trigger)
+                fact = user_msg[idx:idx + 80].strip().rstrip(".,!?")
+                memory.save_auto_fact(fact, category=cat)
 
-        # Remember preferences
-        if any(w in msg for w in ["j'aime", "je préfère", "je veux", "mon", "ma"]):
-            pass
+        # --- Infos personnelles ---
+        personal_triggers = [
+            ("j'habite ", "localisation"),
+            ("je vis à ", "localisation"),
+            ("je suis à ", "localisation"),
+            ("je travaille sur ", "projet"),
+            ("mon projet ", "projet"),
+            ("mon client ", "client"),
+            ("je bosse sur ", "projet"),
+            ("j'ai un rdv ", "agenda"),
+            ("rendez-vous ", "agenda"),
+            ("mon objectif ", "objectif"),
+            ("je veux ", "objectif"),
+        ]
+        for trigger, cat in personal_triggers:
+            if trigger in msg:
+                idx = msg.index(trigger)
+                fact = user_msg[idx:idx + 100].strip().rstrip(".,!?")
+                memory.save_auto_fact(fact, category=cat)
+
+        # --- Décisions importantes ---
+        decision_triggers = [
+            ("j'ai décidé ", "décision"),
+            ("j'ai choisi ", "décision"),
+            ("on a décidé ", "décision"),
+            ("je vais lancer ", "projet"),
+            ("je lance ", "projet"),
+        ]
+        for trigger, cat in decision_triggers:
+            if trigger in msg:
+                idx = msg.index(trigger)
+                fact = user_msg[idx:idx + 100].strip().rstrip(".,!?")
+                memory.save_auto_fact(fact, category=cat)
+
+        # --- Infos chiffrées (prix, revenus, objectifs) ---
+        import re
+        # Detect patterns like "X€", "X euros", "X$/mois", etc.
+        money_pattern = re.compile(r'(\d[\d\s]*(?:€|euros?|k€|\$|usd)(?:/(?:mois|an|jour|semaine))?)', re.IGNORECASE)
+        for match in money_pattern.finditer(user_msg):
+            # Extract surrounding context (up to 80 chars)
+            start = max(0, match.start() - 30)
+            end = min(len(user_msg), match.end() + 30)
+            snippet = user_msg[start:end].strip().rstrip(".,!?")
+            memory.save_auto_fact(snippet, category="finances")
 
     async def _daily_brief(self) -> str:
         """Generate a complete daily brief."""

@@ -734,6 +734,22 @@ class TitanTelegram:
                     return response
                 return f"Contact '{parts[0].strip()}' pas trouve."
 
+        if text == "/memstatus":
+            facts = memory.get_auto_facts(50)
+            manual = memory.list_memories()
+            lines = [f"🧠 MEMOIRE TITAN\n"]
+            lines.append(f"Faits auto ({len(facts)}) :")
+            for f in facts[-20:]:
+                lines.append(f"  [{f['category']}] {f['fact'][:80]}")
+            if manual:
+                lines.append(f"\nMémoire manuelle ({len(manual)}) :")
+                for m in manual[:10]:
+                    lines.append(f"  [{m['category']}] {m['key']}: {m['value'][:60]}")
+            return "\n".join(lines) if len(lines) > 2 else "Mémoire vide."
+
+        if text.startswith("/forgetfact "):
+            return memory.forget_auto_fact(text[12:].strip())
+
         # ==============
         # === MEMES ====
         # ==============
