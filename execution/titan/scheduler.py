@@ -116,21 +116,7 @@ class TitanScheduler:
             except Exception:
                 pass
 
-            # Daily challenge
-            try:
-                daily = self.gamification.get_daily_status()
-                sections.append(f"\n{daily}\n")
-            except Exception:
-                pass
-
-            # Profile summary
-            try:
-                profile = self.gamification.get_profile()
-                sections.append(f"\n{profile}\n")
-            except Exception:
-                pass
-
-            sections.append("Bonne journee boss. 💪")
+            sections.append("Bonne journee. 💪")
 
             self.send_telegram("\n".join(sections))
             log.info("Morning brief sent.")
@@ -181,13 +167,6 @@ class TitanScheduler:
 
             sections = ["🌙 RAPPEL DU SOIR\n"]
 
-            # Streak info
-            streak = self.gamification.data.get("streak", 0)
-            if streak > 0:
-                sections.append(f"🔥 Streak actuel: {streak} jours — ne lache pas !")
-            else:
-                sections.append("Commence un streak demain !")
-
             # Unchecked habits
             try:
                 habits = self.calendar.list_habits()
@@ -196,14 +175,7 @@ class TitanScheduler:
             except Exception:
                 pass
 
-            # Daily challenge status
-            try:
-                daily = self.gamification.get_daily_status()
-                sections.append(f"\n{daily}")
-            except Exception:
-                pass
-
-            sections.append("\nBonne soiree boss. 🌙")
+            sections.append("\nBonne soiree. 🌙")
             self.send_telegram("\n".join(sections))
             log.info("Evening reminder sent.")
 
