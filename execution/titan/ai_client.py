@@ -49,6 +49,20 @@ if GEMINI_API_KEY:
         log.warning(f"Gemini init failed: {e}")
 
 
+def _dedup_sentences(text: str) -> str:
+    """Remove duplicate or near-duplicate sentences from AI response."""
+    import re
+    sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+    seen = []
+    result = []
+    for s in sentences:
+        normalized = re.sub(r'\s+', ' ', s).strip().lower()
+        if normalized and normalized not in seen:
+            seen.append(normalized)
+            result.append(s)
+    return ' '.join(result)
+
+
 def chat(system: str, user_message: str, max_tokens: int = 2048) -> str:
     """Send a message to AI. Cascades through 6 Groq models then Gemini."""
 
@@ -72,7 +86,7 @@ def chat(system: str, user_message: str, max_tokens: int = 2048) -> str:
                     text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
                 if text:
                     log.info(f"AI: {model} OK")
-                    return text
+                    return _dedup_sentences(text)
             except Exception as e:
                 log.warning(f"AI {model}: {e}")
                 continue
@@ -89,7 +103,7 @@ def chat(system: str, user_message: str, max_tokens: int = 2048) -> str:
                     "temperature": 0.7,
                 },
             )
-            return response.text
+            return _dedup_sentences(response.text)
         except Exception as e:
             log.warning(f"AI Gemini: {e}")
 
