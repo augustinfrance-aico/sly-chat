@@ -159,6 +159,35 @@ class TitanTelegram:
         self.brain.register_module("code", self.code)
         self.brain.register_module("portfolio", self.portfolio)
 
+    # === CLAUDE BRIDGE ===
+
+    def _get_claude_session_file(self):
+        """Return path to current session file in 'prompt vocaux/' folder."""
+        from pathlib import Path
+        folder = Path(__file__).parent.parent.parent / "prompt vocaux"
+        folder.mkdir(exist_ok=True)
+        # One file per day
+        from datetime import datetime
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        return folder / f"session_{date_str}.md"
+
+    def _write_claude_task(self, instruction: str) -> str:
+        """Append a transcription to today's session file in 'prompt vocaux/'."""
+        from datetime import datetime
+        task_file = self._get_claude_session_file()
+        timestamp = datetime.now().strftime("%H:%M:%S")
+
+        # Create file with header if new
+        if not task_file.exists():
+            with open(task_file, "w", encoding="utf-8") as f:
+                f.write(f"# Session vocale — {datetime.now().strftime('%Y-%m-%d')}\n\n")
+
+        with open(task_file, "a", encoding="utf-8") as f:
+            f.write(f"\n[{timestamp}] {instruction}\n")
+
+        log.info(f"[CLAUDE BRIDGE] Written to {task_file.name}: {instruction[:80]}")
+        return str(task_file)
+
     # === TELEGRAM API ===
 
     def send_message(self, chat_id: str, text: str, parse_mode: str = None) -> dict:
@@ -276,6 +305,14 @@ class TitanTelegram:
                         return
                     log.info(f"[{user}] Transcribed: {text[:80]}")
 
+                    # Vocal commence par "claude" → fichier prompt vocaux
+                    if text.lower().startswith("claude"):
+                        instruction = text[6:].strip().lstrip(",:").strip()
+                        self._write_claude_task(instruction)
+                        self.send_message(chat_id, f"Transmis a Claude Code.\n\n\"{instruction[:300]}\"")
+                        return
+                    # Sinon → traitement normal (brain)
+
             if not text:
                 return
 
@@ -339,6 +376,28 @@ class TitanTelegram:
         # =====================
         # === HELP & STATUS ===
         # =====================
+
+        # =====================
+        # === CLAUDE BRIDGE ===
+        # =====================
+
+        if text.startswith("/claude"):
+            arg = text[7:].strip()
+
+            if arg.lower() == "clear":
+                from datetime import datetime
+                task_file = self._get_claude_session_file()
+                with open(task_file, "w", encoding="utf-8") as f:
+                    f.write(f"# Session vocale — {datetime.now().strftime('%Y-%m-%d')}\n\n")
+                return "Session du jour remise a zero."
+
+            # Texte direct → ajouter au fichier
+            if arg:
+                self._write_claude_task(arg)
+                return f"Ajoute : \"{arg[:300]}\""
+
+            task_file = self._get_claude_session_file()
+            return f"Tous tes vocaux sont enregistres automatiquement.\n\nFichier : prompt vocaux/{task_file.name}\n\n/claude <texte> — ajouter du texte\n/claude clear — vider la session"
 
         if text == "/start":
             return self._get_welcome()
