@@ -90,7 +90,6 @@ class TitanTelegram:
         self.base_url = f"https://api.telegram.org/bot{self.token}"
         self.offset = 0
         self.running = False
-        self.boot_timestamp = int(time.time())
         self.processed_messages = set()  # Track processed message IDs to prevent duplicates
         self._msg_lock = asyncio.Lock()  # Prevent parallel message processing
         self._president_session = False  # True = Jacques is talking, stays active
@@ -271,12 +270,6 @@ class TitanTelegram:
             # Keep set from growing forever (max 500 recent messages)
             if len(self.processed_messages) > 500:
                 self.processed_messages = set(sorted(self.processed_messages)[-200:])
-
-            # Ignore old messages from before boot (prevents spam on restart)
-            msg_date = message.get("date", 0)
-            if msg_date < self.boot_timestamp:
-                log.info(f"[SKIP] Old message from {user}: {text[:50]}")
-                return
 
             # Voice message — transcribe to text (INSIDE lock to prevent duplicate sends)
             voice = message.get("voice")
@@ -1889,14 +1882,38 @@ REGLE ABSOLUE: Reponds en 2-5 phrases MAX. Conversationnel, direct, presidentiel
 
     # === MAIN LOOP ===
 
+    def _load_offset(self) -> int:
+        """Load persisted offset from disk to survive restarts."""
+        from pathlib import Path
+        offset_file = Path(__file__).parent / "memory" / "offset.txt"
+        try:
+            if offset_file.exists():
+                return int(offset_file.read_text().strip())
+        except Exception:
+            pass
+        return 0
+
+    def _save_offset(self, offset: int):
+        """Persist offset to disk."""
+        from pathlib import Path
+        offset_file = Path(__file__).parent / "memory" / "offset.txt"
+        try:
+            offset_file.write_text(str(offset))
+        except Exception:
+            pass
+
     async def run(self):
         """Main bot loop — Titan is alive."""
         self.running = True
+
+        # Load persisted offset — prevents reprocessing on restart
+        self.offset = self._load_offset()
 
         log.info("=" * 50)
         log.info(f"  {TITAN_NAME} v1.0 — ONLINE")
         log.info(f"  Modules: 50 modules actifs — L'Empereur est en ligne")
         log.info(f"  Memory: loaded")
+        log.info(f"  Offset: {self.offset}")
         log.info(f"  Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         log.info("=" * 50)
 
@@ -1906,7 +1923,11 @@ REGLE ABSOLUE: Reponds en 2-5 phrases MAX. Conversationnel, direct, presidentiel
             updates = self.get_updates()
 
             for update in updates:
-                self.offset = update["update_id"] + 1
+                next_offset = update["update_id"] + 1
+                # Persist offset BEFORE processing — even if handler crashes, won't replay
+                if next_offset > self.offset:
+                    self.offset = next_offset
+                    self._save_offset(self.offset)
 
                 if "message" in update:
                     await self.handle_message(update["message"])
