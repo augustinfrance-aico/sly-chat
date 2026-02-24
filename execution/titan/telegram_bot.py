@@ -298,13 +298,10 @@ class TitanTelegram:
                         return
                     log.info(f"[{user}] Transcribed: {text[:80]}")
 
-                    # Vocal commence par "claude" → fichier prompt vocaux
-                    if text.lower().startswith("claude"):
-                        instruction = text[6:].strip().lstrip(",:").strip()
-                        self._write_claude_task(instruction)
-                        self.send_message(chat_id, f"Transmis a Claude Code.\n\n\"{instruction[:300]}\"")
-                        return
-                    # Sinon → traitement normal (brain)
+                    # TOUS les vocaux → notes dans prompt vocaux/ (transcription brute)
+                    self._write_claude_task(text)
+                    self.send_message(chat_id, f"Noté. ✍️\n\n\"{text[:300]}\"")
+                    return
 
             if not text:
                 return
