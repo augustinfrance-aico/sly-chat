@@ -1942,11 +1942,26 @@ REGLE ABSOLUE: Reponds en 2-5 phrases MAX. Conversationnel, direct, presidentiel
         log.info("Titan shutdown complete.")
 
 
+async def _health_server():
+    """Minimal HTTP server so Render Web Service doesn't timeout on port scan."""
+    import socket
+    port = int(os.environ.get("PORT", 10000))
+    server = await asyncio.start_server(
+        lambda r, w: (w.write(b"HTTP/1.1 200 OK\r\n\r\nOK"), w.close()),
+        "0.0.0.0", port
+    )
+    async with server:
+        await server.serve_forever()
+
+
 async def main():
     """Entry point."""
     bot = TitanTelegram()
     try:
-        await bot.run()
+        await asyncio.gather(
+            bot.run(),
+            _health_server(),
+        )
     except KeyboardInterrupt:
         bot.stop()
 
