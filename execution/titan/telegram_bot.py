@@ -1534,11 +1534,11 @@ class TitanTelegram:
         score = state_data.get("performance_score", 50)
         recent = memory.get_conversation_context(5)
 
-        prompt = f"""Augustin te parle directement. Il dit: "{text}"
+        prompt = f"""L'Empereur te parle directement. Il dit: "{text}"
 
-CONTEXTE: Freelance AI/automation, score {score}/100, objectifs: {json.dumps(goals, ensure_ascii=False) if goals else 'Aucun'}
+CONTEXTE: Freelance AI/automation, objectifs: {json.dumps(goals, ensure_ascii=False) if goals else 'Aucun'}
 
-REGLE ABSOLUE: Reponds en 2-5 phrases MAX. Conversationnel, direct, presidentiel. Pas de listes, pas de format structure. Parle comme dans une vraie conversation — court et tranchant."""
+REGLE ABSOLUE: Reponds en 2-5 phrases MAX. Conversationnel, direct, presidentiel. Pas de listes, pas de format structure. Parle comme dans une vraie conversation — court et tranchant. JAMAIS de scores ou de points. JAMAIS de questions."""
 
         reply = self.president._ai(prompt, max_tokens=400, mode="decide")
         memory.save_conversation(text, reply, "president")
