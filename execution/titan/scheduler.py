@@ -44,6 +44,7 @@ class TitanScheduler:
         self.last_crypto_check = None
         self.last_evening_reminder = None
         self.crypto_prices_cache = {}
+        self.crypto_alerted_today = {}  # symbol -> date string (ne respamme pas le même jour)
 
     def send_telegram(self, text: str):
         """Send a message to Telegram. Truncate if too long."""
@@ -125,10 +126,11 @@ class TitanScheduler:
         """Check for significant crypto price changes."""
         now = datetime.now()
 
-        if self.last_crypto_check and (now - self.last_crypto_check).seconds < 1800:
+        if self.last_crypto_check and (now - self.last_crypto_check).total_seconds() < 14400:
             return
 
         self.last_crypto_check = now
+        today = now.strftime("%Y-%m-%d")
 
         try:
             prices = self.finance.get_crypto_prices()
@@ -139,12 +141,17 @@ class TitanScheduler:
             for symbol, data in prices.items():
                 change = abs(data.get("change_24h", 0))
 
-                if change > 5:
+                # Ne pas respammer le même symbole le même jour
+                if self.crypto_alerted_today.get(symbol) == today:
+                    continue
+
+                if change > 10:
                     direction = "📈" if data["change_24h"] > 0 else "📉"
                     alerts.append(
                         f"{direction} {symbol}: {data['change_24h']:+.1f}% "
                         f"(${data['usd']:,.0f})"
                     )
+                    self.crypto_alerted_today[symbol] = today
 
             if alerts:
                 msg = "🚨 ALERTE CRYPTO\n\n" + "\n".join(alerts)
