@@ -84,6 +84,46 @@ class TitanBrain:
             ("💎 LIMPIDE", "vulgarise, simplifie, rend clair pour un humain"),
             ("🐻 BALOO", "explique avec sagesse, connexions improbables"),
         ],
+        "prospection": [
+            ("📡 OUTREACH", "cold outreach, séquences email, relances"),
+            ("🦝 SLY", "prospection terrain, acquisition low-cost"),
+            ("🛡️ KEEPER", "suivi client, rétention, onboarding"),
+        ],
+        "qualite": [
+            ("✅ PARAGON", "contrôle qualité final, validation, standards"),
+            ("🪞 MIMIC", "reverse-engineering, benchmark concurrence"),
+        ],
+        "architecture": [
+            ("🏛️ ARCHITECT", "design systèmes, architecture technique"),
+            ("⚡ NIKOLA", "implémentation, code, pipelines"),
+        ],
+        "synergie": [
+            ("🕸️ NEXUS", "synergies inter-projets, connexions croisées"),
+            ("🦅 OMEGA", "vision empire, arbitrage"),
+        ],
+        "negociation": [
+            ("🎭 PROXY", "négociation, diplomatie, interface client"),
+            ("🤝 VITO", "relations long terme"),
+        ],
+        "traduction": [
+            ("🌐 VECTOR", "traduction, localisation multilingue"),
+            ("✍️ PHILOMÈNE", "qualité rédactionnelle"),
+        ],
+        "deblocage": [
+            ("⚗️ CATALYST", "accélérateur, déblocage de projets"),
+            ("⚔️ SPARTAN", "discipline, cadence"),
+        ],
+        "analytics": [
+            ("📊 ANALYTICS", "monitoring ventes, BSR, KPIs, trends"),
+            ("📈 CYPHER", "data brute, métriques"),
+        ],
+        "rdlab": [
+            ("📚 ARXIV", "veille recherche IA, papers, scoring impact"),
+            ("🔭 SCOUT", "innovations IA, startups, frameworks emergents"),
+            ("🧪 LABRAT", "prototypage experimental, paper-to-code"),
+            ("🔮 HORIZON", "vision 3-5 ans, obsolescence, scenarios futurs"),
+            ("🎓 DOCTORANT", "synthese R&D, hypotheses, interface recherche"),
+        ],
     }
 
     # Mots-clés → catégories d'agents
@@ -99,6 +139,16 @@ class TitanBrain:
         "recherche": ["niche", "marche", "data", "chiffre", "kpi", "opportun", "analyse"],
         "setup": ["setup", "extension", "vscode", "raccourci", "workspace", "optimis", "outil", "install", "config", "benchmark"],
         "simplification": ["simplif", "expliqu", "comprend", "clair", "vulgar", "resum", "digest", "jargon"],
+        "prospection": ["prospect", "outreach", "cold", "email", "relance", "lead", "onboard", "suivi client", "retention"],
+        "qualite": ["qualit", "review", "valid", "checklist", "qa", "benchmark", "concurren", "reverse"],
+        "architecture": ["architect", "systeme", "schema", "flux", "api", "database", "infra", "design system"],
+        "synergie": ["synergi", "connexion", "crois", "amplif", "levier", "multipli"],
+        "negociation": ["negoci", "contrat", "tarif", "diplomati", "conflit", "reclam", "proposition"],
+        "traduction": ["tradui", "translat", "multilingue", "localis", "anglais", "espagnol", "roumain"],
+        "deblocage": ["bloqu", "stuck", "avance pas", "retard", "stagne", "procrastin", "debloque", "accelere"],
+        "analytics": ["analytics", "bsr", "vente", "download", "stat", "monitoring", "trend", "performance"],
+        "rdlab": ["paper", "arxiv", "recherche ia", "innovation ia", "startup ia", "prototype", "experiment",
+                  "horizon ia", "futur ia", "rdlab", "state of the art", "nouveau modele", "nouveau framework", "brevet"],
     }
 
     def __init__(self):

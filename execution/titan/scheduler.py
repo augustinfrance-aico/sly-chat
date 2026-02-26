@@ -32,6 +32,9 @@ from .modules.journal import TitanJournal
 from .modules.auto_healer import TitanAutoHealer
 from .modules.aggregator import TitanAggregator
 from .modules.library import TitanLibrary
+from .modules.rdlab_digestor import TitanRDLabDigestor
+from .modules.rdlab_scout import TitanRDLabScout
+from .modules.rdlab_horizon import TitanRDLabHorizon
 
 log = logging.getLogger("titan.scheduler")
 
@@ -53,6 +56,9 @@ class TitanScheduler:
         self.auto_healer = TitanAutoHealer()
         self.aggregator = TitanAggregator()
         self.library = TitanLibrary()
+        self.rdlab_digestor = TitanRDLabDigestor()
+        self.rdlab_scout = TitanRDLabScout()
+        self.rdlab_horizon = TitanRDLabHorizon()
 
         # State
         self.last_brief_date = None
@@ -61,6 +67,9 @@ class TitanScheduler:
         self.last_journal_prompt = None
         self.last_health_check = None
         self.last_aggregator_date = None
+        self.last_rdlab_daily = None
+        self.last_rdlab_scout_alert = None
+        self.last_rdlab_horizon = None
 
     def send_telegram(self, text: str):
         """Send a message to Telegram. Truncate if too long."""
@@ -215,10 +224,61 @@ class TitanScheduler:
             except Exception as e:
                 log.error(f"Aggregator error: {e}")
 
+    async def rdlab_daily_digest(self):
+        """Send R&D Lab daily digest at 7:30 AM (before morning digest)."""
+        now = _now_paris()
+        if now.hour == 7 and 25 <= now.minute <= 35:
+            today = now.strftime("%Y-%m-%d")
+            if self.last_rdlab_daily == today:
+                return
+            self.last_rdlab_daily = today
+            log.info("Generating R&D Lab daily digest...")
+            try:
+                digest = await self.rdlab_digestor.generate_daily_digest()
+                self.send_telegram(digest)
+                log.info("R&D Lab daily digest sent.")
+            except Exception as e:
+                log.error(f"RDLab daily digest error: {e}")
+
+    async def rdlab_scout_alert(self):
+        """Check for explosive trends at 12:00 PM. Silent if nothing."""
+        now = _now_paris()
+        if now.hour == 12 and now.minute < 5:
+            today = now.strftime("%Y-%m-%d")
+            if self.last_rdlab_scout_alert == today:
+                return
+            self.last_rdlab_scout_alert = today
+            log.info("Checking R&D Lab scout alerts...")
+            try:
+                alert = await self.rdlab_scout.check_alerts()
+                if alert:
+                    self.send_telegram(alert)
+                    log.info("R&D Lab scout alert sent.")
+                else:
+                    log.info("R&D Lab scout: no explosive trends.")
+            except Exception as e:
+                log.error(f"RDLab scout alert error: {e}")
+
+    async def rdlab_horizon_monthly(self):
+        """Monthly horizon forecast on the 1st at 9:00 AM."""
+        now = _now_paris()
+        if now.day == 1 and now.hour == 9 and now.minute < 5:
+            month_key = now.strftime("%Y-%m")
+            if self.last_rdlab_horizon == month_key:
+                return
+            self.last_rdlab_horizon = month_key
+            log.info("Generating R&D Lab horizon forecast...")
+            try:
+                forecast = await self.rdlab_horizon.generate_forecast()
+                self.send_telegram(forecast)
+                log.info("R&D Lab horizon forecast sent.")
+            except Exception as e:
+                log.error(f"RDLab horizon error: {e}")
+
     async def run(self):
         """Main scheduler loop."""
         self.running = True
-        log.info("Scheduler started (with Building Life modules).")
+        log.info("Scheduler started (with Building Life + R&D Lab modules).")
 
         # Boot delay — skip 2 min after deploy to avoid spam
         log.info("Scheduler boot delay: 120s (anti-spam on deploy)")
@@ -228,11 +288,14 @@ class TitanScheduler:
         while self.running:
             try:
                 await self.daily_health_check()       # 6h — santé TITAN
+                await self.rdlab_daily_digest()        # 7h30 — R&D Lab papers
                 await self.smart_morning_digest()      # 8h — digest du matin
                 # morning_brief supprimé — doublon avec smart_morning_digest
+                await self.rdlab_scout_alert()         # 12h — alertes innovations (silent si rien)
                 await self.afternoon_digest()          # 14h — agrégateur
                 await self.evening_reminder()          # 21h — rappel habitudes
                 await self.evening_journal_prompt()    # 21h30 — journal du soir
+                await self.rdlab_horizon_monthly()     # 1er du mois 9h — forecast
             except Exception as e:
                 log.error(f"Scheduler error: {e}")
 

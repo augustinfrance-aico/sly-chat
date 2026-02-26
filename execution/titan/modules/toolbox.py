@@ -20,13 +20,36 @@ class TitanToolbox:
     # === CALCULATORS ===
 
     def calculate(self, expression: str) -> str:
-        """Safe math calculator."""
+        """Safe math calculator using AST — no eval()."""
+        import ast
+        import operator
+
         allowed = set("0123456789+-*/().% ")
         if not all(c in allowed for c in expression):
             return "Expression invalide. Utilise uniquement des chiffres et +-*/()."
 
+        ops = {
+            ast.Add: operator.add, ast.Sub: operator.sub,
+            ast.Mult: operator.mul, ast.Div: operator.truediv,
+            ast.Mod: operator.mod, ast.Pow: operator.pow,
+            ast.USub: operator.neg, ast.UAdd: operator.pos,
+        }
+
+        def _eval(node):
+            if isinstance(node, ast.Expression):
+                return _eval(node.body)
+            elif isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+                return node.value
+            elif isinstance(node, ast.BinOp) and type(node.op) in ops:
+                return ops[type(node.op)](_eval(node.left), _eval(node.right))
+            elif isinstance(node, ast.UnaryOp) and type(node.op) in ops:
+                return ops[type(node.op)](_eval(node.operand))
+            else:
+                raise ValueError("Expression non supportée")
+
         try:
-            result = eval(expression)
+            tree = ast.parse(expression, mode="eval")
+            result = _eval(tree)
             return f"= {result}"
         except Exception as e:
             return f"Erreur: {e}"

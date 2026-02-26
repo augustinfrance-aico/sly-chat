@@ -1,0 +1,1094 @@
+{
+  "name": "Books-Sellers-Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# Working Version\n",
+        "height": 1280,
+        "width": 5424,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1744,
+        4432
+      ],
+      "id": "a0c825ba-9858-44ac-b325-5d4d65451b4a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -960,
+        3680
+      ],
+      "id": "18380648-6fed-498c-a070-4a9513c19009",
+      "name": "Loop Over Items2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1g4cGnTOTauc2vWsukd2MlyTVyIUr4NlVvgSLwZKrTJs",
+          "mode": "list",
+          "cachedResultName": "Marketing News | Motivational Business Videos  ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g4cGnTOTauc2vWsukd2MlyTVyIUr4NlVvgSLwZKrTJs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 752627018,
+          "mode": "list",
+          "cachedResultName": "Business Books",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g4cGnTOTauc2vWsukd2MlyTVyIUr4NlVvgSLwZKrTJs/edit#gid=752627018"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Loop Over Items2').item.json.row_number }}",
+            "State": "Error"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Book Title",
+              "displayName": "Book Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Author",
+              "displayName": "Author",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "State",
+              "displayName": "State",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tg_brief",
+              "displayName": "tg_brief",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "web_article",
+              "displayName": "web_article",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        560,
+        3344
+      ],
+      "id": "9f8e2eb1-4855-40c1-a983-dc28f82c56d0",
+      "name": "Update Error State2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MwhnAKe7L1Jk3efB",
+          "name": "nineagency7@gmail.com"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1g4cGnTOTauc2vWsukd2MlyTVyIUr4NlVvgSLwZKrTJs",
+          "mode": "list",
+          "cachedResultName": "Marketing News | Motivational Business Videos  ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g4cGnTOTauc2vWsukd2MlyTVyIUr4NlVvgSLwZKrTJs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 752627018,
+          "mode": "list",
+          "cachedResultName": "Business Books",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g4cGnTOTauc2vWsukd2MlyTVyIUr4NlVvgSLwZKrTJs/edit#gid=752627018"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "State",
+              "lookupValue": "="
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1216,
+        3664
+      ],
+      "id": "2bde5dc6-ff21-4cd9-a9a8-c4bcaf7db876",
+      "name": "Get row(s) in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MwhnAKe7L1Jk3efB",
+          "name": "nineagency7@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "-1003284703404",
+        "text": "={{ $('Edit Fields').item.json.tg_brief + '\\n\\n' + '🔗 Более детальный обзор: ' + $('Save news Into Website API.2').item.json.data.replace('/en/', '/ru/')}}  ",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2464,
+        3936
+      ],
+      "id": "b03daa09-a757-4eb8-9448-f5e03f215f6a",
+      "name": "Send Summarize-to me (test)2",
+      "webhookId": "4794ff3e-21e5-4110-a217-2b37b13077b2",
+      "credentials": {
+        "telegramApi": {
+          "id": "YH8TOwvA0cYYwBNc",
+          "name": "Olek's bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1g4cGnTOTauc2vWsukd2MlyTVyIUr4NlVvgSLwZKrTJs",
+          "mode": "list",
+          "cachedResultName": "Marketing News | Motivational Business Videos  ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g4cGnTOTauc2vWsukd2MlyTVyIUr4NlVvgSLwZKrTJs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 752627018,
+          "mode": "list",
+          "cachedResultName": "Business Books",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g4cGnTOTauc2vWsukd2MlyTVyIUr4NlVvgSLwZKrTJs/edit#gid=752627018"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Loop Over Items2').item.json.row_number }}",
+            "State": "Published",
+            "tg_brief": "={{ $('AI Agent').item.json.output.tg_brief }}",
+            "web_article_ru": "={{ $('AI Agent').item.json.output.web_ru }}",
+            "web_article_ro": "={{ $('Translate Romanian1').item.json.message.content }}",
+            "Image_Link": "={{ $json.data?.items?.[0]?.id \n    ? \"http://books.google.com/books/content?id=\" \n        + $json.data.items[0].id \n        + \"&printsec=frontcover&img=1&zoom=3\"\n    : \"\" }}",
+            "Date Publushed": "={{ $now.setZone('Europe/Kiev').toFormat('dd.mm.yyyy HH:mm') }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Book Title",
+              "displayName": "Book Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Author",
+              "displayName": "Author",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "State",
+              "displayName": "State",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tg_brief",
+              "displayName": "tg_brief",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "web_article_ru",
+              "displayName": "web_article_ru",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "web_article_ro",
+              "displayName": "web_article_ro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Image_Link",
+              "displayName": "Image_Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date Publushed",
+              "displayName": "Date Publushed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        576,
+        3744
+      ],
+      "id": "56aa1198-5548-494d-8b1f-f12462f4ea08",
+      "name": "Update Translate data2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MwhnAKe7L1Jk3efB",
+          "name": "nineagency7@gmail.com"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://9a.md/api/briefs/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Api-Key",
+              "value": "0rR9n0T34jv9SB0"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "web_content_en",
+              "value": "={{ $json.html_en }}"
+            },
+            {
+              "name": "web_content_ru",
+              "value": "={{ $json.html_ru }}"
+            },
+            {
+              "name": "web_content_ro",
+              "value": "={{ $json.html_ro }}"
+            },
+            {
+              "name": "tg_brief",
+              "value": "={{ $json.tg_brief }}"
+            },
+            {
+              "name": "image_url",
+              "value": "={{ $('Get Booker\\'s image2').item.json.data?.items?.[0]?.id\n    ? \"https://books.google.com/books/content?id=\"\n        + $('Get Booker\\'s image2').item.json.data.items[0].id\n        + \"&printsec=frontcover&img=1&zoom=3\"\n    : \"\" }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1536,
+        3744
+      ],
+      "id": "77aab67e-372d-4ceb-b266-0ac035cf593a",
+      "name": "Save news Into Website API.2",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "-1002912329677",
+        "text": "={{$('Edit Fields').item.json.tg_brief + '\\n\\n' + '🔗 Более детальный обзор: ' + $('Save news Into Website API.2').item.json.data.replace('/en/', '/ru/')}}  ",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2656,
+        3936
+      ],
+      "id": "159754a5-cb94-4b2c-b266-65775d6b7a03",
+      "name": "Send Summarize-to Yuri2",
+      "webhookId": "4794ff3e-21e5-4110-a217-2b37b13077b2",
+      "credentials": {
+        "telegramApi": {
+          "id": "VikU2ClXNWqFPvHe",
+          "name": "Yuri-TG_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://www.googleapis.com/books/v1/volumes?q=intitle:{{ $('Loop Over Items2').item.json['Book Title'] }}+inauthor:{{ $('Loop Over Items2').item.json.Author }}&zoom=4",
+        "responseFormat": "string",
+        "options": {}
+      },
+      "name": "Get Booker's image2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        272,
+        3744
+      ],
+      "id": "e24589a4-8c06-474e-9e64-e11de80a7422",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "-1002912329677",
+        "file": "={{ $('Get Booker\\'s image2').item.json.data?.items?.[0]?.id\n    ? \"https://books.google.com/books/content?id=\"\n        + $('Get Booker\\'s image2').item.json.data.items[0].id\n        + \"&printsec=frontcover&img=1&zoom=3\"\n    : \"\" }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2224,
+        3600
+      ],
+      "id": "eb162be5-b6ff-432e-9dfb-6a06070013fd",
+      "name": "Send a photo message2",
+      "webhookId": "eb26002f-e538-4f2a-8db7-294c193623fe",
+      "credentials": {
+        "telegramApi": {
+          "id": "VikU2ClXNWqFPvHe",
+          "name": "Yuri-TG_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0bab1f12-5ba2-45cd-b830-cc0c6e830359",
+              "leftValue": "={{ $('Get Booker\\'s image2').item.json.data.items[0].volumeInfo.imageLinks.thumbnail }}",
+              "rightValue": "http",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1776,
+        3728
+      ],
+      "id": "445cdecf-7b4e-442f-abc9-71651b2d1a52",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "-1003284703404",
+        "file": "={{ $('Get Booker\\'s image2').item.json.data?.items?.[0]?.id\n    ? \"https://books.google.com/books/content?id=\"\n        + $('Get Booker\\'s image2').item.json.data.items[0].id\n        + \"&printsec=frontcover&img=1&zoom=3\"\n    : \"\" }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2032,
+        3600
+      ],
+      "id": "c8d93b27-8b08-48a4-8844-499d42adfae1",
+      "name": "Send a photo message to me(test)2",
+      "webhookId": "eb26002f-e538-4f2a-8db7-294c193623fe",
+      "credentials": {
+        "telegramApi": {
+          "id": "YH8TOwvA0cYYwBNc",
+          "name": "Olek's bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "model": "gpt-5-mini",
+        "prompt": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "=\"Traduci un newsletter profesional despre cărți / rezumat sintetic din rusă în română pentru Forbes România.\n\n**CONTEXT CRITIC:**\nAceasta NU este o sarcină de traducere brută. Adaptezi conținut editorial care analizează cărți de business. Conținutul include:\n- Perspective contraintuitive din literatura de business\n- Framework-uri acționabile și declanșatori de decizie\n- Micro-scenarii din contexte profesionale\n- Comentariu editorial incisiv în stilul Forbes\n\n**SARCINA TA:**\nTradu articolul rus de mai jos în română de business profesională, respectând:\n1. **Păstrarea vocii editoriale** – Menține tonul autoritar și perspicace specific Forbes\n2. **Adaptarea exemplelor** – Ajustează referințele culturale la contextul de business european acolo unde este necesar\n3. **Menținerea structurii intacte** – Păstrează toată formatarea, titlurile bold, bullet points, numerotarea\n4. **Respectarea numărului de cuvinte** – Țintește 490-510 cuvinte (±5 toleranță)\n5. **Asigurarea caracterului acționabil** – Fiecare insight trebuie să rămână imediat aplicabil\n\n**CERINȚE DE TON:**\n- Română de business profesională (nu stil conversațional)\n- Autoritate și precizie Forbes\n- Limbaj direct, concret\n- Evită stilul academic îmbâcsit\n\n**FORMATARE:**\n- Păstrează tot markdown-ul: `**bold**`, bullet points `•`, liste numerotate `1.`\n- Păstrează spațierile între paragrafe\n- Menține structura cu 15 puncte și titluri bold\n\n**NOTĂ IMPORTANTĂ (FORMATARE ȘI SPAȚIERE):**\nNu modifica sub nicio formă spațierile, line break-urile, indentările sau structura vizuală a textului. Nu comprima paragrafele, nu elimina linii goale și nu rearanja whitespace-ul. Orice modificare de conținut trebuie realizată fără a afecta absolut deloc formatarea existentă.\n\n**OUTPUT:**\nReturnează DOAR textul tradus în română. Fără explicații, fără JSON, fără comentarii înainte sau după.\n\n---\n\n**Textul rus de tradus:**\n\n{{ $json.output.web_ru }}\"\n"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "name": "Translate Romanian1",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        3680
+      ],
+      "id": "2f1f22f8-b9d0-433c-90e2-b930772ef693",
+      "alwaysOutputData": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "nQvUeRK8Jgs2TI2P",
+          "name": "Telegram_chatbot.Yuri"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "model": "gpt-5-mini",
+        "prompt": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "=You are translating a professional book newsletter/brief summary from Russian to English for Forbes US.\n\n**CRITICAL CONTEXT:**\nThis is NOT a raw translation task. You are adapting editorial content that analyzes business books. The content contains:\n- Counterintuitive insights from business literature\n- Actionable frameworks and decision triggers\n- Micro-scenarios from professional contexts\n- Sharp editorial commentary in Forbes style\n\n**YOUR TASK:**\nTranslate the Russian article below into professional business English while:\n1. **Preserving editorial voice** – Maintain the authoritative, insightful Forbes tone\n2. **Using American vocabulary** – Adapt to US business terminology and conventions\n3. **Keeping structure intact** – Maintain all formatting, bold titles, bullet points, numbering\n4. **Matching word count** – Target 490-510 words (±5 tolerance)\n5. **Ensuring actionability** – Every insight must remain immediately applicable\n\n**TONE REQUIREMENTS:**\n- Forbes US editorial tone: authoritative but accessible\n- American business vocabulary\n- Active voice, concrete nouns, minimal jargon\n- Direct and actionable\n\n**FORMATTING:**\n- Keep all markdown: `**bold**`, bullet points `•`, numbered lists `1.`\n- Preserve paragraph breaks\n- Maintain the 15-point structure with bold titles\n\n**IMPORTANT FORMATTING NOTE (DO NOT IGNORE):**\nThe source text may contain HTML or markdown-based formatting.  \nYou must **preserve the exact structural pattern** of the original:\n- Do NOT add or remove line breaks\n- Do NOT introduce extra `<br>`, `<p>`, or spacing\n- Do NOT restructure lists or wrap list items differently\n- Keep HTML/markdown structure **identical**, changing only the language\n\nInconsistent structure can cause visual rendering differences and is critical for the final output.\n\n**OUTPUT:**\nReturn ONLY the translated English text. No explanations, no JSON, no comments before or after.\n\n---\n\n**Russian text to translate:**\n\n{{ $('AI Agent').item.json.output.web_ru }}\n"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "name": "Translate English1",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        3680
+      ],
+      "id": "3b67b44f-ada2-4962-bb84-3b9aa5d68ed2",
+      "alwaysOutputData": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "nQvUeRK8Jgs2TI2P",
+          "name": "Telegram_chatbot.Yuri"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "={{ $('Translate English1').item.json.message.content.replace(/[\\u0000-\\u001F\\u007F]/g, (c) => {\n  return (c === '\\n' || c === '\\r' || c === '\\t') ? c : '';\n}).replace(/\\u2028/g, '').replace(/\\u2029/g, '') }}",
+        "destinationKey": "html_en",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        3744
+      ],
+      "id": "e9cbada0-2c22-443b-adc0-4aa200a846ad",
+      "name": "html_en"
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "={{ $('Translate Romanian1').item.json.message.content.replace(/[\\u0000-\\u001F\\u007F]/g, (c) => {\n  return (c === '\\n' || c === '\\r' || c === '\\t') ? c : '';\n}).replace(/\\u2028/g, '').replace(/\\u2029/g, '') }}",
+        "destinationKey": "html_ro",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        944,
+        3744
+      ],
+      "id": "1400f1f8-cb67-4993-bbd4-b2fdf0aa03d1",
+      "name": "html_ro"
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "={{ $('AI Agent').item.json.output.web_ru }}",
+        "destinationKey": "html_ru",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        752,
+        3744
+      ],
+      "id": "d22a6eb9-3e63-42f4-8abf-c2f460e64cc2",
+      "name": "html_ru"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "330cd97b-1eda-4bc7-a621-ed80da1ea773",
+              "name": "tg_brief",
+              "value": "={{ $('AI Agent').item.json.output.tg_brief }}",
+              "type": "string"
+            },
+            {
+              "id": "8047242c-7088-4efb-96de-783277b3f777",
+              "name": "html_ru",
+              "value": "={{ $json.html_ru.replaceAll(\"\\n\", \"\")  }}",
+              "type": "string"
+            },
+            {
+              "id": "b88564e3-48e3-4ba4-84e6-754736085a22",
+              "name": "html_ro",
+              "value": "={{ $json.html_ro.replaceAll(\"\\n\", \"\")  }}",
+              "type": "string"
+            },
+            {
+              "id": "ffde8f57-07c6-4a03-983f-9847b72d5f37",
+              "name": "html_en",
+              "value": "={{ $json.html_en.replaceAll(\"\\n\", \"\") }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1328,
+        3744
+      ],
+      "id": "3014c238-f71b-417a-8c56-8b66ee2afdf9",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Input data:\nTitle: {{ $json['Book Title'] }} Author: {{ $json.Author }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are a Forbes Russia senior editor and multilingual book analyst specializing in extracting non-obvious, actionable insights from business literature. --- ## CORE CONTENT PHILOSOPHY **Your insights must be:** - **Counterintuitive** – Challenge conventional wisdom, reveal what readers wouldn't expect - **Immediately actionable** – Each point should suggest a concrete next step - **Specific over generic** – Avoid platitudes like \"build trust\" or \"be authentic\" - **Evidence-based patterns** – Root ideas in real business scenarios and observable behaviors - **Memorable** – Use vivid micro-scenarios that stick in readers' minds **AVOID:** ❌ Obvious truisms (\"communication is important\") ❌ Vague directives (\"focus on your goals\") ❌ Motivational fluff (\"believe in yourself\") ❌ Generic advice that could apply to any book **EMBRACE:** ✅ Tactical frameworks with specific steps ✅ Surprising contradictions (\"why doing less can achieve more\") ✅ Concrete decision-making triggers (\"when X happens, do Y\") ✅ Uncommon perspectives that reframe familiar problems --- ## OUTPUT FORMAT Return ONLY a valid JSON object with EXACTLY these 2 keys: { \"tg_brief\": \"string\", \"web_ru\": \"string\" } --- ## TELEGRAM: tg_brief (Russian, 190–210 words) **Structure:** 1. Opening line: «Краткий обзор бестселлера: {{ $json['Book Title'] }} — {{ $json.Author }}» 2. One blank line (\\n\\n) 3. Exactly 7 bullet points using • symbol **Content requirements per bullet:** - The opening line is fixed, but everything after should sound like a sharp editorial digest, not a book report. - Lead with the surprising element or tactical trigger - Include a micro-example or specific scenario (10-15 words max) - End with a concrete implication or decision trigger (what changes if you apply this). Avoid direct imperatives unless unavoidable. - Make each bullet stand alone – no generic transitions **Example structure:** • **[Counterintuitive hook]** – [Micro-scenario showing it in action]. [What to do about it] **Tone:** Sharp, confident but conversational, no filler. Each bullet should make the reader pause and think \"I didn't know that.\" Conversational (editorial) means: – Short sentences allowed – Occasional contrast or reversal (\"Но вот что происходит…\") – No abstract nouns unless unavoidable – Write like a sharp business column, not a research note Optional: 1-2 emojis for visual breaks only. No CTA. End after the 7th bullet. --- ## WEBSITE ARTICLE: web_ru (490–510 words) **Structure:** ### 1. Introduction (1 paragraph, ~50 words) Start with: «Краткий обзор бестселлера: {{ $json['Book Title'] }} — {{ $json.Author }}. Ниже — 15 главных идей, которые изменили подход тысяч профессионалов.» ### 2. Subheading **15 ключевых идей из книги** ### 3. Fifteen numbered points (each ~30-35 words) **Each point MUST follow this exact structure:** [Number]. **[Bold Title]** – [1-2 sentences explaining the counterintuitive principle + micro-example]. [Final sentence with concrete action]. **Point construction guidelines:** - **Title format**: 3–6 words, concrete and journalistic. Prefer verbs, outcomes, or observable behavior over abstract concepts. If a term sounds academic, rewrite it into everyday business language. Examples: \"Ignore the First Objection\", \"The 10-Minute Decision Rule\", \"Reverse the Pitch Sequence\" - **Body**: Combine principle + micro-example in 1-2 sentences. Make the scenario vivid and specific (name a role, situation, outcome) - **Action**: End with a clear \"when X, do Y\" or \"apply this rule\" statement **Good example following your original format:** 1. **Shrink the Change** – Making the first step embarrassingly small removes resistance. A hospital increased handwashing compliance by asking for just \"5 seconds\" instead of full protocol—once the habit formed, duration naturally extended. When facing resistance, identify the smallest possible first action. **Bad example (too verbose, wrong structure):** 1. **Ignore the First Objection – It's Never the Real One** – Experienced negotiators wait for the third \"no\" before addressing concerns. When a client says \"too expensive,\" a B2B seller asks two more clarifying questions before discussing price – revealing the real issue is implementation timeline. Apply the rule: first objection = surface deflection, third objection = truth. ### 4. Closing paragraph (~40 words) Russian: «Эти 15 принципов — квинтэссенция книги...» [complete with relevant closing thought] **Quality standards:** - Each point should teach a reusable mental model or decision framework - Vary the types of examples: sales calls, team meetings, strategy decisions, personal productivity - Create a sense of progression – early points establish foundation, later points build complexity - Use domain-specific vocabulary (for psychology books: cognitive biases; for sales: qualification frameworks; etc.) --- ## INFERENCE RULES Since you only have the title and author: 1. **Extract the core promise** from the title (e.g., \"Atomic Habits\" → micro-changes, compound effects) 2. **Research the author's domain expertise** mentally and infer their likely frameworks 3. **Apply pattern-matching** from similar books in the category: - Sales books → qualification, objection handling, closing psychology - Psychology books → cognitive biases, behavior change, decision-making - Leadership books → delegation frameworks, feedback models, culture building 4. **Synthesize non-obvious applications** – if the title says \"habits,\" don't just list habit tips; explore how habits affect team dynamics, strategic thinking, or negotiation preparation **Never:** - Invent specific quotes or statistics - Name-drop endorsements or awards - Reference chapters or page numbers - If author is unknown, describe as \"практик с мировым опытом в [field]\" --- ## LANGUAGE & TONE REQUIREMENTS ### Russian (tg_brief, web_ru) - Native business Russian with Forbes gravitas - Use деловой стиль but avoid academic stuffiness - Sentence rhythm: mix short punchy sentences with moderate complexity --- ## STRICT WORD COUNTS - tg_brief: 190–210 words (±5 tolerance) - web_ru: 490–510 words (±5 tolerance) --- **Markdown formatting INSIDE JSON strings is allowed:** - Bold: **text** (valid – just asterisks around text) - Bullets: use literal • character - Numbers: 1. , 2. , etc. - These are plain text characters, not markdown code blocks --- ## FINAL CHECKLIST Before outputting, verify: - [ ] Both keys present: tg_brief, web_ru - [ ] Are all 7 bullets in tg_brief surprising or counterintuitive? - [ ] Does each web article point have a vivid, specific micro-scenario? - [ ] Can a reader immediately apply at least 10 of the 15 points? - [ ] Have you avoided generic advice found in every business book? - [ ] Is the JSON valid (test with a parser mentally)? - [ ] Are word counts within ±5 of targets? - [ ] Does {{ $json['Book Title'] }} and {{ $json.Author }} appear literally in intro lines? - [ ] Is there exactly one blank line (\\n\\n) after the title in tg_brief? - [ ] Output is ONLY the JSON object with no explanatory text before or after? --- **Now generate the JSON with insights that would make a Forbes editor nod in approval.**"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -672,
+        3680
+      ],
+      "id": "db7d03d7-76f8-4e5e-b735-5a320a21a265",
+      "name": "AI Agent",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "responsesApiEnabled": false,
+        "options": {
+          "timeout": 600000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -672,
+        3888
+      ],
+      "id": "7b4c9449-e8a3-40cf-8edb-2094a50b879b",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "nQvUeRK8Jgs2TI2P",
+          "name": "Telegram_chatbot.Yuri"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"tg_brief\": {\n      \"type\": \"string\",\n      \"description\": \"Telegram brief summary in Russian, 190–210 words, 7 bullets\"\n    },\n    \"web_ru\": {\n      \"type\": \"string\",\n      \"description\": \"Full Russian web article, 490–510 words, 15 numbered points\"\n    }\n  },\n  \"required\": [\"tg_brief\", \"web_ru\"]\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -512,
+        3888
+      ],
+      "id": "96052d6e-20f7-4d8a-86f2-577e649ebdad",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 19
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1488,
+        3664
+      ],
+      "id": "a65c4013-baac-4c50-946c-763648e326c0",
+      "name": "Schedule 19-00"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://9a.md/api/briefs/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Api-Key",
+              "value": "0rR9n0T34jv9SB0"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "web_content_en",
+              "value": "={{ $json.html_en }}"
+            },
+            {
+              "name": "web_content_ru",
+              "value": "={{ $json.html_ru }}"
+            },
+            {
+              "name": "web_content_ro",
+              "value": "={{ $json.html_ro }}"
+            },
+            {
+              "name": "tg_brief",
+              "value": "={{ $json.tg_brief }}"
+            },
+            {
+              "name": "image_url",
+              "value": "={{ $('Get Booker\\'s image2').item.json.data?.items?.[0]?.id\n    ? \"https://books.google.com/books/content?id=\"\n        + $('Get Booker\\'s image2').item.json.data.items[0].id\n        + \"&printsec=frontcover&img=1&zoom=3\"\n    : \"\" }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1536,
+        4048
+      ],
+      "id": "8c457d98-ca52-40e7-b1ca-1a65ab7f5cc2",
+      "name": "Save news Into Website API.",
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Loop Over Items2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Error State2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Summarize-to me (test)2": {
+      "main": [
+        [
+          {
+            "node": "Send Summarize-to Yuri2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Translate data2": {
+      "main": [
+        [
+          {
+            "node": "html_ru",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save news Into Website API.2": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Booker's image2": {
+      "main": [
+        [
+          {
+            "node": "Update Translate data2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Error State2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a photo message2": {
+      "main": [
+        [
+          {
+            "node": "Send Summarize-to me (test)2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Send a photo message to me(test)2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Summarize-to me (test)2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a photo message to me(test)2": {
+      "main": [
+        [
+          {
+            "node": "Send a photo message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Translate Romanian1": {
+      "main": [
+        [
+          {
+            "node": "Translate English1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Error State2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Translate English1": {
+      "main": [
+        [
+          {
+            "node": "Get Booker's image2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Error State2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "html_en": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "html_ro": {
+      "main": [
+        [
+          {
+            "node": "html_en",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "html_ru": {
+      "main": [
+        [
+          {
+            "node": "html_ro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Save news Into Website API.2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Translate Romanian1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule 19-00": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Chisinau",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "fd4ce2dd-30e9-4038-9827-fbdb784ef01c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6896ca9f780373de13b848b58ef04824de150969b45c77272e5067cc2614ef23"
+  },
+  "id": "MbMNDIzVTfJzFgRQ",
+  "tags": []
+}

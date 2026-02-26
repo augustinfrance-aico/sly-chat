@@ -272,6 +272,24 @@ class TitanGamification:
         os.makedirs(GAMIFICATION_DIR, exist_ok=True)
         self.data = self._load()
 
+    @staticmethod
+    def _safe_check(expr: str, variables: dict) -> bool:
+        """Evaluate simple comparison expressions safely — no eval().
+        Supports: var >= N, var1 >= N and var2 >= N"""
+        import re
+        parts = re.split(r'\s+and\s+', expr)
+        for part in parts:
+            m = re.match(r'(\w+)\s*(>=|<=|>|<|==|!=)\s*(\d+)', part.strip())
+            if not m:
+                return False
+            var, op, val = m.group(1), m.group(2), int(m.group(3))
+            actual = variables.get(var, 0)
+            checks = {">=": actual >= val, "<=": actual <= val, ">": actual > val,
+                      "<": actual < val, "==": actual == val, "!=": actual != val}
+            if not checks.get(op, False):
+                return False
+        return True
+
     def _load(self) -> dict:
         """Load gamification data."""
         if os.path.exists(GAMIFICATION_FILE):
@@ -538,7 +556,7 @@ class TitanGamification:
         }
 
         try:
-            if eval(challenge["check"], {"__builtins__": {}}, check_vars):
+            if self._safe_check(challenge["check"], check_vars):
                 self.data["daily"]["challenge_done"] = True
                 self.data["xp"] += challenge["xp"]
                 self._save()

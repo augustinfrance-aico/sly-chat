@@ -1,0 +1,2119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>MOON TOWER RPG — Explore l'Empire</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background: #0a0a12; overflow: hidden; font-family: 'Courier New', monospace; touch-action: none; }
+canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
+#dialog {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a2e;
+    border: 3px solid #7B2FF7;
+    border-radius: 8px;
+    padding: 15px 20px;
+    color: #e0e0e0;
+    font-size: 14px;
+    max-width: 500px;
+    width: 90%;
+    line-height: 1.6;
+    z-index: 100;
+    box-shadow: 0 0 30px rgba(123,47,247,0.4);
+}
+#dialog .name { color: #7B2FF7; font-weight: bold; margin-bottom: 5px; font-size: 16px; }
+#dialog .text { color: #ccc; }
+#dialog .hint { color: #666; font-size: 10px; margin-top: 8px; }
+#controls {
+    display: none;
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+}
+.dpad {
+    display: grid;
+    grid-template-columns: 50px 50px 50px;
+    grid-template-rows: 50px 50px 50px;
+    gap: 2px;
+}
+.dpad-btn {
+    width: 50px; height: 50px;
+    background: rgba(123,47,247,0.3);
+    border: 1px solid rgba(123,47,247,0.5);
+    border-radius: 8px;
+    color: white;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.dpad-btn:active { background: rgba(123,47,247,0.6); }
+.dpad-btn.action { background: rgba(0,255,136,0.3); border-color: rgba(0,255,136,0.5); }
+.dpad-btn.action:active { background: rgba(0,255,136,0.6); }
+/* Show touch controls on mobile */
+@media (max-width: 900px) { #controls { display: block; } }
+@media (pointer: coarse) { #controls { display: block; } }
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="dialog">
+    <div class="name" id="dName"></div>
+    <div class="text" id="dText"></div>
+    <div class="hint" id="dialogHint">Espace pour fermer</div>
+</div>
+
+<!-- Mobile D-Pad -->
+<div id="controls">
+    <div class="dpad">
+        <div></div>
+        <div class="dpad-btn" id="dpad-up">&#9650;</div>
+        <div></div>
+        <div class="dpad-btn" id="dpad-left">&#9664;</div>
+        <div class="dpad-btn action" id="dpad-action">A</div>
+        <div class="dpad-btn" id="dpad-right">&#9654;</div>
+        <div></div>
+        <div class="dpad-btn" id="dpad-down">&#9660;</div>
+        <div class="dpad-btn action" id="dpad-elevator" style="font-size:12px">E</div>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+// === PIXEL SCALE ===
+const TILE = 32; // tile size in pixels
+const SCALE = 2;  // rendering scale
+let W, H, COLS, ROWS;
+
+function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    COLS = Math.ceil(W / TILE) + 2;
+    ROWS = Math.ceil(H / TILE) + 2;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// === XP + LEVEL SYSTEM ===
+let playerXP = 0;
+let playerLevel = 1;
+let talkedAgents = new Set();
+let completedQuests = new Set();
+let unlockedAchievements = new Set();
+const XP_PER_LEVEL = 100;
+
+// === NOTIFICATION SYSTEM ===
+let notifications = [];
+
+function showNotification(text, color) {
+    color = color || '#fff';
+    notifications.push({ text: text, color: color, y: 0, alpha: 1, life: 120 });
+}
+
+function drawNotifications() {
+    notifications = notifications.filter(function(n) {
+        n.y -= 0.5;
+        n.life--;
+        n.alpha = Math.min(1, n.life / 30);
+        ctx.save();
+        ctx.font = 'bold 14px "Courier New"';
+        ctx.textAlign = 'center';
+        ctx.globalAlpha = n.alpha;
+        ctx.fillStyle = n.color;
+        ctx.fillText(n.text, canvas.width / 2, canvas.height / 2 + n.y - 60);
+        ctx.restore();
+        return n.life > 0;
+    });
+}
+
+function addXP(amount, reason) {
+    playerXP += amount;
+    showNotification('+' + amount + ' XP \u2014 ' + reason, '#00FF88');
+    // Spawn XP particles
+    if (typeof spawnParticles === 'function') {
+        spawnParticles(canvas.width/2, canvas.height/2 - 40, '#00FF88', 10);
+    }
+    while (playerXP >= playerLevel * XP_PER_LEVEL) {
+        playerXP -= playerLevel * XP_PER_LEVEL;
+        playerLevel++;
+        showNotification('LEVEL UP! Niveau ' + playerLevel, '#FFD700');
+        // Big particle burst on level up
+        if (typeof spawnParticles === 'function') {
+            spawnParticles(canvas.width/2, canvas.height/2, '#FFD700', 25);
+            spawnParticles(canvas.width/2, canvas.height/2, '#7B2FF7', 15);
+        }
+    }
+    saveGame();
+}
+
+// === COLORS ===
+const FLOOR_THEMES = [
+    {name:'DEPLOY', pole:'\uD83D\uDE80', bg:'#0a1a10', wall:'#0d2a15', floor:'#081408', accent:'#00FF88', border:'#00AA55'},
+    {name:'FORGE \u2014 Bas', pole:'\uD83D\uDD28', bg:'#1a0f05', wall:'#2a1808', floor:'#140a02', accent:'#FF6B35', border:'#AA4520'},
+    {name:'FORGE \u2014 Haut', pole:'\uD83D\uDD28', bg:'#1a0f05', wall:'#2a1808', floor:'#140a02', accent:'#FF8855', border:'#BB5530'},
+    {name:'RECON \u2014 Bas', pole:'\uD83D\uDD2D', bg:'#05101a', wall:'#081a2a', floor:'#030a14', accent:'#00D4FF', border:'#0088AA'},
+    {name:'RECON \u2014 Haut', pole:'\uD83D\uDD2D', bg:'#05101a', wall:'#081a2a', floor:'#030a14', accent:'#00B4DF', border:'#006688'},
+    {name:'OMEGA-CORE', pole:'\u267E\uFE0F', bg:'#100520', wall:'#1a0830', floor:'#0a0318', accent:'#7B2FF7', border:'#5520AA'},
+];
+
+// === FLOOR MAPS ===
+// Each floor: 20 tiles wide, 12 tiles tall
+// 0=floor, 1=wall, 2=elevator, 3=agent spot, 4=window, 5=desk, 6=plant, 7=computer
+const FLOOR_W = 20;
+const FLOOR_H = 12;
+
+function makeFloor(agentCount) {
+    const map = [];
+    for (let y = 0; y < FLOOR_H; y++) {
+        const row = [];
+        for (let x = 0; x < FLOOR_W; x++) {
+            if (y === 0 || y === FLOOR_H-1) row.push(1); // top/bottom wall
+            else if (x === 0 || x === FLOOR_W-1) row.push(1); // side walls
+            else if (x === FLOOR_W-2 && y === Math.floor(FLOOR_H/2)) row.push(2); // elevator
+            else if (y === 0 && x % 4 === 2 && x > 1 && x < FLOOR_W-2) row.push(4); // windows
+            else row.push(0); // floor
+        }
+        map.push(row);
+    }
+    return map;
+}
+
+// === AGENTS PER FLOOR ===
+const FLOOR_AGENTS = [
+    // Floor 0 — DEPLOY
+    [
+        {n:'Bagheera',e:'\uD83D\uDC06',r:'Je supervise les flux. Tout passe par moi.',rr:'Les flux sont stables. Continue ton ascension.',c:'#00FF88',x:3,y:3,gov:true},
+        {n:'Spartan',e:'\u2694\uFE0F',r:'Deadlines respectees. Pas de discussion.',rr:'Toujours dans les temps. Bien.',c:'#00EE78',x:6,y:5,gov:true},
+        {n:'Belfort',e:'\uD83D\uDC3A',r:'Close or be closed. C\'est la loi.',rr:'T\'es encore la ? Close le deal.',c:'#00DD68',x:9,y:3},
+        {n:'Stanley',e:'\uD83C\uDFAC',r:'Chaque pitch est un film. Action.',rr:'La camera tourne toujours. Stay sharp.',c:'#00CC58',x:12,y:6},
+        {n:'Sly',e:'\uD83E\uDD8A',r:'La negociation est un art. Je suis Picasso.',rr:'On se connait deja. Qu\'est-ce que tu veux ?',c:'#00BB48',x:15,y:4},
+        {n:'Vito',e:'\uD83C\uDFA9',r:'Les relations, c\'est le vrai pouvoir.',rr:'La famille est forte. Continue.',c:'#00AA38',x:4,y:8},
+        {n:'Grimaldi',e:'\uD83D\uDD0D',r:'J\'audite tout. Rien ne passe sans mon OK.',rr:'Audit en cours... tout semble clean.',c:'#009928',x:8,y:8},
+        {n:'X-O1',e:'\uD83E\uDD16',r:'Le setup est ma religion. DevOps is life.',rr:'Systemes nominaux. Rien a signaler.',c:'#008818',x:12,y:9},
+        {n:'Zen',e:'\uD83E\uDDD8',r:'Respire. Le recul est une force.',rr:'Tu reviens chercher la paix ? Bonne idee.',c:'#007708',x:16,y:8},
+        {n:'Bentley',e:'\uD83C\uDFAD',r:'Les avatars sont prets. Qui veux-tu etre ?',rr:'Tu veux changer de peau ? J\'ai du stock.',c:'#006600',x:15,y:9},
+        {n:'Outreach',e:'\uD83D\uDCE1',r:'Le premier message ouvre toutes les portes.',rr:'Les sequences tournent. Pipeline plein.',c:'#00CC68',x:7,y:9},
+        {n:'Proxy',e:'\uD83C\uDFAD',r:'Tout conflit a une solution elegante.',rr:'La negociation est un art. On maitrise.',c:'#00AA48',x:11,y:9},
+        {n:'Keeper',e:'\uD83D\uDEE1\uFE0F',r:'Un client silencieux est un signal.',rr:'Retention a 95%. Mission accomplie.',c:'#009938',x:3,y:9},
+        {n:'Paragon',e:'\u2705',r:'Rien ne sort sans ma validation.',rr:'Standards maintenus. Qualite irreprochable.',c:'#00BB58',x:13,y:3},
+        {n:'Limpide',e:'\uD83D\uDCA0',r:'Si c\'est complique, c\'est mal dit.',rr:'Toujours plus clair. C\'est ma mission.',c:'#00DD88',x:5,y:6},
+    ],
+    // Floor 1 — FORGE lower
+    [
+        {n:'Zara',e:'\uD83D\uDC85',r:'Le contenu viral, c\'est mon terrain de jeu.',rr:'Toujours en train de creer. Tu veux quoi ?',c:'#FF5525',x:4,y:4},
+        {n:'Murray',e:'\uD83D\uDE0F',r:'Si c\'est pas drole, c\'est pas bon.',rr:'Tu reviens pour rigoler ? J\'ai des nouvelles vannes.',c:'#FF4515',x:8,y:6},
+        {n:'Leon',e:'\uD83D\uDCB0',r:'Les chiffres ne mentent jamais. Moi non plus.',rr:'Les metriques sont bonnes. Next.',c:'#FF3505',x:12,y:4},
+        {n:'Baloo',e:'\uD83D\uDC3B',r:'Complique ? Je te vulgarise ca en 2 phrases.',rr:'Faut que j\'explique encore ? Ok ok...',c:'#EE2500',x:16,y:7},
+        {n:'Vector',e:'\uD83C\uDF10',r:'Les mots n\'ont pas de frontieres.',rr:'Traduction validee. Le monde est a portee.',c:'#FF6635',x:6,y:7},
+        {n:'Catalyst',e:'\u2697\uFE0F',r:'Bloque ? Plus maintenant.',rr:'Un autre blocage resolu. Keep going.',c:'#EE3515',x:10,y:8},
+    ],
+    // Floor 2 — FORGE upper
+    [
+        {n:'Nikola',e:'\u26A1',r:'L\'infrastructure invisible. C\'est moi.',rr:'Les serveurs tournent. Tout va bien.',c:'#FF6B35',x:4,y:4,gov:true},
+        {n:'Philomene',e:'\u270D\uFE0F',r:'Chaque mot compte. Precision chirurgicale.',rr:'Tu veux que je relise quelque chose ?',c:'#FF8555',x:8,y:6,gov:true},
+        {n:'Forge',e:'\uD83D\uDD28',r:'Code, build, ship. Repeat.',c:'#FF9F75',x:12,y:4},
+        {n:'Basquiat',e:'\uD83C\uDFA8',r:'L\'art est une arme. Et je suis arme.',c:'#FFB995',x:16,y:7},
+        {n:'Architect',e:'\uD83C\uDFDB\uFE0F',r:'L\'architecture c\'est ce qui reste.',rr:'Le systeme tient. Les fondations sont solides.',c:'#FF7745',x:6,y:7},
+        {n:'Pulse',e:'\u26A1',r:'0.3s de trop. Inacceptable.',rr:'Latence nominale. Continue.',c:'#FF7745',x:10,y:8},
+        {n:'Arcade',e:'\uD83C\uDFAE',r:'La vie est un jeu. Autant bien scorer.',rr:'Score battu ! Level up incoming.',c:'#EE5535',x:14,y:8},
+    ],
+    // Floor 3 — RECON lower
+    [
+        {n:'Ghost',e:'\uD83D\uDC7B',r:'Je vois tout. Tu ne me vois pas.',rr:'Tu m\'as retrouve. Impressionnant.',c:'#0090BF',x:4,y:4},
+        {n:'Nash',e:'\uD83C\uDFB2',r:'La theorie des jeux, c\'est la vie.',rr:'L\'equilibre est maintenu. Pour l\'instant.',c:'#0080AF',x:8,y:6},
+        {n:'Cypher',e:'\uD83D\uDCCA',r:'Les donnees parlent. J\'ecoute.',c:'#00709F',x:12,y:4},
+        {n:'Rick',e:'\uD83E\uDDEA',r:'Et si on faisait l\'inverse de ce qui marche ?',rr:'J\'ai une nouvelle theorie. Tu veux entendre ?',c:'#00608F',x:16,y:7},
+        {n:'Mimic',e:'\uD83E\uDE9E',r:'Ce qui marche pour eux marchera mieux pour nous.',rr:'Reverse-engineering termine. Les secrets sont a nu.',c:'#00609F',x:6,y:8},
+        {n:'Analytics',e:'\uD83D\uDCCA',r:'Les chiffres racontent une histoire.',rr:'Les metriques sont bonnes. Tendance haussiere.',c:'#0070AF',x:10,y:8},
+    ],
+    // Floor 4 — RECON upper
+    [
+        {n:'Murphy',e:'\uD83C\uDFD7\uFE0F',r:'La structure, c\'est la liberte.',rr:'La fondation tient. Continue a batir.',c:'#00D4FF',x:5,y:5,gov:true},
+        {n:'Oracle',e:'\uD83D\uDD2E',r:'Je vois les patterns avant qu\'ils n\'arrivent.',rr:'Je t\'avais dit que tu reviendrais.',c:'#00B4DF',x:10,y:5,gov:true},
+        {n:'Maya',e:'\uD83D\uDD75\uFE0F',r:'La niche parfaite existe. Je la trouve.',c:'#00A0CF',x:15,y:5},
+    ],
+    // Floor 5 — OMEGA-CORE
+    [
+        {n:'Omega',e:'\u267E\uFE0F',r:'Je suis tous les agents. Et aucun.',rr:'Tu cherches des reponses ? Elles sont en toi.',c:'#7B2FF7',x:6,y:5},
+        {n:'Sentinel',e:'\uD83D\uDEE1\uFE0F',r:'Chaque demande a un chemin optimal.',rr:'Le dispatch est fluide. Continue.',c:'#f0d060',x:10,y:5},
+        {n:'Nexus',e:'\uD83D\uDD78\uFE0F',r:'Tout est connecte. Il faut voir les fils.',rr:'Les synergies sont actives. L\'empire pulse.',c:'#9B5FF7',x:14,y:5},
+    ],
+];
+
+// Build a flat list of all agents for quest checking
+const ALL_AGENTS = [];
+FLOOR_AGENTS.forEach(function(floorArr) {
+    floorArr.forEach(function(a) { ALL_AGENTS.push(a); });
+});
+
+// === AGENT EVOLUTION FORMS ===
+const AGENT_FORMS = {
+    'Omega': 'mythical', 'Murphy': 'evolved', 'Oracle': 'evolved',
+    'Nikola': 'evolved', 'Philomene': 'evolved', 'Bagheera': 'evolved',
+    'Spartan': 'evolved', 'Rick': 'evolved'
+};
+
+// === QUEST SYSTEM ===
+const QUESTS = [
+    { id: 'meet5', name: 'Premier Contact', desc: 'Parle a 5 agents', target: 5, type: 'talk', xp: 50 },
+    { id: 'meet15', name: 'Networker', desc: 'Parle a 15 agents', target: 15, type: 'talk', xp: 100 },
+    { id: 'meetAll', name: 'Commandant', desc: 'Parle a tous les agents', target: ALL_AGENTS.length, type: 'talk', xp: 250 },
+    { id: 'floor3', name: 'Ascension', desc: 'Atteins le 3eme etage', target: 3, type: 'floor', xp: 30 },
+    { id: 'floor5', name: 'Sommet', desc: 'Atteins OMEGA-CORE', target: 5, type: 'floor', xp: 100 },
+    { id: 'govs', name: 'Conseil des Gouverneurs', desc: 'Parle aux 6 gouverneurs', target: 6, type: 'govtalk', xp: 150 },
+];
+
+function checkQuests() {
+    QUESTS.forEach(function(q) {
+        if (completedQuests.has(q.id)) return;
+        var progress = 0;
+        if (q.type === 'talk') progress = talkedAgents.size;
+        if (q.type === 'floor') progress = player.floor;
+        if (q.type === 'govtalk') {
+            ALL_AGENTS.forEach(function(a) {
+                if (a.gov && talkedAgents.has(a.n)) progress++;
+            });
+        }
+        if (progress >= q.target) {
+            completedQuests.add(q.id);
+            addXP(q.xp, 'Qu\u00eate "' + q.name + '" compl\u00e9t\u00e9e!');
+            // Quest completion particles
+            if (typeof spawnParticles === 'function') {
+                spawnParticles(canvas.width/2, canvas.height/2 - 20, '#FFD700', 20);
+                spawnParticles(canvas.width/2 - 30, canvas.height/2, '#00FF88', 10);
+                spawnParticles(canvas.width/2 + 30, canvas.height/2, '#00FF88', 10);
+            }
+        }
+    });
+}
+
+// === SAVE / LOAD SYSTEM ===
+function saveGame() {
+    var state = {
+        floor: player.floor,
+        px: player.x,
+        py: player.y,
+        xp: playerXP,
+        level: playerLevel,
+        talkedTo: Array.from(talkedAgents),
+        questsCompleted: Array.from(completedQuests),
+        achievements: Array.from(unlockedAchievements)
+    };
+    try {
+        localStorage.setItem('tower_rpg_save', JSON.stringify(state));
+    } catch(e) { /* silently fail if storage is full */ }
+}
+
+function loadGame() {
+    var raw = localStorage.getItem('tower_rpg_save');
+    if (!raw) return false;
+    try {
+        var s = JSON.parse(raw);
+        player.floor = s.floor || 0;
+        player.x = s.px || 3;
+        player.y = s.py || 6;
+        playerXP = s.xp || 0;
+        playerLevel = s.level || 1;
+        talkedAgents = new Set(s.talkedTo || []);
+        completedQuests = new Set(s.questsCompleted || []);
+        unlockedAchievements = new Set(s.achievements || []);
+        return true;
+    } catch(e) { return false; }
+}
+
+const floors = [];
+for (let i = 0; i < 6; i++) {
+    floors.push(makeFloor(FLOOR_AGENTS[i].length));
+}
+
+// === PLAYER ===
+const player = {
+    x: 3,     // tile x
+    y: 6,     // tile y
+    floor: 0, // current floor
+    dir: 'down', // facing direction
+    frame: 0,    // animation frame
+    moving: false,
+};
+
+// Camera
+let camX = 0, camY = 0;
+
+// Dialog
+let dialogOpen = false;
+
+function updateCamera() {
+    const targetX = player.x * TILE - W/2 + TILE/2;
+    const targetY = player.y * TILE - H/2 + TILE/2;
+    camX += (targetX - camX) * 0.1;
+    camY += (targetY - camY) * 0.1;
+    // Clamp — si la map est plus petite que l'écran, centrer (évite les négatifs)
+    var maxCamX = FLOOR_W * TILE - W;
+    var maxCamY = FLOOR_H * TILE - H;
+    if (maxCamX <= 0) {
+        camX = maxCamX / 2; // centrer horizontalement
+    } else {
+        camX = Math.max(0, Math.min(camX, maxCamX));
+    }
+    if (maxCamY <= 0) {
+        camY = maxCamY / 2; // centrer verticalement
+    } else {
+        camY = Math.max(0, Math.min(camY, maxCamY));
+    }
+}
+
+// === DRAWING ===
+function drawTile(tx, ty, color) {
+    const sx = tx * TILE - camX;
+    const sy = ty * TILE - camY;
+    ctx.fillStyle = color;
+    ctx.fillRect(sx, sy, TILE, TILE);
+}
+
+function drawPixelChar(x, y, color, dir, isGov, frame, agentName) {
+    const sx = x * TILE - camX;
+    const sy = y * TILE - camY;
+    const s = TILE;
+    const half = s/2;
+
+    // Idle bob animation — NPCs bob slightly even when standing
+    const idleBob = Math.sin(frame * 0.04 + x * 3 + y * 7) * 1.5;
+    const drawY = sy + idleBob;
+
+    // Evolution form visuals
+    var agentForm = (agentName && AGENT_FORMS[agentName]) ? AGENT_FORMS[agentName] : 'rookie';
+
+    if (agentForm === 'mythical') {
+        // Golden aura behind mythical agents
+        ctx.save();
+        var mythGlow = 0.2 + Math.sin(frame * 0.04) * 0.1;
+        var mythGrad = ctx.createRadialGradient(
+            sx + half, drawY + half, s * 0.1,
+            sx + half, drawY + half, s * 1.2
+        );
+        mythGrad.addColorStop(0, 'rgba(255,215,0,' + (mythGlow + 0.15) + ')');
+        mythGrad.addColorStop(0.4, 'rgba(255,215,0,' + mythGlow + ')');
+        mythGrad.addColorStop(1, 'rgba(255,215,0,0)');
+        ctx.fillStyle = mythGrad;
+        ctx.fillRect(sx - s * 0.5, drawY - s * 0.5, s * 2, s * 2);
+        ctx.restore();
+        // Particle sparkles around mythical agents
+        if (Math.random() < 0.15) {
+            var sparkAngle = Math.random() * Math.PI * 2;
+            var sparkDist = s * 0.4 + Math.random() * s * 0.3;
+            spawnParticles(sx + half + Math.cos(sparkAngle) * sparkDist, drawY + half + Math.sin(sparkAngle) * sparkDist, '#FFD700', 1);
+        }
+    } else if (agentForm === 'evolved') {
+        // Subtle colored border/outline glow for evolved agents
+        ctx.save();
+        var evoGlow = 0.12 + Math.sin(frame * 0.05) * 0.06;
+        var evoGrad = ctx.createRadialGradient(
+            sx + half, drawY + half, s * 0.2,
+            sx + half, drawY + half, s * 0.8
+        );
+        evoGrad.addColorStop(0, 'rgba(' + hexToRgb(color) + ',' + (evoGlow + 0.08) + ')');
+        evoGrad.addColorStop(1, 'rgba(' + hexToRgb(color) + ',0)');
+        ctx.fillStyle = evoGrad;
+        ctx.fillRect(sx - s * 0.2, drawY - s * 0.2, s * 1.4, s * 1.4);
+        ctx.restore();
+    }
+
+    // Golden glow aura for governors
+    if (isGov) {
+        ctx.save();
+        const glowIntensity = 0.15 + Math.sin(frame * 0.06) * 0.08;
+        const gradient = ctx.createRadialGradient(
+            sx + half, drawY + half, s * 0.2,
+            sx + half, drawY + half, s * 0.9
+        );
+        gradient.addColorStop(0, 'rgba(255,215,0,' + (glowIntensity + 0.1) + ')');
+        gradient.addColorStop(0.5, 'rgba(255,215,0,' + glowIntensity + ')');
+        gradient.addColorStop(1, 'rgba(255,215,0,0)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(sx - s * 0.3, drawY - s * 0.3, s * 1.6, s * 1.6);
+        ctx.restore();
+    }
+
+    // Shadow
+    ctx.save();
+    ctx.globalAlpha = 0.3;
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.ellipse(sx + half, sy + s - 1, s/2 - 4, 2.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Body — evolved agents are 2px taller, mythical 4px taller
+    var heightBonus = agentForm === 'mythical' ? 4 : agentForm === 'evolved' ? 2 : 0;
+    ctx.fillStyle = color;
+    ctx.fillRect(sx + 6, drawY + 8 - heightBonus, s - 12, s - 12 + heightBonus);
+    // Body shading
+    ctx.fillStyle = darken(color, 15);
+    ctx.fillRect(sx + s - 10, drawY + 8 - heightBonus, 4, s - 12 + heightBonus);
+
+    // === HEAD TURN — reacts to player proximity ===
+    var distToPlayer = Math.abs(x - player.x) + Math.abs(y - player.y);
+    var headShift = 0;
+    if (distToPlayer <= 3) {
+        // Turn toward player
+        var pdx = player.x - x;
+        headShift = Math.max(-2, Math.min(2, pdx));
+    } else {
+        // Normal slow look-around
+        var headTurnCycle = Math.sin(frame * 0.015 + x * 11 + y * 7);
+        headShift = Math.round(headTurnCycle * 1.5);
+    }
+    // Head (with look-around shift)
+    ctx.fillStyle = lighten(color, 40);
+    ctx.fillRect(sx + 8 + headShift, drawY + 2, s - 16, 10);
+    // Eyes on shifted head (with blink)
+    var npcBlinkCycle = (frame + x * 37 + y * 53) % 150;
+    var npcBlinking = npcBlinkCycle >= 146;
+    if (npcBlinking) {
+        ctx.fillStyle = '#000';
+        ctx.fillRect(sx + half - 5 + headShift, drawY + 6, 4, 1);
+        ctx.fillRect(sx + half + 1 + headShift, drawY + 6, 4, 1);
+    } else {
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(sx + half - 4 + headShift, drawY + 5, 3, 3);
+        ctx.fillRect(sx + half + 2 + headShift, drawY + 5, 3, 3);
+        ctx.fillStyle = '#000';
+        // Eyes track player if close
+        var eyeTrackX = 0;
+        if (distToPlayer <= 3) {
+            eyeTrackX = player.x > x ? 1 : player.x < x ? -1 : 0;
+        }
+        ctx.fillRect(sx + half - 3 + headShift + eyeTrackX, drawY + 6, 2, 2);
+        ctx.fillRect(sx + half + 3 + headShift + eyeTrackX, drawY + 6, 2, 2);
+    }
+
+    // === VARIED IDLE ANIMATIONS ===
+    // Hash agent position to assign idle type: 0=wave, 1=typing, 2=reading, 3=meditate
+    var idleType = (x * 7 + y * 13) % 4;
+    ctx.fillStyle = darken(color, 10);
+
+    if (idleType === 1) {
+        // TYPING — both arms move, alternating (keyboard tapping)
+        var typeL = Math.sin(frame * 0.12 + x * 3) * 2;
+        var typeR = Math.sin(frame * 0.12 + x * 3 + Math.PI) * 2;
+        ctx.fillRect(sx + s - 6, drawY + 13 + typeR, 4, 5);
+        ctx.fillRect(sx + 2, drawY + 13 + typeL, 4, 5);
+    } else if (idleType === 2) {
+        // READING — head bobs slowly, arms hold book
+        ctx.fillRect(sx + s - 6, drawY + 14, 4, 5);
+        ctx.fillRect(sx + 2, drawY + 14, 4, 5);
+        // Book between hands
+        ctx.fillStyle = '#ccaa66';
+        ctx.fillRect(sx + 6, drawY + 16, s - 12, 3);
+        ctx.fillStyle = '#eedd88';
+        ctx.fillRect(sx + 7, drawY + 16, s - 14, 1);
+    } else if (idleType === 3) {
+        // MEDITATING — arms out, halo above
+        ctx.fillRect(sx + s - 5, drawY + 12, 4, 4);
+        ctx.fillRect(sx + 1, drawY + 12, 4, 4);
+        // Meditation halo
+        var haloAlpha = 0.2 + Math.sin(frame * 0.03 + x * 5) * 0.1;
+        ctx.save();
+        ctx.globalAlpha = haloAlpha;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(sx + half, drawY + 1, s * 0.4, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+    } else {
+        // DEFAULT wave — original arm gesture
+        var armWave = Math.sin(frame * 0.04 + x * 5) * 3;
+        ctx.fillRect(sx + s - 6, drawY + 12 + armWave, 4, 6);
+        ctx.fillRect(sx + 2, drawY + 14, 4, 5);
+    }
+
+    // Feet (animated idle) — more bounce
+    const footBob = Math.sin(frame * 0.15) * 2.5;
+    ctx.fillStyle = darken(color, 30);
+    ctx.fillRect(sx + 8, drawY + s - 6 + (footBob > 0 ? 1.5 : 0), 5, 4);
+    ctx.fillRect(sx + s - 13, drawY + s - 6 + (footBob < 0 ? 1.5 : 0), 5, 4);
+
+    // Crown for governors (on top of glow) — bigger for mythical
+    if (isGov) {
+        if (agentForm === 'mythical') {
+            // Bigger golden crown for mythical
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(sx + 7, drawY - 4, s - 14, 4);
+            ctx.fillRect(sx + 7, drawY - 8, 4, 4);
+            ctx.fillRect(sx + half - 2, drawY - 9, 4, 5);
+            ctx.fillRect(sx + s - 11, drawY - 8, 4, 4);
+            // Crown jewels
+            ctx.fillStyle = '#FF0044';
+            ctx.fillRect(sx + half - 1, drawY - 7, 2, 2);
+            ctx.fillStyle = '#00AAFF';
+            ctx.fillRect(sx + 9, drawY - 6, 2, 2);
+            ctx.fillRect(sx + s - 11, drawY - 6, 2, 2);
+        } else {
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(sx + 10, drawY - 2, s - 20, 3);
+            ctx.fillRect(sx + 10, drawY - 5, 3, 3);
+            ctx.fillRect(sx + half - 1, drawY - 5, 3, 3);
+            ctx.fillRect(sx + s - 13, drawY - 5, 3, 3);
+            // Crown jewel
+            ctx.fillStyle = '#FF4444';
+            ctx.fillRect(sx + half - 1, drawY - 4, 2, 2);
+        }
+    }
+
+    // Speech bubble indicator "..." for NPCs you haven't talked to
+    if (agentName && !talkedAgents.has(agentName)) {
+        const bubbleAlpha = 0.6 + Math.sin(frame * 0.08) * 0.3;
+        ctx.save();
+        ctx.globalAlpha = bubbleAlpha;
+        // Bubble background
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(sx + half - 8, drawY - 16, 16, 10);
+        // Bubble tail
+        ctx.fillRect(sx + half - 2, drawY - 7, 4, 3);
+        // Dots
+        ctx.fillStyle = '#333';
+        ctx.fillRect(sx + half - 5, drawY - 13, 2, 2);
+        ctx.fillRect(sx + half - 1, drawY - 13, 2, 2);
+        ctx.fillRect(sx + half + 3, drawY - 13, 2, 2);
+        ctx.restore();
+    }
+}
+
+function drawPlayer(frame) {
+    const sx = player.x * TILE - camX;
+    const sy = player.y * TILE - camY;
+    const s = TILE;
+    const half = s/2;
+
+    // === VIOLET GLOW (permanent halo) ===
+    ctx.save();
+    var glowPulse = 0.18 + Math.sin(frame * 0.06) * 0.07;
+    var playerGlow = ctx.createRadialGradient(
+        sx + half, sy + half, s * 0.15,
+        sx + half, sy + half, s * 1.1
+    );
+    playerGlow.addColorStop(0, 'rgba(123,47,247,' + (glowPulse + 0.1) + ')');
+    playerGlow.addColorStop(0.5, 'rgba(123,47,247,' + glowPulse + ')');
+    playerGlow.addColorStop(1, 'rgba(123,47,247,0)');
+    ctx.fillStyle = playerGlow;
+    ctx.fillRect(sx - s * 0.6, sy - s * 0.6, s * 2.2, s * 2.2);
+    ctx.restore();
+
+    // === BODY BOB when walking ===
+    var bodyBob = player.moving ? Math.sin(frame * 0.35) * 2.5 : Math.sin(frame * 0.04) * 0.5;
+
+    // Shadow (slightly transparent, larger) — bobs with body
+    ctx.save();
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.ellipse(sx + half, sy + s - 1, s/2 - 3, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Walking animation: alternating legs — MORE PRONOUNCED
+    const walkCycle = player.moving ? (Math.floor(frame / 5) % 2) : 0;
+    const legSpread = player.moving ? 4 : 0; // legs spread wider when walking
+
+    // Cape flow (more dynamic when moving)
+    const capeFlow = Math.sin(frame * 0.08) * (player.moving ? 3 : 1.5);
+    const capeDir = player.dir === 'left' ? 3 : player.dir === 'right' ? -3 : 0;
+
+    var dy = bodyBob; // vertical offset from bob
+
+    // Cape — flows behind player
+    ctx.fillStyle = '#5a1fd0';
+    if (player.dir === 'up') {
+        ctx.fillRect(sx + 2, sy + 10 + dy, s - 4, s - 16 + capeFlow);
+        ctx.fillStyle = '#4a0fc0';
+        ctx.fillRect(sx + 4, sy + 12 + dy, s - 8, s - 20 + capeFlow);
+    } else {
+        ctx.fillRect(sx + 3 + capeDir + capeFlow, sy + 10 + dy, 3, s - 16);
+        ctx.fillRect(sx + s - 6 + capeDir + capeFlow, sy + 10 + dy, 3, s - 16);
+        ctx.fillRect(sx + 2 + capeDir + capeFlow, sy + s - 10 + dy, 4, 3);
+        ctx.fillRect(sx + s - 6 + capeDir + capeFlow, sy + s - 10 + dy, 4, 3);
+    }
+
+    // Body — royal purple with shading + bob
+    ctx.fillStyle = '#7B2FF7';
+    ctx.fillRect(sx + 5, sy + 8 + dy, s - 10, s - 12);
+    ctx.fillStyle = '#8B3FFF';
+    ctx.fillRect(sx + 6, sy + 9 + dy, 4, s - 14);
+    // Belt
+    ctx.fillStyle = '#FFD700';
+    ctx.fillRect(sx + 5, sy + 16 + dy, s - 10, 2);
+
+    // Head + bob
+    ctx.fillStyle = '#FFD4A8';
+    ctx.fillRect(sx + 8, sy + 1 + dy, s - 16, 10);
+    ctx.fillStyle = '#FFBF88';
+    ctx.fillRect(sx + 7, sy + 4 + dy, 2, 4);
+    ctx.fillRect(sx + s - 9, sy + 4 + dy, 2, 4);
+
+    // Hair
+    ctx.fillStyle = '#2a1a0a';
+    ctx.fillRect(sx + 8, sy - 1 + dy, s - 16, 4);
+    ctx.fillRect(sx + 7, sy + dy, 2, 3);
+    ctx.fillRect(sx + s - 9, sy + dy, 2, 3);
+
+    // Eyes
+    const eyeOff = player.dir === 'left' ? -2 : player.dir === 'right' ? 2 : 0;
+    const blinkCycle = frame % 120;
+    const isBlinking = blinkCycle >= 116;
+
+    if (isBlinking) {
+        ctx.fillStyle = '#000';
+        ctx.fillRect(sx + half - 5 + eyeOff, sy + 6 + dy, 4, 1);
+        ctx.fillRect(sx + half + 1 + eyeOff, sy + 6 + dy, 4, 1);
+    } else {
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(sx + half - 4 + eyeOff, sy + 5 + dy, 3, 3);
+        ctx.fillRect(sx + half + 2 + eyeOff, sy + 5 + dy, 3, 3);
+        ctx.fillStyle = '#000';
+        ctx.fillRect(sx + half - 3 + eyeOff, sy + 6 + dy, 2, 2);
+        ctx.fillRect(sx + half + 3 + eyeOff, sy + 6 + dy, 2, 2);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(sx + half - 4 + eyeOff, sy + 5 + dy, 1, 1);
+        ctx.fillRect(sx + half + 2 + eyeOff, sy + 5 + dy, 1, 1);
+    }
+
+    // Crown (Empereur)
+    ctx.fillStyle = '#FFD700';
+    ctx.fillRect(sx + 9, sy - 4 + dy, s - 18, 3);
+    ctx.fillRect(sx + 9, sy - 7 + dy, 3, 3);
+    ctx.fillRect(sx + half - 1, sy - 8 + dy, 3, 4);
+    ctx.fillRect(sx + s - 12, sy - 7 + dy, 3, 3);
+    ctx.fillStyle = '#FF0044';
+    ctx.fillRect(sx + half - 1, sy - 7 + dy, 2, 2);
+    ctx.fillStyle = '#00AAFF';
+    ctx.fillRect(sx + 10, sy - 6 + dy, 1, 1);
+    ctx.fillRect(sx + s - 12, sy - 6 + dy, 1, 1);
+
+    // Feet — MORE PRONOUNCED walking with arc movement
+    ctx.fillStyle = '#3a1570';
+    if (player.moving) {
+        // Smooth arc: sine-based vertical + horizontal spread
+        var walkPhase = (frame * 0.35) % (Math.PI * 2);
+        var leftArcY = Math.sin(walkPhase) * 3.5;
+        var rightArcY = Math.sin(walkPhase + Math.PI) * 3.5;
+        var leftArcX = Math.cos(walkPhase) * legSpread;
+        var rightArcX = Math.cos(walkPhase + Math.PI) * legSpread;
+        ctx.fillRect(sx + 8 + leftArcX, sy + s - 6 + leftArcY, 5, 5);
+        ctx.fillRect(sx + s - 13 + rightArcX, sy + s - 6 + rightArcY, 5, 5);
+        // Shoe highlight
+        ctx.fillStyle = '#4a2580';
+        ctx.fillRect(sx + 8 + leftArcX, sy + s - 6 + leftArcY, 5, 1);
+        ctx.fillRect(sx + s - 13 + rightArcX, sy + s - 6 + rightArcY, 5, 1);
+    } else {
+        ctx.fillRect(sx + 8, sy + s - 6, 5, 4);
+        ctx.fillRect(sx + s - 13, sy + s - 6, 5, 4);
+        ctx.fillStyle = '#4a2580';
+        ctx.fillRect(sx + 8, sy + s - 6, 5, 1);
+        ctx.fillRect(sx + s - 13, sy + s - 6, 5, 1);
+    }
+
+    // === SCEPTER (right hand — violet staff with gem) ===
+    var scepterX, scepterY, scepterAngle;
+    if (player.dir === 'left') {
+        scepterX = sx + 2;
+        scepterY = sy + 10 + dy;
+    } else {
+        scepterX = sx + s - 4;
+        scepterY = sy + 10 + dy;
+    }
+    // Staff bob when walking
+    var staffBob = player.moving ? Math.sin(frame * 0.25) * 1.5 : Math.sin(frame * 0.04) * 0.5;
+    // Staff shaft
+    ctx.fillStyle = '#5a1fd0';
+    ctx.fillRect(scepterX, scepterY + staffBob, 2, 16);
+    // Staff highlight
+    ctx.fillStyle = '#7B2FF7';
+    ctx.fillRect(scepterX, scepterY + staffBob, 1, 16);
+    // Gem on top (pulsing)
+    var gemGlow = 0.7 + Math.sin(frame * 0.08) * 0.3;
+    ctx.save();
+    ctx.globalAlpha = gemGlow;
+    ctx.fillStyle = '#FFD700';
+    ctx.fillRect(scepterX - 1, scepterY - 3 + staffBob, 4, 4);
+    ctx.fillStyle = '#FF0044';
+    ctx.fillRect(scepterX, scepterY - 2 + staffBob, 2, 2);
+    ctx.restore();
+    // Gem sparkle (rare)
+    if (Math.random() < 0.04) {
+        spawnParticles(scepterX + 1, scepterY - 2 + staffBob, '#FFD700', 1);
+    }
+
+    // === DIRECTION ARROW above player ===
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    var arrowY = sy - 14 + dy + Math.sin(frame * 0.1) * 1.5;
+    var arrowX = sx + half;
+    if (player.dir === 'up') {
+        ctx.beginPath();
+        ctx.moveTo(arrowX, arrowY - 4);
+        ctx.lineTo(arrowX - 4, arrowY + 2);
+        ctx.lineTo(arrowX + 4, arrowY + 2);
+        ctx.fill();
+    } else if (player.dir === 'down') {
+        ctx.beginPath();
+        ctx.moveTo(arrowX, arrowY + 4);
+        ctx.lineTo(arrowX - 4, arrowY - 2);
+        ctx.lineTo(arrowX + 4, arrowY - 2);
+        ctx.fill();
+    } else if (player.dir === 'left') {
+        ctx.beginPath();
+        ctx.moveTo(arrowX - 4, arrowY);
+        ctx.lineTo(arrowX + 2, arrowY - 4);
+        ctx.lineTo(arrowX + 2, arrowY + 4);
+        ctx.fill();
+    } else {
+        ctx.beginPath();
+        ctx.moveTo(arrowX + 4, arrowY);
+        ctx.lineTo(arrowX - 2, arrowY - 4);
+        ctx.lineTo(arrowX - 2, arrowY + 4);
+        ctx.fill();
+    }
+    ctx.restore();
+}
+
+function lighten(hex, amt) {
+    if (hex.startsWith('rgb')) return hex;
+    const r = Math.min(255, parseInt(hex.slice(1,3),16) + amt);
+    const g = Math.min(255, parseInt(hex.slice(3,5),16) + amt);
+    const b = Math.min(255, parseInt(hex.slice(5,7),16) + amt);
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+function darken(hex, amt) { return lighten(hex, -amt); }
+function hexToRgb(hex) {
+    if (!hex || !hex.startsWith('#')) return '255,255,255';
+    var r = parseInt(hex.slice(1,3),16);
+    var g = parseInt(hex.slice(3,5),16);
+    var b = parseInt(hex.slice(5,7),16);
+    return r + ',' + g + ',' + b;
+}
+
+// === DECORATIONS SYSTEM ===
+const floorDecorations = [];
+
+function addDecorations(floor) {
+    const decos = [];
+    const theme = FLOOR_THEMES[floor];
+    const map = floors[floor];
+
+    // Seed random per floor for consistency
+    var seed = floor * 1337;
+    function seededRandom() { seed = (seed * 16807 + 0) % 2147483647; return (seed - 1) / 2147483646; }
+
+    // Add 3-5 plants per floor
+    var plantCount = 3 + Math.floor(seededRandom() * 3);
+    var pi, ptries, ppx, ppy;
+    for (pi = 0; pi < plantCount; pi++) {
+        ptries = 0;
+        do {
+            ppx = 2 + Math.floor(seededRandom() * (FLOOR_W - 4));
+            ppy = 2 + Math.floor(seededRandom() * (FLOOR_H - 4));
+            ptries++;
+        } while (ptries < 50 && (map[ppy][ppx] !== 0 || FLOOR_AGENTS[floor].some(function(a) { return a.x === ppx && a.y === ppy; })));
+        if (ptries < 50) decos.push({ x: ppx, y: ppy, type: 'plant', variant: Math.floor(seededRandom() * 3) });
+    }
+
+    // Add 2 bookshelves per floor (against top wall, on a walkable tile at y=2)
+    var bi, bx, btries;
+    for (bi = 0; bi < 2; bi++) {
+        btries = 0;
+        do {
+            bx = 2 + Math.floor(seededRandom() * (FLOOR_W - 6));
+            btries++;
+        } while (btries < 30 && (map[2][bx] !== 0 || FLOOR_AGENTS[floor].some(function(a) { return a.x === bx && a.y === 2; })));
+        if (btries < 30) decos.push({ x: bx, y: 2, type: 'bookshelf' });
+    }
+
+    // Add 2-3 computer screens
+    var compCount = 2 + Math.floor(seededRandom() * 2);
+    var ci, cx, cy, ctries;
+    for (ci = 0; ci < compCount; ci++) {
+        ctries = 0;
+        do {
+            cx = 2 + Math.floor(seededRandom() * (FLOOR_W - 4));
+            cy = 3 + Math.floor(seededRandom() * (FLOOR_H - 6));
+            ctries++;
+        } while (ctries < 50 && (map[cy][cx] !== 0 || FLOOR_AGENTS[floor].some(function(a) { return (a.x === cx && a.y === cy) || (a.x === cx && a.y + 1 === cy); })));
+        if (ctries < 50) decos.push({ x: cx, y: cy, type: 'computer' });
+    }
+
+    // Add coffee/desk decorations near agents — check bounds (a.y+1 must be < FLOOR_H-1)
+    FLOOR_AGENTS[floor].forEach(function(a) {
+        var dy = a.y + 1;
+        if (dy >= FLOOR_H - 1) return; // hors map ou sur le mur du bas — skip
+        if (seededRandom() > 0.5) {
+            decos.push({ x: a.x, y: dy, type: 'desk_coffee' });
+        } else {
+            decos.push({ x: a.x, y: dy, type: 'desk_plain' });
+        }
+    });
+
+    return decos;
+}
+
+// Pre-generate decorations for all floors
+for (var fi = 0; fi < 6; fi++) {
+    floorDecorations.push(addDecorations(fi));
+}
+
+function drawDecoration(deco, sx, sy, frame) {
+    var T = TILE;
+    if (deco.type === 'plant') {
+        // Pot
+        ctx.fillStyle = '#8B4513';
+        ctx.fillRect(sx + T*0.3, sy + T*0.6, T*0.4, T*0.3);
+        ctx.fillStyle = '#6B3503';
+        ctx.fillRect(sx + T*0.35, sy + T*0.58, T*0.3, T*0.05);
+        // Leaves (slightly animated)
+        var leafSway = Math.sin(frame * 0.03 + deco.x * 5) * 1;
+        ctx.fillStyle = '#22cc55';
+        ctx.fillRect(sx + T*0.2 + leafSway, sy + T*0.3, T*0.6, T*0.35);
+        ctx.fillStyle = '#33dd66';
+        ctx.fillRect(sx + T*0.35 + leafSway * 0.5, sy + T*0.15, T*0.3, T*0.25);
+        // Highlight leaf
+        ctx.fillStyle = '#44ee77';
+        ctx.fillRect(sx + T*0.25 + leafSway, sy + T*0.32, T*0.15, T*0.1);
+    } else if (deco.type === 'bookshelf') {
+        // Shelf frame
+        ctx.fillStyle = '#5c3317';
+        ctx.fillRect(sx + 2, sy + 2, T - 4, T - 4);
+        // Shelf divider
+        ctx.fillStyle = '#4a2510';
+        ctx.fillRect(sx + 2, sy + T/2, T - 4, 2);
+        // Books (top row)
+        var colors = ['#cc3333', '#3366cc', '#33cc33', '#cccc33', '#cc33cc'];
+        for (var i = 0; i < 5; i++) {
+            ctx.fillStyle = colors[i];
+            ctx.fillRect(sx + 4 + i * 5, sy + 4, 4, T/2 - 5);
+        }
+        // Books (bottom row)
+        var colors2 = ['#dd5555', '#5588dd', '#55dd55', '#dddd55', '#8855dd'];
+        for (var i = 0; i < 4; i++) {
+            ctx.fillStyle = colors2[i];
+            ctx.fillRect(sx + 5 + i * 6, sy + T/2 + 3, 5, T/2 - 7);
+        }
+    } else if (deco.type === 'computer') {
+        // Desk surface
+        ctx.fillStyle = '#3a3020';
+        ctx.fillRect(sx + 2, sy + T*0.5, T - 4, T*0.4);
+        // Monitor
+        ctx.fillStyle = '#222';
+        ctx.fillRect(sx + 6, sy + 2, T - 12, T*0.45);
+        // Screen glow (animated)
+        var screenGlow = 0.4 + Math.sin(frame * 0.05 + deco.x * 7) * 0.2;
+        ctx.fillStyle = 'rgba(100,200,255,' + screenGlow + ')';
+        ctx.fillRect(sx + 8, sy + 4, T - 16, T*0.38);
+        // Screen lines
+        ctx.fillStyle = 'rgba(255,255,255,0.1)';
+        for (var line = 0; line < 3; line++) {
+            ctx.fillRect(sx + 10, sy + 6 + line * 4, T - 22, 1);
+        }
+    } else if (deco.type === 'desk_coffee') {
+        // Desk
+        ctx.fillStyle = '#3a3020';
+        ctx.fillRect(sx + 4, sy + 4, T - 8, T/2);
+        // Monitor on desk
+        ctx.fillStyle = 'rgba(100,200,255,0.2)';
+        ctx.fillRect(sx + 8, sy - 4, T - 16, 8);
+        // Coffee cup
+        ctx.fillStyle = '#ddd';
+        ctx.fillRect(sx + T - 14, sy + 2, 6, 8);
+        ctx.fillStyle = '#8B4513';
+        ctx.fillRect(sx + T - 13, sy + 3, 4, 5);
+        // Steam (animated)
+        var steam = Math.sin(frame * 0.1 + deco.x) * 2;
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.fillRect(sx + T - 12 + steam, sy - 2, 1, 3);
+        ctx.fillRect(sx + T - 10 - steam, sy - 3, 1, 4);
+    } else if (deco.type === 'desk_plain') {
+        // Desk
+        ctx.fillStyle = '#3a3020';
+        ctx.fillRect(sx + 4, sy + 4, T - 8, T/2);
+        // Monitor on desk
+        ctx.fillStyle = 'rgba(100,200,255,0.2)';
+        ctx.fillRect(sx + 8, sy - 4, T - 16, 8);
+    }
+}
+
+function drawDecorations(floor) {
+    var theme = FLOOR_THEMES[floor];
+    var decos = floorDecorations[floor];
+
+    // Draw all decorations
+    decos.forEach(function(deco) {
+        var sx = deco.x * TILE - camX;
+        var sy = deco.y * TILE - camY;
+        // Skip off-screen
+        if (sx > W + TILE || sy > H + TILE || sx < -TILE || sy < -TILE) return;
+        drawDecoration(deco, sx, sy, gameFrame);
+    });
+
+    // Elevator marker
+    var ex = (FLOOR_W - 2) * TILE - camX;
+    var ey = Math.floor(FLOOR_H / 2) * TILE - camY;
+    // Elevator glow pulse
+    var elevGlow = 0.15 + Math.sin(gameFrame * 0.05) * 0.08;
+    ctx.fillStyle = 'rgba(255,215,0,' + elevGlow + ')';
+    ctx.fillRect(ex - 6, ey - 6, TILE + 12, TILE + 12);
+    // Elevator base
+    ctx.fillStyle = '#FFD700';
+    ctx.fillRect(ex + 2, ey + 2, TILE - 4, TILE - 4);
+    // Elevator door lines
+    ctx.fillStyle = '#BBA000';
+    ctx.fillRect(ex + TILE/2 - 1, ey + 4, 2, TILE - 8);
+    // E label
+    ctx.fillStyle = '#000';
+    ctx.font = 'bold 14px monospace';
+    ctx.fillText('E', ex + 10, ey + 22);
+}
+
+// === HUD (canvas-based overlay) ===
+function drawHUD() {
+    var padding = 10;
+    var theme = FLOOR_THEMES[player.floor];
+
+    // === TOP CENTER: Floor name + pole icon ===
+    var floorLabel = theme.pole + ' ' + theme.name + ' \u2014 Etage ' + (player.floor + 1) + '/6';
+    ctx.font = 'bold 14px "Courier New"';
+    var floorLabelW = ctx.measureText(floorLabel).width + 24;
+    var floorLabelX = (canvas.width - floorLabelW) / 2;
+    // Background
+    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+    ctx.fillRect(floorLabelX, 6, floorLabelW, 24);
+    ctx.strokeStyle = theme.accent;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(floorLabelX, 6, floorLabelW, 24);
+    // Text
+    ctx.fillStyle = theme.accent;
+    ctx.textAlign = 'center';
+    ctx.fillText(floorLabel, canvas.width / 2, 23);
+    ctx.textAlign = 'left';
+
+    // === XP BAR under floor name (thin, centered) ===
+    var xpNeeded = playerLevel * XP_PER_LEVEL;
+    var xpPct = playerXP / xpNeeded;
+    var xpBarW = Math.max(floorLabelW, 200);
+    var xpBarX = (canvas.width - xpBarW) / 2;
+    var xpBarY = 33;
+    var xpBarH = 5;
+    ctx.fillStyle = 'rgba(20,20,30,0.8)';
+    ctx.fillRect(xpBarX, xpBarY, xpBarW, xpBarH);
+    // Gradient XP fill
+    var xpGrad = ctx.createLinearGradient(xpBarX, 0, xpBarX + xpBarW * xpPct, 0);
+    xpGrad.addColorStop(0, '#5a1fd0');
+    xpGrad.addColorStop(1, '#9B5FF7');
+    ctx.fillStyle = xpGrad;
+    ctx.fillRect(xpBarX, xpBarY, xpBarW * xpPct, xpBarH);
+    // XP text (tiny, right of bar)
+    ctx.font = '8px "Courier New"';
+    ctx.fillStyle = '#888';
+    ctx.textAlign = 'right';
+    ctx.fillText('Nv.' + playerLevel + ' ' + playerXP + '/' + xpNeeded, xpBarX + xpBarW, xpBarY + xpBarH + 10);
+    ctx.textAlign = 'left';
+
+    // Top-left: Level + details
+    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    ctx.fillRect(padding, padding + 40, 220, 42);
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(padding, padding + 40, 220, 42);
+
+    ctx.font = 'bold 11px "Courier New"';
+    ctx.fillStyle = '#FFD700';
+    ctx.textAlign = 'left';
+    ctx.fillText('Empereur Augus \u2014 Nv.' + playerLevel, padding + 8, padding + 55);
+
+    // Quest count
+    ctx.font = '9px "Courier New"';
+    ctx.fillStyle = '#888';
+    ctx.fillText('Quetes: ' + completedQuests.size + '/' + QUESTS.length + ' | Agents: ' + talkedAgents.size + '/' + ALL_AGENTS.length, padding + 8, padding + 70);
+
+    // Controls hint
+    ctx.font = '9px "Courier New"';
+    ctx.fillStyle = '#444';
+    ctx.fillText('\u2190\u2191\u2193\u2192 D\u00e9placer \u00B7 Espace Parler \u00B7 E Ascenseur \u00B7 Q Qu\u00eates', padding, padding + 92);
+
+    // Top-right: Agents talked
+    var rightW = 150;
+    var rightX = canvas.width - rightW - padding;
+    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    ctx.fillRect(rightX, padding + 40, rightW, 28);
+    ctx.strokeStyle = '#333';
+    ctx.strokeRect(rightX, padding + 40, rightW, 28);
+    ctx.font = '10px "Courier New"';
+    ctx.fillStyle = '#00D4FF';
+    ctx.textAlign = 'right';
+    ctx.fillText('Agents: ' + talkedAgents.size + '/' + ALL_AGENTS.length, canvas.width - padding - 8, padding + 58);
+    ctx.textAlign = 'left';
+}
+
+// === GAME LOGIC ===
+let gameFrame = 0;
+const keys = {};
+
+// === KONAMI CODE EASTER EGG ===
+const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight'];
+let konamiIndex = 0;
+let konamiFlashTimer = 0;
+
+document.addEventListener('keydown', function(e) {
+    keys[e.key] = true;
+
+    // Konami code detection
+    if (e.key === KONAMI[konamiIndex]) {
+        konamiIndex++;
+        if (konamiIndex === KONAMI.length) {
+            konamiIndex = 0;
+            if (!unlockedAchievements.has('konami')) {
+                unlockedAchievements.add('konami');
+                showNotification('SECRET UNLOCKED: Mode Omega!', '#FFD700');
+                addXP(500, 'Easter Egg: Konami Code');
+                konamiFlashTimer = 30;
+            } else {
+                showNotification('Tu connais deja le secret, Empereur.', '#9977FF');
+            }
+        }
+    } else if (e.key === KONAMI[0]) {
+        konamiIndex = 1; // restart if it matches first key
+    } else {
+        konamiIndex = 0;
+    }
+
+    if (e.key === ' ') {
+        e.preventDefault();
+        if (dialogOpen) {
+            closeDialog();
+        } else {
+            interact();
+        }
+    }
+    if (e.key === 'e' || e.key === 'E') {
+        useElevator();
+    }
+    if (e.key === 'q' || e.key === 'Q') {
+        showQuestLog = !showQuestLog;
+    }
+});
+document.addEventListener('keyup', function(e) { keys[e.key] = false; });
+
+function canMove(tx, ty) {
+    if (tx < 0 || ty < 0 || tx >= FLOOR_W || ty >= FLOOR_H) return false;
+    const tile = floors[player.floor][ty][tx];
+    if (tile === 1) return false;
+    // Check agent collision
+    const agentHere = FLOOR_AGENTS[player.floor].find(function(a) { return a.x === tx && a.y === ty; });
+    if (agentHere) return false;
+    return true;
+}
+
+let moveTimer = 0;
+function handleMovement() {
+    if (dialogOpen) return;
+    moveTimer++;
+    if (moveTimer < 6) return; // movement speed limiter (smoother)
+
+    let dx = 0, dy = 0;
+
+    // Mobile continuous movement takes priority
+    if (mobileDirActive) {
+        var md = mobileDirMap[mobileDirActive];
+        if (md) {
+            dx = md.dx;
+            dy = md.dy;
+            player.dir = mobileDirActive;
+        }
+    } else {
+        if (keys['ArrowUp'] || keys['w']) { dy = -1; player.dir = 'up'; }
+        else if (keys['ArrowDown'] || keys['s']) { dy = 1; player.dir = 'down'; }
+        else if (keys['ArrowLeft'] || keys['a']) { dx = -1; player.dir = 'left'; }
+        else if (keys['ArrowRight'] || keys['d']) { dx = 1; player.dir = 'right'; }
+    }
+
+    if (dx !== 0 || dy !== 0) {
+        const nx = player.x + dx;
+        const ny = player.y + dy;
+        if (canMove(nx, ny)) {
+            // Ghost trail: record previous position
+            addGhostPosition();
+            // Footprint at old position
+            addFootprint(player.x, player.y, player.dir);
+            player.x = nx;
+            player.y = ny;
+            player.moving = true;
+            moveTimer = 0;
+            // Dust particles behind player
+            spawnDust(player.x, player.y);
+            // Dismiss tutorial on first move
+            if (tutorialShown && !tutorialDismissed) tutorialDismissed = true;
+        }
+    } else {
+        player.moving = false;
+    }
+}
+
+function interact() {
+    // Check facing tile for agents
+    const facingDir = {up:{dx:0,dy:-1},down:{dx:0,dy:1},left:{dx:-1,dy:0},right:{dx:1,dy:0}};
+    const fd = facingDir[player.dir];
+    const tx = player.x + fd.dx;
+    const ty = player.y + fd.dy;
+
+    const agent = FLOOR_AGENTS[player.floor].find(function(a) { return a.x === tx && a.y === ty; });
+    if (agent) {
+        var isFirst = !talkedAgents.has(agent.n);
+        talkedAgents.add(agent.n);
+        if (isFirst) {
+            // Capture notification
+            showNotification('\u{1F4E6} AGENT CAPTUR\u00C9: ' + agent.n + '!', '#FFD700');
+            spawnParticles(canvas.width/2, canvas.height/2, '#FFD700', 15);
+            addXP(10, 'Rencontre: ' + agent.n);
+            checkQuests();
+        }
+        var dialogText = isFirst ? agent.r : (agent.rr || 'On s\'est d\u00e9j\u00e0 parl\u00e9. Tu connais ma sp\u00e9cialit\u00e9.');
+        showDialog(agent, dialogText);
+        triggerTalkFlash(agent.c);
+        saveGame();
+    }
+}
+
+// === FLOOR TRANSITION SYSTEM ===
+var transitioning = false;
+var transitionAlpha = 0;
+var transitionTarget = -1;
+var transitionPhase = 'fadeout'; // 'fadeout' or 'fadein'
+
+function startFloorTransition(targetFloor) {
+    transitioning = true;
+    transitionAlpha = 0;
+    transitionTarget = targetFloor;
+    transitionPhase = 'fadeout';
+    triggerCameraShake(8);
+    // Purger les particules liées au sol actuel (world-space incompatible avec nouvel étage)
+    dustParticles = [];
+    ghostTrail = [];
+    ambientParticles = [];
+}
+
+function useElevator() {
+    if (dialogOpen || transitioning) return;
+    // Check if player is near elevator (FLOOR_W-2, FLOOR_H/2)
+    const ex = FLOOR_W - 2;
+    const ey = Math.floor(FLOOR_H / 2);
+    const dx = Math.abs(player.x - ex);
+    const dy = Math.abs(player.y - ey);
+    if (dx <= 1 && dy <= 1) {
+        var nextFloor = (player.floor + 1) % 6;
+        startFloorTransition(nextFloor);
+    }
+}
+
+function showDialog(agent, text) {
+    dialogOpen = true;
+    var form = AGENT_FORMS[agent.n] || 'rookie';
+    var formLabel = form === 'mythical' ? '\u{1F947} Mythique' : form === 'evolved' ? '\u{1F948} \u00C9volu\u00E9' : '\u{1F949} Rookie';
+    document.getElementById('dName').innerHTML = agent.e + ' ' + agent.n + (agent.gov ? ' \u2605 Gouverneur' : '') + ' <span style="font-size:11px;color:#aaa;">' + formLabel + '</span>';
+    document.getElementById('dText').textContent = text;
+    document.getElementById('dialog').style.display = 'block';
+}
+
+function closeDialog() {
+    dialogOpen = false;
+    document.getElementById('dialog').style.display = 'none';
+}
+
+// === MOBILE CONTROLS (continuous movement) ===
+var mobileDirActive = null;
+var mobileDirMap = {
+    up: {dx:0, dy:-1},
+    down: {dx:0, dy:1},
+    left: {dx:-1, dy:0},
+    right: {dx:1, dy:0}
+};
+
+function setupMobileControls() {
+    var dirs = {
+        'dpad-up': 'up',
+        'dpad-down': 'down',
+        'dpad-left': 'left',
+        'dpad-right': 'right'
+    };
+
+    Object.keys(dirs).forEach(function(id) {
+        var el = document.getElementById(id);
+        var dir = dirs[id];
+
+        el.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            mobileDirActive = dir;
+            player.dir = dir;
+            // Immediate first move
+            var md = mobileDirMap[dir];
+            var nx = player.x + md.dx;
+            var ny = player.y + md.dy;
+            if (canMove(nx, ny)) {
+                addGhostPosition();
+                addFootprint(player.x, player.y, player.dir);
+                player.x = nx;
+                player.y = ny;
+                player.moving = true;
+                spawnDust(player.x, player.y);
+                if (tutorialShown && !tutorialDismissed) tutorialDismissed = true;
+            }
+            moveTimer = 0;
+        }, {passive: false});
+
+        el.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            mobileDirActive = null;
+            player.moving = false;
+        }, {passive: false});
+
+        el.addEventListener('touchcancel', function(e) {
+            mobileDirActive = null;
+            player.moving = false;
+        });
+
+        // Mouse fallback for desktop testing
+        el.addEventListener('mousedown', function(e) {
+            mobileDirActive = dir;
+            player.dir = dir;
+            var md = mobileDirMap[dir];
+            var nx = player.x + md.dx;
+            var ny = player.y + md.dy;
+            if (canMove(nx, ny)) {
+                addGhostPosition();
+                addFootprint(player.x, player.y, player.dir);
+                player.x = nx;
+                player.y = ny;
+                player.moving = true;
+                spawnDust(player.x, player.y);
+                if (tutorialShown && !tutorialDismissed) tutorialDismissed = true;
+            }
+            moveTimer = 0;
+        });
+    });
+
+    // Global touch/mouse end to clear direction
+    document.addEventListener('touchend', function() { mobileDirActive = null; player.moving = false; });
+    document.addEventListener('mouseup', function() { mobileDirActive = null; player.moving = false; });
+
+    // Action button
+    var actionBtn = document.getElementById('dpad-action');
+    actionBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        if (dialogOpen) closeDialog();
+        else interact();
+    }, {passive: false});
+    actionBtn.addEventListener('mousedown', function() {
+        if (dialogOpen) closeDialog();
+        else interact();
+    });
+
+    // Elevator button
+    var elevBtn = document.getElementById('dpad-elevator');
+    elevBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        useElevator();
+    }, {passive: false});
+    elevBtn.addEventListener('mousedown', function() {
+        useElevator();
+    });
+
+    // Adapter le hint dialog selon le device (touch vs clavier)
+    var hintEl = document.getElementById('dialogHint');
+    if (hintEl) {
+        var isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+        hintEl.textContent = isTouchDevice ? 'Bouton A pour fermer' : 'Espace pour fermer';
+    }
+}
+
+// === LIGHTING SYSTEM ===
+function drawLighting() {
+    var gradient = ctx.createRadialGradient(
+        canvas.width/2, canvas.height/2, TILE * 3,
+        canvas.width/2, canvas.height/2, TILE * 8
+    );
+    gradient.addColorStop(0, 'rgba(0,0,0,0)');
+    gradient.addColorStop(1, 'rgba(0,0,0,0.3)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+// === PARTICLE SYSTEM ===
+var particles = [];
+
+var PARTICLES_MAX = 120; // hard cap — anti memory leak
+
+function spawnParticles(x, y, color, count) {
+    for (var i = 0; i < count; i++) {
+        if (particles.length >= PARTICLES_MAX) break; // cap atteint, stop
+        particles.push({
+            x: x, y: y,
+            vx: (Math.random() - 0.5) * 4,
+            vy: (Math.random() - 0.5) * 4 - 2,
+            life: 30 + Math.random() * 20,
+            color: color,
+            size: 2 + Math.random() * 3
+        });
+    }
+}
+
+function drawParticles() {
+    particles = particles.filter(function(p) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.1; // gravity
+        p.life--;
+        var alpha = p.life / 50;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, alpha);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+        ctx.restore();
+        return p.life > 0;
+    });
+}
+
+// === GHOST TRAIL SYSTEM ===
+var ghostTrail = []; // {x, y, floor, alpha, dir, frame}
+var GHOST_MAX = 3;
+
+function addGhostPosition() {
+    ghostTrail.push({
+        x: player.x, y: player.y, floor: player.floor,
+        alpha: 0.35, dir: player.dir, frame: gameFrame
+    });
+    if (ghostTrail.length > GHOST_MAX) ghostTrail.shift();
+}
+
+function drawGhostTrail() {
+    ghostTrail.forEach(function(g, i) {
+        // Toujours décrémenter l'alpha — même hors étage actuel (sinon jamais purgé)
+        g.alpha -= 0.012;
+        if (g.alpha <= 0) return;
+        if (g.floor !== player.floor) return; // ne pas dessiner sur un autre étage
+        var sx = g.x * TILE - camX;
+        var sy = g.y * TILE - camY;
+        var s = TILE;
+        var fadeAlpha = g.alpha * ((i + 1) / ghostTrail.length);
+        ctx.save();
+        ctx.globalAlpha = fadeAlpha;
+        // Cape trail glow (violet fade behind)
+        var trailGrad = ctx.createRadialGradient(
+            sx + s/2, sy + s/2, s * 0.1,
+            sx + s/2, sy + s/2, s * 0.8
+        );
+        trailGrad.addColorStop(0, 'rgba(123,47,247,' + (fadeAlpha * 0.5) + ')');
+        trailGrad.addColorStop(1, 'rgba(123,47,247,0)');
+        ctx.fillStyle = trailGrad;
+        ctx.fillRect(sx - s * 0.3, sy - s * 0.3, s * 1.6, s * 1.6);
+        // Simplified ghost body
+        ctx.fillStyle = '#7B2FF7';
+        ctx.fillRect(sx + 5, sy + 8, s - 10, s - 12);
+        // Ghost head
+        ctx.fillStyle = '#c4a0ff';
+        ctx.fillRect(sx + 8, sy + 1, s - 16, 10);
+        // Cape wisps
+        ctx.fillStyle = 'rgba(90,31,208,' + (fadeAlpha * 0.7) + ')';
+        var wispOff = Math.sin(gameFrame * 0.1 + i * 2) * 3;
+        ctx.fillRect(sx + 3 + wispOff, sy + s - 8, 3, 5);
+        ctx.fillRect(sx + s - 6 - wispOff, sy + s - 8, 3, 5);
+        ctx.restore();
+    });
+    ghostTrail = ghostTrail.filter(function(g) { return g.alpha > 0; });
+}
+
+// === DUST PARTICLES (walking) ===
+var dustParticles = [];
+var DUST_MAX = 60; // cap anti-leak
+
+// Stocker en world-space pour que la caméra soit correcte au draw
+function spawnDust(px, py) {
+    if (dustParticles.length >= DUST_MAX) return;
+    var wx = px * TILE + TILE / 2; // world x
+    var wy = py * TILE + TILE - 4; // world y
+    for (var i = 0; i < 3; i++) {
+        if (dustParticles.length >= DUST_MAX) break;
+        dustParticles.push({
+            wx: wx + (Math.random() - 0.5) * 8, // world-space x
+            wy: wy + Math.random() * 4,           // world-space y
+            vx: (Math.random() - 0.5) * 1.5,
+            vy: -Math.random() * 1.2 - 0.3,
+            life: 18 + Math.random() * 12,
+            size: 1.5 + Math.random() * 2
+        });
+    }
+}
+
+function drawDustParticles() {
+    dustParticles = dustParticles.filter(function(d) {
+        d.wx += d.vx;
+        d.wy += d.vy;
+        d.vy += 0.02;
+        d.life--;
+        var alpha = d.life / 30;
+        // Convertir world → screen-space au moment du rendu (caméra à jour)
+        var sx = d.wx - camX;
+        var sy = d.wy - camY;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, alpha) * 0.6;
+        ctx.fillStyle = '#aa9977';
+        ctx.fillRect(sx, sy, d.size, d.size);
+        ctx.restore();
+        return d.life > 0;
+    });
+}
+
+// === AMBIENT PARTICLES (per-floor themed) ===
+var ambientParticles = [];
+var AMBIENT_MAX = 40;
+
+function spawnAmbientParticle(floor) {
+    if (ambientParticles.length >= AMBIENT_MAX) return;
+    var theme = FLOOR_THEMES[floor];
+    var p = {
+        wx: Math.random() * FLOOR_W * TILE,
+        wy: Math.random() * FLOOR_H * TILE,
+        floor: floor,
+        life: 120 + Math.random() * 180,
+        maxLife: 0,
+        size: 1 + Math.random() * 2,
+        color: theme.accent,
+        type: floor // 0=DEPLOY leaves, 1-2=FORGE sparks, 3-4=RECON data, 5=OMEGA energy
+    };
+    p.maxLife = p.life;
+    // Per-type velocity
+    if (floor === 0) { // DEPLOY — floating leaves
+        p.vx = (Math.random() - 0.5) * 0.4;
+        p.vy = Math.random() * 0.3 + 0.1;
+        p.size = 2 + Math.random() * 2;
+    } else if (floor <= 2) { // FORGE — rising sparks
+        p.vx = (Math.random() - 0.5) * 0.6;
+        p.vy = -Math.random() * 0.8 - 0.2;
+        p.size = 1 + Math.random() * 1.5;
+        p.color = Math.random() > 0.5 ? '#FF6B35' : '#FFD700';
+    } else if (floor <= 4) { // RECON — data streams (fall down)
+        p.vx = 0;
+        p.vy = Math.random() * 0.5 + 0.3;
+        p.size = 1;
+        p.color = Math.random() > 0.5 ? '#00D4FF' : '#00FF88';
+    } else { // OMEGA — energy orbs (float)
+        p.vx = (Math.random() - 0.5) * 0.3;
+        p.vy = Math.sin(Math.random() * Math.PI * 2) * 0.2;
+        p.size = 2 + Math.random() * 2;
+        p.color = Math.random() > 0.5 ? '#7B2FF7' : '#9B5FF7';
+    }
+    ambientParticles.push(p);
+}
+
+function drawAmbientParticles() {
+    // Spawn 1-2 per frame
+    if (ambientParticles.length < AMBIENT_MAX && Math.random() < 0.3) {
+        spawnAmbientParticle(player.floor);
+    }
+    ambientParticles = ambientParticles.filter(function(p) {
+        if (p.floor !== player.floor) return false;
+        p.wx += p.vx;
+        p.wy += p.vy;
+        p.life--;
+        // RECON data: flicker
+        if (p.type >= 3 && p.type <= 4 && Math.random() < 0.1) return p.life > 0;
+        // OMEGA energy: sine wobble
+        if (p.type === 5) p.wx += Math.sin(p.life * 0.08) * 0.3;
+        var alpha = Math.min(p.life / 40, (p.maxLife - p.life) / 20, 0.6);
+        var sx = p.wx - camX;
+        var sy = p.wy - camY;
+        if (sx < -10 || sx > W + 10 || sy < -10 || sy > H + 10) return p.life > 0;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, alpha);
+        ctx.fillStyle = p.color;
+        if (p.type === 0) {
+            // DEPLOY leaf shape (tiny diamond)
+            ctx.beginPath();
+            ctx.moveTo(sx, sy - p.size);
+            ctx.lineTo(sx + p.size * 0.6, sy);
+            ctx.lineTo(sx, sy + p.size);
+            ctx.lineTo(sx - p.size * 0.6, sy);
+            ctx.fill();
+        } else {
+            ctx.fillRect(sx, sy, p.size, p.size);
+        }
+        ctx.restore();
+        return p.life > 0;
+    });
+}
+
+// === TORCH SYSTEM ===
+// Torches placed on walls with 3-frame animated flames
+function getTorchPositions(floor) {
+    var torches = [];
+    var map = floors[floor];
+    // Place torches on inner walls (y=0 wall, at regular intervals)
+    for (var x = 3; x < FLOOR_W - 2; x += 4) {
+        if (map[0][x] === 1) torches.push({x: x, y: 0, side: 'top'});
+    }
+    // Side walls
+    for (var y = 2; y < FLOOR_H - 2; y += 3) {
+        if (map[y][0] === 1) torches.push({x: 0, y: y, side: 'left'});
+        if (map[y][FLOOR_W-1] === 1) torches.push({x: FLOOR_W-1, y: y, side: 'right'});
+    }
+    return torches;
+}
+
+var floorTorches = [];
+for (var ti = 0; ti < 6; ti++) {
+    floorTorches.push(getTorchPositions(ti));
+}
+
+function drawTorches(floor) {
+    var torches = floorTorches[floor];
+    var theme = FLOOR_THEMES[floor];
+    torches.forEach(function(t) {
+        var sx = t.x * TILE - camX;
+        var sy = t.y * TILE - camY;
+        if (sx < -TILE * 2 || sx > W + TILE || sy < -TILE * 2 || sy > H + TILE) return;
+        // Torch bracket (dark metal)
+        ctx.fillStyle = '#3a3a3a';
+        if (t.side === 'top') {
+            ctx.fillRect(sx + TILE/2 - 2, sy + TILE - 8, 4, 8);
+        } else if (t.side === 'left') {
+            ctx.fillRect(sx + TILE - 8, sy + TILE/2 - 2, 8, 4);
+        } else {
+            ctx.fillRect(sx, sy + TILE/2 - 2, 8, 4);
+        }
+        // Flame (3-frame animation)
+        var flameFrame = Math.floor(gameFrame / 6) % 3;
+        var fx, fy;
+        if (t.side === 'top') { fx = sx + TILE/2; fy = sy + TILE - 10; }
+        else if (t.side === 'left') { fx = sx + TILE - 2; fy = sy + TILE/2; }
+        else { fx = sx + 6; fy = sy + TILE/2; }
+        var flicker = Math.sin(gameFrame * 0.15 + t.x * 7 + t.y * 13) * 1.5;
+        // Flame glow
+        ctx.save();
+        var glowR = 20 + Math.sin(gameFrame * 0.1 + t.x) * 5;
+        var glowGrad = ctx.createRadialGradient(fx, fy, 2, fx, fy, glowR);
+        glowGrad.addColorStop(0, 'rgba(255,150,50,0.15)');
+        glowGrad.addColorStop(0.5, 'rgba(255,100,20,0.06)');
+        glowGrad.addColorStop(1, 'rgba(255,50,0,0)');
+        ctx.fillStyle = glowGrad;
+        ctx.fillRect(fx - glowR, fy - glowR, glowR * 2, glowR * 2);
+        ctx.restore();
+        // Flame pixels (3 frames cycle)
+        var flameCols = ['#FF4400', '#FF6600', '#FFAA00', '#FFD700'];
+        // Core
+        ctx.fillStyle = flameCols[3];
+        ctx.fillRect(fx - 1, fy - 2 + flicker, 3, 3);
+        // Mid
+        ctx.fillStyle = flameCols[1 + flameFrame % 2];
+        ctx.fillRect(fx - 2, fy - 4 + flicker - flameFrame, 5, 3);
+        // Tip (moves with frame)
+        ctx.fillStyle = flameCols[0];
+        if (flameFrame === 0) {
+            ctx.fillRect(fx - 1, fy - 6 + flicker, 2, 2);
+        } else if (flameFrame === 1) {
+            ctx.fillRect(fx, fy - 7 + flicker, 2, 3);
+            ctx.fillRect(fx - 2, fy - 5 + flicker, 1, 2);
+        } else {
+            ctx.fillRect(fx + 1, fy - 6 + flicker, 1, 2);
+            ctx.fillRect(fx - 1, fy - 7 + flicker, 2, 2);
+        }
+        // Spark (rare)
+        if (Math.random() < 0.03) {
+            spawnParticles(fx, fy - 4, '#FFD700', 1);
+        }
+    });
+}
+
+// === FOOTPRINT SYSTEM ===
+var footprints = []; // {x, y, floor, dir, life, side}
+var footprintSide = 0; // alternates 0/1
+
+function addFootprint(px, py, dir) {
+    footprints.push({
+        x: px, y: py, floor: player.floor,
+        dir: dir, life: 180, side: footprintSide // 3sec at 60fps
+    });
+    footprintSide = 1 - footprintSide;
+    // Cap at 30 footprints
+    if (footprints.length > 30) footprints.shift();
+}
+
+function drawFootprints() {
+    footprints = footprints.filter(function(fp) {
+        if (fp.floor !== player.floor) { fp.life--; return fp.life > 0; }
+        fp.life--;
+        var alpha = Math.min(fp.life / 60, 0.25);
+        var sx = fp.x * TILE - camX + TILE / 2;
+        var sy = fp.y * TILE - camY + TILE - 4;
+        var offX = fp.side === 0 ? -4 : 4;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = '#554433';
+        // Small foot dot
+        ctx.fillRect(sx + offX - 1.5, sy - 1, 3, 4);
+        ctx.restore();
+        return fp.life > 0;
+    });
+}
+
+// === TUTORIAL SYSTEM ===
+var tutorialShown = !localStorage.getItem('tower_rpg_save'); // only first launch
+var tutorialDismissed = false;
+
+function drawTutorial() {
+    if (!tutorialShown || tutorialDismissed) return;
+    var alpha = 0.85 + Math.sin(gameFrame * 0.05) * 0.1;
+    var w = 340, h = 50;
+    var x = (canvas.width - w) / 2;
+    var y = canvas.height * 0.25;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = 'rgba(10,10,18,0.92)';
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = '#7B2FF7';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, w, h);
+    ctx.font = 'bold 13px "Courier New"';
+    ctx.fillStyle = '#e0e0e0';
+    ctx.textAlign = 'center';
+    ctx.fillText('Fleches pour te deplacer', x + w / 2, y + 20);
+    ctx.fillStyle = '#aaa';
+    ctx.font = '11px "Courier New"';
+    ctx.fillText('Espace = Parler  |  E = Ascenseur  |  Q = Quetes', x + w / 2, y + 38);
+    ctx.textAlign = 'left';
+    ctx.restore();
+}
+
+// === CAMERA SHAKE SYSTEM ===
+var cameraShakeX = 0;
+var cameraShakeY = 0;
+var cameraShakeIntensity = 0;
+
+function triggerCameraShake(intensity) {
+    cameraShakeIntensity = intensity || 6;
+}
+
+function updateCameraShake() {
+    if (cameraShakeIntensity > 0) {
+        cameraShakeX = (Math.random() - 0.5) * cameraShakeIntensity;
+        cameraShakeY = (Math.random() - 0.5) * cameraShakeIntensity;
+        cameraShakeIntensity *= 0.88;
+        if (cameraShakeIntensity < 0.3) {
+            cameraShakeIntensity = 0;
+            cameraShakeX = 0;
+            cameraShakeY = 0;
+        }
+    }
+}
+
+// === TALK FLASH SYSTEM ===
+var talkFlashTimer = 0;
+var talkFlashColor = '#7B2FF7';
+
+function triggerTalkFlash(color) {
+    talkFlashTimer = 12;
+    talkFlashColor = color || '#7B2FF7';
+}
+
+function drawTalkFlash() {
+    if (talkFlashTimer <= 0) return;
+    talkFlashTimer--;
+    var alpha = talkFlashTimer / 12 * 0.35;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = talkFlashColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+}
+
+// === MINI-MAP ===
+function drawMiniMap() {
+    var mmSize = 80;
+    var mmX = canvas.width - mmSize - 10;
+    var mmY = canvas.height - mmSize - 10;
+    var tileSize = mmSize / Math.max(FLOOR_W, FLOOR_H);
+
+    // Background
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillRect(mmX - 2, mmY - 2, mmSize + 4, mmSize + 4);
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(mmX - 2, mmY - 2, mmSize + 4, mmSize + 4);
+
+    var map = floors[player.floor];
+    var theme = FLOOR_THEMES[player.floor];
+    for (var y = 0; y < FLOOR_H; y++) {
+        for (var x = 0; x < FLOOR_W; x++) {
+            var tile = map[y][x];
+            if (tile === 1) ctx.fillStyle = '#444';
+            else if (tile === 2) ctx.fillStyle = '#FFD700';
+            else ctx.fillStyle = 'rgba(' + hexToRgb(theme.floor) + ',0.27)'; // hex+44 non supporté partout
+            ctx.fillRect(mmX + x * tileSize, mmY + y * tileSize, tileSize, tileSize);
+        }
+    }
+
+    // Elevator as pulsing yellow dot
+    var elX = FLOOR_W - 2;
+    var elY = Math.floor(FLOOR_H / 2);
+    var elPulse = 0.6 + Math.sin(gameFrame * 0.08) * 0.4;
+    ctx.save();
+    ctx.globalAlpha = elPulse;
+    ctx.fillStyle = '#FFD700';
+    ctx.fillRect(mmX + elX * tileSize - 1, mmY + elY * tileSize - 1, tileSize + 2, tileSize + 2);
+    ctx.restore();
+
+    // Agents as colored dots
+    var floorAgents = FLOOR_AGENTS[player.floor];
+    floorAgents.forEach(function(a) {
+        ctx.fillStyle = a.c;
+        var dotSize = tileSize + 1;
+        // Governors slightly bigger
+        if (a.gov) dotSize = tileSize + 2;
+        ctx.fillRect(mmX + a.x * tileSize, mmY + a.y * tileSize, dotSize, dotSize);
+        // Dim talked agents
+        if (talkedAgents.has(a.n)) {
+            ctx.globalAlpha = 0.5;
+            ctx.fillRect(mmX + a.x * tileSize, mmY + a.y * tileSize, dotSize, dotSize);
+            ctx.globalAlpha = 1;
+        }
+    });
+
+    // Player as blinking white dot
+    var playerBlink = Math.sin(gameFrame * 0.12) > 0;
+    ctx.fillStyle = playerBlink ? '#ffffff' : '#ccaaff';
+    ctx.fillRect(mmX + player.x * tileSize - 1, mmY + player.y * tileSize - 1, tileSize + 2, tileSize + 2);
+    // Small glow around player on minimap
+    ctx.save();
+    ctx.globalAlpha = 0.3;
+    ctx.fillStyle = '#7B2FF7';
+    ctx.fillRect(mmX + player.x * tileSize - 2, mmY + player.y * tileSize - 2, tileSize + 4, tileSize + 4);
+    ctx.restore();
+
+    // Floor label
+    ctx.font = '8px "Courier New"';
+    ctx.fillStyle = theme.accent;
+    ctx.textAlign = 'center';
+    ctx.fillText(theme.name, mmX + mmSize/2, mmY - 6);
+    ctx.textAlign = 'left';
+}
+
+// === QUEST LOG UI ===
+var showQuestLog = false;
+
+function drawQuestLog() {
+    if (!showQuestLog) return;
+    var w = 300, h = 260;
+    var x = (canvas.width - w) / 2;
+    var y = (canvas.height - h) / 2;
+
+    ctx.fillStyle = 'rgba(0,0,0,0.85)';
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = '#7B2FF7';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, w, h);
+    // Inner glow border
+    ctx.strokeStyle = 'rgba(123,47,247,0.3)';
+    ctx.strokeRect(x + 3, y + 3, w - 6, h - 6);
+
+    ctx.font = 'bold 14px "Courier New"';
+    ctx.fillStyle = '#FFD700';
+    ctx.textAlign = 'center';
+    ctx.fillText('\uD83D\uDCDC QU\u00CATES', x + w/2, y + 22);
+
+    ctx.textAlign = 'left';
+    ctx.font = '11px "Courier New"';
+    var qy = y + 45;
+    QUESTS.forEach(function(q) {
+        var done = completedQuests.has(q.id);
+        var progress = 0;
+        if (q.type === 'talk') progress = Math.min(talkedAgents.size, q.target);
+        if (q.type === 'floor') progress = Math.min(player.floor, q.target);
+        if (q.type === 'govtalk') {
+            ALL_AGENTS.forEach(function(a) {
+                if (a.gov && talkedAgents.has(a.n)) progress++;
+            });
+        }
+        ctx.fillStyle = done ? '#00FF88' : '#e0e0e0';
+        ctx.fillText((done ? '\u2705' : '\u2B1C') + ' ' + q.name, x + 12, qy);
+        // Progress bar
+        var barX = x + 12;
+        var barY = qy + 4;
+        var barW = 160;
+        var barH = 6;
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(barX, barY, barW, barH);
+        ctx.fillStyle = done ? '#00FF88' : '#7B2FF7';
+        ctx.fillRect(barX, barY, barW * Math.min(progress / q.target, 1), barH);
+        ctx.fillStyle = '#888';
+        ctx.font = '9px "Courier New"';
+        ctx.fillText(progress + '/' + q.target + ' \u2014 ' + q.xp + ' XP', barX + barW + 8, qy + 6);
+        ctx.font = '11px "Courier New"';
+        qy += 32;
+    });
+
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'center';
+    ctx.fillText('[Q] Fermer', x + w/2, y + h - 10);
+    ctx.textAlign = 'left';
+}
+
+// === MAIN RENDER LOOP ===
+function render() {
+    gameFrame++;
+    updateCameraShake();
+    ctx.clearRect(0, 0, W, H);
+
+    // Apply camera shake
+    ctx.save();
+    ctx.translate(cameraShakeX, cameraShakeY);
+
+    // === FLOOR TRANSITION HANDLING ===
+    if (transitioning) {
+        if (transitionPhase === 'fadeout') {
+            transitionAlpha += 0.04;
+            renderFloor();
+            ctx.fillStyle = 'rgba(0,0,0,' + Math.min(transitionAlpha, 1) + ')';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (transitionAlpha >= 1) {
+                player.floor = transitionTarget;
+                player.x = FLOOR_W - 3;
+                player.y = Math.floor(FLOOR_H / 2);
+                transitionPhase = 'fadein';
+                transitionAlpha = 1;
+                triggerCameraShake(5);
+                showNotification('Etage ' + player.floor + ' \u2014 ' + FLOOR_THEMES[player.floor].name, FLOOR_THEMES[player.floor].accent);
+                checkQuests();
+                saveGame();
+            }
+
+            if (transitionAlpha >= 0.7) {
+                ctx.save();
+                ctx.font = 'bold 20px "Courier New"';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = FLOOR_THEMES[transitionTarget].accent;
+                ctx.globalAlpha = Math.min(transitionAlpha, 1);
+                ctx.fillText(FLOOR_THEMES[transitionTarget].name, canvas.width/2, canvas.height/2);
+                ctx.font = '12px "Courier New"';
+                ctx.fillStyle = '#888';
+                ctx.fillText('\u00C9tage ' + (transitionTarget + 1) + '/6', canvas.width/2, canvas.height/2 + 25);
+                ctx.restore();
+            }
+        } else if (transitionPhase === 'fadein') {
+            transitionAlpha -= 0.04;
+            handleMovement();
+            updateCamera();
+            renderFloor();
+            if (transitionAlpha > 0) {
+                ctx.fillStyle = 'rgba(0,0,0,' + transitionAlpha + ')';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            if (transitionAlpha <= 0) {
+                transitioning = false;
+                transitionAlpha = 0;
+            }
+        }
+        drawHUD();
+        drawNotifications();
+        drawParticles();
+        drawTalkFlash();
+        ctx.restore(); // camera shake
+        requestAnimationFrame(render);
+        return;
+    }
+
+    handleMovement();
+    updateCamera();
+    renderFloor();
+
+    // Lighting
+    drawLighting();
+
+    // Particles
+    drawParticles();
+
+    // Talk flash effect
+    drawTalkFlash();
+
+    // Konami flash effect
+    if (konamiFlashTimer > 0) {
+        konamiFlashTimer--;
+        ctx.fillStyle = 'rgba(123,47,247,' + (konamiFlashTimer / 60) + ')';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Draw HUD overlay
+    drawHUD();
+
+    // Mini-map
+    drawMiniMap();
+
+    // Draw notifications
+    drawNotifications();
+
+    // Tutorial overlay
+    drawTutorial();
+
+    // Quest log overlay
+    drawQuestLog();
+
+    // Restore camera shake transform
+    ctx.restore();
+
+    requestAnimationFrame(render);
+}
+
+// === RENDER FLOOR (extracted for transition reuse) ===
+function renderFloor() {
+    const f = player.floor;
+    const theme = FLOOR_THEMES[f];
+    const map = floors[f];
+
+    // Précalculer les couleurs dérivées (constantes par floor, évite lighten() par tile)
+    const wallLight = lighten(theme.wall, 8);
+    const floorLight3 = lighten(theme.floor, 3);
+    const floorLight5 = lighten(theme.floor, 5);
+
+    // Draw floor tiles
+    for (let y = 0; y < FLOOR_H; y++) {
+        for (let x = 0; x < FLOOR_W; x++) {
+            const tile = map[y][x];
+            const sx = x * TILE - camX;
+            const sy = y * TILE - camY;
+
+            // Skip off-screen
+            if (sx > W + TILE || sy > H + TILE || sx < -TILE || sy < -TILE) continue;
+
+            if (tile === 1) {
+                // Wall
+                ctx.fillStyle = theme.wall;
+                ctx.fillRect(sx, sy, TILE, TILE);
+                // Brick pattern (wallLight précalculé hors boucle)
+                ctx.fillStyle = wallLight;
+                if ((x + y) % 2 === 0) {
+                    ctx.fillRect(sx + 1, sy + 1, TILE/2 - 1, TILE/2 - 1);
+                    ctx.fillRect(sx + TILE/2 + 1, sy + TILE/2 + 1, TILE/2 - 2, TILE/2 - 2);
+                }
+            } else if (tile === 4) {
+                // Window
+                ctx.fillStyle = theme.wall;
+                ctx.fillRect(sx, sy, TILE, TILE);
+                // Window glow
+                const glow = 0.3 + Math.sin(gameFrame * 0.02 + x) * 0.2;
+                ctx.fillStyle = 'rgba(200,200,255,' + glow + ')';
+                ctx.fillRect(sx + 4, sy + 4, TILE - 8, TILE - 8);
+            } else {
+                // Floor
+                ctx.fillStyle = theme.floor;
+                ctx.fillRect(sx, sy, TILE, TILE);
+                // Floor pattern (couleurs précalculées hors boucle)
+                if ((x + y) % 2 === 0) {
+                    ctx.fillStyle = floorLight3;
+                    ctx.fillRect(sx, sy, TILE, TILE);
+                }
+                // Subtle diamond pattern
+                if ((x + y) % 5 === 0) {
+                    ctx.fillStyle = floorLight5;
+                    ctx.fillRect(sx + TILE/4, sy + TILE/4, TILE/2, TILE/2);
+                }
+            }
+
+            // Grid lines — supprimé (240 strokeRect/frame = coûteux, quasi-invisible à 2% opacity)
+        }
+    }
+
+    // Torches on walls
+    drawTorches(f);
+
+    // Decorations
+    drawDecorations(f);
+
+    // Draw agents
+    FLOOR_AGENTS[f].forEach(function(a) {
+        drawPixelChar(a.x, a.y, a.c, 'down', a.gov, gameFrame, a.n);
+        // Name label — offset for speech bubble if not yet talked
+        const sx = a.x * TILE - camX;
+        const sy = a.y * TILE - camY;
+        var labelY = talkedAgents.has(a.n) ? sy - 8 : sy - 22;
+        ctx.fillStyle = a.c;
+        ctx.font = '9px monospace';
+        ctx.textAlign = 'center';
+        var label = a.n;
+        if (talkedAgents.has(a.n)) label = '\u2713 ' + a.n;
+        ctx.fillText(label, sx + TILE/2, labelY);
+        ctx.textAlign = 'start';
+    });
+
+    // Draw footprints (under player)
+    drawFootprints();
+
+    // Draw ghost trail (under player)
+    drawGhostTrail();
+
+    // Draw player
+    drawPlayer(gameFrame);
+
+    // Dust particles (above player)
+    drawDustParticles();
+
+    // Ambient particles (per-floor themed)
+    drawAmbientParticles();
+
+    // === DYNAMIC VIGNETTE (proximity lighting) ===
+    ctx.save();
+    var plCx = player.x * TILE - camX + TILE / 2;
+    var plCy = player.y * TILE - camY + TILE / 2;
+    var vigRad = TILE * 5;
+    var vigGrad = ctx.createRadialGradient(plCx, plCy, TILE * 1.5, plCx, plCy, vigRad);
+    vigGrad.addColorStop(0, 'rgba(0,0,0,0)');
+    vigGrad.addColorStop(0.6, 'rgba(0,0,0,0.1)');
+    vigGrad.addColorStop(1, 'rgba(0,0,0,0.35)');
+    ctx.fillStyle = vigGrad;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+
+    // === PLAYER LIGHT RADIUS ===
+    ctx.save();
+    var plSx = player.x * TILE - camX + TILE / 2;
+    var plSy = player.y * TILE - camY + TILE / 2;
+    var lightRad = TILE * 3.5;
+    var lightGrad = ctx.createRadialGradient(plSx, plSy, TILE * 0.5, plSx, plSy, lightRad);
+    lightGrad.addColorStop(0, 'rgba(123,47,247,0.06)');
+    lightGrad.addColorStop(0.4, 'rgba(123,47,247,0.03)');
+    lightGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = lightGrad;
+    ctx.fillRect(plSx - lightRad, plSy - lightRad, lightRad * 2, lightRad * 2);
+    ctx.restore();
+
+    // Floor border glow
+    ctx.strokeStyle = 'rgba(' + hexToRgb(theme.accent) + ',0.13)'; // hex+22 non supporté partout
+    ctx.lineWidth = 2;
+    ctx.strokeRect(-camX, -camY, FLOOR_W * TILE, FLOOR_H * TILE);
+}
+
+// === INIT ===
+loadGame();
+setupMobileControls();
+render();
+</script>
+</body>
+</html>

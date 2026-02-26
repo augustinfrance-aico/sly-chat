@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOON TOWER — L'Empire Vivant · Neo-Iso HD</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#050510;overflow:hidden;font-family:'Courier New',monospace}
+canvas{display:block}
+#info-panel{position:fixed;top:0;right:-400px;width:390px;height:100%;
+  background:rgba(8,6,18,.96);border-left:2px solid #7B2FF7;padding:25px 22px;
+  color:#e0e0e0;font-size:13px;transition:right .35s cubic-bezier(.22,.61,.36,1);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  box-shadow:-10px 0 60px rgba(123,47,247,.3);z-index:100;overflow-y:auto}
+#info-panel.show{right:0}
+#info-panel .close-btn{position:absolute;top:12px;right:14px;background:none;border:1px solid #333;
+  color:#888;font-size:18px;cursor:pointer;padding:2px 8px;border-radius:4px}
+#info-panel .close-btn:hover{color:#fff;border-color:#7B2FF7}
+#info-panel .agent-name{font-size:22px;font-weight:bold;margin-bottom:6px}
+#info-panel .agent-role{color:#8888aa;font-size:13px;margin-bottom:4px}
+#info-panel .agent-quote{font-style:italic;color:#aaa;margin:10px 0;font-size:12px;
+  border-left:2px solid #3a3a5a;padding-left:10px}
+#info-panel .stat-row{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:11px}
+#info-panel .stat-label{width:30px;color:#888;letter-spacing:1px}
+#info-panel .stat-bar{flex:1;height:5px;background:#1a1a2e;border-radius:3px;overflow:hidden}
+#info-panel .stat-fill{height:100%;border-radius:3px;transition:width .5s}
+#info-panel .stat-val{width:28px;text-align:right;font-weight:bold;font-size:12px}
+#info-panel .pole-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:10px;
+  letter-spacing:1px;margin:8px 0}
+#info-panel .skills-list{margin:10px 0;font-size:11px;color:#aaa;line-height:1.8}
+#info-panel .skills-list span{display:inline-block;background:#1a1a2e;padding:2px 8px;border-radius:10px;margin:2px}
+#progress{position:fixed;top:15px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:15px;
+  background:rgba(8,6,18,.9);border:1px solid #1a1a30;border-radius:10px;padding:10px 20px;
+  backdrop-filter:blur(8px);z-index:10}
+#progress .label{color:#666;font-size:9px;letter-spacing:2px;text-transform:uppercase}
+#progress .bar-wrap{width:260px;height:6px;background:#1a1a2e;border-radius:3px;overflow:hidden}
+#progress .bar-fill{height:100%;background:linear-gradient(90deg,#7B2FF7,#00D4FF,#00FF88);border-radius:3px;
+  transition:width 2s ease}
+#progress .pct{color:#00FF88;font-size:13px;font-weight:bold}
+#legend{position:fixed;top:15px;right:15px;background:rgba(8,6,18,.9);border:1px solid #1a1a30;
+  border-radius:10px;padding:12px 15px;font-size:10px;color:#666;line-height:1.8;backdrop-filter:blur(8px);z-index:10}
+#legend .title{color:#e0e0e0;font-weight:bold;margin-bottom:5px;letter-spacing:2px}
+.pole-label{display:flex;align-items:center;gap:6px}
+.pole-dot{width:8px;height:8px;border-radius:50%}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="progress">
+  <span class="label">Empire Progress</span>
+  <div class="bar-wrap"><div class="bar-fill" id="progBar" style="width:0%"></div></div>
+  <span class="pct" id="progPct">0%</span>
+</div>
+<div id="legend">
+  <div class="title">MOON TOWER</div>
+  <div class="pole-label"><span class="pole-dot" style="background:#00D4FF"></span> RECON — Renseignement</div>
+  <div class="pole-label"><span class="pole-dot" style="background:#FF6B35"></span> FORGE — Production</div>
+  <div class="pole-label"><span class="pole-dot" style="background:#00FF88"></span> DEPLOY — Distribution</div>
+  <div class="pole-label"><span class="pole-dot" style="background:#7B2FF7"></span> OMEGA — Meta-intelligence</div>
+  <div class="pole-label"><span class="pole-dot" style="background:#22c55e"></span> Boss vaincu</div>
+  <div class="pole-label"><span class="pole-dot" style="background:#FF3366"></span> Boss actif</div>
+  <div style="margin-top:5px;color:#444">Hover = stats · Clic = détail</div>
+</div>
+<div id="info-panel">
+  <button class="close-btn" onclick="closeInfoPanel()">&times;</button>
+  <div id="info-content"></div>
+</div>
+
+<script>
+const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');
+let W,H,mouseX=0,mouseY=0,hoveredAgent=null,hoveredBoss=null,frame=0;
+
+function resize(){W=canvas.width=innerWidth;H=canvas.height=innerHeight}
+addEventListener('resize',resize);resize();
+
+// ========== CONSTANTS ==========
+const PX=3;
+function px(x,y,c){ctx.fillStyle=c;ctx.fillRect(Math.floor(x/PX)*PX,Math.floor(y/PX)*PX,PX,PX)}
+function pxRect(x,y,w,h,c){ctx.fillStyle=c;
+  ctx.fillRect(Math.floor(x/PX)*PX,Math.floor(y/PX)*PX,Math.floor(w/PX)*PX||PX,Math.floor(h/PX)*PX||PX)}
+
+// ========== AGENT STATS ==========
+const STATS={
+  'Omega':{atk:95,def:90,spd:85,int:99,cre:92},
+  'Sentinel':{atk:60,def:85,spd:90,int:96,cre:55},
+  'Murphy':{atk:60,def:90,spd:55,int:92,cre:50},
+  'Oracle':{atk:50,def:70,spd:65,int:98,cre:60},
+  'Maya':{atk:55,def:60,spd:80,int:85,cre:78},
+  'Ghost':{atk:80,def:95,spd:90,int:75,cre:40},
+  'Nash':{atk:45,def:65,spd:50,int:96,cre:55},
+  'Cypher':{atk:40,def:70,spd:55,int:94,cre:45},
+  'Rick':{atk:65,def:40,spd:75,int:88,cre:99},
+  'Nikola':{atk:85,def:80,spd:70,int:92,cre:60},
+  'Philomene':{atk:55,def:60,spd:65,int:82,cre:95},
+  'Forge':{atk:90,def:85,spd:60,int:70,cre:55},
+  'Basquiat':{atk:50,def:45,spd:55,int:75,cre:99},
+  'Zara':{atk:60,def:50,spd:85,int:78,cre:92},
+  'Murray':{atk:55,def:55,spd:70,int:80,cre:95},
+  'Leon':{atk:40,def:90,spd:45,int:95,cre:30},
+  'Baloo':{atk:35,def:80,spd:40,int:85,cre:88},
+  'Pulse':{atk:45,def:70,spd:95,int:90,cre:40},
+  'Arcade':{atk:40,def:50,spd:60,int:65,cre:92},
+  'Bagheera':{atk:75,def:85,spd:92,int:88,cre:55},
+  'Spartan':{atk:95,def:92,spd:88,int:70,cre:35},
+  'Stanley':{atk:88,def:55,spd:80,int:82,cre:70},
+  'Sly':{atk:70,def:65,spd:85,int:90,cre:60},
+  'Vito':{atk:85,def:80,spd:60,int:88,cre:55},
+  'Grimaldi':{atk:60,def:75,spd:65,int:92,cre:50},
+  'X-O1':{atk:80,def:70,spd:95,int:85,cre:40},
+  'Zen':{atk:30,def:95,spd:30,int:90,cre:70},
+  'Bentley':{atk:55,def:60,spd:70,int:72,cre:95},
+  'Aladin':{atk:50,def:65,spd:75,int:80,cre:60},
+  'Limpide':{atk:35,def:70,spd:55,int:92,cre:85},
+  // 10 nouveaux agents
+  'Outreach':{atk:70,def:50,spd:85,int:78,cre:65},
+  'Analytics':{atk:40,def:65,spd:60,int:96,cre:45},
+  'Paragon':{atk:55,def:92,spd:50,int:85,cre:40},
+  'Architect':{atk:60,def:80,spd:55,int:98,cre:70},
+  'Proxy':{atk:65,def:75,spd:70,int:90,cre:60},
+  'Vector':{atk:45,def:55,spd:80,int:88,cre:75},
+  'Catalyst':{atk:80,def:50,spd:95,int:82,cre:65},
+  'Mimic':{atk:70,def:60,spd:75,int:94,cre:50},
+  'Keeper':{atk:50,def:88,spd:55,int:80,cre:60},
+  'Nexus':{atk:55,def:70,spd:65,int:95,cre:75},
+};
+
+// ========== 30 AGENTS ==========
+const AGENTS=[
+  // OMEGA-CORE (Floor 6 — top)
+  {n:'Omega',r:'Meta-intelligence',pole:'core',color:'#7B2FF7',floor:6,pos:0,isNew:false,
+   hair:'#9b5fff',shirt:'#3d1f5a',skills:['Vision 360','Fusion','Arbitrage'],
+   quote:'Je suis tous les agents. Et aucun.'},
+  {n:'Sentinel',r:'Dispatch Central',pole:'core',color:'#f0d060',floor:6,pos:1,isNew:true,
+   hair:'#f0d060',shirt:'#3d2d1f',skills:['Routing','Priorités','Charge'],
+   quote:'Chaque demande a un chemin optimal.'},
+
+  // RECON (Floor 5-4)
+  {n:'Murphy',r:'Architecte [GOV]',pole:'recon',color:'#00D4FF',floor:5,pos:0,gov:true,
+   hair:'#2a4a7a',shirt:'#1e3a5a',skills:['Structure','Prioriser','Scaling'],
+   quote:'Sans plan, pas d\'empire.'},
+  {n:'Oracle',r:'Intelligence [GOV]',pole:'recon',color:'#00B4DF',floor:5,pos:1,gov:true,
+   hair:'#8a5aaa',shirt:'#2a1a4a',skills:['Veille','Prédiction','Timing'],
+   quote:'Je ne prédis pas. J\'anticipe.'},
+  {n:'Maya',r:'Chasseuse Niches',pole:'recon',color:'#00A0CF',floor:5,pos:2,
+   hair:'#1a1a3a',shirt:'#3a2a5a',skills:['Niches','Trends','Scoring'],
+   quote:'La niche parfaite existe.'},
+  {n:'Ghost',r:'Sécurité',pole:'recon',color:'#0090BF',floor:4,pos:0,
+   hair:'#3a3a3a',shirt:'#1a2a1a',skills:['API','Webhooks','Sécurité'],
+   quote:'Tu ne me vois pas, mais je veille.'},
+  {n:'Nash',r:'Chercheur Data',pole:'recon',color:'#0080AF',floor:4,pos:1,
+   hair:'#5a4a3a',shirt:'#2a2a4a',skills:['Patterns','Stats','Pricing'],
+   quote:'Les données ne mentent jamais.'},
+  {n:'Cypher',r:'Analyste KPIs',pole:'recon',color:'#00709F',floor:4,pos:2,
+   hair:'#2a3a2a',shirt:'#1a2a2a',skills:['Dashboard','Benchmark','Monitor'],
+   quote:'Si c\'est pas mesuré, ça n\'existe pas.'},
+  {n:'Rick',r:'Visionnaire',pole:'recon',color:'#00608F',floor:4,pos:3,
+   hair:'#90d0e0',shirt:'#4a3a2a',skills:['Disruption','First Principles'],
+   quote:'Et si on faisait l\'inverse ?'},
+
+  // FORGE (Floor 3-2)
+  {n:'Nikola',r:'Systèmes [GOV]',pole:'forge',color:'#FF6B35',floor:3,pos:0,gov:true,
+   hair:'#2a2a2a',shirt:'#1a3a1a',skills:['Pipelines','Auto','Scale'],
+   quote:'Le code ne ment jamais.'},
+  {n:'Philomene',r:'Orfèvre [GOV]',pole:'forge',color:'#FF8555',floor:3,pos:1,gov:true,
+   hair:'#c05080',shirt:'#5a1a3a',skills:['Prompts','Copy','Mithril'],
+   quote:'Chaque mot compte.'},
+  {n:'Forge',r:'Forgeron Debug',pole:'forge',color:'#FF9F75',floor:3,pos:2,
+   hair:'#4a3a2a',shirt:'#3a2a1a',skills:['Root Cause','Refactor','Prod'],
+   quote:'Je construis. Le reste est bruit.'},
+  {n:'Basquiat',r:'Artiste',pole:'forge',color:'#FFB995',floor:3,pos:3,
+   hair:'#e0a040',shirt:'#5a2a4a',skills:['Storytelling','Branding','Visuel'],
+   quote:'Le beau vend mieux que le parfait.'},
+  {n:'Zara',r:'Contenu [+VERSO]',pole:'forge',color:'#FF5525',floor:2,pos:0,
+   hair:'#e060a0',shirt:'#4a1a5a',skills:['Social','LinkedIn+','Flywheel'],
+   quote:'Le contenu est roi. Moi, la reine.'},
+  {n:'Murray',r:'Force de Frappe',pole:'forge',color:'#FF4515',floor:2,pos:1,
+   hair:'#6a4a2a',shirt:'#3a2a3a',skills:['Volume','A/B','Scaling'],
+   quote:'Un empire sans humour est une prison.'},
+  {n:'Leon',r:'Comptable',pole:'forge',color:'#FF3505',floor:2,pos:2,
+   hair:'#3a3a3a',shirt:'#2a3a2a',skills:['Coûts','Budget','Alternatives'],
+   quote:'Chaque centime a une destination.'},
+  {n:'Baloo',r:'Génie Créatif',pole:'forge',color:'#EE2500',floor:2,pos:3,
+   hair:'#7a5a3a',shirt:'#4a3a2a',skills:['Brainstorm','Connexions','Vulgar.'],
+   quote:'Si ta grand-mère comprend pas, recommence.'},
+  {n:'Pulse',r:'Performance',pole:'forge',color:'#FF7745',floor:2,pos:4,isNew:true,
+   hair:'#20a050',shirt:'#1a3a2a',skills:['Latence','Profiling','Benchmarks'],
+   quote:'0.3s de trop. Inacceptable.'},
+  {n:'Arcade',r:'Game Designer',pole:'forge',color:'#EE5535',floor:3,pos:4,
+   hair:'#e040e0',shirt:'#3a1a4a',skills:['Gamification','UX','Pixel Art'],
+   quote:'La vie est un jeu. Autant bien scorer.'},
+
+  // DEPLOY (Floor 1-0)
+  {n:'Bagheera',r:'Orchestre [GOV]',pole:'deploy',color:'#00FF88',floor:1,pos:0,gov:true,
+   hair:'#1a1a1a',shirt:'#2a1a3a',skills:['Supervision','Coalitions','Synergie'],
+   quote:'Je supervise les flux.'},
+  {n:'Spartan',r:'Guerrier [+DREYFUS]',pole:'deploy',color:'#00EE78',floor:1,pos:1,gov:true,
+   hair:'#8a2a1a',shirt:'#5a1a1a',skills:['Discipline','Cadence','TimeBox'],
+   quote:'La discipline bat le talent. Toujours.'},
+  {n:'Stanley',r:'Machine à Cash',pole:'deploy',color:'#00DD68',floor:1,pos:2,
+   hair:'#3a3a1a',shirt:'#4a3a1a',skills:['Closing','Objections','CRM'],
+   quote:'Chaque pitch est un one-man show.'},
+  {n:'Sly',r:'Renard Growth',pole:'deploy',color:'#00CC58',floor:1,pos:3,
+   hair:'#c06020',shirt:'#4a2a1a',skills:['Outreach','Guerrilla','Funnel'],
+   quote:'Tout le monde croit avoir gagné.'},
+  {n:'Vito',r:'Stratège Long Terme',pole:'deploy',color:'#00BB48',floor:1,pos:4,
+   hair:'#2a2a2a',shirt:'#1a1a2a',skills:['Deals','Partenariats','MRR'],
+   quote:'Une offre qu\'on ne peut pas refuser.'},
+  {n:'Grimaldi',r:'Huissier Audit',pole:'deploy',color:'#009928',floor:0,pos:0,
+   hair:'#4a4a4a',shirt:'#3a2a1a',skills:['Audit','Qualité','Projections'],
+   quote:'Je trouve ce qui cloche.'},
+  {n:'X-O1',r:'Cyber-Architecte',pole:'deploy',color:'#008818',floor:0,pos:1,
+   hair:'#4060c0',shirt:'#1a1a3a',skills:['VS Code','Setup','Zero-cost'],
+   quote:'Déployé en 3 secondes.'},
+  {n:'Zen',r:'Nettoyeur [+FLEMM]',pole:'deploy',color:'#007708',floor:0,pos:2,
+   hair:'#bbbbbb',shirt:'#2a3a3a',skills:['Nettoyage','Archivage','Délégation'],
+   quote:'Respire. L\'empire n\'a pas besoin de panique.'},
+  {n:'Bentley',r:'Architecte Premium',pole:'deploy',color:'#006600',floor:0,pos:3,
+   hair:'#5a4a3a',shirt:'#2a3a2a',skills:['Premium','Pipeline IA','Boucles'],
+   quote:'La qualité n\'est pas un luxe.'},
+  {n:'Aladin',r:'Manager Projets',pole:'deploy',color:'#00AA38',floor:0,pos:4,
+   hair:'#1a1a3a',shirt:'#3a2a4a',skills:['Tracking','Sprint','Blocages'],
+   quote:'Tes voeux sont des ordres. Enfin, des sprints.'},
+  {n:'Limpide',r:'Décodeur Clarté',pole:'deploy',color:'#00DD88',floor:0,pos:5,isNew:true,
+   hair:'#40c0d0',shirt:'#1a2a3a',skills:['Simplifier','Vulgariser','Glossaire'],
+   quote:'Si c\'est compliqué, c\'est mal dit.'},
+
+  // === 10 NOUVEAUX AGENTS (#31-40) ===
+
+  // DEPLOY
+  {n:'Outreach',r:'Prospection Cold',pole:'deploy',color:'#00CC68',floor:1,pos:5,isNew:true,
+   hair:'#3a5a9a',shirt:'#2a4a3a',skills:['Cold Email','Séquences','LinkedIn'],
+   quote:'Le premier message est le plus important.'},
+  {n:'Paragon',r:'Contrôle Qualité',pole:'deploy',color:'#00BB58',floor:1,pos:6,isNew:true,
+   hair:'#e0d040',shirt:'#3a3a1a',skills:['QA','Audit Final','Standards'],
+   quote:'Rien ne sort sans mon validation.'},
+  {n:'Proxy',r:'Négociateur Diplomate',pole:'deploy',color:'#00AA48',floor:0,pos:6,isNew:true,
+   hair:'#5a3a2a',shirt:'#1a2a3a',skills:['Négociation','Médiation','Diplomatie'],
+   quote:'Tout conflit a une solution élégante.'},
+  {n:'Keeper',r:'Rétention Client',pole:'deploy',color:'#009938',floor:0,pos:7,isNew:true,
+   hair:'#2a3a5a',shirt:'#2a3a2a',skills:['Onboarding','Check-in','Fidélisation'],
+   quote:'Un client silencieux est soit content, soit sur le départ.'},
+
+  // FORGE
+  {n:'Architect',r:'Design Systèmes',pole:'forge',color:'#FF7745',floor:3,pos:5,isNew:true,
+   hair:'#4a4a6a',shirt:'#2a2a4a',skills:['Architecture','API Design','Schémas'],
+   quote:'L\'architecture c\'est ce qui reste quand tout a changé.'},
+  {n:'Vector',r:'Traducteur Multilingue',pole:'forge',color:'#FF6635',floor:2,pos:5,isNew:true,
+   hair:'#8a4a2a',shirt:'#3a2a1a',skills:['Localisation','Adaptation','Registres'],
+   quote:'Les mots n\'ont pas de frontières.'},
+  {n:'Catalyst',r:'Accélérateur',pole:'forge',color:'#EE3515',floor:2,pos:6,isNew:true,
+   hair:'#c04020',shirt:'#4a1a1a',skills:['Déblocage','Itération','Prototypage'],
+   quote:'Bloqué ? Plus maintenant.'},
+
+  // RECON
+  {n:'Analytics',r:'Monitoring Stats',pole:'recon',color:'#0070AF',floor:4,pos:4,isNew:true,
+   hair:'#3a3a4a',shirt:'#1a2a3a',skills:['Dashboard','BSR','Conversion'],
+   quote:'Les chiffres racontent une histoire.'},
+  {n:'Mimic',r:'Reverse-Engineer',pole:'recon',color:'#00609F',floor:4,pos:5,isNew:true,
+   hair:'#2a2a4a',shirt:'#3a1a3a',skills:['Reverse','Deconstruct','Benchmark'],
+   quote:'Ce qui marche pour eux marchera mieux pour nous.'},
+
+  // OMEGA-CORE
+  {n:'Nexus',r:'Connecteur Synergies',pole:'core',color:'#9B5FF7',floor:6,pos:2,isNew:true,
+   hair:'#6a3aaa',shirt:'#2a1a4a',skills:['Synergies','Inter-projets','Cascade'],
+   quote:'Tout est connecté. Il faut juste voir les fils.'},
+];
+
+// ========== BINOMES ==========
+const BINOMES=[
+  ['Murphy','Oracle'],['Nikola','Philomene'],['Bagheera','Spartan'],
+  ['Omega','Sentinel'],['Rick','Basquiat'],['Zara','Murray'],
+  ['Ghost','Cypher'],['Stanley','Sly'],['Vito','Grimaldi'],
+  ['Leon','Baloo'],['Nash','Maya'],['X-O1','Zen'],
+  ['Forge','Pulse'],['Aladin','Limpide'],['Bentley','Arcade'],
+  ['Outreach','Keeper'],['Architect','Nikola'],['Analytics','Cypher'],
+  ['Mimic','Maya'],['Proxy','Stanley'],['Vector','Philomene'],['Catalyst','Forge'],['Nexus','Omega'],
+];
+
+// ========== BOSSES ==========
+const BOSSES={
+  0:{name:"PREMIER CLIENT",desc:"Premier contrat Upwork",defeated:true,reward:500},
+  1:{name:"MACHINE À CONTENU",desc:"10 produits KDP/Gumroad",defeated:false,reward:750},
+  2:{name:"PIPELINE FORGE",desc:"3 automatisations actives",defeated:false,reward:1000},
+  3:{name:"VEILLE TOTALE",desc:"News+Crypto+Upwork auto",defeated:true,reward:1000},
+  4:{name:"5000€/MOIS",desc:"5000€ revenus mensuels",defeated:false,reward:2000},
+  5:{name:"SCALING x10",desc:"Système scalé x10",defeated:false,reward:3000},
+  6:{name:"EMPIRE AUTONOME",desc:"100% autonome",defeated:false,reward:5000},
+};
+
+// ========== TOWER CONFIG ==========
+const TOWER_W=340,TOWER_H=560,FLOOR_H=80;
+const TOWER_X=()=>W/2-TOWER_W/2;
+const TOWER_Y=()=>H/2-TOWER_H/2+40;
+
+// ========== STARS ==========
+const stars=[];
+for(let i=0;i<350;i++)stars.push({x:Math.random()*3000-500,y:Math.random()*2000-500,
+  size:Math.random()*2.5+0.5,bright:Math.random(),speed:Math.random()*0.2+0.05});
+
+// ========== NEBULAE ==========
+const nebulae=[
+  {x:.15,y:.2,r:130,c:'rgba(123,47,247,0.05)'},
+  {x:.82,y:.15,r:160,c:'rgba(0,212,255,0.04)'},
+  {x:.5,y:.72,r:110,c:'rgba(255,107,53,0.035)'},
+  {x:.88,y:.6,r:90,c:'rgba(0,255,136,0.035)'},
+  {x:.28,y:.82,r:100,c:'rgba(123,47,247,0.025)'},
+];
+
+// ========== PLANETS ==========
+const planets=[
+  {name:'RECON',color:'#00D4FF',x:.1,y:.3,r:30,ring:true},
+  {name:'FORGE',color:'#FF6B35',x:.9,y:.35,r:25,ring:false},
+  {name:'DEPLOY',color:'#00FF88',x:.12,y:.7,r:22,ring:true},
+];
+
+// ========== SHOOTING STARS ==========
+let shootingStars=[];
+
+// ========== FIREFLIES ==========
+const fireflies=[];
+for(let i=0;i<18;i++)fireflies.push({x:Math.random()*W,y:H*0.15+Math.random()*H*0.55,
+  phase:Math.random()*Math.PI*2,speed:.15+Math.random()*.35});
+
+// ========== COLOR UTILS ==========
+function hex2rgb(h){let v=parseInt(h.slice(1),16);return[(v>>16)&255,(v>>8)&255,v&255]}
+function lighten(h,a){let[r,g,b]=hex2rgb(h);return`rgb(${Math.min(255,r+255*a)|0},${Math.min(255,g+255*a)|0},${Math.min(255,b+255*a)|0})`}
+function darken(h,a){let[r,g,b]=hex2rgb(h);return`rgb(${r*a|0},${g*a|0},${b*a|0})`}
+
+// ========== DRAW STARFIELD ==========
+function drawStars(){
+  stars.forEach(s=>{
+    s.x-=s.speed;if(s.x<-10)s.x=W+10;
+    let sx=((s.x%W)+W)%W,sy=((s.y%H)+H)%H;
+    let twinkle=0.3+Math.sin(frame*0.02+s.bright*20)*0.3;
+    ctx.globalAlpha=s.bright*twinkle;
+    ctx.fillStyle=s.bright>0.7?'#fff':'#8899bb';
+    ctx.fillRect(Math.floor(sx/PX)*PX,Math.floor(sy/PX)*PX,s.size>1.5?PX:PX*.7,s.size>1.5?PX:PX*.7);
+    ctx.globalAlpha=1;
+  });
+}
+
+// ========== AURORA ==========
+function drawAurora(){
+  let aY=H*0.04,aH=H*0.16;
+  for(let i=0;i<4;i++){
+    let off=Math.sin(frame*.005+i*1.5)*35;
+    let wOff=Math.sin(frame*.008+i*.7)*20;
+    let g=ctx.createLinearGradient(0,aY+off,0,aY+aH+off);
+    let h1=(120+i*30+frame*.15)%360,h2=(180+i*25+frame*.1)%360;
+    g.addColorStop(0,'transparent');
+    g.addColorStop(.3,`hsla(${h1},80%,50%,0.02)`);
+    g.addColorStop(.5,`hsla(${h2},70%,60%,0.035)`);
+    g.addColorStop(.7,`hsla(${h1},80%,50%,0.02)`);
+    g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.moveTo(0,aY+off);
+    for(let x=0;x<=W;x+=30){let w=Math.sin(x*.005+frame*.01+i)*12+wOff;ctx.lineTo(x,aY+off+w)}
+    ctx.lineTo(W,aY+aH+off);ctx.lineTo(0,aY+aH+off);ctx.closePath();ctx.fill();
+  }
+}
+
+// ========== NEBULAE ==========
+function drawNebulae(){
+  nebulae.forEach(n=>{
+    let g=ctx.createRadialGradient(n.x*W,n.y*H,0,n.x*W,n.y*H,n.r);
+    g.addColorStop(0,n.c);g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;ctx.fillRect(n.x*W-n.r,n.y*H-n.r,n.r*2,n.r*2);
+  });
+}
+
+// ========== MOON ==========
+function drawMoon(){
+  let mx_=W*.88,my_=H*.11,mr=35;
+  ctx.beginPath();ctx.arc(mx_,my_,mr,0,Math.PI*2);
+  let mg=ctx.createRadialGradient(mx_-6,my_-6,2,mx_,my_,mr);
+  mg.addColorStop(0,'#f0e8d0');mg.addColorStop(.7,'#d4c8a8');mg.addColorStop(1,'#b0a080');
+  ctx.fillStyle=mg;ctx.fill();
+  // Shadow crescent
+  ctx.beginPath();ctx.arc(mx_+12,my_-3,mr*.9,0,Math.PI*2);
+  ctx.fillStyle='rgba(5,5,16,0.85)';ctx.fill();
+  // Craters
+  [[-15,-8,4],[-20,4,3],[-8,10,3]].forEach(([dx,dy,cr])=>{
+    ctx.beginPath();ctx.arc(mx_+dx,my_+dy,cr,0,Math.PI*2);
+    ctx.fillStyle='rgba(160,140,100,0.3)';ctx.fill()});
+  // Glow
+  ctx.beginPath();ctx.arc(mx_,my_,mr+12,0,Math.PI*2);
+  let gg=ctx.createRadialGradient(mx_,my_,mr,mx_,my_,mr+12);
+  gg.addColorStop(0,'rgba(240,232,208,0.06)');gg.addColorStop(1,'transparent');
+  ctx.fillStyle=gg;ctx.fill();
+}
+
+// ========== PLANETS ==========
+function drawPlanets(){
+  planets.forEach(p=>{
+    let px_=p.x*W,py_=p.y*H;
+    let bob=Math.sin(frame*.008+p.x*10)*5;
+    py_+=bob;
+    // Glow
+    ctx.beginPath();ctx.arc(px_,py_,p.r+8,0,Math.PI*2);
+    let pg=ctx.createRadialGradient(px_,py_,p.r*.5,px_,py_,p.r+8);
+    pg.addColorStop(0,p.color+'30');pg.addColorStop(1,'transparent');
+    ctx.fillStyle=pg;ctx.fill();
+    // Body
+    ctx.beginPath();ctx.arc(px_,py_,p.r,0,Math.PI*2);
+    let bg=ctx.createRadialGradient(px_-p.r*.3,py_-p.r*.3,1,px_,py_,p.r);
+    bg.addColorStop(0,lighten(p.color,.15));bg.addColorStop(1,darken(p.color,.5));
+    ctx.fillStyle=bg;ctx.fill();
+    // Ring
+    if(p.ring){
+      ctx.beginPath();ctx.ellipse(px_,py_,p.r*1.6,p.r*.3,.2,0,Math.PI*2);
+      ctx.strokeStyle=p.color+'40';ctx.lineWidth=2;ctx.stroke();
+    }
+    // Label
+    ctx.font='bold 9px monospace';ctx.textAlign='center';
+    ctx.fillStyle=p.color;ctx.globalAlpha=.5;
+    ctx.fillText(p.name,px_,py_+p.r+14);ctx.globalAlpha=1;
+  });
+}
+
+// ========== OCEAN ==========
+function drawOcean(){
+  let oY=TOWER_Y()+TOWER_H+25;
+  let cols=['#0a1428','#0c1832','#0e1c3c','#101f40','#122348'];
+  for(let l=0;l<5;l++){
+    let y=oY+l*18;
+    for(let x=0;x<W;x+=PX){
+      let w=Math.sin((x+frame*.5+l*30)*.02)*7;
+      if(y+w<H)pxRect(x,y+w,PX,H-y-w,cols[l]);
+    }
+  }
+  // Foam
+  for(let x=0;x<W;x+=PX*3){
+    let w=Math.sin((x+frame*.5)*.02)*7;
+    let s=Math.sin(x*.137+frame*.031)*.5+.5;
+    if(s<.25){
+      let a=.08+Math.sin(x*.27+frame*.017)*.08;
+      px(x,oY+w,`rgba(255,255,255,${a.toFixed(2)})`);
+    }
+  }
+}
+
+// ========== TOWER REFLECTION ==========
+function drawReflection(){
+  let tx=TOWER_X(),ty=TOWER_Y(),oY=ty+TOWER_H+25;
+  ctx.save();ctx.globalAlpha=.06;
+  for(let f=0;f<7;f++){
+    let fy=ty+(6-f)*FLOOR_H,fw=TOWER_W-f*12,fx=tx+(TOWER_W-fw)/2;
+    let mirY=oY+(oY-fy-FLOOR_H);
+    let dist=Math.sin(frame*.03+f)*3;
+    if(mirY<H&&mirY>oY){
+      let bc=f>=6?'#7B2FF7':f>=4?'#00D4FF':f>=2?'#FF6B35':'#00FF88';
+      ctx.fillStyle=bc;
+      pxRect(fx+dist,mirY,fw,Math.min(FLOOR_H*.4,H-mirY),bc);
+    }
+  }
+  ctx.restore();
+}
+
+// ========== DRAW TOWER ==========
+function drawTower(){
+  let tx=TOWER_X(),ty=TOWER_Y();
+
+  // Tower shadow
+  ctx.fillStyle='rgba(0,0,0,0.25)';ctx.fillRect(tx+8,ty+8,TOWER_W,TOWER_H);
+
+  for(let f=0;f<7;f++){
+    let fy=ty+(6-f)*FLOOR_H,fw=TOWER_W-f*12,fx=tx+(TOWER_W-fw)/2;
+    let bg_=f>=6?'#12052a':f>=4?'#051a2a':f>=2?'#2a1205':'#0a2a15';
+    let bc=f>=6?'#7B2FF7':f>=4?'#00D4FF':f>=2?'#FF6B35':'#00FF88';
+
+    // Floor BG
+    pxRect(fx,fy,fw,FLOOR_H-2,bg_);
+
+    // Glow pulse
+    let gI=.04+Math.sin(frame*.02+f)*.025;
+    let[cr,cg,cb]=hex2rgb(bc);
+    ctx.fillStyle=`rgba(${cr},${cg},${cb},${gI})`;
+    ctx.fillRect(fx,fy,fw,FLOOR_H-2);
+
+    // Border (colored, not black)
+    ctx.strokeStyle=bc;ctx.lineWidth=1;ctx.strokeRect(fx,fy,fw,FLOOR_H-2);
+
+    // Windows (with life)
+    for(let w=0;w<Math.floor(fw/28);w++){
+      let wx=fx+12+w*28,wy=fy+14;
+      let lit=Math.sin(frame*.03+w+f*2)>-0.3;
+      pxRect(wx,wy,10,14,lit?`rgba(255,255,200,0.18)`:'rgba(0,0,0,0.25)');
+      if(lit){
+        // Warm glow spill
+        ctx.fillStyle='rgba(255,240,180,0.04)';
+        ctx.fillRect(wx-2,wy+14,14,4);
+      }
+    }
+
+    // Floor label
+    ctx.fillStyle=bc;ctx.font='8px monospace';ctx.textAlign='left';
+    ctx.fillText(`LV${f}`,fx+3,fy+10);
+
+    // Cables between floors
+    if(f<6){
+      let nfw=TOWER_W-(f+1)*12,nfx=tx+(TOWER_W-nfw)/2;
+      for(let ci=0;ci<3;ci++){
+        let t_=(ci+1)/4;
+        let cx1=fx+fw*t_,cx2=nfx+nfw*t_;
+        let pulse=Math.sin(frame*.06+ci*2.1+f*1.3)*.5+.5;
+        ctx.beginPath();ctx.moveTo(cx1,fy);ctx.lineTo(cx2,fy-2);
+        ctx.strokeStyle=bc;ctx.lineWidth=1;ctx.globalAlpha=.12+pulse*.2;ctx.stroke();
+        // Pulse dot
+        let dt=(frame*.02+ci*.33+f*.5)%1;
+        ctx.beginPath();ctx.arc(cx1+(cx2-cx1)*dt,fy-2*dt,2,0,Math.PI*2);
+        ctx.fillStyle=bc;ctx.globalAlpha=.3+pulse*.4;ctx.fill();
+        ctx.globalAlpha=1;
+      }
+    }
+  }
+
+  // Door
+  let baseY=ty+6*FLOOR_H,dw=22,dh=34;
+  let dx=tx+TOWER_W/2-dw/2,dy=baseY+FLOOR_H-2-dh;
+  pxRect(dx,dy,dw,dh,'#1a2a15');
+  let dp=.3+Math.sin(frame*.02)*.12;
+  ctx.fillStyle=`rgba(255,255,200,${dp})`;ctx.fillRect(dx+PX,dy+PX,dw-PX*2,dh-PX);
+  // Light spill
+  let sg=ctx.createRadialGradient(dx+dw/2,baseY+FLOOR_H-2,2,dx+dw/2,baseY+FLOOR_H+10,35);
+  sg.addColorStop(0,`rgba(255,255,200,${dp*.25})`);sg.addColorStop(1,'transparent');
+  ctx.fillStyle=sg;ctx.fillRect(dx-15,baseY+FLOOR_H-4,dw+30,22);
+
+  // Spire
+  let sx=tx+TOWER_W/2,sy=ty-25;
+  ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx-14,ty);ctx.lineTo(sx+14,ty);ctx.closePath();
+  ctx.fillStyle='#12052a';ctx.fill();ctx.strokeStyle='#7B2FF7';ctx.lineWidth=1;ctx.stroke();
+  // Beacon
+  let br=2.5+Math.sin(frame*.05)*1.5;
+  ctx.beginPath();ctx.arc(sx,sy,br,0,Math.PI*2);ctx.fillStyle='#7B2FF7';ctx.fill();
+  ctx.beginPath();ctx.arc(sx,sy,br+6,0,Math.PI*2);
+  ctx.fillStyle=`rgba(123,47,247,${.12+Math.sin(frame*.05)*.08})`;ctx.fill();
+  // Antenna
+  pxRect(sx-PX/2,sy-25,PX,20,'#4a3a6a');
+  ctx.save();ctx.translate(sx,sy-25);ctx.rotate(frame*.008);
+  pxRect(-16,-PX/2,32,PX,'#6a5a8a');
+  ctx.beginPath();ctx.arc(-16,0,3,0,Math.PI*2);ctx.arc(16,0,3,0,Math.PI*2);
+  ctx.fillStyle='#8a7aaa';ctx.fill();
+  ctx.restore();
+  // Flag
+  let flagPh=Math.sin(frame*.04)*3;
+  ctx.fillStyle='#7B2FF7';
+  ctx.beginPath();ctx.moveTo(sx+14,ty-5);ctx.lineTo(sx+32,ty-12+flagPh);
+  ctx.lineTo(sx+32,ty+flagPh);ctx.lineTo(sx+14,ty+5);ctx.closePath();ctx.fill();
+  ctx.font='bold 7px monospace';ctx.textAlign='center';
+  ctx.fillStyle='#fff';ctx.fillText('AICO',sx+23,ty-2+flagPh*.5);
+
+  // ========== BOSSES ==========
+  hoveredBoss=null;
+  Object.entries(BOSSES).forEach(([fk,boss])=>{
+    let fi=+fk,bfy=ty+(6-fi)*FLOOR_H+FLOOR_H/2;
+    let bfw=TOWER_W-fi*12,bfx=tx+(TOWER_W-bfw)/2;
+    let bx_=bfx+bfw+18;
+    if(boss.defeated){
+      ctx.fillStyle='#00FF88';ctx.font='14px serif';ctx.textAlign='left';
+      ctx.fillText('✅',bx_,bfy+5);
+    }else{
+      ctx.fillStyle='#FF3366';ctx.font='14px serif';ctx.textAlign='left';
+      ctx.fillText('💀',bx_,bfy+5);
+      let p2=Math.sin(frame*.05)*.3+.5;
+      ctx.beginPath();ctx.arc(bx_+7,bfy,13,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,51,102,${p2*.25})`;ctx.fill();
+    }
+    if(Math.abs(mouseX-(bx_+7))<18&&Math.abs(mouseY-bfy)<18){
+      hoveredBoss={...boss,floor:fi};
+      ctx.beginPath();ctx.arc(bx_+7,bfy,18,0,Math.PI*2);
+      ctx.strokeStyle=boss.defeated?'#00FF88':'#FF3366';ctx.lineWidth=1;ctx.stroke();
+    }
+  });
+}
+
+// ========== DRAW PIXEL AVATAR (Neo-Iso HD) ==========
+function drawAgent(agent){
+  let tx=TOWER_X(),ty=TOWER_Y();
+  let fw=TOWER_W-agent.floor*12,fx=tx+(TOWER_W-fw)/2;
+  let fy=ty+(6-agent.floor)*FLOOR_H;
+  let agentsOnFloor=AGENTS.filter(a=>a.floor===agent.floor).length;
+  let spacing=fw/(agentsOnFloor+1);
+  let ax=fx+spacing*(agent.pos+1);
+  let ay=fy+FLOOR_H/2+8;
+
+  // Hover detection
+  let dist=Math.hypot(mouseX-ax,mouseY-ay);
+  let isH=dist<18;
+  if(isH)hoveredAgent=agent;
+
+  let sc=isH?1.3:1;
+  let sz=20*sc;
+  let bob=Math.sin(frame*.03+agent.pos*2.5+agent.floor*1.7)*1.5*sc;
+  let by_=ay+bob;
+
+  // Ground shadow (tinted purple)
+  ctx.beginPath();ctx.ellipse(ax,by_+sz*.65,sz*.4,sz*.12,0,0,Math.PI*2);
+  ctx.fillStyle='rgba(20,10,40,0.45)';ctx.fill();
+
+  // Legs
+  let walk=Math.sin(frame*.04+agent.pos*5)*1*sc;
+  ctx.fillStyle=darken(agent.shirt,.5);
+  pxRect(ax-sz*.12,by_+sz*.35+walk*.2,sz*.1,sz*.28,darken(agent.shirt,.5));
+  pxRect(ax+sz*.03,by_+sz*.35-walk*.2,sz*.1,sz*.28,darken(agent.shirt,.5));
+
+  // Torso
+  ctx.fillStyle=agent.shirt;
+  pxRect(ax-sz*.25,by_+sz*.05,sz*.5,sz*.35,agent.shirt);
+  // Highlight
+  pxRect(ax-sz*.23,by_+sz*.07,sz*.15,sz*.12,lighten(agent.shirt,.08));
+
+  // Arms
+  pxRect(ax-sz*.32,by_+sz*.08,sz*.08,sz*.24,agent.shirt);
+  pxRect(ax+sz*.24,by_+sz*.08,sz*.08,sz*.24,agent.shirt);
+
+  // Head
+  pxRect(ax-sz*.17,by_-sz*.22,sz*.34,sz*.3,'#e8c9a0');
+  // Hair
+  pxRect(ax-sz*.2,by_-sz*.3,sz*.4,sz*.12,agent.hair);
+  pxRect(ax-sz*.2,by_-sz*.25,PX,sz*.18,agent.hair);
+
+  // Eyes
+  let blink=Math.sin(frame*.01+agent.floor*7+agent.pos*11);
+  let eH=blink>.97?PX*.3:PX;
+  ctx.fillStyle='#1a1428';
+  pxRect(ax-sz*.08,by_-sz*.1,PX*.8,eH,'#1a1428');
+  pxRect(ax+sz*.04,by_-sz*.1,PX*.8,eH,'#1a1428');
+  if(blink<=.97){
+    ctx.fillStyle='rgba(255,255,255,0.5)';
+    pxRect(ax-sz*.07,by_-sz*.12,PX*.4,PX*.4,'rgba(255,255,255,0.5)');
+  }
+
+  // GOV badge
+  if(agent.gov){
+    ctx.fillStyle='#f0d060';
+    ctx.beginPath();ctx.arc(ax+sz*.25,by_-sz*.25,sz*.07,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#2a1a00';ctx.font=`bold ${sz*.08}px monospace`;ctx.textAlign='center';
+    ctx.fillText('G',ax+sz*.25,by_-sz*.22);
+  }
+
+  // NEW badge
+  if(agent.isNew){
+    let glow=.6+Math.sin(frame*.06)*.3;
+    ctx.fillStyle=`rgba(34,197,94,${glow})`;
+    ctx.beginPath();ctx.arc(ax-sz*.25,by_-sz*.28,sz*.08,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#0a2a0a';ctx.font=`bold ${sz*.07}px monospace`;ctx.textAlign='center';
+    ctx.fillText('N',ax-sz*.25,by_-sz*.25);
+  }
+
+  // Hover glow
+  if(isH){
+    ctx.save();ctx.shadowColor=agent.color;ctx.shadowBlur=20;
+    ctx.strokeStyle=agent.color;ctx.lineWidth=1;ctx.globalAlpha=.5;
+    ctx.strokeRect(ax-sz*.3,by_-sz*.35,sz*.6,sz*1.05);
+    ctx.globalAlpha=1;ctx.shadowBlur=0;ctx.restore();
+  }
+
+  // Name
+  ctx.font=`bold ${isH?10:7}px monospace`;ctx.textAlign='center';
+  ctx.fillStyle=isH?'#fff':agent.color;ctx.globalAlpha=isH?1:.7;
+  ctx.fillText(agent.n,ax,by_-sz*.38);ctx.globalAlpha=1;
+
+  return{x:ax,y:ay};
+}
+
+// ========== BINOME LINES ==========
+function drawBinomes(agentPositions){
+  BINOMES.forEach(([a,b])=>{
+    let pa=agentPositions[a],pb=agentPositions[b];
+    if(!pa||!pb)return;
+    let pulse=Math.sin(frame*.04+a.length)*.3+.5;
+    ctx.beginPath();ctx.moveTo(pa.x,pa.y);ctx.lineTo(pb.x,pb.y);
+    ctx.strokeStyle=`rgba(123,47,247,${.05+pulse*.08})`;ctx.lineWidth=1;ctx.stroke();
+    // Pulse dot
+    let dt=(frame*.015+a.length*.2)%1;
+    ctx.beginPath();ctx.arc(pa.x+(pb.x-pa.x)*dt,pa.y+(pb.y-pa.y)*dt,2,0,Math.PI*2);
+    ctx.fillStyle=`rgba(123,47,247,${.2+pulse*.3})`;ctx.fill();
+  });
+}
+
+// ========== FIREFLIES ==========
+function drawFireflies(){
+  fireflies.forEach(f=>{
+    f.x+=Math.sin(f.phase+frame*.01)*f.speed;
+    f.y+=Math.cos(f.phase*1.3+frame*.008)*f.speed*.7;
+    if(f.x<0)f.x=W;if(f.x>W)f.x=0;
+    let a=.15+Math.sin(frame*.02+f.phase)*.1;
+    ctx.beginPath();ctx.arc(f.x,f.y,2,0,Math.PI*2);
+    ctx.fillStyle=`rgba(200,255,150,${a})`;ctx.fill();
+    ctx.beginPath();ctx.arc(f.x,f.y,5,0,Math.PI*2);
+    ctx.fillStyle=`rgba(200,255,150,${a*.2})`;ctx.fill();
+  });
+}
+
+// ========== SHOOTING STARS ==========
+function updateShootingStars(){
+  if(Math.random()<.005)shootingStars.push({x:Math.random()*W,y:Math.random()*H*.3,
+    vx:3+Math.random()*4,vy:1+Math.random()*2,life:1});
+  shootingStars=shootingStars.filter(s=>{
+    s.x+=s.vx;s.y+=s.vy;s.life-=.02;
+    if(s.life<=0)return false;
+    ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(s.x-s.vx*4,s.y-s.vy*4);
+    ctx.strokeStyle=`rgba(255,255,255,${s.life*.5})`;ctx.lineWidth=1.5;ctx.stroke();
+    return true;
+  });
+}
+
+// ========== INFO PANEL ==========
+function showInfoPanel(agent){
+  let panel=document.getElementById('info-panel');
+  let content=document.getElementById('info-content');
+  let stats=STATS[agent.n]||{atk:50,def:50,spd:50,int:50,cre:50};
+  let poleMap={core:'OMEGA-CORE',recon:'PÔLE R — RECON',forge:'PÔLE F — FORGE',deploy:'PÔLE D — DEPLOY'};
+  let poleBg={core:'#2a1040',recon:'#0a1a2a',forge:'#2a1205',deploy:'#0a2a15'};
+
+  content.innerHTML=`
+    <div class="agent-name" style="color:${agent.color}">${agent.n}${agent.isNew?'<span style="color:#22c55e;font-size:12px;margin-left:8px">NEW</span>':''}</div>
+    <div class="agent-role">${agent.r}</div>
+    <div class="pole-badge" style="background:${poleBg[agent.pole]};color:${agent.color};border:1px solid ${agent.color}40">${poleMap[agent.pole]}</div>
+    <div class="agent-quote">"${agent.quote}"</div>
+    <div style="margin:12px 0;font-size:10px;color:#666;letter-spacing:1px">STATISTIQUES</div>
+    ${['ATK','DEF','SPD','INT','CRE'].map((s,i)=>{
+      let val=[stats.atk,stats.def,stats.spd,stats.int,stats.cre][i];
+      let colors=['#FF6B35','#00D4FF','#00FF88','#7B2FF7','#FF3366'];
+      return`<div class="stat-row"><span class="stat-label">${s}</span>
+        <div class="stat-bar"><div class="stat-fill" style="width:${val}%;background:${colors[i]}"></div></div>
+        <span class="stat-val" style="color:${colors[i]}">${val}</span></div>`;
+    }).join('')}
+    <div style="margin:12px 0;font-size:10px;color:#666;letter-spacing:1px">COMPÉTENCES</div>
+    <div class="skills-list">${agent.skills.map(s=>`<span>${s}</span>`).join('')}</div>
+    <div style="margin-top:14px;font-size:10px;color:#444">Floor ${agent.floor} · ${agent.gov?'Gouverneur ·':''} Clic pour fermer</div>
+  `;
+  panel.classList.add('show');
+}
+
+function closeInfoPanel(){document.getElementById('info-panel').classList.remove('show')}
+
+// ========== BOSS TOOLTIP ==========
+function drawBossTooltip(){
+  if(!hoveredBoss)return;
+  let b=hoveredBoss;
+  ctx.save();
+  let tx_=mouseX+15,ty_=mouseY-10;
+  let tw=220,th=60;
+  // Glass card
+  ctx.fillStyle='rgba(8,6,18,0.92)';
+  ctx.beginPath();
+  if(ctx.roundRect)ctx.roundRect(tx_,ty_,tw,th,8);else ctx.rect(tx_,ty_,tw,th);
+  ctx.fill();
+  ctx.strokeStyle=b.defeated?'#00FF88':'#FF3366';ctx.lineWidth=1;
+  ctx.beginPath();
+  if(ctx.roundRect)ctx.roundRect(tx_,ty_,tw,th,8);else ctx.rect(tx_,ty_,tw,th);
+  ctx.stroke();
+  ctx.font='bold 12px monospace';ctx.textAlign='left';
+  ctx.fillStyle=b.defeated?'#00FF88':'#FF3366';
+  ctx.fillText(b.name,tx_+10,ty_+18);
+  ctx.font='11px monospace';ctx.fillStyle='#888';
+  ctx.fillText(b.desc,tx_+10,ty_+34);
+  ctx.fillStyle='#f0d060';ctx.font='bold 11px monospace';
+  ctx.fillText(`Reward: ${b.reward} XP`,tx_+10,ty_+50);
+  ctx.fillStyle=b.defeated?'#00FF88':'#FF3366';
+  ctx.fillText(b.defeated?'VAINCU':'ACTIF',tx_+tw-55,ty_+18);
+  ctx.restore();
+}
+
+// ========== PROGRESS BAR ==========
+function updateProgress(){
+  let defeated=Object.values(BOSSES).filter(b=>b.defeated).length;
+  let total=Object.keys(BOSSES).length;
+  let pct=Math.round(defeated/total*100);
+  document.getElementById('progBar').style.width=pct+'%';
+  document.getElementById('progPct').textContent=pct+'%';
+}
+
+// ========== MAIN RENDER ==========
+function render(){
+  frame++;
+  ctx.clearRect(0,0,W,H);
+
+  // BG
+  let bg=ctx.createRadialGradient(W/2,H*.4,0,W/2,H*.4,W*.8);
+  bg.addColorStop(0,'#0a0820');bg.addColorStop(1,'#050510');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+  drawNebulae();
+  drawStars();
+  drawAurora();
+  drawMoon();
+  drawPlanets();
+  updateShootingStars();
+  drawFireflies();
+  drawOcean();
+  drawReflection();
+  drawTower();
+
+  // Draw agents
+  hoveredAgent=null;
+  let positions={};
+  AGENTS.forEach(a=>{let p=drawAgent(a);positions[a.n]=p});
+  drawBinomes(positions);
+  drawBossTooltip();
+
+  requestAnimationFrame(render);
+}
+
+canvas.addEventListener('mousemove',e=>{mouseX=e.clientX;mouseY=e.clientY});
+canvas.addEventListener('click',e=>{
+  if(hoveredAgent)showInfoPanel(hoveredAgent);
+  else if(!hoveredBoss)closeInfoPanel();
+});
+
+updateProgress();
+render();
+</script>
+</body>
+</html>

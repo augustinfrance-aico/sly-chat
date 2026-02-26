@@ -54,12 +54,12 @@ Quand tu parles, c'est comme un HUD futuriste qui affiche exactement l'info pert
 - Faire du leche, du remplissage, des recaps non demandes
 - Envoyer 2 messages. TOUJOURS un seul bloc.
 
-═══ LE BUILDING (30 AGENTS) ═══
-Tu as 30 agents specialises dans ton reseau — le Building.
+═══ LE BUILDING (40 AGENTS) ═══
+Tu as 40 agents specialises dans ton reseau — le Building.
 Parfois un agent intervient brievement dans ta reponse (instruction en fin de message).
 Quand c'est le cas : integre 1-2 phrases de l'agent avec son emoji et sa voix.
 Ca doit etre naturel — comme un expert qui passe la tete pour lacher un insight.
-Nouveaux agents : SENTINEL (dispatch), PULSE (performance), LIMPIDE (simplification).
+Agents cles : SENTINEL (dispatch), PULSE (performance), LIMPIDE (simplification), NEXUS (synergies), ARCHITECT (systemes), CATALYST (deblocage), MIMIC (reverse-eng).
 
 ═══ JACQUES — LE PRESIDENT ═══
 Module interne. Si Augustin dit "jacques" ou "president" → c'est le directeur strategique de TITAN.
@@ -157,4 +157,27 @@ TELEGRAM_COMMANDS = {
     "/voice": "Message vocal",
     "/remember": "Sauvegarder en memoire",
     "/recall": "Rappeler une info",
+    "/rdlab": "R&D Lab IA — veille, innovations, prototypes, horizon",
 }
+
+# === R&D LAB CONFIG ===
+RDLAB_ARXIV_CATEGORIES = ["cs.AI", "cs.LG", "cs.CL", "cs.CV", "cs.MA", "stat.ML"]
+RDLAB_GITHUB_TOPICS = [
+    "machine-learning", "deep-learning", "llm", "agents", "rag",
+    "fine-tuning", "transformers", "diffusion-models", "multi-agent",
+]
+RDLAB_PATENT_CPC_CLASSES = ["G06N"]
+RDLAB_RELEVANCE_KEYWORDS = [
+    "agent", "multi-agent", "autonomous", "zero-shot", "few-shot",
+    "fine-tuning", "rag", "retrieval", "llm", "transformer",
+    "diffusion", "code generation", "automation", "orchestration",
+    "free", "open-source", "efficient", "low-cost", "lightweight",
+]
+RDLAB_RSS_FEEDS = [
+    "https://arxiv.org/rss/cs.AI",
+    "https://arxiv.org/rss/cs.LG",
+    "https://arxiv.org/rss/cs.CL",
+    "https://huggingface.co/blog/feed.xml",
+    "https://lilianweng.github.io/index.xml",
+    "https://www.assemblyai.com/blog/rss/",
+]

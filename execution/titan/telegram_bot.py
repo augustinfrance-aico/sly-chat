@@ -252,6 +252,28 @@ class TitanTelegram:
 
     # personal — REMOVED (bloat)
 
+    # === R&D LAB MODULES ===
+
+    @property
+    def rdlab_doctorant(self):
+        return _lazy(".modules.rdlab_doctorant", "TitanRDLabDoctorant")
+
+    @property
+    def rdlab_digestor(self):
+        return _lazy(".modules.rdlab_digestor", "TitanRDLabDigestor")
+
+    @property
+    def rdlab_scout(self):
+        return _lazy(".modules.rdlab_scout", "TitanRDLabScout")
+
+    @property
+    def rdlab_experiment(self):
+        return _lazy(".modules.rdlab_experiment", "TitanRDLabExperiment")
+
+    @property
+    def rdlab_horizon(self):
+        return _lazy(".modules.rdlab_horizon", "TitanRDLabHorizon")
+
     # === CLAUDE BRIDGE ===
 
     def _get_claude_session_file(self):
@@ -582,6 +604,14 @@ class TitanTelegram:
 
         if text == "/heatmap":
             return self.dashboard.get_heatmap()
+
+        # ================
+        # === R&D LAB ===
+        # ================
+
+        if text.startswith("/rdlab"):
+            self.gamification.track_action("rdlab")
+            return self.rdlab_doctorant.handle_command(text)
 
         # ============
         # === NEWS ===

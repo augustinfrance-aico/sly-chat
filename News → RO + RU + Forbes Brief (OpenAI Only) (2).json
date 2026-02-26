@@ -1,0 +1,997 @@
+{
+  "name": "News → RO + RU + Forbes Brief (OpenAI Only)",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "={{ $('Code in JavaScript2').item.json.image }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        944,
+        -592
+      ],
+      "id": "1bacc108-567b-470c-939e-5b8d45cb237b",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "operation": "multiStep",
+        "operations": {
+          "operations": [
+            {
+              "operation": "blur",
+              "blur": 0,
+              "sigma": 0
+            }
+          ]
+        },
+        "options": {
+          "format": "jpeg"
+        }
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        -592
+      ],
+      "id": "9ee3ba2f-0476-4db9-9191-30926d31f342",
+      "name": "Edit Image2",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "information"
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        -592
+      ],
+      "id": "b99e37b4-4a27-4844-8acf-a73581aa2d7b",
+      "name": "Edit Image3"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.Link }}",
+        "responseFormat": "string",
+        "options": {}
+      },
+      "name": "Fetch Article2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        -448
+      ],
+      "id": "95b1b868-81dc-488c-ba89-b9ad6de5b264",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -816,
+        -336
+      ],
+      "id": "5164cca4-64a6-457b-8869-7e27175e2606",
+      "name": "Loop Over Items2"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10 * * *"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "30 11 * * *"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "00 13 * * *"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "30 14 * * *"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "00 16 * * *"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "30 17 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1440,
+        -336
+      ],
+      "id": "be8b9732-4086-46aa-b748-a7bd8464a40f",
+      "name": "Schedule Trigger2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1g4cGnTOTauc2vWsukd2MlyTVyIUr4NlVvgSLwZKrTJs",
+          "mode": "list",
+          "cachedResultName": "Marketing News | Motivational Business Videos  ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g4cGnTOTauc2vWsukd2MlyTVyIUr4NlVvgSLwZKrTJs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Marketing News/Cases",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g4cGnTOTauc2vWsukd2MlyTVyIUr4NlVvgSLwZKrTJs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Loop Over Items2').item.json.row_number }}",
+            "Status": "ERROR"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Link",
+              "displayName": "Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Approved news",
+              "displayName": "Approved news",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ro_title",
+              "displayName": "ro_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ro_body",
+              "displayName": "ro_body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ru_title",
+              "displayName": "ru_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ru_body",
+              "displayName": "ru_body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ru_brief",
+              "displayName": "ru_brief",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -16,
+        -736
+      ],
+      "id": "82cb2676-5593-4d68-825d-15018ada8827",
+      "name": "Update Error State2",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "xco4j95OpvbpdHqL",
+          "name": "Maciej - Web Client 2 Secret Google"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1g4cGnTOTauc2vWsukd2MlyTVyIUr4NlVvgSLwZKrTJs",
+          "mode": "list",
+          "cachedResultName": "Marketing News | Motivational Business Videos  ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g4cGnTOTauc2vWsukd2MlyTVyIUr4NlVvgSLwZKrTJs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Marketing News/Cases",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g4cGnTOTauc2vWsukd2MlyTVyIUr4NlVvgSLwZKrTJs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Published",
+            "row_number": "={{ $('Loop Over Items2').item.json.row_number }}",
+            "image_url": "={{ $json.image }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Link",
+              "displayName": "Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Approved news",
+              "displayName": "Approved news",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ro_title",
+              "displayName": "ro_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ro_body",
+              "displayName": "ro_body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ru_title",
+              "displayName": "ru_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ru_body",
+              "displayName": "ru_body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "en_title",
+              "displayName": "en_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "en_body",
+              "displayName": "en_body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ru_brief",
+              "displayName": "ru_brief",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "image_url",
+              "displayName": "image_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        80,
+        -320
+      ],
+      "id": "60d27078-dbca-4fe0-a08e-262e2e651063",
+      "name": "Update Translate data2",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "xco4j95OpvbpdHqL",
+          "name": "Maciej - Web Client 2 Secret Google"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "-1002912329677",
+        "text": "={{ $('Loop Over Items2').item.json.ru_brief.replace(/<br\\s*\\/?>/g, '')   + '\\n\\n\\n' + $('Save news Into Website API.2').item.json.data.replace('/en/', '/ru/')}}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2304,
+        -64
+      ],
+      "id": "d55efefc-c824-4289-bde8-a2753822a710",
+      "name": "Send Summarize2",
+      "webhookId": "4794ff3e-21e5-4110-a217-2b37b13077b2",
+      "retryOnFail": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "VikU2ClXNWqFPvHe",
+          "name": "Yuri-TG_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "-1002912329677",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1488,
+        -480
+      ],
+      "id": "01f74599-3d5e-4f67-aa8c-28d27af0e993",
+      "name": "Send a photo message2",
+      "webhookId": "eb26002f-e538-4f2a-8db7-294c193623fe",
+      "retryOnFail": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "VikU2ClXNWqFPvHe",
+          "name": "Yuri-TG_bot"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0bab1f12-5ba2-45cd-b830-cc0c6e830359",
+              "leftValue": "={{ $('Code in JavaScript2').item.json.image }}",
+              "rightValue": "http",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        -320
+      ],
+      "id": "ebd89442-0a8d-4d83-8c32-61a90ac7a0b4",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://9a.md/api/news/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Api-Key",
+              "value": "0rR9n0T34jv9SB0"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "title_en",
+              "value": "={{ $('Loop Over Items2').item.json.en_title }}"
+            },
+            {
+              "name": "text_en",
+              "value": "={{ $('Loop Over Items2').item.json.en_body }}"
+            },
+            {
+              "name": "order",
+              "value": "=0"
+            },
+            {
+              "name": "text_ru",
+              "value": "={{ $('Loop Over Items2').item.json.ru_body }}"
+            },
+            {
+              "name": "text_ro",
+              "value": "={{ $('Loop Over Items2').item.json.ro_body }}"
+            },
+            {
+              "name": "title_ru",
+              "value": "={{ $('Loop Over Items2').item.json.ru_title }}"
+            },
+            {
+              "name": "title_ro",
+              "value": "={{ $('Loop Over Items2').item.json.ro_title }}"
+            },
+            {
+              "name": "image_url",
+              "value": "={{ $('Code in JavaScript2').item.json.image }}"
+            },
+            {
+              "name": "source_link",
+              "value": "={{ $('Loop Over Items2').item.json.Link }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        304,
+        -320
+      ],
+      "id": "a08f4a1f-34d6-4aee-be85-23795f73611c",
+      "name": "Save news Into Website API.2",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        512,
+        -320
+      ],
+      "id": "adf47f5c-02df-43d4-b780-0fe5f668167a",
+      "name": "Wait2",
+      "webhookId": "9b2c7ca7-7f54-43f8-8806-9e28e6ee8295"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1g4cGnTOTauc2vWsukd2MlyTVyIUr4NlVvgSLwZKrTJs",
+          "mode": "list",
+          "cachedResultName": "Marketing News | Motivational Business Videos  ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g4cGnTOTauc2vWsukd2MlyTVyIUr4NlVvgSLwZKrTJs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Marketing News/Cases",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g4cGnTOTauc2vWsukd2MlyTVyIUr4NlVvgSLwZKrTJs/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "Saved"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1168,
+        -336
+      ],
+      "id": "941c0cb1-f2bf-4221-8273-10af4d9eed43",
+      "name": "Get Saved News from Sheet2",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "xco4j95OpvbpdHqL",
+          "name": "Maciej - Web Client 2 Secret Google"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ----- 1. Get the HTML -------------------------------------------------\nconst html = $input.first().json.data;\nif (!html || typeof html !== 'string') {\n  return [{ json: { title: '', body: '', image: '' } }];\n}\n\n// ----- 2. Helper: get attribute value ---------------------------------\nfunction getAttr(content, attr) {\n  const m = content.match(new RegExp(`${attr}\\\\s*=\\\\s*['\"]([^'\"]+)['\"]`, 'i'));\n  return m ? m[1].trim() : null;\n}\n\n// ----- 3. Extract TITLE ------------------------------------------------\nconst titleMatch = html.match(/<title[^>]*>([^<]+)<\\/title>/i);\nconst title = titleMatch ? titleMatch[1].trim() : '';\n\n// ----- 4. Extract IMAGE ------------------------------------------------\nlet image = '';\n\n// 4a – Open Graph / Twitter / image_src\nconst ogImg   = html.match(/<meta[^>]+property=[\"']og:image[\"'][^>]+>/i);\nconst twImg   = html.match(/<meta[^>]+name=[\"']twitter:image[\"'][^>]+>/i);\nconst relImg  = html.match(/<link[^>]+rel=[\"']image_src[\"'][^>]+>/i);\n\nif (ogImg)   image = getAttr(ogImg[0], 'content');\nelse if (twImg) image = getAttr(twImg[0], 'content');\nelse if (relImg) image = getAttr(relImg[0], 'href');\n\n// 4b – If still empty → look for the first <img> inside <article> or <header>\nif (!image) {\n  const articleImg = html.match(/<article[^>]*>[\\s\\S]*?<img[^>]+>/i);\n  const headerImg  = html.match(/<header[^>]*>[\\s\\S]*?<img[^>]+>/i);\n  const candidate  = articleImg || headerImg;\n\n  if (candidate) {\n    const src = getAttr(candidate[0], 'src') || getAttr(candidate[0], 'data-src');\n    if (src) image = src;\n  }\n}\n\n// 4c – Final fallback: any <img> with a decent size\nif (!image) {\n  const imgTags = [...html.matchAll(/<img[^>]+>/gi)];\n  if (imgTags.length > 0) {\n    let bestImg = '';\n    let bestScore = 0;\n\n    for (const tag of imgTags) {\n      const src = getAttr(tag[0], 'src') || getAttr(tag[0], 'data-src');\n      if (!src) continue;\n\n      // Extract possible width/height attributes\n      const w = parseInt(getAttr(tag[0], 'width') || '0', 10);\n      const h = parseInt(getAttr(tag[0], 'height') || '0', 10);\n\n      // Estimate \"size score\" (prefer larger area; fallback to tag length if no dimensions)\n      const score = (w && h) ? w * h : tag[0].length; \n\n      if (score > bestScore) {\n        bestScore = score;\n        bestImg = src;\n      }\n    }\n\n    if (bestImg) image = bestImg;\n  }\n}\n\n// Resolve relative URLs (optional – makes the URL usable everywhere)\nif (image && image.startsWith('/')) {\n  // we need the page URL to build an absolute URL\n  const pageUrl = $input.first().json.url || $input.first().json.pageUrl || '';\n  try {\n    image = new URL(image, pageUrl).href;\n  } catch (_) { /* keep relative if URL is missing */ }\n}\n\n// ----- 5. Clean BODY (same as your original code) --------------------\nconst cleanText = html\n  .replace(/<script\\b[^<]*(?:(?!<\\/script>)<[^<]*)*<\\/script>/gi, '')\n  .replace(/<style\\b[^<]*(?:(?!<\\/style>)<[^<]*)*<\\/style>/gi, '')\n  .replace(/<nav\\b[^<]*(?:(?!<\\/nav>)<[^<]*)*<\\/nav>/gi, '')\n  .replace(/<header\\b[^<]*(?:(?!<\\/header>)<[^<]*)*<\\/header>/gi, '')\n  .replace(/<footer\\b[^<]*(?:(?!<\\/footer>)<[^<]*)*<\\/footer>/gi, '')\n  .replace(/<aside\\b[^<]*(?:(?!<\\/aside>)<[^<]*)*<\\/aside>/gi, '')\n  .replace(/<(?:.|\\n)*?>/gm, ' ')\n  .replace(/\\s+/g, ' ')\n  .trim();\n\n// ----- 6. Return -------------------------------------------------------\nreturn [\n  {\n    json: {\n      title: title,\n      body:  cleanText,\n      image: image|| ''   // <-- new field\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        -320
+      ],
+      "id": "341aba59-a58b-4fdc-b77e-e5334576d715",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "chatId": "-1003284703404",
+        "text": "={{ $('Loop Over Items2').item.json.ru_brief.replace(/<br\\s*\\/?>/g, '')   + '\\n\\n' + $('Save news Into Website API.2').item.json.data.replace('/en/', '/ru/')}}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2032,
+        -64
+      ],
+      "id": "9e041118-0875-438c-82e6-d8af5b0b24e7",
+      "name": "Send Summarize-to me (test)2",
+      "webhookId": "4794ff3e-21e5-4110-a217-2b37b13077b2",
+      "retryOnFail": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "YH8TOwvA0cYYwBNc",
+          "name": "Olek's bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "-1003284703404",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1488,
+        -720
+      ],
+      "id": "36af14bb-dcfc-40d2-aa0d-2c3f5a55fde8",
+      "name": "Send a photo message to me(test)2",
+      "webhookId": "eb26002f-e538-4f2a-8db7-294c193623fe",
+      "retryOnFail": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "YH8TOwvA0cYYwBNc",
+          "name": "Olek's bot"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "17f3039b-5254-4083-92e2-eff83322597b",
+              "leftValue": "={{ $json.en_body }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -608,
+        -240
+      ],
+      "id": "577345ed-3b37-433f-98c1-d056801e7aea",
+      "name": "If5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Edit Image3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image2": {
+      "main": [
+        [
+          {
+            "node": "Send a photo message to me(test)2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a photo message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image3": {
+      "main": [
+        [
+          {
+            "node": "Edit Image2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Article2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Error State2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger2": {
+      "main": [
+        [
+          {
+            "node": "Get Saved News from Sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Error State2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Translate data2": {
+      "main": [
+        [
+          {
+            "node": "Save news Into Website API.2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a photo message2": {
+      "main": [
+        [
+          {
+            "node": "Send Summarize-to me (test)2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Summarize-to me (test)2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save news Into Website API.2": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Saved News from Sheet2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Update Translate data2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Summarize-to me (test)2": {
+      "main": [
+        [
+          {
+            "node": "Send Summarize2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a photo message to me(test)2": {
+      "main": [
+        []
+      ]
+    },
+    "If5": {
+      "main": [
+        [
+          {
+            "node": "Fetch Article2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Error State2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Chisinau",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "f2023816-3871-4083-a85f-5613683e5be7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6896ca9f780373de13b848b58ef04824de150969b45c77272e5067cc2614ef23"
+  },
+  "id": "1lcVCdwKtpCmOtm6",
+  "tags": []
+}

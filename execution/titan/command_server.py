@@ -124,6 +124,21 @@ _AGENTS_LIST = [
     {"name": "GRIMALDI",  "pole": "DEPLOY","role": "Audit coûts, financement",         "emoji": "💰", "gov": False},
     {"name": "X-O1",      "pole": "DEPLOY","role": "Stabilité système, audit setup",   "emoji": "🤖", "gov": False},
     {"name": "ZEN",       "pole": "DEPLOY","role": "Contrôle qualité, recul",          "emoji": "🧘", "gov": False},
+    {"name": "SENTINEL", "pole": "CORE",  "role": "Dispatch, routing intelligent",    "emoji": "🎯", "gov": False},
+    {"name": "PULSE",    "pole": "CORE",  "role": "Performance, latence",             "emoji": "⚡", "gov": False},
+    {"name": "LIMPIDE",  "pole": "CORE",  "role": "Simplification, clarté",           "emoji": "💎", "gov": False},
+    {"name": "ARCADE",   "pole": "FORGE", "role": "Game design, UX interactive",      "emoji": "🕹️", "gov": False},
+    # — 10 NOUVEAUX AGENTS (30→40) —
+    {"name": "OUTREACH", "pole": "DEPLOY","role": "Cold outreach, prospection",       "emoji": "📡", "gov": False},
+    {"name": "ANALYTICS","pole": "RECON", "role": "Monitoring ventes, BSR, stats",    "emoji": "📊", "gov": False},
+    {"name": "PARAGON",  "pole": "DEPLOY","role": "Contrôle qualité final",           "emoji": "✅", "gov": False},
+    {"name": "ARCHITECT","pole": "FORGE", "role": "Design systèmes, architecture",    "emoji": "🏛️", "gov": False},
+    {"name": "PROXY",    "pole": "DEPLOY","role": "Négociation, diplomatie",          "emoji": "🎭", "gov": False},
+    {"name": "VECTOR",   "pole": "FORGE", "role": "Traduction, localisation",         "emoji": "🌐", "gov": False},
+    {"name": "CATALYST", "pole": "FORGE", "role": "Accélérateur, déblocage",          "emoji": "⚗️", "gov": False},
+    {"name": "MIMIC",    "pole": "RECON", "role": "Reverse-engineering marché",       "emoji": "🪞", "gov": False},
+    {"name": "KEEPER",   "pole": "DEPLOY","role": "Suivi client, rétention",          "emoji": "🛡️", "gov": False},
+    {"name": "NEXUS",    "pole": "CORE",  "role": "Synergies inter-projets",          "emoji": "🕸️", "gov": False},
 ]
 
 
@@ -218,6 +233,7 @@ def _get_extensions() -> dict:
         "upwork":          {"name": "Upwork Pipeline",         "icon": "💼", "desc": "Veille et pitch Upwork",                     "enabled": True,  "category": "deploy"},
         "voice":           {"name": "Vocaux",                  "icon": "🎤", "desc": "Transcription et traitement vocaux",         "enabled": True,  "category": "vie"},
         "president":       {"name": "Jacques (Président)",     "icon": "🎩", "desc": "Directeur stratégique interne",              "enabled": True,  "category": "systeme"},
+        "rdlab":           {"name": "R&D Lab AI",              "icon": "🔬", "desc": "Veille recherche IA, innovations, prototypes, horizon 3-5 ans", "enabled": True, "category": "info"},
     }
     try:
         if EXTENSIONS_FILE.exists():
@@ -415,6 +431,18 @@ class CommandHandler(SimpleHTTPRequestHandler):
                 self._json_response({"available": True, "version": result.stdout.strip()})
             except Exception:
                 self._json_response({"available": False, "version": None})
+        elif path == "/api/rdlab":
+            self._json_response(self._get_rdlab_data())
+        elif path == "/api/rdlab/papers":
+            self._json_response(self._read_json("rdlab_papers.json"))
+        elif path == "/api/rdlab/innovations":
+            self._json_response(self._read_json("rdlab_innovations.json"))
+        elif path == "/api/rdlab/experiments":
+            self._json_response(self._read_json("rdlab_experiments.json"))
+        elif path == "/api/rdlab/horizon":
+            self._json_response(self._read_json("rdlab_horizon.json"))
+        elif path == "/api/rdlab/dashboard":
+            self._json_response(self._read_json("rdlab_dashboard.json"))
         elif path == "/api/all":
             self._json_response({
                 "stats":         self._read_json_cached("dashboard_stats.json"),
@@ -424,6 +452,7 @@ class CommandHandler(SimpleHTTPRequestHandler):
                 "health":        self._health_check(),
                 "system":        self._system_info(),
                 "extensions":    _get_extensions(),
+                "rdlab":         self._get_rdlab_data(),
                 "timestamp":     datetime.now().isoformat(),
             })
         elif path == "/" or path == "/index.html":
@@ -718,7 +747,22 @@ class CommandHandler(SimpleHTTPRequestHandler):
             {"name": "aggregator",   "status": "active", "desc": "Digest quotidien"},
             {"name": "library",      "status": "active", "desc": "Bibliothèque"},
             {"name": "auto_healer",  "status": "active", "desc": "Auto-réparation"},
+            {"name": "rdlab_digestor",  "status": "active", "desc": "R&D Lab — ARXIV papers"},
+            {"name": "rdlab_scout",     "status": "active", "desc": "R&D Lab — SCOUT innovations"},
+            {"name": "rdlab_experiment","status": "active", "desc": "R&D Lab — LABRAT prototypes"},
+            {"name": "rdlab_horizon",   "status": "active", "desc": "R&D Lab — HORIZON 3-5 ans"},
+            {"name": "rdlab_doctorant", "status": "active", "desc": "R&D Lab — DOCTORANT interface"},
         ]
+
+    def _get_rdlab_data(self) -> dict:
+        """Aggregated R&D Lab data for dashboard."""
+        return {
+            "papers": self._read_json("rdlab_papers.json"),
+            "innovations": self._read_json("rdlab_innovations.json"),
+            "experiments": self._read_json("rdlab_experiments.json"),
+            "horizon": self._read_json("rdlab_horizon.json"),
+            "dashboard": self._read_json("rdlab_dashboard.json"),
+        }
 
     # ----------------------------------------------------------
     # SELF-ANNEALING

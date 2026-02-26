@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE BUILDING — Augus Empire</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Space+Grotesk:wght@400;500;700&display=swap');
+
+  :root {
+    --penthouse: #FFD700;
+    --floor5: #9B59B6;
+    --floor4a: #2ECC71;
+    --floor4b: #E74C3C;
+    --floor4c: #3498DB;
+    --floor3a: #F39C12;
+    --floor3b: #E91E63;
+    --floor3c: #00BCD4;
+    --floor2: #607D8B;
+    --floor1: #78909C;
+    --rdc: #455A64;
+    --dark: #0A0A0F;
+    --card: #111118;
+    --border: rgba(255,255,255,0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--dark);
+    font-family: 'Inter', sans-serif;
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* === HEADER === */
+  .header {
+    text-align: center;
+    padding: 48px 20px 32px;
+    position: relative;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--penthouse), transparent);
+  }
+  .header h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: 8px;
+    background: linear-gradient(135deg, #FFD700, #fff, #FFD700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-transform: uppercase;
+  }
+  .header p {
+    margin-top: 8px;
+    color: rgba(255,255,255,0.4);
+    font-size: 0.85rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .status-bar {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 1px;
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  .status-dot.green { background: #2ECC71; box-shadow: 0 0 8px #2ECC71; }
+  .status-dot.gold { background: #FFD700; box-shadow: 0 0 8px #FFD700; }
+
+  /* === BUILDING CONTAINER === */
+  .building-wrap {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  /* === FLOOR === */
+  .floor {
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+  .floor:hover {
+    transform: scale(1.01);
+    border-color: rgba(255,255,255,0.15);
+    z-index: 10;
+  }
+  .floor:hover .floor-inner {
+    background-size: 200% 200%;
+  }
+
+  .floor-inner {
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    min-height: 90px;
+    background-size: 150% 150%;
+    animation: gradientShift 8s ease infinite;
+  }
+
+  /* === PENTHOUSE === */
+  .floor.penthouse .floor-inner {
+    background: linear-gradient(135deg, #1a1200, #2d1f00, #1a1200);
+    border-bottom: 2px solid var(--penthouse);
+    min-height: 120px;
+  }
+  .floor.penthouse {
+    border-color: rgba(255,215,0,0.3);
+    box-shadow: 0 0 40px rgba(255,215,0,0.1);
+  }
+
+  /* Floor colors */
+  .floor.f5 .floor-inner { background: linear-gradient(135deg, #1a0d2e, #2d1a4a, #1a0d2e); }
+  .floor.f5 { border-color: rgba(155,89,182,0.3); }
+  .floor.f4a .floor-inner { background: linear-gradient(135deg, #0d2e1a, #1a4a2d, #0d2e1a); }
+  .floor.f4a { border-color: rgba(46,204,113,0.3); }
+  .floor.f4b .floor-inner { background: linear-gradient(135deg, #2e0d0d, #4a1a1a, #2e0d0d); }
+  .floor.f4b { border-color: rgba(231,76,60,0.3); }
+  .floor.f4c .floor-inner { background: linear-gradient(135deg, #0d1a2e, #1a2d4a, #0d1a2e); }
+  .floor.f4c { border-color: rgba(52,152,219,0.3); }
+  .floor.f3a .floor-inner { background: linear-gradient(135deg, #2e1d00, #4a3000, #2e1d00); }
+  .floor.f3a { border-color: rgba(243,156,18,0.3); }
+  .floor.f3b .floor-inner { background: linear-gradient(135deg, #2e0018, #4a0028, #2e0018); }
+  .floor.f3b { border-color: rgba(233,30,99,0.3); }
+  .floor.f3c .floor-inner { background: linear-gradient(135deg, #002e33, #004a50, #002e33); }
+  .floor.f3c { border-color: rgba(0,188,212,0.3); }
+  .floor.f2 .floor-inner { background: linear-gradient(135deg, #101820, #1a2530, #101820); }
+  .floor.f2 { border-color: rgba(96,125,139,0.3); }
+  .floor.f1 .floor-inner { background: linear-gradient(135deg, #0d1318, #181f26, #0d1318); }
+  .floor.f1 { border-color: rgba(120,144,156,0.3); }
+  .floor.rdc .floor-inner { background: linear-gradient(135deg, #0a1015, #141c22, #0a1015); }
+  .floor.rdc { border-color: rgba(69,90,100,0.3); }
+
+  /* === FLOOR LABEL === */
+  .floor-label {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    white-space: nowrap;
+    min-width: 20px;
+  }
+
+  /* === FLOOR BADGE === */
+  .floor-badge {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+  .penthouse .floor-badge { background: rgba(255,215,0,0.15); font-size: 1.8rem; width: 64px; height: 64px; }
+  .f5 .floor-badge { background: rgba(155,89,182,0.2); }
+  .f4a .floor-badge { background: rgba(46,204,113,0.2); }
+  .f4b .floor-badge { background: rgba(231,76,60,0.2); }
+  .f4c .floor-badge { background: rgba(52,152,219,0.2); }
+  .f3a .floor-badge { background: rgba(243,156,18,0.2); }
+  .f3b .floor-badge { background: rgba(233,30,99,0.2); }
+  .f3c .floor-badge { background: rgba(0,188,212,0.2); }
+  .f2 .floor-badge { background: rgba(96,125,139,0.2); }
+  .f1 .floor-badge { background: rgba(120,144,156,0.2); }
+  .rdc .floor-badge { background: rgba(69,90,100,0.2); }
+
+  /* === FLOOR CONTENT === */
+  .floor-content { flex: 1; }
+  .floor-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .penthouse .floor-title {
+    font-size: 1.4rem;
+    background: linear-gradient(135deg, #FFD700, #FFF8DC);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .f5 .floor-title { color: #C39BD3; }
+  .f4a .floor-title { color: #82E0AA; }
+  .f4b .floor-title { color: #F1948A; }
+  .f4c .floor-title { color: #85C1E9; }
+  .f3a .floor-title { color: #F8C471; }
+  .f3b .floor-title { color: #F48FB1; }
+  .f3c .floor-title { color: #80DEEA; }
+  .f2 .floor-title { color: #90A4AE; }
+  .f1 .floor-title { color: #B0BEC5; }
+  .rdc .floor-title { color: #78909C; }
+
+  .floor-sub {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+
+  /* === AGENTS === */
+  .agents {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .agent {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .agent::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+    animation: agentShine 3s infinite;
+  }
+  .agent-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  /* === METRICS === */
+  .floor-metrics {
+    display: flex;
+    gap: 16px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .metric {
+    text-align: center;
+    min-width: 60px;
+  }
+  .metric-val {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    display: block;
+    counter-reset: num var(--num);
+  }
+  .metric-label {
+    font-size: 0.6rem;
+    color: rgba(255,255,255,0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* === ELEVATOR === */
+  .elevator-track {
+    position: fixed;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 70vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .elevator-rail {
+    width: 2px;
+    flex: 1;
+    background: linear-gradient(180deg, var(--penthouse), rgba(255,255,255,0.1));
+    position: relative;
+  }
+  .elevator-cabin {
+    width: 24px; height: 32px;
+    background: rgba(255,215,0,0.2);
+    border: 1px solid rgba(255,215,0,0.5);
+    border-radius: 4px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    animation: elevatorMove 8s ease-in-out infinite;
+    box-shadow: 0 0 12px rgba(255,215,0,0.3);
+  }
+
+  /* === FLOW PARTICLES === */
+  .particles {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .particle {
+    position: absolute;
+    width: 2px;
+    border-radius: 2px;
+    opacity: 0;
+    animation: particleFlow 6s linear infinite;
+  }
+
+  /* === LEGEND === */
+  .legend {
+    max-width: 1400px;
+    margin: 0 auto 40px;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .legend-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s;
+  }
+  .legend-item:hover {
+    border-color: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.03);
+  }
+  .legend-color {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .legend-text h4 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+  .legend-text p {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.35);
+  }
+
+  /* === ANIMATIONS === */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  @keyframes elevatorMove {
+    0% { top: 0%; }
+    10% { top: 0%; }
+    45% { top: calc(100% - 32px); }
+    55% { top: calc(100% - 32px); }
+    90% { top: 0%; }
+    100% { top: 0%; }
+  }
+  @keyframes agentShine {
+    0% { left: -100%; }
+    50%, 100% { left: 100%; }
+  }
+  @keyframes particleFlow {
+    0% { top: 100%; opacity: 0; height: 20px; }
+    10% { opacity: 0.6; }
+    90% { opacity: 0.2; }
+    100% { top: -5%; opacity: 0; height: 60px; }
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 768px) {
+    .header h1 { font-size: 1.8rem; }
+    .floor-inner { padding: 16px 20px; flex-wrap: wrap; }
+    .floor-metrics { display: none; }
+    .elevator-track { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Particles -->
+<div class="particles" id="particles"></div>
+
+<!-- Header -->
+<div class="header">
+  <h1>The Building</h1>
+  <p>Écosystème Autonome d'Agents — Augus Empire</p>
+  <div class="status-bar">
+    <div class="status-item"><div class="status-dot green"></div>Système Opérationnel</div>
+    <div class="status-item"><div class="status-dot gold"></div>9 Agents Actifs</div>
+    <div class="status-item"><div class="status-dot green"></div>Ascenseur En Ligne</div>
+  </div>
+</div>
+
+<!-- Building -->
+<div class="building-wrap">
+
+  <!-- PENTHOUSE -->
+  <div class="floor penthouse">
+    <div class="floor-inner">
+      <span class="floor-label">PENTHOUSE</span>
+      <div class="floor-badge">👑</div>
+      <div class="floor-content">
+        <div class="floor-title">PENTHOUSE — AUGUS</div>
+        <div class="floor-sub">Vision Suprême · Décision Finale · Injection des Mandats</div>
+        <div class="agents">
+          <div class="agent"><div class="agent-dot" style="background:#FFD700;box-shadow:0 0 4px #FFD700"></div>Le Propriétaire du Building</div>
+          <div class="agent"><div class="agent-dot" style="background:#FFD700;box-shadow:0 0 4px #FFD700"></div>Direction Stratégique</div>
+        </div>
+      </div>
+      <div class="floor-metrics">
+        <div class="metric">
+          <span class="metric-val" style="color:#FFD700">∞</span>
+          <span class="metric-label">Pouvoir</span>
+        </div>
+        <div class="metric">
+          <span class="metric-val" style="color:#FFD700">1</span>
+          <span class="metric-label">Décideur</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÉTAGE 5 -->
+  <div class="floor f5">
+    <div class="floor-inner">
+      <span class="floor-label">ÉTAGE 5</span>
+      <div class="floor-badge">⚡</div>
+      <div class="floor-content">
+        <div class="floor-title">COMMANDEMENT CENTRAL</div>
+        <div class="floor-sub">Architecture · Intelligence Fusion · Orfèvrerie</div>
+        <div class="agents">
+          <div class="agent"><div class="agent-dot" style="background:#C39BD3;box-shadow:0 0 4px #C39BD3"></div>🏗️ Murphy — Architecte</div>
+          <div class="agent"><div class="agent-dot" style="background:#C39BD3;box-shadow:0 0 4px #C39BD3"></div>⚡ Omega — Intelligence Fusion</div>
+          <div class="agent"><div class="agent-dot" style="background:#C39BD3;box-shadow:0 0 4px #C39BD3"></div>✨ Philomène — Orfèvrerie</div>
+        </div>
+      </div>
+      <div class="floor-metrics">
+        <div class="metric">
+          <span class="metric-val" style="color:#C39BD3">3</span>
+          <span class="metric-label">Agents</span>
+        </div>
+        <div class="metric">
+          <span class="metric-val" style="color:#C39BD3">100%</span>
+          <span class="metric-label">Qualité</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÉTAGE 4 — ROW -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+
+    <!-- 4A -->
+    <div class="floor f4a">
+      <div class="floor-inner" style="flex-direction:column;align-items:flex-start;">
+        <div style="display:flex;align-items:center;gap:12px;width:100%">
+          <div class="floor-badge">🎯</div>
+          <div>
+            <div class="floor-title">STRATÉGIE & VISION</div>
+            <div class="floor-sub">Étage 4A · Long terme</div>
+          </div>
+        </div>
+        <div class="agents" style="margin-top:12px">
+          <div class="agent"><div class="agent-dot" style="background:#82E0AA;box-shadow:0 0 4px #82E0AA"></div>Agent Stratège</div>
+          <div class="agent"><div class="agent-dot" style="background:#82E0AA;box-shadow:0 0 4px #82E0AA"></div>Agent Géopolitique</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4B -->
+    <div class="floor f4b">
+      <div class="floor-inner" style="flex-direction:column;align-items:flex-start;">
+        <div style="display:flex;align-items:center;gap:12px;width:100%">
+          <div class="floor-badge">🎬</div>
+          <div>
+            <div class="floor-title">CRÉATION & CONTENU</div>
+            <div class="floor-sub">Étage 4B · Influence</div>
+          </div>
+        </div>
+        <div class="agents" style="margin-top:12px">
+          <div class="agent"><div class="agent-dot" style="background:#F1948A;box-shadow:0 0 4px #F1948A"></div>Agent Éditorial</div>
+          <div class="agent"><div class="agent-dot" style="background:#F1948A;box-shadow:0 0 4px #F1948A"></div>Agent Social Media</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4C -->
+    <div class="floor f4c">
+      <div class="floor-inner" style="flex-direction:column;align-items:flex-start;">
+        <div style="display:flex;align-items:center;gap:12px;width:100%">
+          <div class="floor-badge">⚙️</div>
+          <div>
+            <div class="floor-title">TECHNIQUE & SYSTÈMES</div>
+            <div class="floor-sub">Étage 4C · Infrastructure</div>
+          </div>
+        </div>
+        <div class="agents" style="margin-top:12px">
+          <div class="agent"><div class="agent-dot" style="background:#85C1E9;box-shadow:0 0 4px #85C1E9"></div>Agent Dev</div>
+          <div class="agent"><div class="agent-dot" style="background:#85C1E9;box-shadow:0 0 4px #85C1E9"></div>Agent Architecture</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÉTAGE 3 — ROW -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+
+    <!-- 3A -->
+    <div class="floor f3a">
+      <div class="floor-inner" style="flex-direction:column;align-items:flex-start;">
+        <div style="display:flex;align-items:center;gap:12px;width:100%">
+          <div class="floor-badge">💰</div>
+          <div>
+            <div class="floor-title">BUSINESS & FINANCE</div>
+            <div class="floor-sub">Étage 3A · Revenus</div>
+          </div>
+        </div>
+        <div class="agents" style="margin-top:12px">
+          <div class="agent"><div class="agent-dot" style="background:#F8C471;box-shadow:0 0 4px #F8C471"></div>Agent Business</div>
+          <div class="agent"><div class="agent-dot" style="background:#F8C471;box-shadow:0 0 4px #F8C471"></div>Agent Pricing</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3B -->
+    <div class="floor f3b">
+      <div class="floor-inner" style="flex-direction:column;align-items:flex-start;">
+        <div style="display:flex;align-items:center;gap:12px;width:100%">
+          <div class="floor-badge">🎯</div>
+          <div>
+            <div class="floor-title">MARKETING & VENTE</div>
+            <div class="floor-sub">Étage 3B · Conversion</div>
+          </div>
+        </div>
+        <div class="agents" style="margin-top:12px">
+          <div class="agent"><div class="agent-dot" style="background:#F48FB1;box-shadow:0 0 4px #F48FB1"></div>Agent Copywriting</div>
+          <div class="agent"><div class="agent-dot" style="background:#F48FB1;box-shadow:0 0 4px #F48FB1"></div>Agent Funnel</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3C -->
+    <div class="floor f3c">
+      <div class="floor-inner" style="flex-direction:column;align-items:flex-start;">
+        <div style="display:flex;align-items:center;gap:12px;width:100%">
+          <div class="floor-badge">🤖</div>
+          <div>
+            <div class="floor-title">AUTOMATISATION & IA</div>
+            <div class="floor-sub">Étage 3C · Zero-Touch</div>
+          </div>
+        </div>
+        <div class="agents" style="margin-top:12px">
+          <div class="agent"><div class="agent-dot" style="background:#80DEEA;box-shadow:0 0 4px #80DEEA"></div>Agent n8n</div>
+          <div class="agent"><div class="agent-dot" style="background:#80DEEA;box-shadow:0 0 4px #80DEEA"></div>Agent Python</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÉTAGE 2 -->
+  <div class="floor f2">
+    <div class="floor-inner">
+      <span class="floor-label">ÉTAGE 2</span>
+      <div class="floor-badge">🔬</div>
+      <div class="floor-content">
+        <div class="floor-title">ANALYSE & RECHERCHE</div>
+        <div class="floor-sub">Intelligence brute · Veille marché · R&D · Data</div>
+        <div class="agents">
+          <div class="agent"><div class="agent-dot" style="background:#90A4AE;box-shadow:0 0 4px #90A4AE"></div>Agent Data</div>
+          <div class="agent"><div class="agent-dot" style="background:#90A4AE;box-shadow:0 0 4px #90A4AE"></div>Agent Veille</div>
+          <div class="agent"><div class="agent-dot" style="background:#90A4AE;box-shadow:0 0 4px #90A4AE"></div>Agent R&D</div>
+        </div>
+      </div>
+      <div class="floor-metrics">
+        <div class="metric">
+          <span class="metric-val" style="color:#90A4AE">24/7</span>
+          <span class="metric-label">Actif</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÉTAGE 1 -->
+  <div class="floor f1">
+    <div class="floor-inner">
+      <span class="floor-label">ÉTAGE 1</span>
+      <div class="floor-badge">📋</div>
+      <div class="floor-content">
+        <div class="floor-title">QUALIFICATION & TRIAGE</div>
+        <div class="floor-sub">Analyse des demandes · Assignation · Priorisation · Bon de commande interne</div>
+        <div class="agents">
+          <div class="agent"><div class="agent-dot" style="background:#B0BEC5;box-shadow:0 0 4px #B0BEC5"></div>Agent Triage</div>
+        </div>
+      </div>
+      <div class="floor-metrics">
+        <div class="metric">
+          <span class="metric-val" style="color:#B0BEC5">→</span>
+          <span class="metric-label">Flux</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RDC -->
+  <div class="floor rdc">
+    <div class="floor-inner">
+      <span class="floor-label">REZ-DE-CHAUSSÉE</span>
+      <div class="floor-badge">🚪</div>
+      <div class="floor-content">
+        <div class="floor-title">RÉCEPTION — ENTRÉE DU BUILDING</div>
+        <div class="floor-sub">Point d'entrée unique · Injection des mandats par Augus · Horodatage · Catégorisation</div>
+        <div class="agents">
+          <div class="agent"><div class="agent-dot" style="background:#78909C;box-shadow:0 0 4px #78909C"></div>Réception Active</div>
+          <div class="agent"><div class="agent-dot" style="background:#78909C;box-shadow:0 0 4px #78909C"></div>En attente de mandat</div>
+        </div>
+      </div>
+      <div class="floor-metrics">
+        <div class="metric">
+          <span class="metric-val" style="color:#78909C">↑</span>
+          <span class="metric-label">Entrée</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Elevator -->
+<div class="elevator-track">
+  <div class="elevator-rail">
+    <div class="elevator-cabin">🛗</div>
+  </div>
+</div>
+
+<script>
+// Generate particles
+const container = document.getElementById('particles');
+const colors = ['#FFD700','#9B59B6','#2ECC71','#E74C3C','#3498DB','#F39C12','#00BCD4'];
+
+for (let i = 0; i < 20; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.style.left = Math.random() * 100 + '%';
+  p.style.width = (Math.random() * 2 + 1) + 'px';
+  p.style.height = (Math.random() * 40 + 10) + 'px';
+  p.style.background = colors[Math.floor(Math.random() * colors.length)];
+  p.style.animationDelay = (Math.random() * 6) + 's';
+  p.style.animationDuration = (Math.random() * 4 + 4) + 's';
+  container.appendChild(p);
+}
+
+// Floor click → expand detail
+document.querySelectorAll('.floor').forEach(floor => {
+  floor.addEventListener('click', () => {
+    floor.style.transform = floor.style.transform === 'scale(1.02)' ? '' : 'scale(1.02)';
+  });
+});
+
+// Animate metrics counting up
+function animateValue(el, start, end, duration) {
+  let startTs = null;
+  const step = (ts) => {
+    if (!startTs) startTs = ts;
+    const progress = Math.min((ts - startTs) / duration, 1);
+    el.textContent = Math.floor(progress * (end - start) + start);
+    if (progress < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+// Live clock in status bar
+function updateTime() {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const timeEl = document.querySelector('.status-bar');
+  if (timeEl && !document.getElementById('live-clock')) {
+    const clock = document.createElement('div');
+    clock.className = 'status-item';
+    clock.id = 'live-clock';
+    clock.innerHTML = `<div class="status-dot" style="background:#3498DB;box-shadow:0 0 8px #3498DB;animation:pulse 1s infinite"></div><span>${timeStr}</span>`;
+    timeEl.appendChild(clock);
+  } else if (document.getElementById('live-clock')) {
+    document.getElementById('live-clock').querySelector('span').textContent = timeStr;
+  }
+}
+setInterval(updateTime, 1000);
+updateTime();
+</script>
+
+</body>
+</html>

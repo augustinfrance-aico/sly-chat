@@ -1,5 +1,5 @@
 {
-  "xp": 1725,
+  "xp": 2219,
   "level": 7,
   "title": "Spécialiste",
   "achievements": [
@@ -8,32 +8,34 @@
     "marathon_runner",
     "centurion",
     "level_5",
-    "streak_3"
+    "streak_3",
+    "chatterbox"
   ],
-  "streak": 4,
-  "last_active_date": "2026-02-20",
+  "streak": 3,
+  "last_active_date": "2026-02-26",
   "stats": {
-    "messages": 96,
-    "commands": 1,
+    "messages": 129,
+    "commands": 9,
     "tasks_completed": 0,
     "market_checks": 0,
     "workflows_created": 0,
-    "night_sessions": 15,
+    "night_sessions": 35,
     "early_sessions": 0,
     "max_daily": 60,
     "modules_used_list": [
       "brain",
-      "president"
+      "president",
+      "code"
     ],
-    "modules_used": 2,
-    "total_days": 4,
+    "modules_used": 3,
+    "total_days": 7,
     "level": 7,
-    "streak": 4,
-    "daily_modules": 1
+    "streak": 3,
+    "daily_modules": 2
   },
   "daily": {
-    "date": "2026-02-20",
-    "messages": 8,
+    "date": "2026-02-26",
+    "messages": 11,
     "tasks": 0,
     "searches": 0,
     "news": 0,
@@ -44,13 +46,14 @@
     "workflows": 0,
     "memories": 0,
     "modules": [
-      "brain"
+      "brain",
+      "code"
     ],
     "challenge": {
-      "name": "Marathonien",
-      "desc": "Envoie 20 messages aujourd'hui",
-      "xp": 60,
-      "check": "daily_messages >= 20"
+      "name": "Automaticien",
+      "desc": "Crée un workflow",
+      "xp": 80,
+      "check": "daily_workflows >= 1"
     },
     "challenge_done": false
   }

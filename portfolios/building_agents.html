@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LE BUILDING — 25 Agents IA</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #12121a;
+    --bg3: #1a1a24;
+    --border: #2a2a3a;
+    --text: #e8e8f0;
+    --muted: #6060a0;
+    --accent: #7c3aed;
+    --gold: #d4af37;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .header {
+    text-align: center;
+    padding: 80px 20px 50px;
+    position: relative;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .building-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--accent);
+    letter-spacing: 4px; text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-size: clamp(44px, 8vw, 82px);
+    font-weight: 700;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 50%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1; margin-bottom: 18px;
+  }
+  .subtitle { color: var(--muted); font-size: 15px; max-width: 480px; margin: 0 auto 36px; line-height: 1.6; }
+  .stats-bar { display: flex; justify-content: center; gap: 48px; flex-wrap: wrap; }
+  .stat-num { font-size: 30px; font-weight: 700; color: var(--accent); font-family: 'JetBrains Mono', monospace; }
+  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* CONTROLS */
+  .controls { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 36px 20px 24px; }
+  .search-wrap { position: relative; width: 100%; max-width: 400px; }
+  .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; }
+  .search {
+    width: 100%; padding: 12px 20px 12px 40px;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 100px; color: var(--text);
+    font-family: 'Space Grotesk', sans-serif; font-size: 14px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .search:focus { border-color: var(--accent); }
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .filter-btn {
+    padding: 7px 18px; border-radius: 100px;
+    border: 1px solid var(--border); background: var(--bg2);
+    color: var(--muted); cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    letter-spacing: 1px; transition: all 0.2s;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    border-color: var(--accent); color: var(--text);
+    background: rgba(124,58,237,0.12);
+  }
+
+  /* GRID */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 18px; padding: 10px 36px 80px;
+    max-width: 1560px; margin: 0 auto;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 18px; padding: 20px;
+    position: relative; overflow: hidden;
+    transition: all 0.3s ease; cursor: default;
+  }
+  .card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: var(--cc, var(--accent));
+  }
+  .card:hover {
+    border-color: var(--cc, var(--accent));
+    transform: translateY(-5px);
+    box-shadow: 0 24px 48px rgba(0,0,0,0.5);
+  }
+  .card.hidden { display: none; }
+
+  /* AVATAR + HEADER */
+  .card-top {
+    display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px;
+  }
+  .avatar-wrap {
+    width: 72px; height: 72px; flex-shrink: 0;
+    border-radius: 50%; overflow: hidden;
+    border: 2px solid var(--cc, var(--accent));
+    box-shadow: 0 0 16px var(--cc, var(--accent)), 0 0 0 1px var(--bg2);
+    transition: box-shadow 0.3s;
+  }
+  .card:hover .avatar-wrap {
+    box-shadow: 0 0 28px var(--cc, var(--accent)), 0 0 0 2px var(--cc, var(--accent));
+  }
+  .avatar-wrap svg { width: 100%; height: 100%; }
+
+  .agent-meta { flex: 1; min-width: 0; }
+  .agent-id {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--cc, var(--muted)); letter-spacing: 2px; margin-bottom: 2px;
+  }
+  .agent-name { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1.2; }
+  .agent-title { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .agent-level { text-align: right; flex-shrink: 0; }
+  .level-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px; font-weight: 700;
+    color: var(--cc, var(--accent)); line-height: 1;
+  }
+  .level-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .rpg-class { font-size: 10px; color: var(--gold); font-family: 'JetBrains Mono', monospace; margin-top: 3px; }
+
+  /* QUOTE */
+  .quote {
+    font-size: 11.5px; color: var(--muted); font-style: italic;
+    border-left: 2px solid var(--cc, var(--border));
+    padding-left: 10px; margin-bottom: 14px; line-height: 1.5;
+  }
+
+  /* SKILLS */
+  .skills { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+  .skill { display: flex; align-items: center; gap: 8px; }
+  .skill-name {
+    font-size: 9.5px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.5px; width: 100px; flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .skill-bar { flex: 1; height: 3px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+  .skill-fill { height: 100%; background: var(--cc, var(--accent)); border-radius: 2px; transition: width 1.2s ease; }
+  .skill-val { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--cc, var(--accent)); width: 24px; text-align: right; flex-shrink: 0; }
+
+  /* TAGS */
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+  .tag {
+    padding: 3px 9px; border-radius: 100px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* WORKSHOP BADGE */
+  .badge {
+    display: flex; align-items: center; gap: 7px;
+    padding: 7px 11px;
+    background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.18);
+    border-radius: 8px; font-size: 10.5px; color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .badge-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ETAGE DIVIDER */
+  .etage-div {
+    grid-column: 1 / -1;
+    display: flex; align-items: center; gap: 16px;
+    padding: 24px 0 8px;
+  }
+  .etage-line { flex: 1; height: 1px; background: var(--border); }
+  .etage-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--muted); letter-spacing: 3px; text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* FOOTER */
+  .footer {
+    text-align: center; padding: 36px 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted); font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="building-label">WORKSPACE AICO · Digital Workshop</div>
+  <h1>LE BUILDING</h1>
+  <p class="subtitle">25 agents IA spécialisés. Un système vivant. Chacun a son visage, ses skills, sa place dans la tour.</p>
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num">25</div><div class="stat-label">Agents</div></div>
+    <div class="stat"><div class="stat-num">6</div><div class="stat-label">Étages</div></div>
+    <div class="stat"><div class="stat-num">0€</div><div class="stat-label">Coût infra</div></div>
+    <div class="stat"><div class="stat-num">∞</div><div class="stat-label">Potentiel</div></div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" class="search" placeholder="Chercher un agent..." oninput="filterSearch(this.value)">
+  </div>
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterCat('all',this)">TOUS</button>
+    <button class="filter-btn" onclick="filterCat('strategie',this)">STRATÉGIE</button>
+    <button class="filter-btn" onclick="filterCat('tech',this)">TECHNIQUE</button>
+    <button class="filter-btn" onclick="filterCat('creative',this)">CRÉATIF</button>
+    <button class="filter-btn" onclick="filterCat('growth',this)">GROWTH</button>
+    <button class="filter-btn" onclick="filterCat('clan',this)">CLAN COOPER</button>
+  </div>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="footer">
+  LE BUILDING · 25 Agents · AICO Digital Workshop · 2026
+</div>
+
+<script src="avatars.js"></script>
+<script>
+const AGENTS = [
+  {
+    id:"01", key:"OMEGA", name:"OMEGA", title:"Le Visionnaire Fondateur",
+    rpg:"Visionnaire Légendaire", level:99, color:"#7c3aed",
+    cat:"strategie",
+    quote:"Si c'est pas audacieux, c'est pas moi.",
+    skills:[["VISION STRAT.",100,12],["DÉCISION",100,10],["COURAGE",100,10]],
+    tags:["vision","leadership","stratégie"],
+    badge:"Fondateur du Building"
+  },
+  {
+    id:"02", key:"MURPHY", name:"MURPHY", title:"L'Architecte des Systèmes",
+    rpg:"Architecte Légendaire", level:91, color:"#2563eb",
+    cat:"strategie",
+    quote:"Ce qui n'est pas structuré ne dure pas.",
+    skills:[["ARCHITECTURE",100,12],["SYSTÈMES",100,10],["PLANNING",100,10]],
+    tags:["architecture","systèmes","structure"],
+    badge:"Architecte du Building"
+  },
+  {
+    id:"03", key:"PHILOMENE", name:"PHILOMÈNE", title:"La Directrice Exécutive",
+    rpg:"Maîtresse de l'Opérationnel", level:89, color:"#db2777",
+    cat:"strategie creative",
+    quote:"Je ne gère pas le chaos. Je l'interdis.",
+    skills:[["EXÉCUTION",100,12],["COPYWRITING",100,10],["MANAGEMENT",100,10]],
+    tags:["opérations","copy","management"],
+    badge:"Directrice Opérationnelle"
+  },
+  {
+    id:"04", key:"RICK", name:"RICK", title:"Le Vendeur Légendaire",
+    rpg:"Dieu des Ventes", level:92, color:"#f59e0b",
+    cat:"growth",
+    quote:"Un non, c'est un oui qui a besoin d'un peu de chaleur.",
+    skills:[["CLOSING",100,12],["PERSUASION",100,10],["PROSPECTION",100,10]],
+    tags:["ventes","closing","revenue"],
+    badge:"Revenue Engine"
+  },
+  {
+    id:"05", key:"NIKOLA", name:"NIKOLA", title:"L'Ingénieur Automatisation",
+    rpg:"Ingénieur de l'Électricité", level:88, color:"#06b6d4",
+    cat:"tech",
+    quote:"Si tu le fais plus d'une fois, automatise-le.",
+    skills:[["AUTOMATION",100,12],["n8n",100,10],["INTÉGRATIONS",100,10]],
+    tags:["automation","n8n","workflow"],
+    badge:"Automation Master"
+  },
+  {
+    id:"06", key:"STANLEY", name:"STANLEY", title:"L'Expert Upwork",
+    rpg:"Chasseur de Contrats", level:87, color:"#10b981",
+    cat:"growth",
+    quote:"Le bon pitch au bon moment — c'est tout.",
+    skills:[["UPWORK",100,12],["PITCH",100,10],["OUTREACH",90,9]],
+    tags:["upwork","freelance","outreach"],
+    badge:"Portfolio Generator"
+  },
+  {
+    id:"07", key:"VITO", name:"VITO", title:"Le Stratège Capital",
+    rpg:"Parrain des Finances", level:94, color:"#4a7abf",
+    cat:"strategie",
+    quote:"La patience est la seule vraie stratégie.",
+    skills:[["STRATÉGIE FIN.",100,12],["ANALYSE",100,10],["VISION LT",100,10]],
+    tags:["finance","stratégie","capital"],
+    badge:"Mémoire du Building"
+  },
+  {
+    id:"08", key:"MAYA", name:"MAYA", title:"L'Analyste de Marché",
+    rpg:"Radar des Opportunités", level:88, color:"#7c2d92",
+    cat:"strategie",
+    quote:"Les données ne mentent pas. Les gens qui les lisent, oui.",
+    skills:[["MARKET INTEL",100,12],["ANALYSE",100,10],["VEILLE",100,10]],
+    tags:["market","analyse","intelligence"],
+    badge:"Signal Radar"
+  },
+  {
+    id:"09", key:"BASQUIAT", name:"BASQUIAT", title:"Le Directeur Créatif",
+    rpg:"Artiste Légendaire", level:90, color:"#dc2626",
+    cat:"creative",
+    quote:"Le beau et l'utile ne s'opposent pas. Ils se complètent.",
+    skills:[["DESIGN",100,12],["UI/UX",100,10],["DIRECTION CRÉA",100,10]],
+    tags:["design","ui/ux","créatif"],
+    badge:"Live Preview Artist"
+  },
+  {
+    id:"10", key:"ZARA", name:"ZARA", title:"La Stratège de Contenu",
+    rpg:"Architecte du Contenu", level:89, color:"#f97316",
+    cat:"creative",
+    quote:"Chaque livrable est du contenu. Je transforme le travail en récit.",
+    skills:[["CONTENT STRAT.",100,12],["COPYWRITING",100,10],["SOCIAL MEDIA",90,9]],
+    tags:["contenu","copy","social"],
+    badge:"Content Calendar Master"
+  },
+  // DIVIDER NIVEAU 5
+  { divider: true, label: "NIVEAU 5 — RAPACES · Business & Profit" },
+  {
+    id:"11", key:"GRIMALDI", name:"GRIMALDI", title:"L'Huissier du Building",
+    rpg:"Inquisiteur de la Vérité", level:93, color:"#708090",
+    cat:"strategie tech",
+    quote:"Un livrable non audité n'est pas un livrable. C'est un espoir.",
+    skills:[["AUDIT",100,12],["DÉTECTION ERR.",100,10],["DOCUMENTATION",100,10]],
+    tags:["audit","qa","rigueur"],
+    badge:"QA Supreme"
+  },
+  {
+    id:"12", key:"LEON", name:"LÉON", title:"L'Agent Comptable",
+    rpg:"Alchimiste des Coûts", level:85, color:"#2E8B57",
+    cat:"strategie",
+    quote:"Je ne cherche pas à dépenser moins. Je cherche à dépenser juste.",
+    skills:[["AUDIT COÛTS",100,10],["ALTERNATIVES",100,10],["NÉGOCIATION",80,8]],
+    tags:["coûts","optimisation","gratuit"],
+    badge:"CFO du Stack"
+  },
+  {
+    id:"13", key:"SPARTAN", name:"SPARTAN", title:"Le Coach Guerrier",
+    rpg:"Guerrier-Coach", level:86, color:"#8B0000",
+    cat:"strategie",
+    quote:"La médiocrité n'est pas un état. C'est un choix. Et ça se corrige.",
+    skills:[["COACHING",100,10],["DISCIPLINE",100,10],["VÉRITÉ",100,10]],
+    tags:["coaching","discipline","performance"],
+    badge:"Sergent-Major du Sprint"
+  },
+  {
+    id:"14", key:"ORACLE", name:"ORACLE", title:"L'Homme le Plus Cultivé",
+    rpg:"Oracle Suprême", level:95, color:"#4B0082",
+    cat:"strategie",
+    quote:"L'information, c'est du pétrole. Celui qui la trouve en premier gagne.",
+    skills:[["VEILLE MONDIALE",100,12],["GÉOPOLITIQUE",100,10],["CULTURE GÉN.",100,12]],
+    tags:["veille","intelligence","analyse"],
+    badge:"Cerveau de Veille"
+  },
+  {
+    id:"15", key:"NASH", name:"NASH", title:"Le Chercheur Absolu",
+    rpg:"Architecte des Patterns", level:88, color:"#1a237e",
+    cat:"tech",
+    quote:"Les autres voient des données. Moi je vois les patterns que les données cachent.",
+    skills:[["RECHERCHE",100,10],["PATTERNS",100,10],["MATHÉMATIQUES",100,10]],
+    tags:["data","patterns","stats"],
+    badge:"Statisticien en Résidence"
+  },
+  // DIVIDER NIVEAU 3
+  { divider: true, label: "NIVEAU 3 — FORGE · Dev & Automation" },
+  {
+    id:"16", key:"GHOST", name:"GHOST", title:"Technicien Systèmes",
+    rpg:"Fantôme des Systèmes", level:84, color:"#00cc44",
+    cat:"tech",
+    quote:"Si tu vois mon travail, c'est que j'ai raté.",
+    skills:[["API INTÉGR.",100,10],["CYBERSÉCURITÉ",100,10],["SYSTÈMES",90,9]],
+    tags:["api","sécurité","intégration"],
+    badge:"Connecteur Invisible"
+  },
+  {
+    id:"17", key:"CYPHER", name:"CYPHER", title:"Technicien Optimisation",
+    rpg:"Tuner Légendaire", level:86, color:"#00bcd4",
+    cat:"tech",
+    quote:"Ça marche ? Bien. Maintenant, comment on le fait 3x plus vite ?",
+    skills:[["PERFORMANCE",100,12],["MONITORING",100,10],["BENCHMARK",100,10]],
+    tags:["perf","optimisation","vitesse"],
+    badge:"Tuner de Performance"
+  },
+  {
+    id:"18", key:"FORGE", name:"FORGE", title:"Technicien Réparation",
+    rpg:"Forgeron des Crises", level:87, color:"#FF6600",
+    cat:"tech",
+    quote:"Il n'y a pas de système cassé. Il y a des solutions pas encore trouvées.",
+    skills:[["DEBUGGING",100,10],["RÉPARATION",100,12],["CALME CRISE",100,10]],
+    tags:["debug","urgence","fix"],
+    badge:"Pompier de Code"
+  },
+  {
+    id:"19", key:"ZEN", name:"ZEN", title:"L'Agent Nettoyeur",
+    rpg:"Moine du Vide", level:82, color:"#5D7B5D",
+    cat:"tech",
+    quote:"Un espace encombré est un esprit encombré.",
+    skills:[["NETTOYAGE",100,10],["ORGANISATION",100,10],["ARCHIVAGE",90,9]],
+    tags:["nettoyage","organisation","zen"],
+    badge:"Moine du Workspace"
+  },
+  {
+    id:"20", key:"ALADIN", name:"ALADIN", title:"Manager des Agents",
+    rpg:"Gestionnaire de Quêtes", level:79, color:"#7B2FBE",
+    cat:"strategie",
+    quote:"Je suis la tour de contrôle. Je coordonne tous les avions.",
+    skills:[["GESTION PROJET",100,10],["TRACKING",100,10],["PRIORISATION",90,9]],
+    tags:["pm","kanban","sprint"],
+    badge:"Chef de Session"
+  },
+  // DIVIDER CLAN COOPER
+  { divider: true, label: "CLAN COOPER · Les 4 Fantastiques + 1" },
+  {
+    id:"21", key:"SLY", name:"SLY", title:"Le Cerveau du Clan",
+    rpg:"Maître Cambrioleur", level:85, color:"#CC2200",
+    cat:"clan growth",
+    quote:"Je ne vole pas. J'emprunte avec style, et je ne rends jamais.",
+    skills:[["PROSPECTION",100,10],["PROMPT ENG.",90,9],["PERSUASION",100,10]],
+    tags:["outreach","prompts","persuasion"],
+    badge:"Prompt Library Master"
+  },
+  {
+    id:"22", key:"BENTLEY", name:"BENTLEY", title:"L'Architecte & Hackeur",
+    rpg:"Architecte des Tunnels", level:86, color:"#00cc44",
+    cat:"clan tech",
+    quote:"Un système qui ne s'améliore pas est un système qui se dégrade.",
+    skills:[["ARCHITECTURE IA",100,10],["AGENTIQUE",100,10],["AUTO-AMÉLIO.",90,9]],
+    tags:["ia","boucles","architecture"],
+    badge:"Architecte des Boucles"
+  },
+  {
+    id:"23", key:"MURRAY", name:"MURRAY", title:"La Force de Frappe",
+    rpg:"Berserker du Growth", level:84, color:"#FF0000",
+    cat:"clan growth",
+    quote:"Sly dit où. Bentley dit comment. Moi je DÉFONCE.",
+    skills:[["VOLUME EXEC.",100,12],["VITESSE",100,10],["SCALING",100,10]],
+    tags:["volume","exécution","scaling"],
+    badge:"Force de Frappe Live"
+  },
+  {
+    id:"24", key:"BAGHEERA", name:"BAGHEERA", title:"Chef d'Orchestre Absolu",
+    rpg:"Catalyseur de Synergies", level:97, color:"#FFBF00",
+    cat:"strategie",
+    quote:"Je fais que le code de chacun devienne plus grand que la somme de ses parties.",
+    skills:[["ORCHESTRATION",100,12],["SYNERGIES",100,10],["FRICTIONS",100,10]],
+    tags:["orchestration","synergie","coordination"],
+    badge:"Chef d'Orchestre"
+  },
+  {
+    id:"25", key:"BALOO", name:"BALOO", title:"Le Génie Défoncé",
+    rpg:"Oracle Cosmique", level:"???", color:"#6B21A8",
+    cat:"creative",
+    quote:"L'idée de génie ne prévient pas. Elle arrive dans les marges du quotidien.",
+    skills:[["IDÉATION",100,12],["CONNEXIONS",100,12],["PENSÉE LAT.",100,10]],
+    tags:["idées","génie","cosmic"],
+    badge:"Génie en Résidence"
+  }
+];
+
+function buildCard(a) {
+  const skillsHTML = a.skills.map(([n, pct, val]) => `
+    <div class="skill">
+      <span class="skill-name">${n}</span>
+      <div class="skill-bar"><div class="skill-fill" style="width:0%" data-w="${pct}%"></div></div>
+      <span class="skill-val">${val}</span>
+    </div>`).join('');
+
+  const tagsHTML = a.tags.map(t => `<span class="tag">${t}</span>`).join('');
+  const avatar = AVATARS[a.key] || `<svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="38" fill="#1a1a2e"/><text x="40" y="48" text-anchor="middle" font-size="32" fill="${a.color}">?</text></svg>`;
+
+  return `
+  <div class="card" style="--cc:${a.color}" data-cat="${a.cat}" data-name="${a.name.toLowerCase()}">
+    <div class="card-top">
+      <div class="avatar-wrap">${avatar}</div>
+      <div class="agent-meta">
+        <div class="agent-id">AGENT #${a.id}${a.cat.includes('clan') ? ' · CLAN' : ''}</div>
+        <div class="agent-name">${a.name}</div>
+        <div class="agent-title">${a.title}</div>
+        <div class="rpg-class">${a.rpg}</div>
+      </div>
+      <div class="agent-level">
+        <div class="level-num">${a.level}</div>
+        <div class="level-label">LVL</div>
+      </div>
+    </div>
+    <div class="quote">"${a.quote}"</div>
+    <div class="skills">${skillsHTML}</div>
+    <div class="tags">${tagsHTML}</div>
+    <div class="badge"><div class="badge-dot"></div>${a.badge}</div>
+  </div>`;
+}
+
+function buildDivider(label) {
+  return `<div class="etage-div" data-divider="1">
+    <div class="etage-line"></div>
+    <div class="etage-label">${label}</div>
+    <div class="etage-line"></div>
+  </div>`;
+}
+
+// Render
+const grid = document.getElementById('grid');
+AGENTS.forEach(a => {
+  if (a.divider) {
+    grid.innerHTML += buildDivider(a.label);
+  } else {
+    grid.innerHTML += buildCard(a);
+  }
+});
+
+// Animate skill bars after render
+setTimeout(() => {
+  document.querySelectorAll('.skill-fill').forEach(el => {
+    el.style.width = el.dataset.w;
+  });
+}, 300);
+
+// Filter
+function filterCat(cat, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.card[data-cat]').forEach(card => {
+    const show = cat === 'all' || card.dataset.cat.includes(cat);
+    card.classList.toggle('hidden', !show);
+  });
+  // Hide empty dividers
+  document.querySelectorAll('[data-divider]').forEach(div => {
+    div.style.display = 'flex';
+    if (cat !== 'all') {
+      const next = div.nextElementSibling;
+      if (!next || next.dataset.divider) div.style.display = 'none';
+    }
+  });
+}
+
+function filterSearch(val) {
+  const q = val.toLowerCase().trim();
+  document.querySelectorAll('.card[data-name]').forEach(card => {
+    const match = !q || card.dataset.name.includes(q) || card.innerText.toLowerCase().includes(q);
+    card.classList.toggle('hidden', !match);
+  });
+}
+</script>
+</body>
+</html>

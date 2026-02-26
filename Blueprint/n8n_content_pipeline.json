@@ -1,0 +1,133 @@
+{
+  "name": "Trafic Mondial — Pipeline Contenu Autonome",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "weeks", "weeksInterval": 1, "triggerAtDay": [0], "triggerAtHour": 9 }]
+        }
+      },
+      "name": "Trigger Hebdomadaire (Dimanche 9h)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "content-idea",
+        "responseMode": "lastNode",
+        "responseData": "allEntries"
+      },
+      "name": "Webhook — Idée manuelle Augus",
+      "type": "n8n-nodes-base.webhook",
+      "position": [240, 500],
+      "notes": "Augus envoie une idée via TITAN /content [idée] pour déclencher manuellement"
+    },
+    {
+      "parameters": {
+        "content": "={{ $json.idea || 'Cette semaine : comment j\\'ai automatisé mon empire avec 28 agents IA' }}",
+        "dataPropertyName": "idea"
+      },
+      "name": "Idée par défaut",
+      "type": "n8n-nodes-base.set",
+      "position": [480, 400]
+    },
+    {
+      "parameters": {
+        "model": "claude-opus-4-6",
+        "messages": {
+          "values": [
+            {
+              "role": "user",
+              "content": "Tu es Philomène, orfèvre des prompts du Building IA d'Augus. Augus construit un empire d'agents autonomes — il est fondateur, pas exécutant.\n\nIdée de la semaine : {{ $json.idea }}\n\nGénère exactement ce qui suit (format JSON strict) :\n\n{\n  \"linkedin_post\": \"Post LinkedIn 150 mots max. Hook brutal première ligne. Angle : Augus parle en coulisses de son empire. Style : direct, authentique, pas corporate. Hashtags : 3-5 pertinents.\",\n  \"linkedin_post_2\": \"Deuxième post LinkedIn différent sur la même idée. Angle contraire.\",\n  \"medium_title\": \"Titre d'article Medium avec le keyword principal optimisé SEO\",\n  \"medium_intro\": \"Introduction article Medium 100 mots — accroche forte, promet une valeur claire\",\n  \"reddit_post\": \"Post Reddit pour r/Entrepreneur ou r/passive_income. Titre question ou révélation. Corps 80 mots. Pas promotionnel — valeur pure.\",\n  \"quora_answer\": \"Réponse Quora à une question fréquente liée au thème. 120 mots. Expertise, pas vente.\",\n  \"youtube_title\": \"Titre YouTube Shorts optimisé (curiosity gap)\",\n  \"youtube_script\": \"Script YouTube Shorts 60 secondes. Structure : Hook 5s / Problème 10s / Révélation 30s / Preuve 10s / CTA 5s.\"\n}\n\nRéponds UNIQUEMENT avec le JSON. Aucun texte avant ou après."
+            }
+          ]
+        }
+      },
+      "name": "Claude — Génère 7 formats",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "position": [720, 400],
+      "notes": "Utilise ta clé API Claude existante"
+    },
+    {
+      "parameters": {
+        "dataPropertyName": "text"
+      },
+      "name": "Parse JSON output",
+      "type": "n8n-nodes-base.jsonParse",
+      "position": [960, 400]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "=📦 **CONTENU SEMAINE PRÊT**\n\n━━━━━━━━━━━━━━━━━━━━━\n**LINKEDIN POST 1** (copy-paste direct)\n━━━━━━━━━━━━━━━━━━━━━\n{{ $json.linkedin_post }}\n\n━━━━━━━━━━━━━━━━━━━━━\n**LINKEDIN POST 2**\n━━━━━━━━━━━━━━━━━━━━━\n{{ $json.linkedin_post_2 }}\n\n━━━━━━━━━━━━━━━━━━━━━\n**MEDIUM** — {{ $json.medium_title }}\n━━━━━━━━━━━━━━━━━━━━━\n{{ $json.medium_intro }}\n\n━━━━━━━━━━━━━━━━━━━━━\n**REDDIT** (r/Entrepreneur)\n━━━━━━━━━━━━━━━━━━━━━\n{{ $json.reddit_post }}\n\n━━━━━━━━━━━━━━━━━━━━━\n**QUORA**\n━━━━━━━━━━━━━━━━━━━━━\n{{ $json.quora_answer }}\n\n━━━━━━━━━━━━━━━━━━━━━\n**YOUTUBE SHORTS**\n{{ $json.youtube_title }}\n━━━━━━━━━━━━━━━━━━━━━\n{{ $json.youtube_script }}\n\n⏱ Effort requis : 15 min de copy-paste\n🎯 Building a tout préparé.",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "name": "Telegram — Envoie à Augus",
+      "type": "n8n-nodes-base.telegram",
+      "position": [1200, 400],
+      "notes": "Utilise le bot TITAN existant"
+    },
+    {
+      "parameters": {
+        "spreadsheetId": "",
+        "range": "Contenu!A:J",
+        "valueInputMode": "RAW",
+        "values": {
+          "values": [
+            {
+              "column": "Date",
+              "value": "={{ new Date().toISOString().split('T')[0] }}"
+            },
+            {
+              "column": "Idée",
+              "value": "={{ $('Idée par défaut').item.json.idea }}"
+            },
+            {
+              "column": "LinkedIn 1",
+              "value": "={{ $json.linkedin_post }}"
+            },
+            {
+              "column": "Medium Titre",
+              "value": "={{ $json.medium_title }}"
+            },
+            {
+              "column": "Statut",
+              "value": "Généré — À publier"
+            }
+          ]
+        }
+      },
+      "name": "Google Sheets — Archive contenu",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [1200, 600],
+      "notes": "Optionnel — connecter si tu veux tracker"
+    }
+  ],
+  "connections": {
+    "Trigger Hebdomadaire (Dimanche 9h)": {
+      "main": [[{ "node": "Idée par défaut", "type": "main", "index": 0 }]]
+    },
+    "Webhook — Idée manuelle Augus": {
+      "main": [[{ "node": "Idée par défaut", "type": "main", "index": 0 }]]
+    },
+    "Idée par défaut": {
+      "main": [[{ "node": "Claude — Génère 7 formats", "type": "main", "index": 0 }]]
+    },
+    "Claude — Génère 7 formats": {
+      "main": [[{ "node": "Parse JSON output", "type": "main", "index": 0 }]]
+    },
+    "Parse JSON output": {
+      "main": [[
+        { "node": "Telegram — Envoie à Augus", "type": "main", "index": 0 },
+        { "node": "Google Sheets — Archive contenu", "type": "main", "index": 0 }
+      ]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Paris"
+  }
+}

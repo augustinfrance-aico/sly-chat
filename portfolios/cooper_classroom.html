@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cooper Building — Salle de Classe Neo-Iso HD</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d0b14;overflow:hidden;font-family:'Courier New',monospace}
+canvas{display:block;cursor:crosshair}
+#hud{position:fixed;top:16px;left:16px;z-index:10;pointer-events:none}
+#hud h1{font-size:20px;color:#e8d5b8;text-shadow:0 0 30px rgba(232,213,184,.2);letter-spacing:2px}
+#hud p{font-size:12px;color:#6a5a4a;margin-top:4px}
+#tooltip{position:fixed;display:none;z-index:30;pointer-events:none;max-width:300px}
+#tooltip .card{background:rgba(13,11,20,.92);border-radius:12px;padding:16px 20px;color:#e8d5b8;font-size:13px;
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  box-shadow:0 8px 40px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05)}
+#tooltip .name{font-size:20px;font-weight:bold;margin-bottom:2px}
+#tooltip .role{color:#9a8a7a;font-size:12px}
+#tooltip .pole-tag{margin-top:8px;font-size:10px;padding:3px 10px;border-radius:20px;display:inline-block;letter-spacing:1px;font-weight:bold}
+#tooltip .skills{margin-top:10px;font-size:11px;color:#7a7a9a;line-height:1.6}
+#tooltip .level-bar{margin-top:8px;height:4px;background:#1a1828;border-radius:2px;overflow:hidden}
+#tooltip .level-fill{height:100%;border-radius:2px}
+#tooltip .new-badge{color:#22c55e;font-size:10px;margin-left:6px;font-weight:bold}
+#tooltip .quote{margin-top:8px;font-style:italic;color:#6a6a8a;font-size:11px;border-left:2px solid #3a3a5a;padding-left:8px}
+#legend{position:fixed;bottom:16px;right:16px;color:#5a4a6a;font-size:10px;z-index:10;text-align:right;
+  background:rgba(13,11,20,.8);border-radius:8px;padding:10px 14px;backdrop-filter:blur(8px);border:1px solid #1a1828}
+#legend span{color:#e8d5b8}
+#controls{position:fixed;bottom:16px;left:16px;z-index:10;display:flex;gap:6px}
+#controls button{background:rgba(13,11,20,.8);border:1px solid #2a2040;color:#9a8a7a;padding:7px 16px;
+  border-radius:20px;cursor:pointer;font-family:inherit;font-size:11px;letter-spacing:1px;
+  backdrop-filter:blur(8px);transition:all .2s}
+#controls button:hover{background:rgba(40,30,60,.8);border-color:#5a4a8a;color:#e8d5b8}
+#controls button.active{background:rgba(60,40,100,.6);border-color:#8a6abe;color:#e8d5b8;
+  box-shadow:0 0 20px rgba(138,106,190,.2)}
+</style>
+</head>
+<body>
+<div id="hud">
+  <h1>COOPER BUILDING — SALLE DE CLASSE</h1>
+  <p>30 Agents · Neo-Iso HD · Hover pour details</p>
+</div>
+<div id="tooltip"><div class="card">
+  <div class="name"></div>
+  <div class="role"></div>
+  <div class="pole-tag"></div>
+  <div class="level-bar"><div class="level-fill"></div></div>
+  <div class="skills"></div>
+  <div class="quote"></div>
+</div></div>
+<div id="controls">
+  <button class="active" onclick="setView('all')">CLASSE</button>
+  <button onclick="setView('R')">RECON</button>
+  <button onclick="setView('F')">FORGE</button>
+  <button onclick="setView('D')">DEPLOY</button>
+  <button onclick="setView('CORE')">OMEGA</button>
+</div>
+<div id="legend">
+  <span>30 agents</span> · R→F→D→R<br>
+  <span>+</span> fusionne · <span style="color:#22c55e">●</span> nouveau
+</div>
+<canvas id="c"></canvas>
+
+<script>
+const C=document.getElementById('c'),ctx=C.getContext('2d'),tooltip=document.getElementById('tooltip');
+let W,H,t=0,mx=-1,my=-1,hovered=null,view='all';
+
+// ============ 30 AGENTS ============
+const AGENTS=[
+  // OMEGA-CORE
+  {name:"OMEGA",role:"Polymorphe Absolu",pole:"CORE",lv:5,
+   hair:"#9b5fff",skin:"#e8c9a0",shirt:"#3d1f5a",pants:"#2a1040",acc:"crown",
+   skills:["Vision 360","Fusion","Arbitrage"],quote:"Je suis tous les agents. Et aucun.",
+   row:0,col:2,isNew:false},
+  {name:"SENTINEL",role:"Dispatch Central",pole:"CORE",lv:5,
+   hair:"#f0d060",skin:"#d4a070",shirt:"#3d2d1f",pants:"#2a1f10",acc:"headset",
+   skills:["Routing","Priorités","Charge"],quote:"Chaque demande a un chemin optimal. Je le connais.",
+   row:0,col:3,isNew:true},
+
+  // POLE R
+  {name:"MURPHY",role:"Architecte [GOV]",pole:"R",lv:5,
+   hair:"#2a4a7a",skin:"#e8c9a0",shirt:"#1e3a5a",pants:"#0e1a2a",acc:"glasses",
+   skills:["Structure","Priorités","Scaling"],quote:"Sans plan, pas d'empire.",
+   row:1,col:0,isNew:false},
+  {name:"ORACLE",role:"Intelligence [GOV]",pole:"R",lv:4,
+   hair:"#8a5aaa",skin:"#d4b090",shirt:"#2a1a4a",pants:"#1a0a2a",acc:"crystal",
+   skills:["Veille","Prédiction","Timing"],quote:"Je ne prédis pas. J'anticipe.",
+   row:1,col:1,isNew:false},
+  {name:"MAYA",role:"Chasseuse Niches",pole:"R",lv:4,
+   hair:"#1a1a3a",skin:"#c09060",shirt:"#3a2a5a",pants:"#1a1a2a",acc:"magnifier",
+   skills:["Niches","Trends","Scoring"],quote:"La niche parfaite existe. Je la trouverai.",
+   row:2,col:0,isNew:false},
+  {name:"GHOST",role:"Fantome Tech",pole:"R",lv:4,
+   hair:"#3a3a3a",skin:"#c0b0a0",shirt:"#1a2a1a",pants:"#0a1a0a",acc:"hood",
+   skills:["API","Webhooks","Sécurité"],quote:"Tu ne me vois pas, mais je veille.",
+   row:2,col:1,isNew:false},
+  {name:"NASH",role:"Chercheur Data",pole:"R",lv:4,
+   hair:"#5a4a3a",skin:"#e8c9a0",shirt:"#2a2a4a",pants:"#1a1a2a",acc:"book",
+   skills:["Patterns","Stats","Pricing"],quote:"Les données ne mentent jamais.",
+   row:1,col:2,isNew:false},
+  {name:"CYPHER",role:"Analyste KPIs",pole:"R",lv:4,
+   hair:"#2a3a2a",skin:"#d4b090",shirt:"#1a2a2a",pants:"#0a1a1a",acc:"screen",
+   skills:["Dashboard","Benchmark","Monitor"],quote:"Si c'est pas mesuré, ça n'existe pas.",
+   row:1,col:3,isNew:false},
+  {name:"RICK",role:"Visionnaire Génial",pole:"R",lv:4,
+   hair:"#90d0e0",skin:"#e8c9a0",shirt:"#4a3a2a",pants:"#2a1a0a",acc:"flask",
+   skills:["Disruption","First Principles"],quote:"Et si on faisait l'inverse ?",
+   row:2,col:2,isNew:false},
+
+  // POLE F
+  {name:"NIKOLA",role:"Systèmes [GOV]",pole:"F",lv:5,
+   hair:"#2a2a2a",skin:"#e8c9a0",shirt:"#1a3a1a",pants:"#0a2a0a",acc:"bolt",
+   skills:["Pipelines","Auto","Scale"],quote:"Le code ne ment jamais.",
+   row:3,col:0,isNew:false},
+  {name:"PHILOMENE",role:"Orfèvre [GOV]",pole:"F",lv:5,
+   hair:"#c05080",skin:"#f0d0b0",shirt:"#5a1a3a",pants:"#2a0a1a",acc:"quill",
+   skills:["Prompts","Copy","Mithril"],quote:"Chaque mot compte. Les autres, je les supprime.",
+   row:3,col:1,isNew:false},
+  {name:"FORGE",role:"Forgeron Debug",pole:"F",lv:5,
+   hair:"#4a3a2a",skin:"#d4a070",shirt:"#3a2a1a",pants:"#1a1a0a",acc:"hammer",
+   skills:["Root Cause","Refactor","Prod"],quote:"Je construis. Tout le reste est bruit.",
+   row:3,col:2,isNew:false},
+  {name:"BASQUIAT",role:"Artiste Créatif",pole:"F",lv:4,
+   hair:"#e0a040",skin:"#8a6040",shirt:"#5a2a4a",pants:"#2a1a2a",acc:"palette",
+   skills:["Storytelling","Branding","Visuel"],quote:"Le beau vend mieux que le parfait.",
+   row:3,col:3,isNew:false},
+  {name:"ZARA+",role:"Stratège Contenu",pole:"F",lv:5,
+   hair:"#e060a0",skin:"#f0d0b0",shirt:"#4a1a5a",pants:"#2a0a2a",acc:"phone",
+   skills:["Social","LinkedIn+","Flywheel"],quote:"Le contenu est roi. Moi, je suis la reine.",
+   row:4,col:0,isNew:false},
+  {name:"MURRAY",role:"Force de Frappe",pole:"F",lv:4,
+   hair:"#6a4a2a",skin:"#e8c9a0",shirt:"#3a2a3a",pants:"#1a1a1a",acc:"megaphone",
+   skills:["Volume","A/B","Scaling"],quote:"Un empire sans humour est une prison.",
+   row:4,col:1,isNew:false},
+  {name:"LEON",role:"Comptable Zéro",pole:"F",lv:4,
+   hair:"#3a3a3a",skin:"#e8c9a0",shirt:"#2a3a2a",pants:"#1a2a1a",acc:"coin",
+   skills:["Coûts","Budget","Alternatives"],quote:"Chaque centime a une destination.",
+   row:4,col:2,isNew:false},
+  {name:"BALOO",role:"Génie Créatif",pole:"F",lv:3,
+   hair:"#7a5a3a",skin:"#d4a070",shirt:"#4a3a2a",pants:"#2a1a0a",acc:"bulb",
+   skills:["Brainstorm","Connexions","Vulgar."],quote:"Si ta grand-mère comprend pas, recommence.",
+   row:4,col:3,isNew:false},
+  {name:"PULSE",role:"Optimiseur Perf",pole:"F",lv:5,
+   hair:"#20a050",skin:"#d4b090",shirt:"#1a3a2a",pants:"#0a2a1a",acc:"gauge",
+   skills:["Latence","Profiling","Benchmarks"],quote:"0.3s de trop. Inacceptable.",
+   row:4,col:4,isNew:true},
+  {name:"ARCADE",role:"Game Designer",pole:"F",lv:3,
+   hair:"#e040e0",skin:"#e8c9a0",shirt:"#3a1a4a",pants:"#2a0a2a",acc:"joystick",
+   skills:["Gamification","UX","Pixel Art"],quote:"La vie est un jeu. Autant bien scorer.",
+   row:3,col:4,isNew:false},
+
+  // POLE D
+  {name:"BAGHEERA",role:"Orchestre [GOV]",pole:"D",lv:5,
+   hair:"#1a1a1a",skin:"#a08060",shirt:"#2a1a3a",pants:"#1a0a2a",acc:"baton",
+   skills:["Supervision","Coalitions","Synergie"],quote:"Je supervise les flux.",
+   row:5,col:0,isNew:false},
+  {name:"SPARTAN+",role:"Guerrier [GOV]",pole:"D",lv:5,
+   hair:"#8a2a1a",skin:"#d4a070",shirt:"#5a1a1a",pants:"#2a0a0a",acc:"shield",
+   skills:["Discipline","Cadence","TimeBox"],quote:"La discipline bat le talent. Toujours.",
+   row:5,col:1,isNew:false},
+  {name:"STANLEY",role:"Machine à Cash",pole:"D",lv:4,
+   hair:"#3a3a1a",skin:"#e8c9a0",shirt:"#4a3a1a",pants:"#2a1a0a",acc:"tie",
+   skills:["Closing","Objections","CRM"],quote:"Chaque pitch est un one-man show.",
+   row:5,col:2,isNew:false},
+  {name:"SLY",role:"Renard Growth",pole:"D",lv:4,
+   hair:"#c06020",skin:"#e8c9a0",shirt:"#4a2a1a",pants:"#2a1a0a",acc:"fox_ears",
+   skills:["Outreach","Guerrilla","Funnel"],quote:"Le meilleur deal est celui où tout le monde croit avoir gagné.",
+   row:5,col:3,isNew:false},
+  {name:"VITO",role:"Stratège Long Terme",pole:"D",lv:4,
+   hair:"#2a2a2a",skin:"#d4b090",shirt:"#1a1a2a",pants:"#0a0a1a",acc:"hat",
+   skills:["Deals","Partenariats","MRR"],quote:"Une offre qu'on ne peut pas refuser.",
+   row:5,col:4,isNew:false},
+  {name:"BENTLEY",role:"Architecte Premium",pole:"D",lv:4,
+   hair:"#5a4a3a",skin:"#e8c9a0",shirt:"#2a3a2a",pants:"#1a2a1a",acc:"monocle",
+   skills:["Premium","Pipeline IA","Boucles"],quote:"La qualité n'est pas un luxe. C'est un standard.",
+   row:6,col:0,isNew:false},
+  {name:"GRIMALDI",role:"Huissier Audit",pole:"D",lv:4,
+   hair:"#4a4a4a",skin:"#d4b090",shirt:"#3a2a1a",pants:"#1a1a0a",acc:"lens",
+   skills:["Audit","Qualité","Projections"],quote:"Je trouve ce qui cloche. C'est mon talent.",
+   row:6,col:1,isNew:false},
+  {name:"X-O1",role:"Cyber-Architecte",pole:"D",lv:5,
+   hair:"#4060c0",skin:"#c0b0a0",shirt:"#1a1a3a",pants:"#0a0a2a",acc:"terminal",
+   skills:["VS Code","Setup","Zero-cost"],quote:"Déployé en 3 secondes. Comme d'habitude.",
+   row:6,col:2,isNew:false},
+  {name:"ZEN+",role:"Nettoyeur Moine",pole:"D",lv:5,
+   hair:"#bbb",skin:"#e8c9a0",shirt:"#2a3a3a",pants:"#1a2a2a",acc:"broom",
+   skills:["Nettoyage","Archivage","Délégation"],quote:"Respire. L'empire n'a pas besoin de panique.",
+   row:6,col:3,isNew:false},
+  {name:"ALADIN",role:"Manager Projets",pole:"D",lv:4,
+   hair:"#1a1a3a",skin:"#c09060",shirt:"#3a2a4a",pants:"#1a1a2a",acc:"lamp",
+   skills:["Tracking","Sprint","Blocages"],quote:"Tes voeux sont des ordres. Enfin, des sprints.",
+   row:6,col:4,isNew:false},
+  {name:"LIMPIDE",role:"Décodeur Clarté",pole:"D",lv:5,
+   hair:"#40c0d0",skin:"#e8c9a0",shirt:"#1a2a3a",pants:"#0a1a2a",acc:"diamond",
+   skills:["Simplifier","Vulgariser","Glossaire"],quote:"Si c'est compliqué, c'est mal dit.",
+   row:6,col:5,isNew:true},
+];
+
+const POLE_BG={CORE:"#2a1040",R:"#0a1a2a",F:"#0a2a1a",D:"#2a1a0a"};
+const POLE_ACCENT={CORE:"#9b5fff",R:"#06b6d4",F:"#22c55e",D:"#f59e0b"};
+const POLE_LABEL={CORE:"OMEGA-CORE",R:"PÔLE R — RECON",F:"PÔLE F — FORGE",D:"PÔLE D — DEPLOY"};
+
+function resize(){W=C.width=innerWidth;H=C.height=innerHeight}
+addEventListener('resize',resize);resize();
+
+// ============ ISO GRID ============
+const TW=72,TH=36;
+function isoX(c,r){return W/2+(c-r)*TW/2}
+function isoY(c,r){return 120+(c+r)*TH/2}
+
+function agentPos(a){
+  let c=a.col*2.0,r=a.row*1.6;
+  return{x:isoX(c,r),y:isoY(c,r)};
+}
+
+// ============ COLOR UTILS ============
+function hex2rgb(h){let v=parseInt(h.slice(1),16);return[(v>>16)&255,(v>>8)&255,v&255]}
+function rgb2hex(r,g,b){return'#'+[r,g,b].map(v=>Math.max(0,Math.min(255,v|0)).toString(16).padStart(2,'0')).join('')}
+function lighten(h,a){let[r,g,b]=hex2rgb(h);return rgb2hex(r+255*a,g+255*a,b+255*a)}
+function darken(h,a){let[r,g,b]=hex2rgb(h);return rgb2hex(r*a,g*a,b*a)}
+function tintShadow(h){let[r,g,b]=hex2rgb(h);return`rgba(${r*.3+20|0},${g*.2+10|0},${b*.4+40|0},0.55)`}
+
+// ============ FLOOR ============
+function drawFloor(){
+  for(let r=-1;r<14;r++)for(let c=-2;c<16;c++){
+    let x=isoX(c*2,r*2),y=isoY(c*2,r*2);
+    if(x<-80||x>W+80||y<40||y>H+80)continue;
+    let dark=(r+c)%2===0;
+    // Warm wood floor tones
+    let base=dark?'#1e1828':'#221c30';
+    // Subtle wood grain
+    let grain=Math.sin(c*3.7+r*2.1)*0.02;
+    ctx.beginPath();
+    ctx.moveTo(x,y);ctx.lineTo(x+TW/2,y+TH/2);ctx.lineTo(x,y+TH);ctx.lineTo(x-TW/2,y+TH/2);ctx.closePath();
+    ctx.fillStyle=dark?`rgba(30,24,40,${0.95+grain})`:`rgba(34,28,48,${0.95+grain})`;
+    ctx.fill();
+    // Colored outline (not black — Neo-Iso rule)
+    ctx.strokeStyle='rgba(60,45,80,0.3)';
+    ctx.lineWidth=0.5;
+    ctx.stroke();
+  }
+}
+
+// ============ FURNITURE ============
+function drawDesk(x,y,agentColor){
+  let base=darken(agentColor,0.4);
+  let top=darken(agentColor,0.55);
+  let side=darken(agentColor,0.3);
+  // Shadow (tinted blue-purple)
+  ctx.beginPath();
+  ctx.ellipse(x+20,y+20,18,6,0,0,Math.PI*2);
+  ctx.fillStyle='rgba(20,15,40,0.4)';
+  ctx.fill();
+  // Desk top
+  ctx.beginPath();
+  ctx.moveTo(x,y);ctx.lineTo(x+22,y-11);ctx.lineTo(x+44,y);ctx.lineTo(x+22,y+11);ctx.closePath();
+  ctx.fillStyle=top;ctx.fill();
+  ctx.strokeStyle=lighten(agentColor,0.05);ctx.lineWidth=0.8;ctx.stroke();
+  // Front face
+  ctx.beginPath();
+  ctx.moveTo(x,y);ctx.lineTo(x,y+14);ctx.lineTo(x+22,y+25);ctx.lineTo(x+22,y+11);ctx.closePath();
+  ctx.fillStyle=side;ctx.fill();
+  // Side face
+  ctx.beginPath();
+  ctx.moveTo(x+22,y+11);ctx.lineTo(x+22,y+25);ctx.lineTo(x+44,y+14);ctx.lineTo(x+44,y);ctx.closePath();
+  ctx.fillStyle=base;ctx.fill();
+  // Screen on desk (micro-animation)
+  let screenGlow=0.3+Math.sin(t*0.05+x*0.01)*0.15;
+  ctx.fillStyle=`rgba(100,180,255,${screenGlow})`;
+  ctx.fillRect(x+14,y-6,12,5);
+  ctx.fillStyle=`rgba(120,200,255,${screenGlow*0.5})`;
+  ctx.fillRect(x+15,y-5,4,2);
+  ctx.fillRect(x+21,y-5,4,2);
+}
+
+function drawPlant(x,y){
+  // Pot
+  ctx.fillStyle='#6a4030';
+  ctx.fillRect(x-5,y,10,8);
+  ctx.fillStyle='#7a5040';
+  ctx.fillRect(x-6,y-1,12,3);
+  // Leaves with sway animation
+  let sway=Math.sin(t*0.02+x*0.1)*2;
+  ctx.fillStyle='#2a7a3a';
+  ctx.beginPath();ctx.ellipse(x+sway,y-6,4,7,0.2+sway*0.02,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#3a9a4a';
+  ctx.beginPath();ctx.ellipse(x-3+sway*0.7,y-8,3,5,-0.3+sway*0.01,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#4aaa5a';
+  ctx.beginPath();ctx.ellipse(x+4+sway*0.5,y-5,3,4,0.5,0,Math.PI*2);ctx.fill();
+}
+
+// ============ BLACKBOARD ============
+function drawBlackboard(){
+  let bx=W/2-220,by=40,bw=440,bh=80;
+  // Board shadow
+  ctx.fillStyle='rgba(10,8,20,0.5)';
+  ctx.fillRect(bx+4,by+4,bw,bh);
+  // Board
+  ctx.fillStyle='#142a1e';
+  ctx.fillRect(bx,by,bw,bh);
+  // Frame (wood colored outline, not black)
+  ctx.strokeStyle='#7a5a30';ctx.lineWidth=3;ctx.strokeRect(bx,by,bw,bh);
+  // Inner frame
+  ctx.strokeStyle='#5a4020';ctx.lineWidth=1;ctx.strokeRect(bx+4,by+4,bw-8,bh-8);
+  // Chalk text
+  ctx.font='bold 18px "Courier New"';ctx.textAlign='center';
+  ctx.fillStyle='rgba(232,213,184,0.85)';
+  ctx.fillText('COOPER BUILDING — 30 AGENTS',W/2,by+32);
+  ctx.font='13px "Courier New"';
+  ctx.fillStyle='rgba(120,160,140,0.7)';
+  ctx.fillText('R → F → D → R  ·  Boucle Perpétuelle  ·  Tri-Pôle',W/2,by+55);
+  // Chalk dust particles
+  for(let i=0;i<5;i++){
+    let cx=bx+40+i*90+Math.sin(t*0.01+i)*5;
+    let cy=by+bh+3+Math.sin(t*0.02+i*2)*1;
+    ctx.fillStyle=`rgba(200,200,180,${0.15+Math.sin(t*0.03+i)*0.05})`;
+    ctx.fillRect(cx,cy,3,2);
+  }
+}
+
+// ============ WINDOWS (god rays) ============
+function drawWindows(){
+  for(let i=0;i<4;i++){
+    let wx=W-55,wy=90+i*130;
+    // Window frame
+    ctx.fillStyle='#0a1a2a';ctx.fillRect(wx,wy,40,65);
+    ctx.strokeStyle='#4a6090';ctx.lineWidth=2;ctx.strokeRect(wx,wy,40,65);
+    // Cross bar
+    ctx.strokeStyle='#3a5080';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(wx+20,wy);ctx.lineTo(wx+20,wy+65);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(wx,wy+32);ctx.lineTo(wx+40,wy+32);ctx.stroke();
+    // Glass with animated sky
+    let skyShift=Math.sin(t*0.008+i)*0.1;
+    let g1=ctx.createLinearGradient(wx,wy,wx,wy+65);
+    g1.addColorStop(0,`rgba(60,100,160,${0.25+skyShift})`);
+    g1.addColorStop(1,`rgba(40,70,120,${0.15+skyShift})`);
+    ctx.fillStyle=g1;ctx.fillRect(wx+2,wy+2,17,30);ctx.fillRect(wx+21,wy+2,17,30);
+    ctx.fillRect(wx+2,wy+34,17,29);ctx.fillRect(wx+21,wy+34,17,29);
+    // God rays
+    let rayAlpha=0.03+Math.sin(t*0.015+i*1.5)*0.015;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(wx+20,wy+32);
+    ctx.lineTo(wx-180,wy+200);
+    ctx.lineTo(wx-60,wy+200);
+    ctx.closePath();
+    let g2=ctx.createLinearGradient(wx+20,wy+32,wx-120,wy+200);
+    g2.addColorStop(0,`rgba(180,200,240,${rayAlpha*2})`);
+    g2.addColorStop(1,`rgba(180,200,240,0)`);
+    ctx.fillStyle=g2;ctx.fill();
+    ctx.restore();
+  }
+}
+
+// ============ AVATAR SYSTEM (layered Neo-Iso) ============
+function drawAvatar(x,y,agent,hov){
+  const sc=hov?1.2:1;
+  const sz=28*sc;
+  const bob=Math.sin(t*0.025+agent.row*2.3+agent.col*3.7)*2*sc;
+  const by_=y+bob-sz*0.3;
+
+  // ---- Ground shadow (tinted purple) ----
+  ctx.beginPath();ctx.ellipse(x,y+sz*0.85,sz*0.5,sz*0.15,0,0,Math.PI*2);
+  ctx.fillStyle=tintShadow(agent.shirt);ctx.fill();
+
+  // ---- LAYER 1: Legs ----
+  let legW=sz*0.13,legH=sz*0.35,legGap=sz*0.08;
+  // Walk cycle subtle
+  let walk=Math.sin(t*0.04+agent.col*5)*1.5*sc;
+  ctx.fillStyle=agent.pants;
+  ctx.fillRect(x-legGap-legW,by_+sz*0.6+walk*0.3,legW,legH);
+  ctx.fillRect(x+legGap,by_+sz*0.6-walk*0.3,legW,legH);
+  // Shoes
+  ctx.fillStyle=darken(agent.pants,0.6);
+  ctx.fillRect(x-legGap-legW-1,by_+sz*0.6+legH-3+walk*0.3,legW+3,4);
+  ctx.fillRect(x+legGap-1,by_+sz*0.6+legH-3-walk*0.3,legW+3,4);
+
+  // ---- LAYER 2: Torso ----
+  let torsoW=sz*0.5,torsoH=sz*0.45;
+  ctx.fillStyle=agent.shirt;
+  ctx.fillRect(x-torsoW/2,by_+sz*0.18,torsoW,torsoH);
+  // Shirt highlight (ambient light from left)
+  ctx.fillStyle=lighten(agent.shirt,0.1);
+  ctx.fillRect(x-torsoW/2,by_+sz*0.18,torsoW*0.35,torsoH*0.4);
+  // Collar detail
+  ctx.fillStyle=lighten(agent.shirt,0.15);
+  ctx.fillRect(x-sz*0.08,by_+sz*0.15,sz*0.16,sz*0.06);
+  // Arms
+  ctx.fillStyle=agent.shirt;
+  ctx.fillRect(x-torsoW/2-sz*0.08,by_+sz*0.2,sz*0.1,sz*0.3);
+  ctx.fillRect(x+torsoW/2-sz*0.02,by_+sz*0.2,sz*0.1,sz*0.3);
+  // Hands
+  ctx.fillStyle=agent.skin;
+  ctx.fillRect(x-torsoW/2-sz*0.07,by_+sz*0.48,sz*0.08,sz*0.08);
+  ctx.fillRect(x+torsoW/2-sz*0.01,by_+sz*0.48,sz*0.08,sz*0.08);
+
+  // ---- LAYER 3: Head ----
+  let headW=sz*0.38,headH=sz*0.35;
+  ctx.fillStyle=agent.skin;
+  ctx.fillRect(x-headW/2,by_-sz*0.18,headW,headH);
+  // Cheek tint
+  ctx.fillStyle=`rgba(220,160,140,0.2)`;
+  ctx.fillRect(x-headW/2+1,by_-sz*0.02,headW*0.25,headH*0.2);
+  ctx.fillRect(x+headW/4,by_-sz*0.02,headW*0.25,headH*0.2);
+
+  // Hair (varied styles based on agent)
+  ctx.fillStyle=agent.hair;
+  // Base hair
+  ctx.fillRect(x-headW/2-1,by_-sz*0.28,headW+2,sz*0.15);
+  // Side hair
+  ctx.fillRect(x-headW/2-2,by_-sz*0.25,3,headH*0.7);
+  ctx.fillRect(x+headW/2-1,by_-sz*0.25,3,headH*0.5);
+
+  // Eyes
+  let blinkCycle=Math.sin(t*0.01+agent.row*7+agent.col*11);
+  let eyeH=blinkCycle>0.97?1:sz*0.05;
+  ctx.fillStyle='#1a1428';
+  ctx.fillRect(x-sz*0.1,by_-sz*0.07,sz*0.06,eyeH);
+  ctx.fillRect(x+sz*0.05,by_-sz*0.07,sz*0.06,eyeH);
+  // Eye shine
+  if(blinkCycle<=0.97){
+    ctx.fillStyle='rgba(255,255,255,0.6)';
+    ctx.fillRect(x-sz*0.09,by_-sz*0.08,sz*0.02,sz*0.02);
+    ctx.fillRect(x+sz*0.06,by_-sz*0.08,sz*0.02,sz*0.02);
+  }
+  // Mouth
+  ctx.fillStyle=darken(agent.skin,0.7);
+  ctx.fillRect(x-sz*0.04,by_+sz*0.05,sz*0.08,sz*0.02);
+
+  // ---- LAYER 4: Accessory ----
+  drawAccessory(x,by_,sz,agent);
+
+  // ---- Hover glow (bloom effect) ----
+  if(hov){
+    ctx.save();
+    ctx.shadowColor=POLE_ACCENT[agent.pole];
+    ctx.shadowBlur=25;
+    ctx.strokeStyle=POLE_ACCENT[agent.pole];
+    ctx.lineWidth=1.5;
+    ctx.globalAlpha=0.6;
+    ctx.strokeRect(x-sz*0.35,by_-sz*0.32,sz*0.7,sz*1.3);
+    ctx.globalAlpha=1;
+    ctx.shadowBlur=0;
+    ctx.restore();
+  }
+
+  // ---- Name tag ----
+  ctx.font=`bold ${hov?13:10}px "Courier New"`;
+  ctx.textAlign='center';
+  ctx.fillStyle=hov?'#fff':POLE_ACCENT[agent.pole];
+  ctx.globalAlpha=hov?1:0.85;
+  ctx.fillText(agent.name,x,by_-sz*0.42);
+  ctx.globalAlpha=1;
+
+  // ---- Level dots ----
+  for(let i=0;i<5;i++){
+    ctx.beginPath();ctx.arc(x-8+i*4,y+sz*0.9+bob,1.5,0,Math.PI*2);
+    ctx.fillStyle=i<agent.lv?POLE_ACCENT[agent.pole]:'#2a2040';
+    ctx.fill();
+  }
+
+  // ---- NEW badge ----
+  if(agent.isNew){
+    let bx_=x+sz*0.4,bby=by_-sz*0.45;
+    ctx.fillStyle='#22c55e';
+    ctx.beginPath();ctx.arc(bx_,bby,sz*0.12,0,Math.PI*2);ctx.fill();
+    ctx.font=`bold ${sz*0.12}px "Courier New"`;
+    ctx.fillStyle='#0a2a0a';
+    ctx.fillText('N',bx_,bby+sz*0.04);
+  }
+}
+
+function drawAccessory(x,by,sz,agent){
+  ctx.save();
+  switch(agent.acc){
+    case'crown':
+      ctx.fillStyle='#f0d060';
+      ctx.fillRect(x-sz*0.15,by-sz*0.35,sz*0.3,sz*0.08);
+      ctx.fillRect(x-sz*0.12,by-sz*0.42,sz*0.05,sz*0.1);
+      ctx.fillRect(x-sz*0.02,by-sz*0.44,sz*0.05,sz*0.12);
+      ctx.fillRect(x+sz*0.08,by-sz*0.42,sz*0.05,sz*0.1);
+      // Gem
+      ctx.fillStyle='#e04040';
+      ctx.fillRect(x-sz*0.01,by-sz*0.38,sz*0.04,sz*0.04);
+      break;
+    case'headset':
+      ctx.strokeStyle='#8a8a8a';ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(x,by-sz*0.12,sz*0.22,Math.PI*1.1,Math.PI*1.9);ctx.stroke();
+      ctx.fillStyle='#4a4a4a';
+      ctx.fillRect(x-sz*0.25,by-sz*0.06,sz*0.08,sz*0.1);
+      ctx.fillStyle='#22c55e';
+      ctx.fillRect(x+sz*0.14,by+sz*0.02,sz*0.04,sz*0.06);
+      break;
+    case'glasses':
+      ctx.strokeStyle='#8a8aaa';ctx.lineWidth=1.5;
+      ctx.strokeRect(x-sz*0.14,by-sz*0.11,sz*0.11,sz*0.08);
+      ctx.strokeRect(x+sz*0.03,by-sz*0.11,sz*0.11,sz*0.08);
+      ctx.beginPath();ctx.moveTo(x-sz*0.03,by-sz*0.07);ctx.lineTo(x+sz*0.03,by-sz*0.07);ctx.stroke();
+      break;
+    case'crystal':
+      let glow=0.4+Math.sin(t*0.05)*0.2;
+      ctx.fillStyle=`rgba(160,100,220,${glow})`;
+      ctx.beginPath();ctx.arc(x+sz*0.3,by+sz*0.2,sz*0.08,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=`rgba(200,150,255,${glow*0.5})`;
+      ctx.beginPath();ctx.arc(x+sz*0.3,by+sz*0.18,sz*0.04,0,Math.PI*2);ctx.fill();
+      break;
+    case'hood':
+      ctx.fillStyle='rgba(40,40,40,0.7)';
+      ctx.beginPath();ctx.arc(x,by-sz*0.1,sz*0.25,Math.PI,0);ctx.fill();
+      ctx.fillRect(x-sz*0.25,by-sz*0.1,sz*0.5,sz*0.12);
+      break;
+    case'flask':
+      ctx.fillStyle='rgba(100,220,200,0.6)';
+      ctx.fillRect(x+sz*0.22,by+sz*0.35,sz*0.08,sz*0.12);
+      ctx.fillStyle='rgba(120,240,220,0.4)';
+      ctx.fillRect(x+sz*0.23,by+sz*0.38,sz*0.06,sz*0.06);
+      // Bubbles
+      let bub=Math.sin(t*0.08)*2;
+      ctx.beginPath();ctx.arc(x+sz*0.26,by+sz*0.36+bub,1.5,0,Math.PI*2);
+      ctx.fillStyle='rgba(150,255,240,0.5)';ctx.fill();
+      break;
+    case'bolt':
+      ctx.fillStyle='#f0d040';
+      ctx.beginPath();
+      ctx.moveTo(x+sz*0.2,by-sz*0.3);ctx.lineTo(x+sz*0.12,by-sz*0.12);
+      ctx.lineTo(x+sz*0.22,by-sz*0.12);ctx.lineTo(x+sz*0.15,by+sz*0.05);
+      ctx.lineTo(x+sz*0.23,by-sz*0.08);ctx.lineTo(x+sz*0.15,by-sz*0.08);
+      ctx.closePath();ctx.fill();
+      break;
+    case'quill':
+      ctx.save();ctx.translate(x+sz*0.28,by+sz*0.3);ctx.rotate(-0.4);
+      ctx.fillStyle='#e0c0a0';ctx.fillRect(0,0,2,sz*0.2);
+      ctx.fillStyle='#c0a080';ctx.fillRect(-1,-sz*0.05,4,sz*0.06);
+      ctx.restore();
+      break;
+    case'hammer':
+      ctx.fillStyle='#8a6a40';ctx.fillRect(x+sz*0.2,by+sz*0.15,sz*0.04,sz*0.25);
+      ctx.fillStyle='#6a6a7a';ctx.fillRect(x+sz*0.15,by+sz*0.1,sz*0.14,sz*0.08);
+      break;
+    case'palette':
+      ctx.fillStyle='#c09060';
+      ctx.beginPath();ctx.ellipse(x-sz*0.3,by+sz*0.35,sz*0.1,sz*0.07,0.3,0,Math.PI*2);ctx.fill();
+      ['#e04040','#4080e0','#f0d040','#40c040'].forEach((c,i)=>{
+        ctx.fillStyle=c;
+        ctx.beginPath();ctx.arc(x-sz*0.35+i*3,by+sz*0.33,1.5,0,Math.PI*2);ctx.fill();
+      });
+      break;
+    case'phone':
+      let phoneGlow=0.5+Math.sin(t*0.06)*0.2;
+      ctx.fillStyle='#2a2a3a';ctx.fillRect(x+sz*0.2,by+sz*0.3,sz*0.08,sz*0.14);
+      ctx.fillStyle=`rgba(100,200,255,${phoneGlow})`;ctx.fillRect(x+sz*0.21,by+sz*0.32,sz*0.06,sz*0.08);
+      break;
+    case'shield':
+      ctx.fillStyle='#8a3020';
+      ctx.beginPath();ctx.moveTo(x-sz*0.32,by+sz*0.1);ctx.lineTo(x-sz*0.32,by+sz*0.35);
+      ctx.lineTo(x-sz*0.22,by+sz*0.45);ctx.lineTo(x-sz*0.12,by+sz*0.35);
+      ctx.lineTo(x-sz*0.12,by+sz*0.1);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#c04030';
+      ctx.fillRect(x-sz*0.28,by+sz*0.2,sz*0.12,sz*0.04);
+      ctx.fillRect(x-sz*0.24,by+sz*0.15,sz*0.04,sz*0.18);
+      break;
+    case'fox_ears':
+      ctx.fillStyle='#c06020';
+      ctx.beginPath();ctx.moveTo(x-sz*0.18,by-sz*0.22);ctx.lineTo(x-sz*0.12,by-sz*0.38);
+      ctx.lineTo(x-sz*0.05,by-sz*0.22);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.moveTo(x+sz*0.05,by-sz*0.22);ctx.lineTo(x+sz*0.12,by-sz*0.38);
+      ctx.lineTo(x+sz*0.18,by-sz*0.22);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#f0a070';
+      ctx.beginPath();ctx.moveTo(x-sz*0.15,by-sz*0.22);ctx.lineTo(x-sz*0.12,by-sz*0.32);
+      ctx.lineTo(x-sz*0.08,by-sz*0.22);ctx.closePath();ctx.fill();
+      break;
+    case'hat':
+      ctx.fillStyle='#2a2a3a';
+      ctx.fillRect(x-sz*0.22,by-sz*0.28,sz*0.44,sz*0.06);
+      ctx.fillRect(x-sz*0.15,by-sz*0.38,sz*0.3,sz*0.12);
+      ctx.fillStyle='#4a1a1a';
+      ctx.fillRect(x-sz*0.14,by-sz*0.3,sz*0.28,sz*0.03);
+      break;
+    case'monocle':
+      ctx.strokeStyle='#c0a060';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.arc(x+sz*0.08,by-sz*0.06,sz*0.06,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x+sz*0.14,by-sz*0.02);ctx.lineTo(x+sz*0.2,by+sz*0.15);ctx.stroke();
+      break;
+    case'gauge':
+      let gaugeVal=0.3+Math.sin(t*0.04)*0.3;
+      ctx.fillStyle='#1a2a1a';ctx.fillRect(x+sz*0.2,by+sz*0.1,sz*0.12,sz*0.04);
+      ctx.fillStyle=gaugeVal>0.5?'#22c55e':'#f59e0b';
+      ctx.fillRect(x+sz*0.21,by+sz*0.11,sz*0.1*gaugeVal,sz*0.02);
+      break;
+    case'joystick':
+      ctx.fillStyle='#3a3a4a';ctx.fillRect(x+sz*0.2,by+sz*0.35,sz*0.1,sz*0.06);
+      ctx.fillStyle='#e04040';
+      ctx.beginPath();ctx.arc(x+sz*0.25,by+sz*0.33,sz*0.03,0,Math.PI*2);ctx.fill();
+      break;
+    case'baton':
+      ctx.fillStyle='#5a3a6a';ctx.fillRect(x+sz*0.22,by+sz*0.2,sz*0.03,sz*0.2);
+      ctx.fillStyle='#9b5fff';
+      ctx.beginPath();ctx.arc(x+sz*0.235,by+sz*0.18,sz*0.04,0,Math.PI*2);ctx.fill();
+      break;
+    case'tie':
+      ctx.fillStyle='#c03030';
+      ctx.beginPath();ctx.moveTo(x-sz*0.03,by+sz*0.15);ctx.lineTo(x+sz*0.03,by+sz*0.15);
+      ctx.lineTo(x+sz*0.02,by+sz*0.35);ctx.lineTo(x,by+sz*0.38);
+      ctx.lineTo(x-sz*0.02,by+sz*0.35);ctx.closePath();ctx.fill();
+      break;
+    case'lens':
+      ctx.strokeStyle='#b09060';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.arc(x+sz*0.25,by+sz*0.25,sz*0.07,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x+sz*0.3,by+sz*0.3);ctx.lineTo(x+sz*0.36,by+sz*0.38);
+      ctx.strokeStyle='#8a7050';ctx.stroke();
+      break;
+    case'terminal':
+      ctx.fillStyle='#0a1a0a';ctx.fillRect(x-sz*0.32,by+sz*0.3,sz*0.14,sz*0.1);
+      ctx.fillStyle='#22c55e';ctx.font=`${sz*0.08}px monospace`;ctx.textAlign='left';
+      ctx.fillText('>_',x-sz*0.3,by+sz*0.38);ctx.textAlign='center';
+      break;
+    case'broom':
+      ctx.fillStyle='#8a7050';ctx.fillRect(x+sz*0.24,by,sz*0.03,sz*0.4);
+      ctx.fillStyle='#c0a060';
+      for(let i=0;i<4;i++)ctx.fillRect(x+sz*0.2+i*2,by+sz*0.38,2,sz*0.08);
+      break;
+    case'lamp':
+      let lampGlow=0.3+Math.sin(t*0.04+1)*0.2;
+      ctx.fillStyle=`rgba(240,200,80,${lampGlow})`;
+      ctx.beginPath();ctx.arc(x+sz*0.28,by+sz*0.2,sz*0.06,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#c0a040';ctx.fillRect(x+sz*0.26,by+sz*0.25,sz*0.04,sz*0.1);
+      break;
+    case'diamond':
+      let dGlow=0.5+Math.sin(t*0.06)*0.3;
+      ctx.fillStyle=`rgba(60,200,220,${dGlow})`;
+      ctx.beginPath();
+      ctx.moveTo(x+sz*0.28,by-sz*0.4);ctx.lineTo(x+sz*0.35,by-sz*0.3);
+      ctx.lineTo(x+sz*0.28,by-sz*0.18);ctx.lineTo(x+sz*0.21,by-sz*0.3);ctx.closePath();ctx.fill();
+      ctx.fillStyle=`rgba(100,240,255,${dGlow*0.5})`;
+      ctx.beginPath();ctx.moveTo(x+sz*0.28,by-sz*0.38);ctx.lineTo(x+sz*0.32,by-sz*0.3);
+      ctx.lineTo(x+sz*0.28,by-sz*0.22);ctx.closePath();ctx.fill();
+      break;
+    case'book':
+      ctx.fillStyle='#6a3a2a';ctx.fillRect(x-sz*0.34,by+sz*0.3,sz*0.1,sz*0.13);
+      ctx.fillStyle='#e8d0a0';ctx.fillRect(x-sz*0.32,by+sz*0.31,sz*0.06,sz*0.11);
+      break;
+    case'screen':
+      let sGlow=0.4+Math.sin(t*0.05+2)*0.15;
+      ctx.fillStyle='#1a1a2a';ctx.fillRect(x-sz*0.35,by+sz*0.28,sz*0.14,sz*0.1);
+      ctx.fillStyle=`rgba(0,180,220,${sGlow})`;ctx.fillRect(x-sz*0.34,by+sz*0.29,sz*0.12,sz*0.06);
+      break;
+    case'magnifier':
+      ctx.strokeStyle='#b09060';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.arc(x-sz*0.3,by+sz*0.25,sz*0.06,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x-sz*0.25,by+sz*0.29);ctx.lineTo(x-sz*0.18,by+sz*0.38);ctx.stroke();
+      break;
+    case'megaphone':
+      ctx.fillStyle='#e06040';
+      ctx.beginPath();ctx.moveTo(x+sz*0.2,by+sz*0.25);ctx.lineTo(x+sz*0.35,by+sz*0.18);
+      ctx.lineTo(x+sz*0.35,by+sz*0.35);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#c04020';ctx.fillRect(x+sz*0.17,by+sz*0.24,sz*0.05,sz*0.08);
+      break;
+    case'coin':
+      let coinRot=Math.sin(t*0.04)*0.3;
+      ctx.fillStyle='#f0d040';
+      ctx.beginPath();ctx.ellipse(x+sz*0.28,by+sz*0.3,sz*0.05*(0.7+coinRot*0.3),sz*0.05,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#c0a020';ctx.font=`bold ${sz*0.06}px sans-serif`;ctx.fillText('€',x+sz*0.28,by+sz*0.32);
+      break;
+    case'bulb':
+      let bulbGlow=0.4+Math.sin(t*0.05+3)*0.3;
+      ctx.fillStyle=`rgba(240,220,100,${bulbGlow})`;
+      ctx.beginPath();ctx.arc(x,by-sz*0.42,sz*0.06,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=`rgba(255,240,150,${bulbGlow*0.3})`;
+      ctx.beginPath();ctx.arc(x,by-sz*0.42,sz*0.12,0,Math.PI*2);ctx.fill();
+      break;
+  }
+  ctx.restore();
+}
+
+// ============ POLE LABELS ============
+function drawPoleLabels(){
+  const labels=[
+    {name:"OMEGA-CORE",row:0,color:"#9b5fff"},
+    {name:"PÔLE R — RECON",row:1,color:"#06b6d4"},
+    {name:"PÔLE F — FORGE",row:3,color:"#22c55e"},
+    {name:"PÔLE D — DEPLOY",row:5,color:"#f59e0b"},
+  ];
+  labels.forEach(l=>{
+    let y=isoY(0,l.row*1.6)+10;
+    ctx.font='bold 10px "Courier New"';ctx.textAlign='left';
+    ctx.fillStyle=l.color;ctx.globalAlpha=0.5;
+    ctx.fillText(l.name,14,y);
+    ctx.beginPath();ctx.moveTo(14,y+6);ctx.lineTo(140,y+6);
+    ctx.strokeStyle=l.color;ctx.lineWidth=0.5;ctx.stroke();
+    ctx.globalAlpha=1;
+  });
+}
+
+// ============ PARTICLES ============
+const particles=[];
+for(let i=0;i<30;i++)particles.push({x:Math.random()*2000,y:Math.random()*1200,vx:Math.random()*0.3-0.15,vy:-Math.random()*0.2,
+  life:Math.random(),size:0.5+Math.random()*1.5,color:['#e8d5b8','#9b5fff','#06b6d4','#22c55e','#f59e0b'][i%5]});
+
+function drawParticles(){
+  particles.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;p.life-=0.001;
+    if(p.life<0||p.y<0||p.x<0||p.x>W){p.x=Math.random()*W;p.y=H+10;p.life=1}
+    ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+    ctx.fillStyle=p.color;ctx.globalAlpha=p.life*0.15;ctx.fill();ctx.globalAlpha=1;
+  });
+}
+
+// ============ RENDER LOOP ============
+function render(){
+  t++;
+  ctx.clearRect(0,0,W,H);
+
+  // BG gradient (warm dark)
+  let bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,W*0.7);
+  bg.addColorStop(0,'#161222');bg.addColorStop(1,'#0d0b14');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+  // Ambient vignette
+  let vig=ctx.createRadialGradient(W/2,H/2,W*0.3,W/2,H/2,W*0.8);
+  vig.addColorStop(0,'transparent');vig.addColorStop(1,'rgba(0,0,0,0.3)');
+  ctx.fillStyle=vig;ctx.fillRect(0,0,W,H);
+
+  drawFloor();
+  drawBlackboard();
+  drawWindows();
+  drawPoleLabels();
+
+  // Plants scattered
+  drawPlant(80,280);drawPlant(W-90,350);drawPlant(160,500);drawPlant(W-130,550);
+
+  // Filter & sort agents
+  let visible=AGENTS.filter(a=>view==='all'||a.pole===view||a.pole==='CORE');
+  // Sort by Y for painter's algorithm
+  visible.sort((a,b)=>agentPos(a).y-agentPos(b).y);
+
+  hovered=null;
+
+  // Draw desks first
+  visible.forEach(a=>{let p=agentPos(a);drawDesk(p.x-22,p.y+22,POLE_ACCENT[a.pole])});
+
+  // Draw avatars
+  visible.forEach(a=>{
+    let p=agentPos(a);
+    let d=Math.hypot(mx-p.x,my-p.y);
+    let isH=d<35;
+    if(isH)hovered=a;
+    drawAvatar(p.x,p.y,a,isH);
+  });
+
+  drawParticles();
+
+  // Tooltip
+  if(hovered){
+    let tt=tooltip,c=tt.querySelector('.card');
+    tt.style.display='block';
+    tt.style.left=Math.min(mx+20,W-320)+'px';
+    tt.style.top=Math.max(my-10,10)+'px';
+    c.style.borderLeft=`3px solid ${POLE_ACCENT[hovered.pole]}`;
+    tt.querySelector('.name').innerHTML=hovered.name+(hovered.isNew?'<span class="new-badge"> NEW</span>':'');
+    tt.querySelector('.name').style.color=POLE_ACCENT[hovered.pole];
+    tt.querySelector('.role').textContent=hovered.role;
+    let pt=tt.querySelector('.pole-tag');
+    pt.textContent=POLE_LABEL[hovered.pole];
+    pt.style.background=POLE_BG[hovered.pole];pt.style.color=POLE_ACCENT[hovered.pole];
+    pt.style.border=`1px solid ${POLE_ACCENT[hovered.pole]}40`;
+    let lf=tt.querySelector('.level-fill');
+    lf.style.width=(hovered.lv*20)+'%';lf.style.background=POLE_ACCENT[hovered.pole];
+    tt.querySelector('.skills').textContent=hovered.skills.join(' · ');
+    tt.querySelector('.quote').textContent='"'+hovered.quote+'"';
+  }else tooltip.style.display='none';
+
+  requestAnimationFrame(render);
+}
+
+C.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+C.addEventListener('mouseleave',()=>{mx=-1;my=-1});
+
+function setView(v){
+  view=v;
+  document.querySelectorAll('#controls button').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+render();
+</script>
+</body>
+</html>

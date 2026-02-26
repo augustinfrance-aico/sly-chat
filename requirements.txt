@@ -1,0 +1,11 @@
+# AICO Workspace — Dependencies
+# TITAN Bot (execution/titan/)
+feedparser
+gTTS
+python-dotenv
+requests
+groq
+google-genai
+pydub
+numpy
+httpx

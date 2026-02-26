@@ -30,187 +30,36 @@
       "hours": {
         "00": 8
       }
+    },
+    "2026-02-24": {
+      "total": 5,
+      "hours": {
+        "14": 3,
+        "17": 1,
+        "22": 1
+      }
+    },
+    "2026-02-25": {
+      "total": 17,
+      "hours": {
+        "00": 9,
+        "22": 7,
+        "23": 1
+      }
+    },
+    "2026-02-26": {
+      "total": 11,
+      "hours": {
+        "04": 11
+      }
     }
   },
   "module_usage": {
-    "brain": 91,
-    "president": 5
+    "brain": 116,
+    "president": 12,
+    "code": 1
   },
   "command_history": [
-    {
-      "cmd": "/start",
-      "module": "brain",
-      "time": "21:47",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Salut",
-      "module": "brain",
-      "time": "21:48",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Salut",
-      "module": "brain",
-      "time": "22:26",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Donne moi des actualité d’ia ajd",
-      "module": "brain",
-      "time": "22:27",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Non et demain donne mon programme",
-      "module": "brain",
-      "time": "22:29",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Note que je dois faire le rendez pôle emploi et vo",
-      "module": "brain",
-      "time": "22:30",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Et les loom à faire et sur les notaires chaque jou",
-      "module": "brain",
-      "time": "22:30",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Pour upwork les looms, pour trouver des clients po",
-      "module": "brain",
-      "time": "22:31",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Et prendre mon billet pour Paris vraiment demain p",
-      "module": "brain",
-      "time": "22:32",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Des clients comme Lurie pardon",
-      "module": "brain",
-      "time": "22:32",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Non je regarderai sur OUIGO et c’est pour voir des",
-      "module": "brain",
-      "time": "22:33",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Tu parles trop réduit",
-      "module": "brain",
-      "time": "22:33",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "La c’est bon rappelle moi à l’avenir ces choses là",
-      "module": "brain",
-      "time": "22:34",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Non mais surtout pour mon programme",
-      "module": "brain",
-      "time": "22:34",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Oui exactement modifie, et la c’est encore trop lo",
-      "module": "brain",
-      "time": "22:35",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Non",
-      "module": "brain",
-      "time": "22:35",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Juste là t’envoie 3 message donc à chaque fois 1 o",
-      "module": "brain",
-      "time": "22:35",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "La ta envoyer 3 fois …",
-      "module": "brain",
-      "time": "22:36",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Mdr conar",
-      "module": "brain",
-      "time": "22:36",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Mais arrête",
-      "module": "brain",
-      "time": "22:36",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Arrête les 3 message à chaque fois je plaisante pa",
-      "module": "brain",
-      "time": "22:36",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Mais pourquoi tu continues ?",
-      "module": "brain",
-      "time": "22:37",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Non juste tu répond par un message à la fois",
-      "module": "brain",
-      "time": "22:37",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "La y’en a 3",
-      "module": "brain",
-      "time": "22:37",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Bah là encore",
-      "module": "brain",
-      "time": "22:38",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Salut tu vas mieux ?",
-      "module": "brain",
-      "time": "22:53",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Ok",
-      "module": "brain",
-      "time": "22:53",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Sa va ?",
-      "module": "brain",
-      "time": "22:56",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "La",
-      "module": "brain",
-      "time": "22:57",
-      "date": "2026-02-17"
-    },
     {
       "cmd": "Là il y a 3 message",
       "module": "brain",
@@ -612,42 +461,207 @@
       "module": "brain",
       "time": "00:39",
       "date": "2026-02-20"
+    },
+    {
+      "cmd": "Yo",
+      "module": "brain",
+      "time": "14:56",
+      "date": "2026-02-24"
+    },
+    {
+      "cmd": "Ça va",
+      "module": "brain",
+      "time": "14:56",
+      "date": "2026-02-24"
+    },
+    {
+      "cmd": "Ouais",
+      "module": "brain",
+      "time": "14:56",
+      "date": "2026-02-24"
+    },
+    {
+      "cmd": "Note de me rappeler chaque jour pour contracter un",
+      "module": "brain",
+      "time": "17:03",
+      "date": "2026-02-24"
+    },
+    {
+      "cmd": "Est-ce que tu penses que tu pourrais t'exécuter lo",
+      "module": "brain",
+      "time": "22:31",
+      "date": "2026-02-24"
+    },
+    {
+      "cmd": "Claude, j'aimerais que tu me rédiges un prompt, ma",
+      "module": "president",
+      "time": "00:18",
+      "date": "2026-02-25"
+    },
+    {
+      "cmd": "Oui mais là tu as quand même noté le prompt, je m'",
+      "module": "president",
+      "time": "00:19",
+      "date": "2026-02-25"
+    },
+    {
+      "cmd": "Qu'est-ce que t'as noté le prompt à Claude ?",
+      "module": "president",
+      "time": "00:19",
+      "date": "2026-02-25"
+    },
+    {
+      "cmd": "dit claude du coup de rédiger un prompt test voilà",
+      "module": "president",
+      "time": "00:23",
+      "date": "2026-02-25"
+    },
+    {
+      "cmd": "Salut",
+      "module": "president",
+      "time": "00:27",
+      "date": "2026-02-25"
+    },
+    {
+      "cmd": "Yo",
+      "module": "president",
+      "time": "00:31",
+      "date": "2026-02-25"
+    },
+    {
+      "cmd": "Yo",
+      "module": "president",
+      "time": "00:40",
+      "date": "2026-02-25"
+    },
+    {
+      "cmd": "Yo",
+      "module": "brain",
+      "time": "00:42",
+      "date": "2026-02-25"
+    },
+    {
+      "cmd": "/prompt",
+      "module": "brain",
+      "time": "00:48",
+      "date": "2026-02-25"
+    },
+    {
+      "cmd": "Morgan Freeman",
+      "module": "brain",
+      "time": "22:33",
+      "date": "2026-02-25"
+    },
+    {
+      "cmd": "Oui fait",
+      "module": "brain",
+      "time": "22:33",
+      "date": "2026-02-25"
+    },
+    {
+      "cmd": "/command",
+      "module": "brain",
+      "time": "22:36",
+      "date": "2026-02-25"
+    },
+    {
+      "cmd": "/c",
+      "module": "brain",
+      "time": "22:36",
+      "date": "2026-02-25"
+    },
+    {
+      "cmd": "Donne les commandes",
+      "module": "brain",
+      "time": "22:36",
+      "date": "2026-02-25"
+    },
+    {
+      "cmd": "/command",
+      "module": "brain",
+      "time": "22:36",
+      "date": "2026-02-25"
+    },
+    {
+      "cmd": "Tu peux faire quoi",
+      "module": "brain",
+      "time": "22:37",
+      "date": "2026-02-25"
+    },
+    {
+      "cmd": "/pc app",
+      "module": "brain",
+      "time": "23:22",
+      "date": "2026-02-25"
+    },
+    {
+      "cmd": "Yo",
+      "module": "brain",
+      "time": "04:01",
+      "date": "2026-02-26"
+    },
+    {
+      "cmd": "Yo",
+      "module": "brain",
+      "time": "04:01",
+      "date": "2026-02-26"
+    },
+    {
+      "cmd": "Yo",
+      "module": "brain",
+      "time": "04:03",
+      "date": "2026-02-26"
+    },
+    {
+      "cmd": "yo",
+      "module": "brain",
+      "time": "04:11",
+      "date": "2026-02-26"
+    },
+    {
+      "cmd": "Yo",
+      "module": "brain",
+      "time": "04:17",
+      "date": "2026-02-26"
+    },
+    {
+      "cmd": "Tu peux faire quoi",
+      "module": "brain",
+      "time": "04:17",
+      "date": "2026-02-26"
+    },
+    {
+      "cmd": "/command",
+      "module": "brain",
+      "time": "04:17",
+      "date": "2026-02-26"
+    },
+    {
+      "cmd": "Donne tes commandes",
+      "module": "brain",
+      "time": "04:17",
+      "date": "2026-02-26"
+    },
+    {
+      "cmd": "/objectifs",
+      "module": "brain",
+      "time": "04:17",
+      "date": "2026-02-26"
+    },
+    {
+      "cmd": "/code",
+      "module": "code",
+      "time": "04:18",
+      "date": "2026-02-26"
+    },
+    {
+      "cmd": "Donne 3 films",
+      "module": "brain",
+      "time": "04:24",
+      "date": "2026-02-26"
     }
   ],
   "response_times": [
-    10.859230518341064,
-    7.050055980682373,
-    2.506326675415039,
-    9.551236629486084,
-    10.342116594314575,
-    7.862187147140503,
-    6.256681680679321,
-    8.33923864364624,
-    3.3231709003448486,
-    1.84226393699646,
-    2.250476121902466,
-    2.038961887359619,
-    3.281198024749756,
-    1.8415913581848145,
-    3.643853187561035,
-    2.878222703933716,
-    2.4867241382598877,
-    3.2817769050598145,
-    8.357242584228516,
-    3.4823460578918457,
-    1.6346101760864258,
-    3.5532264709472656,
-    4.913515567779541,
-    2.7708382606506348,
-    0.21015524864196777,
-    0.2755255699157715,
-    0.21934270858764648,
-    1.0321686267852783,
-    0.9901883602142334,
-    0.7473399639129639,
-    0.49205970764160156,
-    1.8597562313079834,
-    0.832939624786377,
     0.8088493347167969,
     0.7041375637054443,
     0.5679311752319336,
@@ -664,7 +678,40 @@
     0.7722163200378418,
     3.032651662826538,
     1.1216051578521729,
-    0.5112295150756836
+    0.5112295150756836,
+    1.153848648071289,
+    0.6197845935821533,
+    0.7771728038787842,
+    0.6368088722229004,
+    0.8204245567321777,
+    0.9450802803039551,
+    0.8007891178131104,
+    0.6328151226043701,
+    0.6866846084594727,
+    0.7069711685180664,
+    0.7456305027008057,
+    0.7814135551452637,
+    0.6886181831359863,
+    0.0020465850830078125,
+    0.7688417434692383,
+    0.5706627368927002,
+    0.37286806106567383,
+    0.4834630489349365,
+    1.6851348876953125,
+    1.0151104927062988,
+    12.473793029785156,
+    0.713716983795166,
+    0.9725215435028076,
+    0.4082930088043213,
+    0.35516357421875,
+    0.4030745029449463,
+    0.3172430992126465,
+    0.7422854900360107,
+    0.38596296310424805,
+    1.0421044826507568,
+    0.660768985748291,
+    0.5549542903900146,
+    0.5253410339355469
   ],
   "daily_logs": {}
 }

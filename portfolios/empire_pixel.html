@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUILDING IA — Empire Pixel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        canvas { display: block; }
+
+        .hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            font-size: 12px;
+        }
+        .hud h1 {
+            font-size: 18px;
+            color: #7b2ff7;
+            letter-spacing: 3px;
+        }
+        .hud .stats { color: #666; margin-top: 5px; }
+        .hud .stats span { color: #00d4ff; }
+
+        .info-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(18, 18, 26, 0.95);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 15px;
+            min-width: 250px;
+            z-index: 10;
+            display: none;
+        }
+        .info-panel.active { display: block; }
+        .info-panel .agent-name { color: #7b2ff7; font-size: 16px; font-weight: bold; }
+        .info-panel .agent-pole { color: #666; font-size: 11px; }
+        .info-panel .agent-role { color: #aaa; margin-top: 5px; font-size: 12px; }
+        .info-panel .agent-status { color: #22c55e; font-size: 11px; margin-top: 5px; }
+
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 10;
+            font-size: 11px;
+            color: #666;
+        }
+        .legend div { margin: 3px 0; }
+        .legend .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+        .legend .dot.r { background: #00d4ff; }
+        .legend .dot.f { background: #7b2ff7; }
+        .legend .dot.d { background: #ff6b35; }
+        .legend .dot.o { background: #ffd700; }
+    </style>
+</head>
+<body>
+
+<div class="hud">
+    <h1>BUILDING IA</h1>
+    <div class="stats">
+        Agents: <span>25</span> | Pôles: <span>3</span> | Status: <span id="status">NOMINAL</span>
+    </div>
+</div>
+
+<div class="legend">
+    <div><span class="dot r"></span>PÔLE R — RECON</div>
+    <div><span class="dot f"></span>PÔLE F — FORGE</div>
+    <div><span class="dot d"></span>PÔLE D — DEPLOY</div>
+    <div><span class="dot o"></span>OMEGA-CORE</div>
+</div>
+
+<div class="info-panel" id="infoPanel">
+    <div class="agent-name" id="infoName">—</div>
+    <div class="agent-pole" id="infoPole">—</div>
+    <div class="agent-role" id="infoRole">—</div>
+    <div class="agent-status" id="infoStatus">● EN LIGNE</div>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const infoPanel = document.getElementById('infoPanel');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+
+// === AGENTS DATA ===
+const agents = [
+    // OMEGA-CORE (center)
+    { name: 'OMEGA', emoji: '🧠', pole: 'OMEGA-CORE', role: 'Vision 360° — Arbitrage inter-pôles', color: '#ffd700', size: 20, zone: 'center' },
+
+    // POLE R — RECON (left zone)
+    { name: 'MURPHY', emoji: '🏗️', pole: 'PÔLE R — Gouverneur', role: 'Structure, priorisation', color: '#00d4ff', size: 14, zone: 'left' },
+    { name: 'ORACLE', emoji: '🔮', pole: 'PÔLE R — Gouverneur', role: 'Prédiction, timing', color: '#00d4ff', size: 14, zone: 'left' },
+    { name: 'MAYA', emoji: '🌿', pole: 'PÔLE R', role: 'Scanner niches & marchés', color: '#00d4ff', size: 10, zone: 'left' },
+    { name: 'GHOST', emoji: '👻', pole: 'PÔLE R', role: 'Veille concurrentielle', color: '#00d4ff', size: 10, zone: 'left' },
+    { name: 'NASH', emoji: '📊', pole: 'PÔLE R', role: 'Data & pricing', color: '#00d4ff', size: 10, zone: 'left' },
+    { name: 'CYPHER', emoji: '🔢', pole: 'PÔLE R', role: 'KPIs & benchmarks', color: '#00d4ff', size: 10, zone: 'left' },
+    { name: 'RICK', emoji: '🧪', pole: 'PÔLE R', role: 'Disruption, hacks système', color: '#00d4ff', size: 10, zone: 'left' },
+
+    // POLE F — FORGE (center zone)
+    { name: 'NIKOLA', emoji: '⚡', pole: 'PÔLE F — Gouverneur', role: 'Architecture technique', color: '#7b2ff7', size: 14, zone: 'mid' },
+    { name: 'PHILOMÈNE', emoji: '✒️', pole: 'PÔLE F — Gouverneur', role: 'Qualité rédactionnelle', color: '#7b2ff7', size: 14, zone: 'mid' },
+    { name: 'FORGE', emoji: '🔥', pole: 'PÔLE F', role: 'Exécution brute', color: '#7b2ff7', size: 10, zone: 'mid' },
+    { name: 'BASQUIAT', emoji: '🎨', pole: 'PÔLE F', role: 'Créatif, visuels', color: '#7b2ff7', size: 10, zone: 'mid' },
+    { name: 'ZARA', emoji: '📱', pole: 'PÔLE F', role: 'Contenu social', color: '#7b2ff7', size: 10, zone: 'mid' },
+    { name: 'MURRAY', emoji: '📰', pole: 'PÔLE F', role: 'Long-form, newsletters', color: '#7b2ff7', size: 10, zone: 'mid' },
+    { name: 'LEON', emoji: '🎬', pole: 'PÔLE F', role: 'Scripts vidéo', color: '#7b2ff7', size: 10, zone: 'mid' },
+    { name: 'BALOO', emoji: '🐻', pole: 'PÔLE F', role: 'Vulgarisation', color: '#7b2ff7', size: 10, zone: 'mid' },
+
+    // POLE D — DEPLOY (right zone)
+    { name: 'BAGHEERA', emoji: '🐆', pole: 'PÔLE D — Gouverneur', role: 'Orchestration globale', color: '#ff6b35', size: 14, zone: 'right' },
+    { name: 'SPARTAN', emoji: '⚔️', pole: 'PÔLE D — Gouverneur', role: 'Discipline, cadence', color: '#ff6b35', size: 14, zone: 'right' },
+    { name: 'BELFORT', emoji: '💰', pole: 'PÔLE D', role: 'Vente, closing', color: '#ff6b35', size: 10, zone: 'right' },
+    { name: 'STANLEY', emoji: '📈', pole: 'PÔLE D', role: 'Growth, deals', color: '#ff6b35', size: 10, zone: 'right' },
+    { name: 'SLY', emoji: '🦊', pole: 'PÔLE D', role: 'Acquisition low-cost', color: '#ff6b35', size: 10, zone: 'right' },
+    { name: 'VITO', emoji: '🤝', pole: 'PÔLE D', role: 'Relations long terme', color: '#ff6b35', size: 10, zone: 'right' },
+    { name: 'BENTLEY', emoji: '👔', pole: 'PÔLE D', role: 'Positionnement premium', color: '#ff6b35', size: 10, zone: 'right' },
+    { name: 'GRIMALDI', emoji: '💎', pole: 'PÔLE D', role: 'Audit coûts, finances', color: '#ff6b35', size: 10, zone: 'right' },
+    { name: 'X-O1', emoji: '🔧', pole: 'PÔLE D', role: 'Stabilité système', color: '#ff6b35', size: 10, zone: 'right' },
+    { name: 'ZEN', emoji: '🧘', pole: 'PÔLE D', role: 'Contrôle qualité', color: '#ff6b35', size: 10, zone: 'right' },
+];
+
+// === PARTICLE SYSTEM ===
+const particles = [];
+
+// Assign positions and movement
+agents.forEach((agent, i) => {
+    const w = canvas.width;
+    const h = canvas.height;
+    let baseX, baseY;
+
+    if (agent.zone === 'center') {
+        baseX = w / 2;
+        baseY = h / 2 - 50;
+    } else if (agent.zone === 'left') {
+        baseX = w * 0.2 + Math.random() * w * 0.15;
+        baseY = h * 0.25 + Math.random() * h * 0.5;
+    } else if (agent.zone === 'mid') {
+        baseX = w * 0.4 + Math.random() * w * 0.2;
+        baseY = h * 0.25 + Math.random() * h * 0.5;
+    } else {
+        baseX = w * 0.65 + Math.random() * w * 0.15;
+        baseY = h * 0.25 + Math.random() * h * 0.5;
+    }
+
+    agent.x = baseX;
+    agent.y = baseY;
+    agent.baseX = baseX;
+    agent.baseY = baseY;
+    agent.vx = (Math.random() - 0.5) * 0.5;
+    agent.vy = (Math.random() - 0.5) * 0.5;
+    agent.phase = Math.random() * Math.PI * 2;
+    agent.amplitude = 15 + Math.random() * 25;
+    agent.speed = 0.005 + Math.random() * 0.01;
+    agent.pulsePhase = Math.random() * Math.PI * 2;
+});
+
+// === DATA FLOW PARTICLES ===
+const dataParticles = [];
+
+function spawnDataParticle() {
+    const fromZone = ['left', 'mid', 'right'][Math.floor(Math.random() * 3)];
+    const toZone = fromZone === 'left' ? 'mid' : fromZone === 'mid' ? 'right' : 'left';
+
+    const from = agents.filter(a => a.zone === fromZone);
+    const to = agents.filter(a => a.zone === toZone);
+
+    if (from.length && to.length) {
+        const src = from[Math.floor(Math.random() * from.length)];
+        const dst = to[Math.floor(Math.random() * to.length)];
+
+        dataParticles.push({
+            x: src.x, y: src.y,
+            tx: dst.x, ty: dst.y,
+            progress: 0,
+            speed: 0.01 + Math.random() * 0.02,
+            color: src.color,
+            size: 2 + Math.random() * 2,
+        });
+    }
+}
+
+// === RENDER ===
+let time = 0;
+let hoveredAgent = null;
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    time++;
+
+    // Background grid
+    ctx.strokeStyle = 'rgba(123, 47, 247, 0.03)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < canvas.width; x += 40) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+    }
+    for (let y = 0; y < canvas.height; y += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+    }
+
+    // Pole zone labels
+    ctx.font = '11px Courier New';
+    ctx.fillStyle = 'rgba(0, 212, 255, 0.3)';
+    ctx.fillText('── PÔLE R : RECON ──', canvas.width * 0.15, 60);
+    ctx.fillStyle = 'rgba(123, 47, 247, 0.3)';
+    ctx.fillText('── PÔLE F : FORGE ──', canvas.width * 0.42, 60);
+    ctx.fillStyle = 'rgba(255, 107, 53, 0.3)';
+    ctx.fillText('── PÔLE D : DEPLOY ──', canvas.width * 0.68, 60);
+
+    // Pole zone dividers
+    ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+    ctx.setLineDash([5, 10]);
+    ctx.beginPath();
+    ctx.moveTo(canvas.width * 0.35, 80);
+    ctx.lineTo(canvas.width * 0.35, canvas.height - 40);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(canvas.width * 0.65, 80);
+    ctx.lineTo(canvas.width * 0.65, canvas.height - 40);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Connections between agents in same pole
+    agents.forEach((a, i) => {
+        agents.forEach((b, j) => {
+            if (i >= j) return;
+            if (a.zone !== b.zone) return;
+            const dist = Math.hypot(a.x - b.x, a.y - b.y);
+            if (dist < 200) {
+                const alpha = Math.max(0, 0.1 - dist / 2000);
+                ctx.strokeStyle = a.color.replace(')', `, ${alpha})`).replace('rgb', 'rgba');
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(a.x, a.y);
+                ctx.lineTo(b.x, b.y);
+                ctx.stroke();
+            }
+        });
+    });
+
+    // Data flow particles
+    if (Math.random() < 0.03) spawnDataParticle();
+
+    for (let i = dataParticles.length - 1; i >= 0; i--) {
+        const p = dataParticles[i];
+        p.progress += p.speed;
+
+        if (p.progress >= 1) {
+            dataParticles.splice(i, 1);
+            continue;
+        }
+
+        const px = p.x + (p.tx - p.x) * p.progress;
+        const py = p.y + (p.ty - p.y) * p.progress;
+
+        ctx.beginPath();
+        ctx.arc(px, py, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = 1 - p.progress;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        // Trail
+        ctx.beginPath();
+        ctx.arc(px, py, p.size * 3, 0, Math.PI * 2);
+        ctx.fillStyle = p.color.replace(')', ', 0.1)').replace('rgb', 'rgba');
+        ctx.fill();
+    }
+
+    // Agents
+    agents.forEach(agent => {
+        // Floating movement
+        agent.phase += agent.speed;
+        agent.x = agent.baseX + Math.sin(agent.phase) * agent.amplitude;
+        agent.y = agent.baseY + Math.cos(agent.phase * 0.7) * agent.amplitude * 0.6;
+
+        // Pulse
+        agent.pulsePhase += 0.02;
+        const pulse = 1 + Math.sin(agent.pulsePhase) * 0.15;
+        const size = agent.size * pulse;
+
+        // Glow
+        const gradient = ctx.createRadialGradient(agent.x, agent.y, 0, agent.x, agent.y, size * 3);
+        gradient.addColorStop(0, agent.color + '40');
+        gradient.addColorStop(1, 'transparent');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(agent.x, agent.y, size * 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Core circle
+        ctx.beginPath();
+        ctx.arc(agent.x, agent.y, size, 0, Math.PI * 2);
+        ctx.fillStyle = agent.color;
+        ctx.globalAlpha = 0.8;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        // Emoji
+        ctx.font = `${size * 1.2}px serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(agent.emoji, agent.x, agent.y);
+
+        // Name
+        ctx.font = '9px Courier New';
+        ctx.fillStyle = '#888';
+        ctx.fillText(agent.name, agent.x, agent.y + size + 12);
+
+        // Hover highlight
+        if (hoveredAgent === agent) {
+            ctx.strokeStyle = agent.color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(agent.x, agent.y, size + 5, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+    });
+
+    // Boucle flow indicator at bottom
+    const bx = canvas.width / 2;
+    const by = canvas.height - 30;
+    ctx.font = '10px Courier New';
+    ctx.fillStyle = '#333';
+    ctx.textAlign = 'center';
+    const flowText = 'R → F → D → R → F → D → ∞';
+    const offset = (time * 0.5) % (flowText.length * 7);
+    ctx.fillText(flowText, bx, by);
+
+    requestAnimationFrame(draw);
+}
+
+// === MOUSE INTERACTION ===
+canvas.addEventListener('mousemove', (e) => {
+    hoveredAgent = null;
+    agents.forEach(agent => {
+        const dist = Math.hypot(e.clientX - agent.x, e.clientY - agent.y);
+        if (dist < agent.size + 15) {
+            hoveredAgent = agent;
+            canvas.style.cursor = 'pointer';
+        }
+    });
+    if (!hoveredAgent) canvas.style.cursor = 'default';
+
+    if (hoveredAgent) {
+        document.getElementById('infoName').textContent = hoveredAgent.emoji + ' ' + hoveredAgent.name;
+        document.getElementById('infoPole').textContent = hoveredAgent.pole;
+        document.getElementById('infoRole').textContent = hoveredAgent.role;
+        infoPanel.classList.add('active');
+    } else {
+        infoPanel.classList.remove('active');
+    }
+});
+
+canvas.addEventListener('click', (e) => {
+    if (hoveredAgent) {
+        // Flash effect
+        const agent = hoveredAgent;
+        const origSize = agent.size;
+        agent.size = origSize * 2;
+        setTimeout(() => { agent.size = origSize; }, 200);
+    }
+});
+
+draw();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE BUILDING — 25 AI Characters</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: #08080f;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .card {
+    width: 1200px;
+    background: linear-gradient(135deg, #0d0d1a 0%, #0a0a14 50%, #0d0d1a 100%);
+    border: 1px solid #2a2a4a;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Glow de fond */
+  .card::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(124,58,237,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 36px 48px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid #1e1e3a;
+  }
+
+  .header-left h1 {
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    color: #7c3aed;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .header-left h2 {
+    font-size: 32px;
+    font-weight: 800;
+    color: #f0f0ff;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+
+  .header-left h2 span {
+    color: #7c3aed;
+  }
+
+  .header-right {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-size: 28px;
+    font-weight: 800;
+    color: #f0f0ff;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1;
+  }
+
+  .stat-num span {
+    color: #7c3aed;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: #5050a0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 4px;
+  }
+
+  .stat-divider {
+    width: 1px;
+    height: 40px;
+    background: #2a2a4a;
+  }
+
+  /* GRID */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0;
+    padding: 0;
+  }
+
+  /* LEVEL HEADER */
+  .level-header {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 48px;
+    background: rgba(255,255,255,0.02);
+    border-top: 1px solid #1e1e3a;
+    border-bottom: 1px solid #1e1e3a;
+  }
+
+  .level-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .level-title {
+    font-size: 12px;
+    color: #4040a0;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* Couleurs par niveau */
+  .l1 .level-badge { background: rgba(100,200,150,0.12); color: #64c896; border: 1px solid rgba(100,200,150,0.2); }
+  .l2 .level-badge { background: rgba(80,160,240,0.12); color: #50a0f0; border: 1px solid rgba(80,160,240,0.2); }
+  .l3 .level-badge { background: rgba(240,180,50,0.12); color: #f0b432; border: 1px solid rgba(240,180,50,0.2); }
+  .l4 .level-badge { background: rgba(200,80,200,0.12); color: #c850c8; border: 1px solid rgba(200,80,200,0.2); }
+  .l5 .level-badge { background: rgba(240,100,80,0.12); color: #f06450; border: 1px solid rgba(240,100,80,0.2); }
+  .l6 .level-badge { background: rgba(124,58,237,0.2); color: #a78bfa; border: 1px solid rgba(124,58,237,0.3); }
+
+  /* AGENT CARD */
+  .agents-row {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    padding: 0 32px 0 32px;
+  }
+
+  .agent {
+    padding: 16px;
+    border-right: 1px solid #151528;
+    position: relative;
+  }
+
+  .agent:last-child { border-right: none; }
+
+  .agent-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #e8e8f8;
+    margin-bottom: 4px;
+    letter-spacing: 0.3px;
+  }
+
+  .agent-role {
+    font-size: 9px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .agent-skills {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .skill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .skill-label {
+    font-size: 9px;
+    color: #4040a0;
+    min-width: 52px;
+    font-weight: 500;
+  }
+
+  .skill-bar {
+    flex: 1;
+    height: 3px;
+    background: #1a1a30;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .skill-fill {
+    height: 100%;
+    border-radius: 2px;
+  }
+
+  /* Couleurs agents par niveau */
+  .l1 .agent-role { color: #64c896; }
+  .l1 .skill-fill { background: linear-gradient(90deg, #64c896, #40d080); }
+
+  .l2 .agent-role { color: #50a0f0; }
+  .l2 .skill-fill { background: linear-gradient(90deg, #50a0f0, #3080d0); }
+
+  .l3 .agent-role { color: #f0b432; }
+  .l3 .skill-fill { background: linear-gradient(90deg, #f0b432, #d09020); }
+
+  .l4 .agent-role { color: #c850c8; }
+  .l4 .skill-fill { background: linear-gradient(90deg, #c850c8, #a030a0); }
+
+  .l5 .agent-role { color: #f06450; }
+  .l5 .skill-fill { background: linear-gradient(90deg, #f06450, #d04030); }
+
+  .l6 .agent-role { color: #a78bfa; }
+  .l6 .skill-fill { background: linear-gradient(90deg, #a78bfa, #7c3aed); }
+
+  /* OMEGA special */
+  .omega-special {
+    background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(167,139,250,0.04));
+    border: 1px solid rgba(124,58,237,0.2) !important;
+    border-radius: 8px;
+  }
+
+  .omega-special .agent-name {
+    color: #a78bfa;
+    font-size: 17px;
+  }
+
+  /* FOOTER */
+  .footer {
+    border-top: 1px solid #1e1e3a;
+    padding: 16px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-left {
+    font-size: 11px;
+    color: #3030a0;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
+  }
+
+  .footer-left span { color: #7c3aed; }
+
+  .footer-tag {
+    font-size: 11px;
+    color: #3030a0;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 2px;
+  }
+
+  .spacer-row {
+    grid-column: 1 / -1;
+    height: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <h1>// THE BUILDING — AI SYSTEM</h1>
+      <h2>25 <span>Characters.</span> 6 Levels.<br>One Infrastructure.</h2>
+    </div>
+    <div class="header-right">
+      <div class="stat">
+        <div class="stat-num">25</div>
+        <div class="stat-label">Characters</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <div class="stat-num">20<span>k</span></div>
+        <div class="stat-label">Lines of code</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <div class="stat-num">800</div>
+        <div class="stat-label">Lines / agent</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <div class="stat-num">0</div>
+        <div class="stat-label">Days off</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- LEVEL 6 -->
+    <div class="level-header l6">
+      <span class="level-badge">LEVEL 06</span>
+      <span class="level-title">Strategy · Vision · Final Call</span>
+    </div>
+    <div class="agents-row l6">
+      <div class="agent" style="grid-column: span 2;">
+        <div class="agent-name">Cipher</div>
+        <div class="agent-role">Strategist</div>
+        <div class="agent-skills">
+          <div class="skill"><span class="skill-label">Strategy</span><div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div></div>
+          <div class="skill"><span class="skill-label">Arbitrage</span><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
+          <div class="skill"><span class="skill-label">Vision</span><div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div></div>
+        </div>
+      </div>
+      <div class="agent omega-special" style="grid-column: span 2;">
+        <div class="agent-name">Omega ★</div>
+        <div class="agent-role">The Fusion · All Levels</div>
+        <div class="agent-skills">
+          <div class="skill"><span class="skill-label">Polymorphe</span><div class="skill-bar"><div class="skill-fill" style="width:100%"></div></div></div>
+          <div class="skill"><span class="skill-label">Décision</span><div class="skill-bar"><div class="skill-fill" style="width:100%"></div></div></div>
+          <div class="skill"><span class="skill-label">Synthèse</span><div class="skill-bar"><div class="skill-fill" style="width:100%"></div></div></div>
+        </div>
+      </div>
+      <div class="agent" style="grid-column: span 2;">
+        <div class="agent-name">Axiom</div>
+        <div class="agent-role">Deal Maker</div>
+        <div class="agent-skills">
+          <div class="skill"><span class="skill-label">Deals</span><div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div></div>
+          <div class="skill"><span class="skill-label">Partners</span><div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div></div>
+          <div class="skill"><span class="skill-label">Long term</span><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEVEL 5 -->
+    <div class="level-header l5">
+      <span class="level-badge">LEVEL 05</span>
+      <span class="level-title">Growth · Sales · Disruption</span>
+    </div>
+    <div class="agents-row l5">
+      <div class="agent" style="grid-column: span 2;">
+        <div class="agent-name">Vex</div>
+        <div class="agent-role">Growth Hacker</div>
+        <div class="agent-skills">
+          <div class="skill"><span class="skill-label">Growth</span><div class="skill-bar"><div class="skill-fill" style="width:94%"></div></div></div>
+          <div class="skill"><span class="skill-label">Outreach</span><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
+          <div class="skill"><span class="skill-label">Acquisition</span><div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div></div>
+        </div>
+      </div>
+      <div class="agent" style="grid-column: span 2;">
+        <div class="agent-name">Apex</div>
+        <div class="agent-role">Closer</div>
+        <div class="agent-skills">
+          <div class="skill"><span class="skill-label">Closing</span><div class="skill-bar"><div class="skill-fill" style="width:96%"></div></div></div>
+          <div class="skill"><span class="skill-label">Pitching</span><div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div></div>
+          <div class="skill"><span class="skill-label">Revenue</span><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
+        </div>
+      </div>
+      <div class="agent" style="grid-column: span 2;">
+        <div class="agent-name">Rogue</div>
+        <div class="agent-role">Maverick</div>
+        <div class="agent-skills">
+          <div class="skill"><span class="skill-label">Disruption</span><div class="skill-bar"><div class="skill-fill" style="width:97%"></div></div></div>
+          <div class="skill"><span class="skill-label">Hacking</span><div class="skill-bar"><div class="skill-fill" style="width:93%"></div></div></div>
+          <div class="skill"><span class="skill-label">Angles</span><div class="skill-bar"><div class="skill-fill" style="width:91%"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEVEL 4 -->
+    <div class="level-header l4">
+      <span class="level-badge">LEVEL 04</span>
+      <span class="level-title">Copy · Creative · Content</span>
+    </div>
+    <div class="agents-row l4">
+      <div class="agent" style="grid-column: span 2;">
+        <div class="agent-name">Ink</div>
+        <div class="agent-role">Copywriter</div>
+        <div class="agent-skills">
+          <div class="skill"><span class="skill-label">Copywriting</span><div class="skill-bar"><div class="skill-fill" style="width:96%"></div></div></div>
+          <div class="skill"><span class="skill-label">Conversion</span><div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div></div>
+          <div class="skill"><span class="skill-label">Prompts</span><div class="skill-bar"><div class="skill-fill" style="width:94%"></div></div></div>
+        </div>
+      </div>
+      <div class="agent" style="grid-column: span 2;">
+        <div class="agent-name">Nova</div>
+        <div class="agent-role">Creative Director</div>
+        <div class="agent-skills">
+          <div class="skill"><span class="skill-label">Storytelling</span><div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div></div>
+          <div class="skill"><span class="skill-label">Branding</span><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
+          <div class="skill"><span class="skill-label">Visual</span><div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div></div>
+        </div>
+      </div>
+      <div class="agent" style="grid-column: span 2;">
+        <div class="agent-name">Blaze</div>
+        <div class="agent-role">Content Strategist</div>
+        <div class="agent-skills">
+          <div class="skill"><span class="skill-label">Viral hooks</span><div class="skill-bar"><div class="skill-fill" style="width:93%"></div></div></div>
+          <div class="skill"><span class="skill-label">Multi-platform</span><div class="skill-bar"><div class="skill-fill" style="width:91%"></div></div></div>
+          <div class="skill"><span class="skill-label">Algo</span><div class="skill-bar"><div class="skill-fill" style="width:89%"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEVEL 3 -->
+    <div class="level-header l3">
+      <span class="level-badge">LEVEL 03</span>
+      <span class="level-title">Pipelines · APIs · Execution</span>
+    </div>
+    <div class="agents-row l3">
+      <div class="agent" style="grid-column: span 2;">
+        <div class="agent-name">Hex</div>
+        <div class="agent-role">Architect</div>
+        <div class="agent-skills">
+          <div class="skill"><span class="skill-label">Pipelines</span><div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div></div>
+          <div class="skill"><span class="skill-label">Automation</span><div class="skill-bar"><div class="skill-fill" style="width:93%"></div></div></div>
+          <div class="skill"><span class="skill-label">Scalability</span><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
+        </div>
+      </div>
+      <div class="agent" style="grid-column: span 2;">
+        <div class="agent-name">Wyre</div>
+        <div class="agent-role">Data Engineer</div>
+        <div class="agent-skills">
+          <div class="skill"><span class="skill-label">APIs</span><div class="skill-bar"><div class="skill-fill" style="width:94%"></div></div></div>
+          <div class="skill"><span class="skill-label">KPIs</span><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
+          <div class="skill"><span class="skill-label">Performance</span><div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div></div>
+        </div>
+      </div>
+      <div class="agent" style="grid-column: span 2;">
+        <div class="agent-name">Bolt</div>
+        <div class="agent-role">Operator</div>
+        <div class="agent-skills">
+          <div class="skill"><span class="skill-label">Execution</span><div class="skill-bar"><div class="skill-fill" style="width:97%"></div></div></div>
+          <div class="skill"><span class="skill-label">Debug</span><div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div></div>
+          <div class="skill"><span class="skill-label">Deploy</span><div class="skill-bar"><div class="skill-fill" style="width:91%"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEVEL 2 -->
+    <div class="level-header l2">
+      <span class="level-badge">LEVEL 02</span>
+      <span class="level-title">Data · Metrics · Market Intelligence</span>
+    </div>
+    <div class="agents-row l2">
+      <div class="agent" style="grid-column: span 2;">
+        <div class="agent-name">Lyra</div>
+        <div class="agent-role">Market Scout</div>
+        <div class="agent-skills">
+          <div class="skill"><span class="skill-label">Niches</span><div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div></div>
+          <div class="skill"><span class="skill-label">Opportunities</span><div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div></div>
+          <div class="skill"><span class="skill-label">Positioning</span><div class="skill-bar"><div class="skill-fill" style="width:89%"></div></div></div>
+        </div>
+      </div>
+      <div class="agent" style="grid-column: span 2;">
+        <div class="agent-name">Echo</div>
+        <div class="agent-role">Analyst</div>
+        <div class="agent-skills">
+          <div class="skill"><span class="skill-label">Pricing</span><div class="skill-bar"><div class="skill-fill" style="width:93%"></div></div></div>
+          <div class="skill"><span class="skill-label">Prediction</span><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
+          <div class="skill"><span class="skill-label">Data</span><div class="skill-bar"><div class="skill-fill" style="width:91%"></div></div></div>
+        </div>
+      </div>
+      <div class="agent" style="grid-column: span 2;">
+        <div class="agent-name">Titan</div>
+        <div class="agent-role">Performance Coach</div>
+        <div class="agent-skills">
+          <div class="skill"><span class="skill-label">Cadence</span><div class="skill-bar"><div class="skill-fill" style="width:94%"></div></div></div>
+          <div class="skill"><span class="skill-label">Discipline</span><div class="skill-bar"><div class="skill-fill" style="width:96%"></div></div></div>
+          <div class="skill"><span class="skill-label">Systems</span><div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEVEL 1 -->
+    <div class="level-header l1">
+      <span class="level-badge">LEVEL 01</span>
+      <span class="level-title">Stability · Cost Control · Foundation</span>
+    </div>
+    <div class="agents-row l1">
+      <div class="agent" style="grid-column: span 3;">
+        <div class="agent-name">Zero</div>
+        <div class="agent-role">System Cleaner</div>
+        <div class="agent-skills">
+          <div class="skill"><span class="skill-label">Stability</span><div class="skill-bar"><div class="skill-fill" style="width:96%"></div></div></div>
+          <div class="skill"><span class="skill-label">Workspace</span><div class="skill-bar"><div class="skill-fill" style="width:92%"></div></div></div>
+          <div class="skill"><span class="skill-label">Maintenance</span><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
+        </div>
+      </div>
+      <div class="agent" style="grid-column: span 3;">
+        <div class="agent-name">Vault</div>
+        <div class="agent-role">Cost Auditor</div>
+        <div class="agent-skills">
+          <div class="skill"><span class="skill-label">Cost audit</span><div class="skill-bar"><div class="skill-fill" style="width:97%"></div></div></div>
+          <div class="skill"><span class="skill-label">Optimization</span><div class="skill-bar"><div class="skill-fill" style="width:93%"></div></div></div>
+          <div class="skill"><span class="skill-label">ROI tracking</span><div class="skill-bar"><div class="skill-fill" style="width:91%"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="spacer-row"></div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-left">// Built by <span>Augus</span> · The Building · 2026</div>
+    <div class="footer-tag">THEY DON'T SLEEP · THEY DON'T STOP · THEY DON'T QUIT</div>
+  </div>
+
+</div>
+
+</body>
+</html>

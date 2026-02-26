@@ -1,7 +1,37 @@
+# Secrets
 .env
+.env.local
+
+# Temp
 .tmp/
+
+# IDE
 .vscode/
 .claude/
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+*.egg
+
+# Node
 node_modules/
+
+# Logs & memory
+*.log
+memory/decision_log.archive.md
+
+# OS
+Thumbs.db
+.DS_Store
+
+# TITAN memory (runtime data)
+execution/titan/memory/*.json
+!execution/titan/memory/.gitkeep
