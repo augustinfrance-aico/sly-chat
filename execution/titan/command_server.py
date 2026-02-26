@@ -43,11 +43,15 @@ from pathlib import Path
 from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, parse_qs
 
-# Paths
-ROOT = Path(__file__).resolve().parent.parent.parent
-TITAN_DIR = ROOT / "execution" / "titan"
+# Paths — works both locally and in Docker container
+_file_dir = Path(__file__).resolve().parent
+ROOT = _file_dir.parent.parent  # local: WORKSPACE AICO
+TITAN_DIR = _file_dir  # execution/titan or /app/titan
 MEMORY_DIR = TITAN_DIR / "memory"
-PORTFOLIOS_DIR = ROOT / "portfolios"
+
+# Portfolios: check Docker path first (/app/portfolios), then local
+_docker_portfolios = Path("/app/portfolios")
+PORTFOLIOS_DIR = _docker_portfolios if _docker_portfolios.is_dir() else ROOT / "portfolios"
 DIRECTIVES_DIR = ROOT / "directives"
 PERSONNALITES_DIR = ROOT / "personnalites"
 EXTENSIONS_FILE = MEMORY_DIR / "extensions.json"
@@ -55,7 +59,7 @@ EXTENSIONS_FILE = MEMORY_DIR / "extensions.json"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [CMD-SRV] %(message)s")
 log = logging.getLogger("titan.command")
 
-PORT = 7777
+PORT = int(os.environ.get("COMMAND_PORT", os.environ.get("PORT", 7777)))
 MAX_MESSAGE_LENGTH = 32_000  # chars max pour /api/chat
 MAX_KEY_LENGTH = 256
 MAX_VALUE_LENGTH = 10_000

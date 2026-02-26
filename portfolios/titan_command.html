@@ -2581,7 +2581,9 @@ body {
 // DATA
 // ============================
 // Auto-detect host — fonctionne sur PC (localhost) ET téléphone (IP réseau)
-const API = `http://${window.location.hostname || 'localhost'}:7777/api`;
+const API = window.location.port === '' || window.location.port === '443' || window.location.port === '80'
+    ? `${window.location.origin}/api`
+    : `http://${window.location.hostname || 'localhost'}:${window.location.port || 7777}/api`;
 let serverOnline = false;
 let liveData = null;
 let firstLoad = true;

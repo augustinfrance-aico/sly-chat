@@ -19,6 +19,7 @@ import asyncio
 import logging
 import os
 import sys
+import threading
 from datetime import datetime
 
 from .telegram_bot import TitanTelegram
@@ -79,6 +80,15 @@ async def main():
         sys.exit(1)
 
     log.info(f"Démarrage de Titan — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
+    # Start command_server in background thread (serves dashboard HTML)
+    try:
+        from .command_server import run as run_command_server
+        cmd_thread = threading.Thread(target=run_command_server, daemon=True, name="command-server")
+        cmd_thread.start()
+        log.info("TITAN-COMMAND server started in background thread")
+    except Exception as e:
+        log.warning(f"Command server failed to start: {e} — dashboard will not be available")
 
     # Create instances
     bot = TitanTelegram()

@@ -11,4 +11,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copier le code titan comme package
 COPY execution/titan/ ./titan/
 
+# Copier les portfolios HTML (servis par command_server)
+COPY portfolios/ ./portfolios/
+
 CMD ["python", "-m", "titan"]
