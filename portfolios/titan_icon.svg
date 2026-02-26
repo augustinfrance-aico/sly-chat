@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#05070A"/>
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1F6FFF"/>
+      <stop offset="100%" stop-color="#7A3CFF"/>
+    </linearGradient>
+  </defs>
+  <!-- Outer ring -->
+  <circle cx="256" cy="256" r="180" fill="none" stroke="url(#g)" stroke-width="8" opacity="0.4"/>
+  <circle cx="256" cy="256" r="140" fill="none" stroke="#1F6FFF" stroke-width="3" opacity="0.2"/>
+  <!-- Core glow -->
+  <circle cx="256" cy="256" r="80" fill="url(#g)" opacity="0.15"/>
+  <circle cx="256" cy="256" r="50" fill="url(#g)" opacity="0.3"/>
+  <!-- T letter -->
+  <text x="256" y="290" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="200" fill="url(#g)">T</text>
+  <!-- Neural dots -->
+  <circle cx="120" cy="160" r="6" fill="#00E5FF" opacity="0.7"/>
+  <circle cx="392" cy="160" r="6" fill="#00E5FF" opacity="0.7"/>
+  <circle cx="120" cy="352" r="6" fill="#1EFF8E" opacity="0.7"/>
+  <circle cx="392" cy="352" r="6" fill="#7A3CFF" opacity="0.7"/>
+  <!-- Connection lines -->
+  <line x1="120" y1="160" x2="200" y2="200" stroke="#00E5FF" stroke-width="1.5" opacity="0.3"/>
+  <line x1="392" y1="160" x2="312" y2="200" stroke="#00E5FF" stroke-width="1.5" opacity="0.3"/>
+  <line x1="120" y1="352" x2="200" y2="312" stroke="#1EFF8E" stroke-width="1.5" opacity="0.3"/>
+  <line x1="392" y1="352" x2="312" y2="312" stroke="#7A3CFF" stroke-width="1.5" opacity="0.3"/>
+</svg>

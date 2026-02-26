@@ -1,0 +1,18 @@
+{
+  "name": "TITAN-COMMAND",
+  "short_name": "TITAN",
+  "description": "Centre de Commandement — 40 agents autonomes",
+  "start_url": "/titan_command.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#05070A",
+  "theme_color": "#1F6FFF",
+  "icons": [
+    {
+      "src": "/titan_icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

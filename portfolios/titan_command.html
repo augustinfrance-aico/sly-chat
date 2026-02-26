@@ -8,7 +8,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="TITAN-CMD">
 <meta name="theme-color" content="#05070A">
-<link rel="manifest" href="data:application/json,{%22name%22:%22TITAN-COMMAND%22,%22short_name%22:%22TITAN%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%2305070A%22,%22theme_color%22:%22%231F6FFF%22}">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="titan_icon.svg">
+<link rel="apple-touch-icon" href="titan_icon.svg">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap">
 <style>
 :root {
@@ -1140,6 +1142,12 @@ body {
     transform: scale(1.1);
 }
 
+/* === IFRAME VIEWS (Tower / RPG) === */
+.iframe-view { width: 100%; height: calc(100vh - 180px); }
+.iframe-wrap { position: relative; width: 100%; height: 100%; }
+.iframe-wrap iframe { width: 100%; height: 100%; border: none; border-radius: 8px; }
+.iframe-fallback { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; background: var(--bg2); border-radius: 8px; color: var(--text-dim); flex-direction: column; gap: 10px; }
+
 /* === RESPONSIVE === */
 @media (max-width: 1100px) {
     .main { grid-template-columns: 200px 1fr; }
@@ -1170,13 +1178,16 @@ body {
     .agent-row { padding: 10px 12px; }
     .dir-item { padding: 10px 12px; }
     .ext-card { padding: 14px; }
-    iframe { max-height: 70vh !important; }
+    .iframe-view { height: calc(100vh - 140px) !important; }
+    .iframe-wrap iframe { max-height: calc(100vh - 140px) !important; border-radius: 0 !important; }
     #chatMessages { max-height: 250px !important; }
     .quick-bar { display: block !important; }
     body { padding-bottom: 70px; }
     .hub-menu { max-width: 100%; padding: 0 12px; }
     .hub-menu-item { padding: 12px 14px; gap: 12px; }
     .hub-menu-icon { width: 40px; height: 40px; font-size: 22px; }
+    .hub-picks { display: none !important; }
+    .hub-header canvas { width: 120px; height: 120px; }
 }
 
 /* PWA standalone mode */
@@ -2067,7 +2078,7 @@ body {
     </div>
 
     <div class="hub-status">
-        <span class="dot on"></span> TITAN actif — 29 agents — Cout 0€
+        <span class="dot on"></span> TITAN actif — 40 agents — Cout 0€
     </div>
 </div>
 
@@ -2291,25 +2302,23 @@ body {
         </div>
 
         <!-- TOWER (embedded) -->
-        <div id="vTower" style="display:none;width:100%;height:calc(100vh - 280px)">
-            <div style="position:relative;width:100%;height:calc(100vh - 280px);">
-                <iframe src="moon_tower.html" style="width:100%;height:100%;border:none;border-radius:8px;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"></iframe>
-                <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;background:var(--bg2);border-radius:8px;color:var(--text-dim);flex-direction:column;gap:10px;">
+        <div id="vTower" class="iframe-view" style="display:none;">
+            <div class="iframe-wrap">
+                <iframe src="moon_tower.html" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"></iframe>
+                <div class="iframe-fallback">
                     <div style="font-size:40px;">🏰</div>
                     <div>Moon Tower non disponible</div>
-                    <div style="font-size:10px;">Fichier moon_tower.html introuvable</div>
                 </div>
             </div>
         </div>
 
         <!-- RPG (embedded) -->
-        <div id="vRpg" style="display:none;width:100%;height:calc(100vh - 280px)">
-            <div style="position:relative;width:100%;height:calc(100vh - 280px);">
-                <iframe src="tower_rpg.html" style="width:100%;height:100%;border:none;border-radius:8px;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"></iframe>
-                <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;background:var(--bg2);border-radius:8px;color:var(--text-dim);flex-direction:column;gap:10px;">
+        <div id="vRpg" class="iframe-view" style="display:none;">
+            <div class="iframe-wrap">
+                <iframe src="tower_rpg.html" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"></iframe>
+                <div class="iframe-fallback">
                     <div style="font-size:40px;">🎮</div>
                     <div>Tower RPG non disponible</div>
-                    <div style="font-size:10px;">Fichier tower_rpg.html introuvable</div>
                 </div>
             </div>
         </div>
@@ -3239,7 +3248,7 @@ function execCmd() {
     const tabs = document.querySelectorAll('.tabs .tab');
     const cmds = {
         help: () => addCon('sys', 'Cmds: status | recon/forge/deploy | agents/flux/system/chat/pokedex/tower/rpg | scan/anneal/brief/rapport/refresh/clear/ollama/hub | matrix/raccoon/stats'),
-        status: () => addCon('ok', `29 agents actifs. 3 poles. Cascade IA: ${serverOnline?'Serveur OK':'Demo mode'}. Cout: 0€.`),
+        status: () => addCon('ok', `40 agents actifs. 3 poles. Cascade IA: ${serverOnline?'Serveur OK':'Demo mode'}. Cout: 0€.`),
         recon: () => { selectPlanet('recon'); addCon('sys','RECON selectionnee. Murphy + Oracle en poste.'); },
         forge: () => { selectPlanet('forge'); addCon('sys','FORGE selectionnee. Nikola supervise la production.'); },
         deploy: () => { selectPlanet('deploy'); addCon('sys','DEPLOY selectionnee. Bagheera orchestre.'); },
@@ -4560,7 +4569,7 @@ function bootSequence() {
         { delay: 200, type: 'sys', text: 'Initialisation cascade IA...' },
         { delay: 600, type: 'ok', text: 'Groq (6 modeles) ✓' },
         { delay: 900, type: 'ok', text: 'Gemini fallback ✓' },
-        { delay: 1200, type: 'sys', text: 'Chargement agents (29)...' },
+        { delay: 1200, type: 'sys', text: 'Chargement agents (40)...' },
         { delay: 1800, type: 'ok', text: 'RECON (7) · FORGE (9) · DEPLOY (10) · OMEGA (3) ✓' },
         { delay: 2200, type: 'sys', text: 'Verification memoire...' },
         { delay: 2600, type: 'ok', text: 'Memoire persistante OK — facts charges.' },
@@ -5315,7 +5324,7 @@ async function init() {
         [200,  '#1F6FFF', '> Initialisation TITAN Neural Core...'],
         [500,  '#1EFF8E', '> Cascade IA: Groq 6-model stack \u2713'],
         [800,  '#1EFF8E', '> Gemini fallback pret \u2713'],
-        [1100, '#1F6FFF', '> Chargement 30 agents du Building...'],
+        [1100, '#1F6FFF', '> Chargement 40 agents du Building...'],
         [1600, '#1EFF8E', '> RECON (7) \u00B7 FORGE (9) \u00B7 DEPLOY (10) \u00B7 CORE (4) \u2713'],
         [2000, '#9BA7B4', '> Memoire neuronale: injection faits \u2713'],
         [2400, '#FF9A3C', '> Mode: AUTONOME. Cout 24h: 0\u20AC'],
@@ -5552,11 +5561,10 @@ function renderRdlab() {
 <div class="quick-bar" id="quickActions">
     <div class="quick-bar-inner">
         <button class="quick-btn" onclick="goHub()"><span class="qicon">&#x1F3E0;</span>Hub</button>
-        <button class="quick-btn" onclick="switchTab('synapse')"><span class="qicon">⚡</span>Home</button>
-        <button class="quick-btn" onclick="switchTab('chat')"><span class="qicon">&#x1F4AC;</span>Chat</button>
-        <button class="quick-btn" onclick="switchTab('pokedex')"><span class="qicon">&#x1F3AE;</span>Dex</button>
+        <button class="quick-btn" onclick="switchTab('synapse')"><span class="qicon">⚡</span>Board</button>
         <button class="quick-btn" onclick="switchTab('tower')"><span class="qicon">&#x1F3F0;</span>Tower</button>
         <button class="quick-btn" onclick="switchTab('rpg')"><span class="qicon">&#x1F579;&#xFE0F;</span>RPG</button>
+        <button class="quick-btn" onclick="switchTab('chat')"><span class="qicon">&#x1F4AC;</span>Chat</button>
     </div>
 </div>
 
