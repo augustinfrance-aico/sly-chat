@@ -1150,9 +1150,9 @@ body {
     #chatMessages { max-height: 250px !important; }
     .quick-bar { display: block !important; }
     body { padding-bottom: 70px; }
-    .hub-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; max-width: 340px; }
-    .hub-tile { padding: 22px 12px; }
-    .hub-title { font-size: 24px; }
+    .hub-menu { max-width: 100%; padding: 0 12px; }
+    .hub-menu-item { padding: 12px 14px; gap: 12px; }
+    .hub-menu-icon { width: 40px; height: 40px; font-size: 22px; }
 }
 
 /* PWA standalone mode */
@@ -1175,51 +1175,85 @@ body {
     transition: opacity 0.5s ease, visibility 0.5s ease;
 }
 .hub.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-.hub-header { text-align: center; margin-bottom: 50px; }
-.hub-title {
-    font-size: 32px;
-    font-weight: 800;
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    letter-spacing: 2px;
-}
+.hub-header { text-align: center; margin-bottom: 30px; }
 .hub-sub { font-size: 12px; color: var(--text-dim); letter-spacing: 4px; text-transform: uppercase; margin-top: 6px; }
 .hub-clock { font-size: 14px; color: var(--yellow); font-family: 'JetBrains Mono', monospace; margin-top: 12px; }
-.hub-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 170px);
-    gap: 20px;
-    max-width: 560px;
+.hub-menu {
+    max-width: 500px;
+    margin: 0 auto 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
-.hub-tile {
-    background: rgba(22,22,40,0.8);
+.hub-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: rgba(15,15,30,0.6);
     border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 32px 18px;
-    text-align: center;
+    border-radius: 14px;
     cursor: pointer;
     transition: all 0.3s ease;
-    backdrop-filter: blur(8px);
     opacity: 0;
-    animation: hubTileIn 0.5s ease forwards;
+    transform: translateX(-20px);
+    animation: menuSlideIn 0.4s ease forwards;
+    backdrop-filter: blur(8px);
 }
-.hub-tile:nth-child(1) { animation-delay: 0s; }
-.hub-tile:nth-child(2) { animation-delay: 0.08s; }
-.hub-tile:nth-child(3) { animation-delay: 0.16s; }
-.hub-tile:nth-child(4) { animation-delay: 0.24s; }
-.hub-tile:nth-child(5) { animation-delay: 0.32s; }
-.hub-tile:nth-child(6) { animation-delay: 0.4s; }
-@keyframes hubTileIn { from { opacity:0; transform:translateY(20px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
-.hub-tile:hover {
-    transform: translateY(-4px) scale(1.03);
-    border-color: var(--primary);
-    box-shadow: 0 8px 30px rgba(123,47,247,0.2);
+.hub-menu-item:nth-child(1) { animation-delay: 0.1s; }
+.hub-menu-item:nth-child(2) { animation-delay: 0.15s; }
+.hub-menu-item:nth-child(3) { animation-delay: 0.2s; }
+.hub-menu-item:nth-child(4) { animation-delay: 0.25s; }
+.hub-menu-item:nth-child(5) { animation-delay: 0.3s; }
+.hub-menu-item:nth-child(6) { animation-delay: 0.35s; }
+.hub-menu-item:nth-child(7) { animation-delay: 0.4s; }
+.hub-menu-item:hover {
+    border-color: var(--item-color);
+    background: rgba(15,15,30,0.9);
+    transform: translateX(4px);
+    box-shadow: 0 0 20px rgba(123,47,247,0.15), inset 0 0 30px rgba(123,47,247,0.05);
 }
-.hub-tile:active { transform: scale(0.97); }
-.hub-icon { font-size: 36px; margin-bottom: 10px; }
-.hub-label { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
-.hub-desc { font-size: 10px; color: var(--text-dim); }
+.hub-menu-item:active {
+    transform: scale(0.98);
+}
+.hub-menu-icon {
+    font-size: 28px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(123,47,247,0.1);
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+.hub-menu-info {
+    flex: 1;
+}
+.hub-menu-label {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.5px;
+}
+.hub-menu-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+}
+.hub-menu-arrow {
+    font-size: 22px;
+    color: var(--text-dim);
+    transition: all 0.3s;
+    font-weight: 300;
+}
+.hub-menu-item:hover .hub-menu-arrow {
+    color: var(--item-color, var(--primary));
+    transform: translateX(4px);
+}
+@keyframes menuSlideIn {
+    to { opacity: 1; transform: translateX(0); }
+}
 /* Daily Picks */
 .hub-picks {
     display: flex;
@@ -1286,9 +1320,9 @@ body {
     gap: 8px;
 }
 @media (max-width: 560px) {
-    .hub-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; max-width: 340px; }
-    .hub-tile { padding: 22px 12px; }
-    .hub-title { font-size: 24px; }
+    .hub-menu { max-width: 100%; padding: 0 12px; }
+    .hub-menu-item { padding: 12px 14px; gap: 12px; }
+    .hub-menu-icon { width: 40px; height: 40px; font-size: 22px; }
 }
 
 /* ============================
@@ -1426,25 +1460,7 @@ body {
    SYSTEME VIVANT — Animations
    ============================ */
 
-/* Hub scan beam — barre laser qui traverse les tiles */
-.hub-scan {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, transparent 0%, var(--secondary) 40%, var(--primary) 60%, transparent 100%);
-    opacity: 0;
-    pointer-events: none;
-    z-index: 10;
-    animation: hubScanBeam 6s ease-in-out infinite 2s;
-}
-@keyframes hubScanBeam {
-    0% { top: 0; opacity: 0; }
-    5% { opacity: 0.8; }
-    50% { top: 100%; opacity: 0.6; }
-    55% { opacity: 0; }
-    100% { opacity: 0; top: 100%; }
-}
+/* (hub-scan removed — cleaner menu look) */
 
 /* Heartbeat — battement cardiaque système */
 .heartbeat {
@@ -1566,39 +1582,7 @@ body {
     100% { box-shadow: inset 0 0 0 rgba(123,47,247,0); border-color: var(--border); }
 }
 
-/* Orbital ring on hub */
-.hub-orbital {
-    position: absolute;
-    width: 300px;
-    height: 300px;
-    border: 1px solid rgba(123,47,247,0.08);
-    border-radius: 50%;
-    animation: orbitalSpin 30s linear infinite;
-    pointer-events: none;
-}
-.hub-orbital:nth-child(2) {
-    width: 400px; height: 400px;
-    border-color: rgba(0,212,255,0.05);
-    animation-duration: 45s;
-    animation-direction: reverse;
-}
-.hub-orbital:nth-child(3) {
-    width: 500px; height: 500px;
-    border-color: rgba(0,255,136,0.04);
-    animation-duration: 60s;
-}
-.hub-orbital-dot {
-    position: absolute;
-    width: 4px; height: 4px;
-    border-radius: 50%;
-    background: var(--primary);
-    box-shadow: 0 0 6px var(--primary);
-    top: -2px; left: 50%;
-}
-@keyframes orbitalSpin {
-    from { transform: translate(-50%, -50%) rotate(0deg); }
-    to { transform: translate(-50%, -50%) rotate(360deg); }
-}
+/* (orbital rings removed — cleaner hub look) */
 
 /* Processing dots (like self-annealing loading) */
 .processing {
@@ -1634,9 +1618,290 @@ body {
     50% { background-position: -200% 0; opacity: 0.7; }
     100% { background-position: 200% 0; opacity: 0.3; }
 }
+
+/* Music control button */
+.music-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 10px;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+    font-family: inherit;
+}
+.music-btn:hover { border-color: var(--primary); color: var(--text); }
+.music-btn.playing { color: var(--green); border-color: var(--green); }
+
+/* Chat message morph animation */
+.chat-msg {
+    animation: msgMorph 0.4s ease;
+}
+@keyframes msgMorph {
+    0% { opacity: 0; transform: translateY(8px) scale(0.97); filter: blur(2px); }
+    60% { opacity: 1; filter: blur(0); }
+    100% { transform: translateY(0) scale(1); }
+}
+
+/* Neural wave thinking indicator */
+.thinking-wave {
+    display: flex;
+    gap: 3px;
+    padding: 12px 16px;
+    align-items: center;
+}
+.thinking-wave .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--primary);
+    animation: neuralWave 1.2s ease-in-out infinite;
+}
+.thinking-wave .dot:nth-child(2) { animation-delay: 0.15s; }
+.thinking-wave .dot:nth-child(3) { animation-delay: 0.3s; }
+.thinking-wave .dot:nth-child(4) { animation-delay: 0.45s; }
+.thinking-wave .dot:nth-child(5) { animation-delay: 0.6s; }
+@keyframes neuralWave {
+    0%, 100% { transform: scaleY(1); opacity: 0.4; }
+    50% { transform: scaleY(2.5); opacity: 1; }
+}
+/* === TAMAGOTCHI === */
+.tama-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+}
+.tama-pets-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding: 4px 0;
+}
+.tama-pet-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--bg3);
+    border: 2px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: all 0.3s;
+    flex-shrink: 0;
+    position: relative;
+}
+.tama-pet-thumb.active {
+    border-color: var(--primary);
+    box-shadow: 0 0 12px var(--glow-p);
+    background: rgba(123,47,247,0.15);
+}
+.tama-pet-thumb:hover { border-color: var(--secondary); transform: scale(1.1); }
+.tama-pet-thumb .tama-thumb-level {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    background: var(--primary);
+    color: white;
+    font-size: 8px;
+    font-weight: 800;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.tama-stage {
+    text-align: center;
+    padding: 30px;
+    background: radial-gradient(circle at 50% 60%, rgba(123,47,247,0.08), transparent 70%);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+    position: relative;
+}
+.tama-mood {
+    font-size: 32px;
+    margin-top: 10px;
+}
+.tama-name {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    margin-top: 8px;
+    letter-spacing: 1px;
+}
+.tama-level {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+.tama-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.tama-stat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.tama-stat-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    width: 100px;
+    flex-shrink: 0;
+}
+.tama-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--bg3);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.tama-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+.tama-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 24px;
+}
+.tama-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 8px;
+    color: var(--text);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+.tama-btn:hover {
+    border-color: var(--primary);
+    background: rgba(123,47,247,0.1);
+    transform: translateY(-2px);
+}
+.tama-btn:active {
+    transform: scale(0.95);
+}
+.tama-adopt {
+    margin-bottom: 24px;
+}
+.tama-adopt-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+.tama-adopt-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+.tama-adopt-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+}
+.tama-adopt-card:hover {
+    border-color: var(--green);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,255,136,0.1);
+}
+.tama-adopt-card .tama-adopt-icon { font-size: 28px; margin-bottom: 4px; }
+.tama-adopt-card .tama-adopt-name { font-size: 10px; color: var(--text-dim); }
+.tama-adopt-card.owned { opacity: 0.4; pointer-events: none; }
+.tama-adopt-card.owned::after { content: '\2713'; position: absolute; top: 4px; right: 6px; color: var(--green); font-size: 10px; }
+.tama-xp-bar {
+    height: 12px;
+    background: var(--bg3);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 12px;
+}
+.tama-xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    border-radius: 6px;
+    transition: width 0.5s ease;
+}
+.tama-xp-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 8px;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+.tama-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.tama-badge {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 10px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.tama-badge.earned {
+    border-color: var(--yellow);
+    color: var(--yellow);
+}
+@keyframes tamaBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+@keyframes tamaWiggle {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+}
+@keyframes tamaHearts {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-30px) scale(1.5); }
+}
+.tama-float-emoji {
+    position: absolute;
+    font-size: 24px;
+    pointer-events: none;
+    animation: tamaHearts 1s ease forwards;
+}
 </style>
 </head>
 <body>
+
+<audio id="ambientMusic" loop preload="auto" crossorigin="anonymous">
+    <source src="https://cdn.pixabay.com/audio/2024/11/02/audio_1f02a23e0c.mp3" type="audio/mpeg">
+</audio>
 
 <!-- DNA HELIX (persistent subtle background) -->
 <div class="dna-container" id="dnaHelix"></div>
@@ -1681,52 +1946,74 @@ body {
     <div class="status-bar">
         <div class="status-item"><span class="dot on" id="dotServer"></span> <span id="serverStatus">Connecte</span></div>
         <div class="status-item clock" id="clock">00:00:00</div>
+        <button class="music-btn" id="musicBtn" onclick="toggleMusic()" title="Musique ambient">🎵</button>
         <button onclick="goHub()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:4px 12px;color:var(--text);cursor:pointer;font-size:11px;font-family:inherit;transition:all 0.2s;" onmouseenter="this.style.borderColor='var(--primary)'" onmouseleave="this.style.borderColor='var(--border)'">&#x1F3E0; Hub</button>
     </div>
 </div>
 
 <!-- HUB — Post-splash navigation -->
 <div class="hub" id="hub" style="display:none;">
-    <!-- Orbital rings background -->
-    <div class="hub-orbital" style="top:50%;left:50%;"><div class="hub-orbital-dot"></div></div>
-    <div class="hub-orbital" style="top:50%;left:50%;"><div class="hub-orbital-dot" style="background:var(--secondary);box-shadow:0 0 6px var(--secondary);"></div></div>
-    <div class="hub-orbital" style="top:50%;left:50%;"><div class="hub-orbital-dot" style="background:var(--green);box-shadow:0 0 6px var(--green);"></div></div>
     <div class="hub-header">
-        <div class="hub-title">TITAN-COMMAND</div>
-        <div class="hub-sub">Centre de Commandement</div>
+        <canvas id="titanSphere" width="120" height="120" style="margin-bottom:10px;cursor:pointer;" onclick="sphereBurst()"></canvas>
+        <div class="hub-sub" style="font-size:10px;letter-spacing:4px;opacity:0.6;">TITAN EST PRET</div>
         <div class="hub-clock" id="hubClock">00:00</div>
     </div>
-    <div class="hub-grid" style="position:relative;">
-        <div class="hub-scan"></div>
-        <div class="hub-tile" onclick="enterSection('synapse')" data-color="var(--primary)">
-            <div class="hub-icon">⚡</div>
-            <div class="hub-label">Synapse</div>
-            <div class="hub-desc">Dashboard temps reel</div>
+    <div class="hub-menu" id="hubMenu">
+        <div class="hub-menu-item" onclick="enterSection('synapse')" style="--item-color: var(--primary)">
+            <div class="hub-menu-icon">⚡</div>
+            <div class="hub-menu-info">
+                <div class="hub-menu-label">Synapse</div>
+                <div class="hub-menu-desc">Dashboard temps reel</div>
+            </div>
+            <div class="hub-menu-arrow">›</div>
         </div>
-        <div class="hub-tile" onclick="enterSection('chat')" data-color="var(--secondary)">
-            <div class="hub-icon">💬</div>
-            <div class="hub-label">Chat IA</div>
-            <div class="hub-desc">Parler aux agents</div>
+        <div class="hub-menu-item" onclick="enterSection('chat')" style="--item-color: var(--secondary)">
+            <div class="hub-menu-icon">💬</div>
+            <div class="hub-menu-info">
+                <div class="hub-menu-label">Chat IA</div>
+                <div class="hub-menu-desc">Parler aux agents</div>
+            </div>
+            <div class="hub-menu-arrow">›</div>
         </div>
-        <div class="hub-tile" onclick="enterSection('tower')" data-color="var(--green)">
-            <div class="hub-icon">🏰</div>
-            <div class="hub-label">Moon Tower</div>
-            <div class="hub-desc">Visualisation empire</div>
+        <div class="hub-menu-item" onclick="enterSection('tower')" style="--item-color: var(--green)">
+            <div class="hub-menu-icon">🏰</div>
+            <div class="hub-menu-info">
+                <div class="hub-menu-label">Moon Tower</div>
+                <div class="hub-menu-desc">Visualisation empire</div>
+            </div>
+            <div class="hub-menu-arrow">›</div>
         </div>
-        <div class="hub-tile" onclick="enterSection('pokedex')" data-color="var(--accent)">
-            <div class="hub-icon">🎮</div>
-            <div class="hub-label">Pokedex</div>
-            <div class="hub-desc">Fiches agents</div>
+        <div class="hub-menu-item" onclick="enterSection('pokedex')" style="--item-color: var(--accent)">
+            <div class="hub-menu-icon">🎮</div>
+            <div class="hub-menu-info">
+                <div class="hub-menu-label">Pokedex</div>
+                <div class="hub-menu-desc">Fiches agents</div>
+            </div>
+            <div class="hub-menu-arrow">›</div>
         </div>
-        <div class="hub-tile" onclick="enterSection('rpg')" data-color="var(--yellow)">
-            <div class="hub-icon">🕹️</div>
-            <div class="hub-label">RPG</div>
-            <div class="hub-desc">Exploration tour</div>
+        <div class="hub-menu-item" onclick="enterSection('rpg')" style="--item-color: var(--yellow)">
+            <div class="hub-menu-icon">🕹️</div>
+            <div class="hub-menu-info">
+                <div class="hub-menu-label">RPG</div>
+                <div class="hub-menu-desc">Exploration tour</div>
+            </div>
+            <div class="hub-menu-arrow">›</div>
         </div>
-        <div class="hub-tile" onclick="enterSection('system')" data-color="var(--text-dim)">
-            <div class="hub-icon">⚙️</div>
-            <div class="hub-label">Systeme</div>
-            <div class="hub-desc">Console & config</div>
+        <div class="hub-menu-item" onclick="enterSection('system')" style="--item-color: var(--text-dim)">
+            <div class="hub-menu-icon">⚙️</div>
+            <div class="hub-menu-info">
+                <div class="hub-menu-label">Systeme</div>
+                <div class="hub-menu-desc">Console & config</div>
+            </div>
+            <div class="hub-menu-arrow">›</div>
+        </div>
+        <div class="hub-menu-item" onclick="enterSection('tamagotchi')" style="--item-color: var(--green)">
+            <div class="hub-menu-icon">🐾</div>
+            <div class="hub-menu-info">
+                <div class="hub-menu-label">Tamagotchi</div>
+                <div class="hub-menu-desc">Tes compagnons pixel art</div>
+            </div>
+            <div class="hub-menu-arrow">›</div>
         </div>
     </div>
     <!-- DAILY PICKS — Films + Videos IA -->
@@ -1825,6 +2112,7 @@ body {
                 <div class="tab" onclick="switchTab('rpg',this)" data-icon="🕹️"><span class="tab-label">RPG</span></div>
                 <div class="tab" onclick="switchTab('system',this)" data-icon="⚙️"><span class="tab-label">Systeme</span></div>
                 <div class="tab" onclick="switchTab('flux',this)" data-icon="🔄"><span class="tab-label">Flux</span></div>
+                <div class="tab" onclick="switchTab('tamagotchi',this)" data-icon="🐾"><span class="tab-label">Pets</span></div>
             </div>
         </div>
 
@@ -2064,6 +2352,71 @@ body {
             <div class="card w3">
                 <h4>Dernieres Conversations</h4>
                 <div id="convContent" style="font-size:11px;max-height:400px;overflow-y:auto"></div>
+            </div>
+        </div>
+        <!-- TAMAGOTCHI -->
+        <div id="vTamagotchi" style="display:none;width:100%">
+            <div class="tama-container">
+                <!-- Pet selector -->
+                <div class="tama-pets-bar" id="tamaPetsBar">
+                    <!-- Filled by JS -->
+                </div>
+
+                <!-- Main pet display -->
+                <div class="tama-stage" id="tamaStage">
+                    <canvas id="tamaCanvas" width="64" height="64" style="width:192px;height:192px;image-rendering:pixelated;"></canvas>
+                    <div class="tama-mood" id="tamaMood">😊</div>
+                    <div class="tama-name" id="tamaName">—</div>
+                    <div class="tama-level" id="tamaLevel">Niv. 1</div>
+                </div>
+
+                <!-- Stats bars -->
+                <div class="tama-stats" id="tamaStats">
+                    <div class="tama-stat">
+                        <span class="tama-stat-label">❤️ Faim</span>
+                        <div class="tama-bar"><div class="tama-bar-fill" id="tamaHunger" style="width:80%;background:var(--red);"></div></div>
+                    </div>
+                    <div class="tama-stat">
+                        <span class="tama-stat-label">😄 Bonheur</span>
+                        <div class="tama-bar"><div class="tama-bar-fill" id="tamaHappy" style="width:70%;background:var(--yellow);"></div></div>
+                    </div>
+                    <div class="tama-stat">
+                        <span class="tama-stat-label">⚡ Energie</span>
+                        <div class="tama-bar"><div class="tama-bar-fill" id="tamaEnergy" style="width:90%;background:var(--green);"></div></div>
+                    </div>
+                    <div class="tama-stat">
+                        <span class="tama-stat-label">🧼 Proprete</span>
+                        <div class="tama-bar"><div class="tama-bar-fill" id="tamaClean" style="width:60%;background:var(--secondary);"></div></div>
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="tama-actions">
+                    <button class="tama-btn" onclick="tamaAction('feed')">🍖 Nourrir</button>
+                    <button class="tama-btn" onclick="tamaAction('play')">🎾 Jouer</button>
+                    <button class="tama-btn" onclick="tamaAction('sleep')">💤 Dormir</button>
+                    <button class="tama-btn" onclick="tamaAction('clean')">🛁 Laver</button>
+                    <button class="tama-btn" onclick="tamaAction('pet')">🤗 Caresser</button>
+                    <button class="tama-btn" onclick="tamaAction('train')">🏋️ Entrainer</button>
+                </div>
+
+                <!-- Adopt new pet -->
+                <div class="tama-adopt">
+                    <div class="tama-adopt-title">Adopter un compagnon</div>
+                    <div class="tama-adopt-grid" id="tamaAdoptGrid">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <!-- Pet collection / achievements -->
+                <div class="tama-collection">
+                    <div class="tama-adopt-title">Collection & XP</div>
+                    <div class="tama-xp-bar">
+                        <div class="tama-xp-fill" id="tamaXpFill" style="width:0%"></div>
+                        <span class="tama-xp-text" id="tamaXpText">0 XP</span>
+                    </div>
+                    <div class="tama-badges" id="tamaBadges"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -2482,24 +2835,25 @@ function selectPlanet(pole) {
 function switchTab(view, el) {
     document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('on'));
     if (el) el.classList.add('on');
-    ['vSynapse','vFlux','vAgents','vSystem','vChat','vPokedex','vTower','vRpg'].forEach(id => {
+    ['vSynapse','vFlux','vAgents','vSystem','vChat','vPokedex','vTower','vRpg','vTamagotchi'].forEach(id => {
         const e = document.getElementById(id);
         if (e) e.style.display = 'none';
     });
-    const map = {synapse:'vSynapse',flux:'vFlux',agents:'vAgents',system:'vSystem',chat:'vChat',pokedex:'vPokedex',tower:'vTower',rpg:'vRpg'};
-    const displayMode = (view === 'tower' || view === 'rpg') ? 'block' : (view === 'chat' ? 'flex' : 'grid');
+    const map = {synapse:'vSynapse',flux:'vFlux',agents:'vAgents',system:'vSystem',chat:'vChat',pokedex:'vPokedex',tower:'vTower',rpg:'vRpg',tamagotchi:'vTamagotchi'};
+    const displayMode = (view === 'tower' || view === 'rpg' || view === 'tamagotchi') ? 'block' : (view === 'chat' ? 'flex' : 'grid');
     const targetEl = document.getElementById(map[view]);
     if (!targetEl) return;
     targetEl.style.display = displayMode;
     targetEl.style.animation = 'none';
     targetEl.offsetHeight;
     targetEl.style.animation = 'viewSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
-    const titles = {synapse:'⚡ Vue Synaptique',flux:'🔄 Flux & Timeline',agents:'👥 Agents du Building',system:'⚙️ Systeme',chat:'💬 Chat IA',pokedex:'🎮 Pokedex',tower:'🏰 Moon Tower',rpg:'🕹️ Tower RPG'};
+    const titles = {synapse:'⚡ Vue Synaptique',flux:'🔄 Flux & Timeline',agents:'👥 Agents du Building',system:'⚙️ Systeme',chat:'💬 Chat IA',pokedex:'🎮 Pokedex',tower:'🏰 Moon Tower',rpg:'🕹️ Tower RPG',tamagotchi:'🐾 Tamagotchi'};
     document.getElementById('viewTitle').textContent = titles[view] || view;
     if (view === 'agents') renderAgentsView();
     if (view === 'flux') { renderFluxTimeline(); renderTimeline(); }
     if (view === 'system') { renderExtensions(); loadDirectives(); }
     if (view === 'pokedex' && !pokedexData) loadPokedex();
+    if (view === 'tamagotchi') tamaRender();
 }
 
 function renderAgentsView() {
@@ -3824,8 +4178,20 @@ function enterSection(section) {
     document.querySelector('.main').style.display = 'grid';
     document.getElementById('dock').style.display = 'flex';
 
+    // Smooth page transition
+    const mainContent = document.querySelector('.center');
+    if (mainContent) {
+        mainContent.style.opacity = '0';
+        mainContent.style.transform = 'scale(0.98)';
+        setTimeout(() => {
+            mainContent.style.transition = 'all 0.3s ease';
+            mainContent.style.opacity = '1';
+            mainContent.style.transform = 'scale(1)';
+        }, 50);
+    }
+
     const tabMap = {
-        synapse: 0, agents: 1, chat: 2, pokedex: 3, tower: 4, rpg: 5, system: 6, flux: 7
+        synapse: 0, agents: 1, chat: 2, pokedex: 3, tower: 4, rpg: 5, system: 6, flux: 7, tamagotchi: 8
     };
     const tabs = document.querySelectorAll('.tabs .tab');
     const idx = tabMap[section] !== undefined ? tabMap[section] : 0;
@@ -3851,11 +4217,11 @@ function goHub() {
     const hub = document.getElementById('hub');
     hub.style.display = 'flex';
     hub.classList.remove('hidden');
-    // Re-trigger tile animations
-    document.querySelectorAll('.hub-tile').forEach((tile, i) => {
-        tile.style.animation = 'none';
-        tile.offsetHeight;
-        tile.style.animation = `hubTileIn 0.5s ease ${i * 0.08}s forwards`;
+    // Re-trigger menu item animations
+    document.querySelectorAll('.hub-menu-item').forEach((item, i) => {
+        item.style.animation = 'none';
+        item.offsetHeight;
+        item.style.animation = `menuSlideIn 0.4s ease ${0.1 + i * 0.05}s forwards`;
     });
 }
 
@@ -4052,11 +4418,564 @@ setInterval(() => {
 }, 1000);
 
 // ============================
+// AMBIENT MUSIC
+// ============================
+function toggleMusic() {
+    const audio = document.getElementById('ambientMusic');
+    const btn = document.getElementById('musicBtn');
+    if (audio.paused) {
+        audio.volume = 0.15;
+        audio.play().then(() => {
+            btn.classList.add('playing');
+            btn.textContent = '🎵';
+        }).catch(() => {});
+    } else {
+        audio.pause();
+        btn.classList.remove('playing');
+        btn.textContent = '🔇';
+    }
+}
+
+// Auto-start music after first user interaction
+document.addEventListener('click', function autoPlayMusic() {
+    const audio = document.getElementById('ambientMusic');
+    if (audio && audio.paused) {
+        audio.volume = 0.15;
+        audio.play().then(() => {
+            const btn = document.getElementById('musicBtn');
+            if (btn) btn.classList.add('playing');
+        }).catch(() => {});
+    }
+    document.removeEventListener('click', autoPlayMusic);
+}, { once: true });
+
+// ============================
+// TITAN SPHERE — Energy Core
+// ============================
+function initTitanSphere() {
+    const canvas = document.getElementById('titanSphere');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const cx = W/2, cy = H/2;
+    let t = 0;
+    let burstAlpha = 0;
+
+    function draw() {
+        ctx.clearRect(0, 0, W, H);
+        t += 0.02;
+
+        // Outer glow
+        const gradient = ctx.createRadialGradient(cx, cy, 10, cx, cy, 55);
+        gradient.addColorStop(0, `rgba(123,47,247,${0.3 + Math.sin(t) * 0.1})`);
+        gradient.addColorStop(0.5, `rgba(0,212,255,${0.15 + Math.sin(t*1.3) * 0.05})`);
+        gradient.addColorStop(1, 'transparent');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, W, H);
+
+        // Core sphere
+        const coreGrad = ctx.createRadialGradient(cx-5, cy-5, 2, cx, cy, 25 + Math.sin(t*2)*3);
+        coreGrad.addColorStop(0, '#FFFFFF');
+        coreGrad.addColorStop(0.3, '#7B2FF7');
+        coreGrad.addColorStop(0.7, '#00D4FF');
+        coreGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = coreGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 25 + Math.sin(t*2)*3, 0, Math.PI*2);
+        ctx.fill();
+
+        // Orbiting particles
+        for (let i = 0; i < 6; i++) {
+            const angle = t * (0.5 + i*0.1) + (i * Math.PI / 3);
+            const r = 32 + Math.sin(t*3 + i)*5;
+            const px = cx + Math.cos(angle) * r;
+            const py = cy + Math.sin(angle) * r;
+            ctx.fillStyle = i % 2 === 0 ? 'rgba(123,47,247,0.8)' : 'rgba(0,212,255,0.8)';
+            ctx.beginPath();
+            ctx.arc(px, py, 2, 0, Math.PI*2);
+            ctx.fill();
+        }
+
+        // Burst effect
+        if (burstAlpha > 0) {
+            ctx.globalAlpha = burstAlpha;
+            const burstGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 55);
+            burstGrad.addColorStop(0, '#FFFFFF');
+            burstGrad.addColorStop(0.5, '#7B2FF7');
+            burstGrad.addColorStop(1, 'transparent');
+            ctx.fillStyle = burstGrad;
+            ctx.fillRect(0, 0, W, H);
+            ctx.globalAlpha = 1;
+            burstAlpha -= 0.03;
+        }
+
+        requestAnimationFrame(draw);
+    }
+    draw();
+
+    window.sphereBurst = function() {
+        burstAlpha = 1;
+    };
+}
+
+// ============================
+// TAMAGOTCHI — Pet System
+// ============================
+const TAMA_PETS = {
+    sly: { name: 'Sly', icon: '\uD83E\uDD9D', type: 'raccoon', color: '#2563EB', desc: 'Malin et agile' },
+    bentley: { name: 'Bentley', icon: '\uD83D\uDC22', type: 'turtle', color: '#22C55E', desc: 'Genie technique' },
+    murray: { name: 'Murray', icon: '\uD83E\uDD9B', type: 'hippo', color: '#F472B6', desc: 'Force brute' },
+    chat_noir: { name: 'Shadow', icon: '\uD83D\uDC08\u200D\u2B1B', type: 'cat', color: '#6B7280', desc: 'Chat mysterieux' },
+    chat_roux: { name: 'Pixel', icon: '\uD83D\uDC31', type: 'cat', color: '#F59E0B', desc: 'Chat joueur' },
+    chien: { name: 'Rex', icon: '\uD83D\uDC15', type: 'dog', color: '#92400E', desc: 'Fidele compagnon' },
+    husky: { name: 'Ghost', icon: '\uD83D\uDC3A', type: 'dog', color: '#94A3B8', desc: 'Loup solitaire' },
+    shiba: { name: 'Doge', icon: '\uD83D\uDC15\u200D\uD83E\uDDBA', type: 'dog', color: '#FBBF24', desc: 'Much wow' },
+};
+
+const TAMA_MOODS = {
+    ecstatic: { emoji: '\uD83E\uDD29', min: 90 },
+    happy: { emoji: '\uD83D\uDE0A', min: 70 },
+    ok: { emoji: '\uD83D\uDE10', min: 40 },
+    sad: { emoji: '\uD83D\uDE22', min: 20 },
+    angry: { emoji: '\uD83D\uDE21', min: 0 },
+};
+
+const TAMA_BADGES = [
+    { id: 'first_pet', name: 'Premier Ami', icon: '\uD83E\uDD5A', desc: 'Adopter ton premier compagnon' },
+    { id: 'collector', name: 'Collectionneur', icon: '\uD83C\uDFC6', desc: 'Avoir 5+ compagnons' },
+    { id: 'max_love', name: 'Amour Total', icon: '\uD83D\uDC96', desc: 'Bonheur a 100%' },
+    { id: 'trainer', name: 'Dresseur', icon: '\uD83C\uDFCB\uFE0F', desc: 'Entrainer 50 fois' },
+    { id: 'feeder', name: 'Chef Cuisinier', icon: '\uD83D\uDC68\u200D\uD83C\uDF73', desc: 'Nourrir 100 fois' },
+    { id: 'level5', name: 'Expert', icon: '\u2B50', desc: 'Un compagnon niv. 5' },
+    { id: 'level10', name: 'Maitre', icon: '\uD83D\uDC51', desc: 'Un compagnon niv. 10' },
+    { id: 'gang', name: 'Le Gang Cooper', icon: '\uD83E\uDD9D', desc: 'Avoir Sly, Bentley ET Murray' },
+];
+
+let tamaState = JSON.parse(localStorage.getItem('titan_tama') || 'null') || {
+    pets: {},
+    activePet: null,
+    xp: 0,
+    totalActions: 0,
+    badges: [],
+};
+
+function tamaSave() {
+    localStorage.setItem('titan_tama', JSON.stringify(tamaState));
+}
+
+function tamaAdopt(petId) {
+    if (tamaState.pets[petId]) return;
+    const pet = TAMA_PETS[petId];
+    tamaState.pets[petId] = {
+        id: petId,
+        name: pet.name,
+        hunger: 80,
+        happiness: 70,
+        energy: 90,
+        clean: 60,
+        level: 1,
+        xpToNext: 100,
+        petXp: 0,
+        actions: 0,
+        adopted: Date.now(),
+    };
+    if (!tamaState.activePet) tamaState.activePet = petId;
+    tamaState.xp += 50;
+    tamaCheckBadge('first_pet');
+    if (Object.keys(tamaState.pets).length >= 5) tamaCheckBadge('collector');
+    const hasSly = !!tamaState.pets.sly;
+    const hasBentley = !!tamaState.pets.bentley;
+    const hasMurray = !!tamaState.pets.murray;
+    if (hasSly && hasBentley && hasMurray) tamaCheckBadge('gang');
+    tamaSave();
+    tamaRender();
+}
+
+function tamaSelect(petId) {
+    if (!tamaState.pets[petId]) return;
+    tamaState.activePet = petId;
+    tamaSave();
+    tamaRender();
+}
+
+function tamaAction(action) {
+    if (!tamaState.activePet) return;
+    const pet = tamaState.pets[tamaState.activePet];
+    if (!pet) return;
+
+    const canvas = document.getElementById('tamaCanvas');
+
+    switch(action) {
+        case 'feed':
+            pet.hunger = Math.min(100, pet.hunger + 20);
+            pet.energy = Math.min(100, pet.energy + 5);
+            tamaFloat('\uD83C\uDF56');
+            break;
+        case 'play':
+            pet.happiness = Math.min(100, pet.happiness + 15);
+            pet.energy = Math.max(0, pet.energy - 10);
+            pet.hunger = Math.max(0, pet.hunger - 5);
+            tamaFloat('\uD83C\uDFBE');
+            if (canvas) canvas.style.animation = 'tamaBounce 0.5s ease 3';
+            setTimeout(() => { if (canvas) canvas.style.animation = ''; }, 1500);
+            break;
+        case 'sleep':
+            pet.energy = Math.min(100, pet.energy + 30);
+            pet.hunger = Math.max(0, pet.hunger - 10);
+            tamaFloat('\uD83D\uDCA4');
+            break;
+        case 'clean':
+            pet.clean = Math.min(100, pet.clean + 25);
+            tamaFloat('\u2728');
+            break;
+        case 'pet':
+            pet.happiness = Math.min(100, pet.happiness + 10);
+            tamaFloat('\u2764\uFE0F');
+            if (canvas) canvas.style.animation = 'tamaWiggle 0.3s ease 3';
+            setTimeout(() => { if (canvas) canvas.style.animation = ''; }, 900);
+            break;
+        case 'train':
+            pet.petXp += 15;
+            pet.energy = Math.max(0, pet.energy - 15);
+            pet.hunger = Math.max(0, pet.hunger - 8);
+            tamaFloat('\uD83D\uDCAA');
+            break;
+    }
+
+    pet.actions++;
+    tamaState.totalActions++;
+    tamaState.xp += 10;
+
+    // Level up check
+    if (pet.petXp >= pet.xpToNext) {
+        pet.level++;
+        pet.petXp = 0;
+        pet.xpToNext = Math.floor(pet.xpToNext * 1.5);
+        tamaFloat('\u2B50 LEVEL UP!');
+        if (pet.level >= 5) tamaCheckBadge('level5');
+        if (pet.level >= 10) tamaCheckBadge('level10');
+    }
+
+    // Badge checks
+    if (pet.happiness >= 100) tamaCheckBadge('max_love');
+    if (tamaState.totalActions >= 50) tamaCheckBadge('trainer');
+    if (tamaState.totalActions >= 100) tamaCheckBadge('feeder');
+
+    tamaSave();
+    tamaRender();
+}
+
+function tamaFloat(emoji) {
+    const stage = document.getElementById('tamaStage');
+    if (!stage) return;
+    const el = document.createElement('div');
+    el.className = 'tama-float-emoji';
+    el.textContent = emoji;
+    el.style.left = (30 + Math.random() * 40) + '%';
+    el.style.top = '30%';
+    stage.appendChild(el);
+    setTimeout(() => el.remove(), 1000);
+}
+
+function tamaCheckBadge(id) {
+    if (!tamaState.badges.includes(id)) {
+        tamaState.badges.push(id);
+        tamaSave();
+    }
+}
+
+function tamaGetMood(pet) {
+    const avg = (pet.hunger + pet.happiness + pet.energy + pet.clean) / 4;
+    for (const [key, mood] of Object.entries(TAMA_MOODS)) {
+        if (avg >= mood.min) return mood.emoji;
+    }
+    return '\uD83D\uDE10';
+}
+
+function tamaDrawPet(petId) {
+    const canvas = document.getElementById('tamaCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, 64, 64);
+
+    const _=null;
+
+    // Each pet is drawn as 16x16 pixel art centered in the 64x64 canvas
+    const ox = 24, oy = 16;
+    let pixels = [];
+    let W = 16, H = 16;
+
+    if (petId === 'sly') {
+        const BL='#2563EB',DB='#1E40AF',GR='#9CA3AF',DG='#6B7280',LG='#D1D5DB';
+        const BK='#1F2937',MK='#111827',AM='#D4A017',YL='#EAB308',WH='#F3F4F6';
+        pixels = [
+            _,_,_,_,_,BL,BL,BL,BL,_,_,_,_,_,_,_,
+            _,_,_,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,_,
+            _,GR,_,DB,BL,BL,BL,BL,BL,DB,_,GR,_,_,_,_,
+            GR,DG,_,DB,DB,BL,BL,BL,DB,DB,_,DG,GR,_,_,_,
+            _,DG,DB,DB,DB,DB,DB,DB,DB,DB,DB,DG,_,_,_,_,
+            _,_,GR,GR,GR,GR,GR,GR,GR,GR,GR,_,_,_,_,_,
+            _,_,GR,BK,BK,GR,GR,GR,BK,BK,GR,_,_,_,_,_,
+            _,GR,BK,MK,BK,GR,GR,GR,BK,MK,BK,GR,_,_,_,_,
+            _,GR,BK,MK,AM,BK,GR,BK,MK,AM,BK,GR,_,_,_,_,
+            _,_,GR,BK,BK,GR,GR,GR,BK,BK,GR,_,_,_,_,_,
+            _,_,LG,LG,GR,GR,BK,GR,GR,LG,LG,_,_,_,_,_,
+            _,_,_,LG,WH,WH,WH,WH,WH,LG,_,_,_,_,_,_,
+            _,_,_,_,WH,GR,GR,GR,WH,_,_,_,_,_,_,_,
+            _,_,_,YL,YL,YL,YL,YL,YL,YL,_,_,_,_,_,_,
+            _,_,BL,BL,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,
+            _,_,BL,BL,_,_,_,_,_,BL,BL,_,_,_,_,_,
+        ];
+    } else if (petId === 'bentley') {
+        const GN='#22C55E',DGN='#15803D',LGN='#86EFAC',BK='#1F2937',WH='#F3F4F6',YL='#EAB308',RD='#EF4444',BR='#92400E';
+        pixels = [
+            _,_,_,_,YL,YL,_,_,YL,YL,_,_,_,_,_,_,
+            _,_,_,YL,BK,YL,YL,YL,BK,YL,_,_,_,_,_,_,
+            _,_,_,LGN,BK,LGN,LGN,LGN,BK,LGN,_,_,_,_,_,_,
+            _,_,LGN,LGN,LGN,LGN,LGN,LGN,LGN,LGN,_,_,_,_,_,_,
+            _,_,LGN,LGN,WH,WH,WH,LGN,LGN,LGN,_,_,_,_,_,_,
+            _,_,_,LGN,LGN,RD,LGN,LGN,LGN,_,_,_,_,_,_,_,
+            _,_,_,GN,GN,GN,GN,GN,GN,GN,_,_,_,_,_,_,
+            _,_,GN,DGN,GN,DGN,GN,DGN,GN,DGN,GN,_,_,_,_,_,
+            _,_,GN,GN,DGN,GN,DGN,GN,DGN,GN,GN,_,_,_,_,_,
+            _,_,GN,DGN,GN,DGN,GN,DGN,GN,DGN,GN,_,_,_,_,_,
+            _,_,_,GN,GN,GN,GN,GN,GN,GN,_,_,_,_,_,_,
+            _,_,_,BR,BR,BR,BR,BR,BR,BR,_,_,_,_,_,_,
+            _,_,_,LGN,LGN,_,_,_,LGN,LGN,_,_,_,_,_,_,
+            _,_,_,LGN,LGN,_,_,_,LGN,LGN,_,_,_,_,_,_,
+            _,_,LGN,LGN,_,_,_,_,_,LGN,LGN,_,_,_,_,_,
+            _,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,
+        ];
+    } else if (petId === 'murray') {
+        const PK='#F472B6',DP='#DB2777',WH='#F3F4F6',BK='#1F2937',BL='#2563EB',RD='#EF4444',YL='#EAB308';
+        pixels = [
+            _,_,_,_,PK,PK,PK,PK,PK,_,_,_,_,_,_,_,
+            _,_,_,PK,PK,PK,PK,PK,PK,PK,_,_,_,_,_,_,
+            _,_,PK,PK,BK,PK,PK,PK,BK,PK,PK,_,_,_,_,_,
+            _,_,PK,PK,PK,PK,PK,PK,PK,PK,PK,_,_,_,_,_,
+            _,_,PK,WH,WH,WH,WH,WH,PK,PK,PK,_,_,_,_,_,
+            _,_,_,PK,PK,PK,PK,PK,PK,PK,_,_,_,_,_,_,
+            _,_,_,RD,RD,RD,RD,RD,RD,RD,_,_,_,_,_,_,
+            _,_,BL,BL,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,
+            _,BL,BL,BL,BL,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,
+            _,BL,BL,BL,BL,YL,BL,BL,BL,BL,BL,BL,_,_,_,_,
+            _,BL,BL,BL,BL,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,
+            _,_,BL,BL,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,
+            _,_,_,DP,DP,DP,DP,DP,DP,DP,_,_,_,_,_,_,
+            _,_,_,PK,PK,PK,_,PK,PK,PK,_,_,_,_,_,_,
+            _,_,PK,PK,PK,_,_,_,PK,PK,PK,_,_,_,_,_,
+            _,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,
+        ];
+    } else if (petId === 'chat_noir') {
+        const GY='#6B7280',DK='#374151',BK='#1F2937',GN='#22C55E',PK='#F9A8D4',WH='#F3F4F6';
+        pixels = [
+            _,_,BK,_,_,_,_,_,_,_,BK,_,_,_,_,_,
+            _,_,BK,BK,_,_,_,_,_,BK,BK,_,_,_,_,_,
+            _,_,DK,BK,BK,BK,BK,BK,BK,BK,DK,_,_,_,_,_,
+            _,_,BK,BK,BK,BK,BK,BK,BK,BK,BK,_,_,_,_,_,
+            _,_,BK,GN,BK,BK,BK,BK,GN,BK,BK,_,_,_,_,_,
+            _,_,BK,BK,BK,BK,BK,BK,BK,BK,BK,_,_,_,_,_,
+            _,_,_,BK,BK,PK,BK,BK,BK,BK,_,_,_,_,_,_,
+            _,_,_,BK,BK,BK,BK,BK,BK,BK,_,_,_,_,_,_,
+            _,_,_,_,BK,BK,BK,BK,BK,_,_,_,_,_,_,_,
+            _,_,_,_,BK,BK,BK,BK,BK,_,_,_,_,_,_,_,
+            _,_,_,_,BK,BK,BK,BK,BK,_,_,_,_,_,_,_,
+            _,_,_,BK,BK,BK,BK,BK,BK,BK,_,_,_,_,_,_,
+            _,_,_,BK,_,_,_,_,_,BK,_,_,_,_,_,_,
+            _,_,_,BK,_,_,_,_,_,BK,_,_,_,_,_,_,
+            _,_,_,_,_,_,_,_,_,_,_,BK,BK,BK,_,_,
+            _,_,_,_,_,_,_,_,_,_,BK,BK,BK,_,_,_,
+        ];
+    } else if (petId === 'chat_roux') {
+        const OR='#F59E0B',DO='#D97706',WH='#F3F4F6',BK='#1F2937',GN='#22C55E',PK='#F9A8D4';
+        pixels = [
+            _,_,OR,_,_,_,_,_,_,_,OR,_,_,_,_,_,
+            _,_,OR,OR,_,_,_,_,_,OR,OR,_,_,_,_,_,
+            _,_,DO,OR,OR,OR,OR,OR,OR,OR,DO,_,_,_,_,_,
+            _,_,OR,OR,OR,OR,OR,OR,OR,OR,OR,_,_,_,_,_,
+            _,_,OR,GN,OR,OR,OR,OR,GN,OR,OR,_,_,_,_,_,
+            _,_,OR,OR,OR,OR,OR,OR,OR,OR,OR,_,_,_,_,_,
+            _,_,_,OR,OR,PK,OR,OR,OR,OR,_,_,_,_,_,_,
+            _,_,_,OR,OR,OR,OR,OR,OR,OR,_,_,_,_,_,_,
+            _,_,_,_,OR,OR,OR,OR,OR,_,_,_,_,_,_,_,
+            _,_,_,_,OR,OR,OR,OR,OR,_,_,_,_,_,_,_,
+            _,_,_,_,OR,DO,OR,DO,OR,_,_,_,_,_,_,_,
+            _,_,_,OR,OR,OR,OR,OR,OR,OR,_,_,_,_,_,_,
+            _,_,_,OR,_,_,_,_,_,OR,_,_,_,_,_,_,
+            _,_,_,OR,_,_,_,_,_,OR,_,_,_,_,_,_,
+            _,_,_,_,_,_,_,_,_,_,OR,OR,OR,_,_,_,
+            _,_,_,_,_,_,_,_,_,_,_,OR,_,_,_,_,
+        ];
+    } else if (petId === 'chien') {
+        const BR='#92400E',LB='#B45309',WH='#F3F4F6',BK='#1F2937',PK='#F9A8D4';
+        pixels = [
+            _,_,BR,BR,_,_,_,_,_,BR,BR,_,_,_,_,_,
+            _,_,BR,LB,BR,_,_,_,BR,LB,BR,_,_,_,_,_,
+            _,_,BR,LB,LB,BR,BR,BR,LB,LB,BR,_,_,_,_,_,
+            _,_,_,BR,LB,LB,LB,LB,LB,BR,_,_,_,_,_,_,
+            _,_,_,BR,BK,LB,LB,LB,BK,BR,_,_,_,_,_,_,
+            _,_,_,BR,LB,LB,LB,LB,LB,BR,_,_,_,_,_,_,
+            _,_,_,_,BR,LB,BK,LB,BR,_,_,_,_,_,_,_,
+            _,_,_,_,BR,WH,PK,WH,BR,_,_,_,_,_,_,_,
+            _,_,_,_,_,BR,BR,BR,_,_,_,_,_,_,_,_,
+            _,_,_,_,BR,BR,BR,BR,BR,_,_,_,_,_,_,_,
+            _,_,_,BR,BR,BR,BR,BR,BR,BR,_,_,_,_,_,_,
+            _,_,_,BR,BR,BR,BR,BR,BR,BR,_,_,_,_,_,_,
+            _,_,_,BR,_,_,_,_,_,BR,_,_,_,_,_,_,
+            _,_,_,BR,_,_,_,_,_,BR,_,_,_,_,_,_,
+            _,_,_,_,_,_,_,_,_,_,_,BR,BR,_,_,_,
+            _,_,_,_,_,_,_,_,_,_,_,_,BR,_,_,_,
+        ];
+    } else if (petId === 'husky') {
+        const GY='#94A3B8',DG='#64748B',WH='#F3F4F6',BK='#1F2937',BL='#3B82F6';
+        pixels = [
+            _,_,DG,DG,_,_,_,_,_,DG,DG,_,_,_,_,_,
+            _,_,GY,DG,_,_,_,_,_,DG,GY,_,_,_,_,_,
+            _,_,GY,GY,GY,GY,GY,GY,GY,GY,GY,_,_,_,_,_,
+            _,_,GY,GY,GY,GY,GY,GY,GY,GY,GY,_,_,_,_,_,
+            _,_,GY,BL,GY,WH,WH,WH,BL,GY,GY,_,_,_,_,_,
+            _,_,GY,GY,GY,WH,WH,WH,GY,GY,GY,_,_,_,_,_,
+            _,_,_,GY,WH,WH,BK,WH,WH,GY,_,_,_,_,_,_,
+            _,_,_,_,WH,WH,WH,WH,WH,_,_,_,_,_,_,_,
+            _,_,_,_,GY,GY,GY,GY,GY,_,_,_,_,_,_,_,
+            _,_,_,GY,GY,WH,WH,WH,GY,GY,_,_,_,_,_,_,
+            _,_,_,GY,GY,GY,GY,GY,GY,GY,_,_,_,_,_,_,
+            _,_,_,GY,GY,GY,GY,GY,GY,GY,_,_,_,_,_,_,
+            _,_,_,GY,_,_,_,_,_,GY,_,_,_,_,_,_,
+            _,_,_,GY,_,_,_,_,_,GY,_,_,_,_,_,_,
+            _,_,_,_,_,_,_,_,_,_,GY,GY,GY,_,_,_,
+            _,_,_,_,_,_,_,_,_,GY,GY,GY,_,_,_,_,
+        ];
+    } else if (petId === 'shiba') {
+        const YL='#FBBF24',DY='#D97706',WH='#F3F4F6',BK='#1F2937',PK='#F9A8D4';
+        pixels = [
+            _,_,YL,YL,_,_,_,_,_,YL,YL,_,_,_,_,_,
+            _,_,YL,DY,YL,_,_,_,YL,DY,YL,_,_,_,_,_,
+            _,_,YL,YL,YL,YL,YL,YL,YL,YL,YL,_,_,_,_,_,
+            _,_,_,YL,YL,WH,WH,WH,YL,YL,_,_,_,_,_,_,
+            _,_,_,YL,BK,WH,WH,WH,BK,YL,_,_,_,_,_,_,
+            _,_,_,YL,YL,WH,WH,WH,YL,YL,_,_,_,_,_,_,
+            _,_,_,_,YL,WH,BK,WH,YL,_,_,_,_,_,_,_,
+            _,_,_,_,WH,WH,PK,WH,WH,_,_,_,_,_,_,_,
+            _,_,_,_,_,YL,YL,YL,_,_,_,_,_,_,_,_,
+            _,_,_,_,YL,YL,WH,YL,YL,_,_,_,_,_,_,_,
+            _,_,_,YL,YL,WH,WH,WH,YL,YL,_,_,_,_,_,_,
+            _,_,_,YL,YL,YL,YL,YL,YL,YL,_,_,_,_,_,_,
+            _,_,_,YL,_,_,_,_,_,YL,_,_,_,_,_,_,
+            _,_,_,YL,_,_,_,_,_,YL,_,_,_,_,_,_,
+            _,_,_,_,_,_,_,_,_,_,YL,YL,DY,_,_,_,
+            _,_,_,_,_,_,_,_,_,_,_,YL,_,_,_,_,
+        ];
+    }
+
+    if (pixels.length > 0) {
+        for (let i = 0; i < pixels.length; i++) {
+            if (!pixels[i]) continue;
+            const x = (i % W) + ox;
+            const y = Math.floor(i / W) + oy;
+            ctx.fillStyle = pixels[i];
+            ctx.fillRect(x, y, 1, 1);
+        }
+    }
+}
+
+function tamaRender() {
+    // Render pet selector bar
+    const bar = document.getElementById('tamaPetsBar');
+    if (bar) {
+        bar.innerHTML = '';
+        Object.keys(tamaState.pets).forEach(pid => {
+            const pet = tamaState.pets[pid];
+            const info = TAMA_PETS[pid];
+            const thumb = document.createElement('div');
+            thumb.className = 'tama-pet-thumb' + (pid === tamaState.activePet ? ' active' : '');
+            thumb.textContent = info.icon;
+            thumb.onclick = () => tamaSelect(pid);
+            thumb.innerHTML += '<div class="tama-thumb-level">' + pet.level + '</div>';
+            bar.appendChild(thumb);
+        });
+    }
+
+    // Active pet display
+    const activePet = tamaState.activePet ? tamaState.pets[tamaState.activePet] : null;
+    const petInfo = tamaState.activePet ? TAMA_PETS[tamaState.activePet] : null;
+
+    if (activePet && petInfo) {
+        tamaDrawPet(tamaState.activePet);
+        document.getElementById('tamaMood').textContent = tamaGetMood(activePet);
+        document.getElementById('tamaName').textContent = activePet.name;
+        document.getElementById('tamaLevel').textContent = 'Niv. ' + activePet.level + ' \u2014 ' + petInfo.desc;
+
+        document.getElementById('tamaHunger').style.width = activePet.hunger + '%';
+        document.getElementById('tamaHappy').style.width = activePet.happiness + '%';
+        document.getElementById('tamaEnergy').style.width = activePet.energy + '%';
+        document.getElementById('tamaClean').style.width = activePet.clean + '%';
+    } else {
+        document.getElementById('tamaName').textContent = 'Adopte un compagnon !';
+        document.getElementById('tamaLevel').textContent = '';
+        document.getElementById('tamaMood').textContent = '\uD83E\uDD5A';
+    }
+
+    // Adopt grid
+    const adoptGrid = document.getElementById('tamaAdoptGrid');
+    if (adoptGrid) {
+        adoptGrid.innerHTML = '';
+        Object.entries(TAMA_PETS).forEach(([pid, info]) => {
+            const owned = !!tamaState.pets[pid];
+            const card = document.createElement('div');
+            card.className = 'tama-adopt-card' + (owned ? ' owned' : '');
+            card.innerHTML = '<div class="tama-adopt-icon">' + info.icon + '</div><div class="tama-adopt-name">' + info.name + '</div>';
+            if (!owned) card.onclick = () => tamaAdopt(pid);
+            adoptGrid.appendChild(card);
+        });
+    }
+
+    // XP bar
+    const xpPerLevel = 500;
+    const level = Math.floor(tamaState.xp / xpPerLevel) + 1;
+    const xpInLevel = tamaState.xp % xpPerLevel;
+    const pct = (xpInLevel / xpPerLevel) * 100;
+    const xpFill = document.getElementById('tamaXpFill');
+    const xpText = document.getElementById('tamaXpText');
+    if (xpFill) xpFill.style.width = pct + '%';
+    if (xpText) xpText.textContent = tamaState.xp + ' XP \u2014 Dresseur Niv.' + level;
+
+    // Badges
+    const badgesEl = document.getElementById('tamaBadges');
+    if (badgesEl) {
+        badgesEl.innerHTML = '';
+        TAMA_BADGES.forEach(b => {
+            const earned = tamaState.badges.includes(b.id);
+            const el = document.createElement('div');
+            el.className = 'tama-badge' + (earned ? ' earned' : '');
+            el.textContent = b.icon + ' ' + b.name;
+            el.title = b.desc;
+            badgesEl.appendChild(el);
+        });
+    }
+}
+
+// Decay timer — stats decrease over time
+setInterval(() => {
+    Object.values(tamaState.pets).forEach(pet => {
+        pet.hunger = Math.max(0, pet.hunger - 1);
+        pet.happiness = Math.max(0, pet.happiness - 0.5);
+        pet.energy = Math.min(100, pet.energy + 0.3);
+        pet.clean = Math.max(0, pet.clean - 0.5);
+    });
+    tamaSave();
+    if (document.getElementById('vTamagotchi') && document.getElementById('vTamagotchi').style.display !== 'none') {
+        tamaRender();
+    }
+}, 60000); // Every minute
+
+// ============================
 // INIT
 // ============================
 async function init() {
     drawRaccoon();
     drawMiniRaccoon('logoRaccoon');
+    initTitanSphere();
     drawBentley('splashBentley');
     drawMurray('splashMurray');
     initDNAHelix();
@@ -4149,6 +5068,9 @@ async function init() {
 
     // Load daily picks (films + videos)
     loadDailyPicks();
+
+    // Init Tamagotchi
+    tamaRender();
 }
 
 init();
