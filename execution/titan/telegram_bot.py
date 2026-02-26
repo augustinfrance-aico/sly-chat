@@ -24,58 +24,28 @@ from datetime import datetime
 import requests
 
 from .config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, TITAN_NAME
+
+# === CORE MODULES (always loaded — used every session) ===
 from .modules.brain import TitanBrain
-from .modules.news import TitanNews
-from .modules.web import TitanWeb
-from .modules.finance import TitanFinance
-from .modules.upwork import TitanUpwork
-from .modules.n8n import TitanN8N
-from .modules.email_gen import TitanEmailGen
-from .modules.code_assistant import TitanCode
-from .modules.portfolio_gen import TitanPortfolio
-from .modules.calendar import TitanCalendar
 from .modules.voice import TitanVoice
-from .modules.toolbox import TitanToolbox
 from .modules.gamification import TitanGamification
 from .modules.dashboard import TitanDashboard
-from .modules.memes import TitanMemes
-from .modules.motivation import TitanMotivation
-from .modules.wiki import TitanWiki
-from .modules.qrcode_gen import TitanQRCode
-from .modules.horoscope import TitanHoroscope
-from .modules.movies import TitanMovies
-from .modules.fitness import TitanFitness
-from .modules.riddles import TitanRiddles
-from .modules.ai_prompt import TitanAIPrompt
-from .modules.crypto_defi import TitanDeFi
-from .modules.seo import TitanSEO
-from .modules.domains import TitanDomains
-from .modules.colors import TitanColors
-from .modules.encryption import TitanEncryption
-from .modules.invoice import TitanInvoice
-from .modules.social_media import TitanSocial
-from .modules.fake_data import TitanFakeData
-from .modules.learning import TitanLearning
-from .modules.ascii_art import TitanASCII
-from .modules.recipes import TitanRecipes
-from .modules.music import TitanMusic
-from .modules.json_tools import TitanJSON
-from .modules.startup import TitanStartup
-from .modules.travel import TitanTravel
-from .modules.writing import TitanWriting
-from .modules.space import TitanSpace
-from .modules.productivity import TitanProductivity
-from .modules.deals import TitanDeals
-from .modules.booking import TitanBooking
-from .modules.bible import TitanBible
-from .modules.ai_watch import TitanAIWatch
-from .modules.strategic import TitanStrategic
-from .modules.sport_pro import TitanSportPro
-from .modules.culture import TitanCulture
-from .modules.task_master import TitanTaskMaster
-from .modules.personal import TitanPersonal
 from .modules.president import TitanPresident
 from .modules import memory
+
+# === LAZY LOADING — modules loaded on first use only ===
+# Saves ~30 imports at boot, faster startup, less memory
+_lazy_cache = {}
+
+def _lazy(module_path: str, class_name: str):
+    """Import and instantiate a module class on first use, then cache it."""
+    key = f"{module_path}.{class_name}"
+    if key not in _lazy_cache:
+        import importlib
+        mod = importlib.import_module(module_path, package="execution.titan")
+        cls = getattr(mod, class_name)
+        _lazy_cache[key] = cls()
+    return _lazy_cache[key]
 
 # Logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [TITAN] %(message)s")
@@ -93,70 +63,202 @@ class TitanTelegram:
         self.processed_messages = set()  # Track processed message IDs to prevent duplicates
         self._msg_lock = asyncio.Lock()  # Prevent parallel message processing
         self._president_session = False  # True = Jacques is talking, stays active
+        self._prompt_mode = False  # True = tous les vocaux vont dans prompt vocaux/ sans réponse IA
 
-        # === Core ===
-        self.brain = TitanBrain()
+        # === CORE (always loaded — stored with _ prefix to not conflict with properties) ===
+        self._brain = TitanBrain()
+        self._voice = TitanVoice()
+        self._gamification = TitanGamification()
+        self._dashboard = TitanDashboard()
+        self._president = TitanPresident()
 
-        # === Modules ===
-        self.news = TitanNews()
-        self.web = TitanWeb()
-        self.finance = TitanFinance()
-        self.upwork = TitanUpwork()
-        self.n8n = TitanN8N()
-        self.email = TitanEmailGen()
-        self.code = TitanCode()
-        self.portfolio = TitanPortfolio()
-        self.calendar = TitanCalendar()
-        self.voice = TitanVoice()
-        self.toolbox = TitanToolbox()
-        self.gamification = TitanGamification()
-        self.dashboard = TitanDashboard()
-        self.memes = TitanMemes()
-        self.motivation = TitanMotivation()
-        self.wiki = TitanWiki()
-        self.qrcode = TitanQRCode()
-        self.horoscope = TitanHoroscope()
-        self.movies = TitanMovies()
-        self.fitness = TitanFitness()
-        self.riddles = TitanRiddles()
-        self.ai_prompt = TitanAIPrompt()
-        self.defi = TitanDeFi()
-        self.seo = TitanSEO()
-        self.domains = TitanDomains()
-        self.colors = TitanColors()
-        self.encryption = TitanEncryption()
-        self.invoice_gen = TitanInvoice()
-        self.social = TitanSocial()
-        self.fake_data = TitanFakeData()
-        self.learning = TitanLearning()
-        self.ascii = TitanASCII()
-        self.recipes = TitanRecipes()
-        self.music = TitanMusic()
-        self.json_tools = TitanJSON()
-        self.startup = TitanStartup()
-        self.travel = TitanTravel()
-        self.writing = TitanWriting()
-        self.space = TitanSpace()
-        self.productivity = TitanProductivity()
-        self.deals = TitanDeals()
-        self.booking = TitanBooking()
-        self.bible = TitanBible()
-        self.ai_watch = TitanAIWatch()
-        self.strategic = TitanStrategic()
-        self.sport_pro = TitanSportPro()
-        self.culture = TitanCulture()
-        self.task_master = TitanTaskMaster()
-        self.president = TitanPresident()
+    # === CORE MODULE ACCESSORS (always loaded) ===
+    @property
+    def brain(self):
+        return self._brain
 
-        # Register modules in brain
-        self.brain.register_module("news", self.news)
-        self.brain.register_module("web", self.web)
-        self.brain.register_module("finance", self.finance)
-        self.brain.register_module("upwork", self.upwork)
-        self.brain.register_module("n8n", self.n8n)
-        self.brain.register_module("email", self.email)
-        self.brain.register_module("code", self.code)
-        self.brain.register_module("portfolio", self.portfolio)
+    @property
+    def voice(self):
+        return self._voice
+
+    @property
+    def gamification(self):
+        return self._gamification
+
+    @property
+    def dashboard(self):
+        return self._dashboard
+
+    @property
+    def president(self):
+        return self._president
+
+    # === LAZY MODULE PROPERTIES — loaded on first use ===
+    @property
+    def news(self):
+        return _lazy(".modules.news", "TitanNews")
+
+    @property
+    def web(self):
+        return _lazy(".modules.web", "TitanWeb")
+
+    @property
+    def finance(self):
+        return _lazy(".modules.finance", "TitanFinance")
+
+    @property
+    def upwork(self):
+        return _lazy(".modules.upwork", "TitanUpwork")
+
+    @property
+    def n8n(self):
+        return _lazy(".modules.n8n", "TitanN8N")
+
+    @property
+    def email(self):
+        return _lazy(".modules.email_gen", "TitanEmailGen")
+
+    @property
+    def code(self):
+        return _lazy(".modules.code_assistant", "TitanCode")
+
+    @property
+    def portfolio(self):
+        return _lazy(".modules.portfolio_gen", "TitanPortfolio")
+
+    @property
+    def calendar(self):
+        return _lazy(".modules.calendar", "TitanCalendar")
+
+    @property
+    def toolbox(self):
+        return _lazy(".modules.toolbox", "TitanToolbox")
+
+    # memes — REMOVED (bloat)
+
+    @property
+    def motivation(self):
+        return _lazy(".modules.motivation", "TitanMotivation")
+
+    # wiki, qrcode, horoscope, movies, fitness, riddles — REMOVED (bloat)
+
+    @property
+    def ai_prompt(self):
+        return _lazy(".modules.ai_prompt", "TitanAIPrompt")
+
+    @property
+    def defi(self):
+        return _lazy(".modules.crypto_defi", "TitanDeFi")
+
+    @property
+    def seo(self):
+        return _lazy(".modules.seo", "TitanSEO")
+
+    @property
+    def domains(self):
+        return _lazy(".modules.domains", "TitanDomains")
+
+    # colors, encryption — REMOVED (bloat)
+
+    @property
+    def invoice_gen(self):
+        return _lazy(".modules.invoice", "TitanInvoice")
+
+    @property
+    def social(self):
+        return _lazy(".modules.social_media", "TitanSocial")
+
+    # fake_data, learning, ascii_art, recipes, music, json_tools — REMOVED (bloat)
+
+    @property
+    def startup(self):
+        return _lazy(".modules.startup", "TitanStartup")
+
+    # travel — REMOVED (bloat)
+
+    @property
+    def writing(self):
+        return _lazy(".modules.writing", "TitanWriting")
+
+    # space — REMOVED (bloat)
+
+    @property
+    def productivity(self):
+        return _lazy(".modules.productivity", "TitanProductivity")
+
+    # deals, booking — REMOVED (bloat)
+
+    @property
+    def bible(self):
+        return _lazy(".modules.bible", "TitanBible")
+
+    @property
+    def ai_watch(self):
+        return _lazy(".modules.ai_watch", "TitanAIWatch")
+
+    # === BUILDING LIFE MODULES (Tri-Pôle creative suite) ===
+
+    @property
+    def journal(self):
+        return _lazy(".modules.journal", "TitanJournal")
+
+    @property
+    def aggregator(self):
+        return _lazy(".modules.aggregator", "TitanAggregator")
+
+    @property
+    def coach(self):
+        return _lazy(".modules.coach", "TitanCoach")
+
+    @property
+    def auto_healer(self):
+        return _lazy(".modules.auto_healer", "TitanAutoHealer")
+
+    @property
+    def morning_digest_mod(self):
+        return _lazy(".modules.morning_digest", "TitanMorningDigest")
+
+    @property
+    def mega_prompt(self):
+        return _lazy(".modules.mega_prompt", "TitanMegaPrompt")
+
+    @property
+    def film(self):
+        return _lazy(".modules.film_building", "TitanFilm")
+
+    @property
+    def clones(self):
+        return _lazy(".modules.clones", "TitanClones")
+
+    @property
+    def portfolio_live(self):
+        return _lazy(".modules.portfolio_live", "TitanPortfolioLive")
+
+    @property
+    def empire_visual(self):
+        return _lazy(".modules.empire_visual", "TitanEmpireVisual")
+
+    @property
+    def library(self):
+        return _lazy(".modules.library", "TitanLibrary")
+
+    @property
+    def strategic(self):
+        return _lazy(".modules.strategic", "TitanStrategic")
+
+    @property
+    def sport_pro(self):
+        return _lazy(".modules.sport_pro", "TitanSportPro")
+
+    @property
+    def culture(self):
+        return _lazy(".modules.culture", "TitanCulture")
+
+    @property
+    def task_master(self):
+        return _lazy(".modules.task_master", "TitanTaskMaster")
+
+    # personal — REMOVED (bloat)
 
     # === CLAUDE BRIDGE ===
 
@@ -298,10 +400,12 @@ class TitanTelegram:
                         return
                     log.info(f"[{user}] Transcribed: {text[:80]}")
 
-                    # TOUS les vocaux → notes dans prompt vocaux/ (transcription brute)
-                    self._write_claude_task(text)
-                    self.send_message(chat_id, f"Noté. ✍️\n\n\"{text[:300]}\"")
-                    return
+                    # MODE PROMPT : écrire dans fichier sans réponse IA
+                    if self._prompt_mode:
+                        self._write_claude_task(text)
+                        self.send_message(chat_id, f"✍️ {text[:300]}")
+                        return
+                    # Sinon : laisser le vocal passer comme message texte normal → réponse IA
 
             if not text:
                 return
@@ -345,6 +449,30 @@ class TitanTelegram:
             except Exception as e:
                 log.error(f"Error: {e}")
                 response = f"Erreur: {str(e)[:200]}"
+                # Auto-healer: log and attempt fix
+                try:
+                    fix_msg = self.auto_healer.log_error(e, context=text[:100])
+                    if fix_msg:
+                        response += f"\n\n{fix_msg}"
+                except Exception:
+                    pass
+
+            # === BUILDING LIFE AUTO-FEATURES (silent) ===
+            # Coach: log activity for pattern detection
+            try:
+                self.coach.log_activity()
+            except Exception:
+                pass
+
+            # Library: auto-extract gems from conversation
+            if response and not text.startswith("/"):
+                try:
+                    self.library.auto_extract(text, response)
+                except Exception:
+                    pass
+
+            # Auto-healer: log errors if any occurred
+            # (errors are caught above and logged separately)
 
             # Gamification (silently in background, no footer)
             self.gamification.add_xp(action_type, module=module_used)
@@ -353,6 +481,15 @@ class TitanTelegram:
             # Track in dashboard (silent)
             elapsed = time.time() - start_time
             self.dashboard.log_interaction(module_used, text[:50], elapsed)
+
+            # Coach nudge — désactivé (spam non-demandé)
+            # Augus peut le réactiver via /coach manuellement
+
+            # Journal: intercept answers if journal is waiting
+            if self.journal.is_waiting() and not text.startswith("/"):
+                journal_reply = self.journal.receive_answer(text)
+                if journal_reply:
+                    response = journal_reply
 
             # Send text response only (skip if None — e.g. voice already sent)
             if response:
@@ -388,6 +525,33 @@ class TitanTelegram:
 
             task_file = self._get_claude_session_file()
             return f"Tous tes vocaux sont enregistres automatiquement.\n\nFichier : prompt vocaux/{task_file.name}\n\n/claude <texte> — ajouter du texte\n/claude clear — vider la session"
+
+        # === /prompt — Mode dictée vocale vers fichier ===
+        if text.startswith("/prompt"):
+            arg = text[7:].strip().lower()
+
+            if arg in ("stop", "off", "fin", "end"):
+                self._prompt_mode = False
+                task_file = self._get_claude_session_file()
+                return f"🔴 Mode dictée désactivé.\nFichier : prompt vocaux/{task_file.name}"
+
+            if arg == "clear":
+                task_file = self._get_claude_session_file()
+                with open(task_file, "w", encoding="utf-8") as f:
+                    f.write(f"# Session — {datetime.now().strftime('%Y-%m-%d')}\n\n")
+                return "Session vidée."
+
+            if arg == "show":
+                task_file = self._get_claude_session_file()
+                if task_file.exists():
+                    content = task_file.read_text(encoding="utf-8")
+                    return content[:3500] if content.strip() else "Fichier vide."
+                return "Aucune session aujourd'hui."
+
+            # Activer le mode
+            self._prompt_mode = True
+            task_file = self._get_claude_session_file()
+            return f"🟢 Mode dictée activé.\nParle — chaque vocal sera transcrit dans :\nprompt vocaux/{task_file.name}\n\n/prompt stop — désactiver\n/prompt show — voir le contenu\n/prompt clear — vider"
 
         if text == "/start":
             return self._get_welcome()
@@ -442,23 +606,6 @@ class TitanTelegram:
         if text.startswith("/searchnews "):
             self.gamification.track_action("search")
             return await self.news.search_news(text[12:].strip())
-
-        # ===============
-        # === FINANCE ===
-        # ===============
-
-        if text == "/crypto":
-            self.gamification.track_action("market_check")
-            prices = self.finance.get_crypto_prices()
-            return self.finance.format_crypto_brief(prices)
-
-        if text == "/stocks":
-            self.gamification.track_action("market_check")
-            return await self.finance.get_stocks_brief()
-
-        if text == "/market":
-            self.gamification.track_action("market_check")
-            return await self.finance.analyze_market()
 
         # ============
         # === WEB ====
@@ -799,18 +946,7 @@ class TitanTelegram:
         if text.startswith("/forgetfact "):
             return memory.forget_auto_fact(text[12:].strip())
 
-        # ==============
-        # === MEMES ====
-        # ==============
-
-        if text == "/meme":
-            return self.memes.random_meme()
-        if text == "/funfact":
-            return self.memes.fun_fact()
-        if text == "/dadjoke":
-            return self.memes.dad_joke()
-        if text == "/thisday":
-            return self.memes.this_day()
+        # memes — REMOVED
 
         # ==================
         # === MOTIVATION ===
@@ -829,92 +965,7 @@ class TitanTelegram:
         if text == "/reflect":
             return self.motivation.weekly_reflection()
 
-        # ================
-        # === WIKIPEDIA ==
-        # ================
-
-        if text.startswith("/wiki "):
-            return self.wiki.search(text[6:].strip())
-        if text == "/randomwiki":
-            return self.wiki.random_article()
-
-        # ==============
-        # === QRCODE ===
-        # ==============
-
-        if text.startswith("/qr "):
-            return self.qrcode.generate(text[4:].strip())
-        if text.startswith("/qrwifi "):
-            parts = text[8:].split("|")
-            if len(parts) >= 2:
-                return self.qrcode.wifi(parts[0].strip(), parts[1].strip())
-            return "Format: /qrwifi SSID | password"
-
-        # =================
-        # === HOROSCOPE ===
-        # =================
-
-        if text.startswith("/horoscope "):
-            return self.horoscope.daily(text[11:].strip())
-        if text.startswith("/compat "):
-            parts = text[8:].split()
-            if len(parts) == 2:
-                return self.horoscope.compatibility(parts[0], parts[1])
-            return "Format: /compat belier lion"
-
-        # ==============
-        # === MOVIES ===
-        # ==============
-
-        if text == "/trending":
-            return self.movies.trending()
-        if text.startswith("/moviesearch "):
-            return self.movies.search(text[13:].strip())
-        if text.startswith("/recommend "):
-            return self.movies.recommend(text[11:].strip())
-        if text == "/randommovie":
-            return self.movies.random_movie()
-
-        # ===============
-        # === FITNESS ===
-        # ===============
-
-        if text.startswith("/workout"):
-            group = text[9:].strip() if len(text) > 9 else "full"
-            return self.fitness.workout(group)
-        if text.startswith("/bmi "):
-            parts = text[5:].split()
-            if len(parts) == 2:
-                try:
-                    return self.fitness.bmi(float(parts[0]), float(parts[1]))
-                except ValueError:
-                    pass
-            return "Format: /bmi 75 180 (kg cm)"
-        if text.startswith("/calories "):
-            parts = text[10:].split()
-            if len(parts) >= 3:
-                try:
-                    return self.fitness.calories(float(parts[0]), float(parts[1]), int(parts[2]))
-                except ValueError:
-                    pass
-            return "Format: /calories 75 180 25 (kg cm age)"
-        if text == "/stretch":
-            return self.fitness.stretch()
-        if text == "/7min":
-            return self.fitness.challenge_7min()
-
-        # ===============
-        # === RIDDLES ===
-        # ===============
-
-        if text == "/riddle":
-            return self.riddles.riddle()
-        if text == "/trivia":
-            return self.riddles.trivia_api()
-        if text == "/wyr":
-            return self.riddles.would_you_rather()
-        if text == "/mathchallenge":
-            return self.riddles.math_challenge()
+        # wiki, qrcode, horoscope, movies, fitness, riddles — REMOVED
 
         # =================
         # === AI PROMPT ===
@@ -930,19 +981,6 @@ class TitanTelegram:
             return await self.ai_prompt.chatgpt_prompt(text[11:].strip())
         if text.startswith("/improvePrompt "):
             return await self.ai_prompt.improve_prompt(text[15:].strip())
-
-        # ================
-        # === DEFI/CRYPTO =
-        # ================
-
-        if text.startswith("/token "):
-            return self.defi.token_info(text[7:].strip())
-        if text == "/feargreed":
-            return self.defi.fear_greed()
-        if text == "/trendingcrypto":
-            return self.defi.trending_coins()
-        if text == "/gas":
-            return self.defi.gas_tracker()
 
         # ===========
         # === SEO ===
@@ -966,41 +1004,7 @@ class TitanTelegram:
         if text.startswith("/domainsuggest "):
             return self.domains.suggest(text[15:].strip())
 
-        # ==============
-        # === COLORS ===
-        # ==============
-
-        if text.startswith("/palette"):
-            style = text[9:].strip() if len(text) > 9 else "random"
-            return self.colors.palette(style)
-        if text == "/palettes":
-            return self.colors.list_palettes()
-        if text == "/randomcolor":
-            return self.colors.random_color()
-        if text.startswith("/brandcolors "):
-            return self.colors.brand_colors(text[13:].strip())
-        if text.startswith("/gradient "):
-            parts = text[10:].split()
-            if len(parts) == 2:
-                return self.colors.gradient(parts[0], parts[1])
-            return "Format: /gradient #FF0000 #0000FF"
-
-        # ==================
-        # === ENCRYPTION ===
-        # ==================
-
-        if text.startswith("/hash "):
-            return self.encryption.hash_all(text[6:].strip())
-        if text.startswith("/base64 "):
-            return self.encryption.base64_encode(text[8:].strip())
-        if text.startswith("/base64d "):
-            return self.encryption.base64_decode(text[9:].strip())
-        if text.startswith("/morse "):
-            return self.encryption.morse_encode(text[7:].strip())
-        if text == "/gentoken":
-            return self.encryption.generate_token()
-        if text == "/apikey":
-            return self.encryption.generate_api_key()
+        # colors, encryption — REMOVED
 
         # ===============
         # === INVOICE ===
@@ -1037,98 +1041,7 @@ class TitanTelegram:
         if text.startswith("/contentcal "):
             return await self.social.content_calendar(text[12:].strip())
 
-        # =================
-        # === FAKE DATA ===
-        # =================
-
-        if text == "/fakeperson":
-            return self.fake_data.person()
-        if text == "/fakecompany":
-            return self.fake_data.company()
-        if text == "/fakecard":
-            return self.fake_data.credit_card()
-        if text.startswith("/fakeemails"):
-            count = 10
-            parts = text.split()
-            if len(parts) > 1:
-                try:
-                    count = int(parts[1])
-                except ValueError:
-                    pass
-            return self.fake_data.email_list(count)
-        if text == "/fakejson":
-            return self.fake_data.lorem_json()
-        if text == "/fakedataset":
-            return self.fake_data.dataset()
-
-        # ================
-        # === LEARNING ===
-        # ================
-
-        if text.startswith("/learn "):
-            return await self.learning.explain(text[7:].strip())
-        if text.startswith("/flashcards "):
-            return await self.learning.flashcards(text[12:].strip())
-        if text.startswith("/cheatsheet "):
-            return await self.learning.cheatsheet(text[12:].strip())
-        if text.startswith("/studyplan "):
-            return await self.learning.study_plan(text[11:].strip())
-        if text.startswith("/eli5 "):
-            return await self.learning.eli5(text[6:].strip())
-        if text.startswith("/quiz "):
-            return await self.learning.quiz(text[6:].strip())
-
-        # ================
-        # === ASCII ART ==
-        # ================
-
-        if text.startswith("/ascii "):
-            return self.ascii.text_art(text[7:].strip())
-        if text.startswith("/box "):
-            return self.ascii.box(text[5:].strip())
-        if text.startswith("/banner "):
-            return self.ascii.banner(text[8:].strip())
-
-        # ===============
-        # === RECIPES ===
-        # ===============
-
-        if text == "/quickmeal":
-            return self.recipes.quick_meal()
-        if text.startswith("/recipe "):
-            return await self.recipes.recipe(text[8:].strip())
-        if text.startswith("/mealplan"):
-            goal = text[10:].strip() if len(text) > 10 else "equilibre"
-            return await self.recipes.meal_plan(goal)
-        if text.startswith("/ingredients "):
-            return await self.recipes.with_ingredients(text[13:].strip())
-
-        # =============
-        # === MUSIC ===
-        # =============
-
-        if text.startswith("/playlist "):
-            return self.music.playlist(text[10:].strip())
-        if text == "/playlists":
-            return self.music.genres()
-        if text == "/albumreco":
-            return self.music.album_reco()
-        if text == "/songofday":
-            return self.music.song_of_day()
-        if text.startswith("/artist "):
-            return self.music.artist_search(text[8:].strip())
-
-        # ============
-        # === JSON ===
-        # ============
-
-        if text.startswith("/jsonformat "):
-            return self.json_tools.format(text[12:].strip())
-        if text.startswith("/jsonvalidate "):
-            return self.json_tools.validate(text[14:].strip())
-        if text.startswith("/jsonsample"):
-            structure = text[12:].strip() if len(text) > 12 else "user"
-            return self.json_tools.sample(structure)
+        # fake_data, learning, ascii_art, recipes, music, json_tools — REMOVED
 
         # ===============
         # === STARTUP ===
@@ -1145,18 +1058,7 @@ class TitanTelegram:
         if text.startswith("/pricing "):
             return await self.startup.pricing_strategy(text[9:].strip())
 
-        # ==============
-        # === TRAVEL ===
-        # ==============
-
-        if text.startswith("/country "):
-            return self.travel.country_info(text[9:].strip())
-        if text.startswith("/cityguide "):
-            return await self.travel.city_guide(text[11:].strip())
-        if text.startswith("/packing"):
-            return self.travel.packing_list()
-        if text == "/destination":
-            return self.travel.random_destination()
+        # travel — REMOVED
 
         # ===============
         # === WRITING ===
@@ -1175,18 +1077,7 @@ class TitanTelegram:
         if text.startswith("/slogan "):
             return await self.writing.slogan(text[8:].strip())
 
-        # =============
-        # === SPACE ===
-        # =============
-
-        if text == "/iss":
-            return self.space.iss_location()
-        if text == "/astronauts":
-            return self.space.people_in_space()
-        if text == "/apod":
-            return self.space.apod()
-        if text.startswith("/planet "):
-            return self.space.planet_facts(text[8:].strip())
+        # space — REMOVED
 
         # ====================
         # === PRODUCTIVITY ===
@@ -1203,88 +1094,7 @@ class TitanTelegram:
         if text == "/ruleof3":
             return self.productivity.rule_of_three()
 
-        # ==============
-        # === MOVIES v2 ==
-        # ==============
-
-        if text.startswith("/movietop"):
-            cat = text[10:].strip() if len(text) > 10 else "all_time"
-            return self.movies.top(cat)
-        if text.startswith("/moviereco "):
-            return self.movies.recommend(text[11:].strip())
-        if text.startswith("/movieai "):
-            return await self.movies.ai_recommend(text[9:].strip())
-        if text.startswith("/rt "):
-            return self.movies.rt_search(text[4:].strip())
-        if text == "/whatson":
-            return self.movies.whats_on()
-
-        # =====================
-        # === MUSIC v2 ========
-        # =====================
-
-        if text.startswith("/discover "):
-            return await self.music.discover(text[10:].strip())
-        if text.startswith("/similar "):
-            return await self.music.similar_to(text[9:].strip())
-        if text.startswith("/topalbums"):
-            genre = text[11:].strip() if len(text) > 11 else "all"
-            return self.music.top_albums(genre)
-        if text == "/newmusic":
-            return self.music.new_releases_links()
-
-        # ==============
-        # === DEALS ====
-        # ==============
-
-        if text.startswith("/flights"):
-            parts = text[9:].strip().split() if len(text) > 9 else []
-            origin = parts[0] if len(parts) > 0 else "PAR"
-            dest = parts[1] if len(parts) > 1 else ""
-            budget = parts[2] if len(parts) > 2 else "300"
-            return self.deals.cheap_flights(origin, dest, budget)
-        if text == "/weekenddeals":
-            return self.deals.weekend_deals()
-        if text.startswith("/hotels "):
-            parts = text[8:].strip().split("|")
-            city = parts[0].strip()
-            checkin = parts[1].strip() if len(parts) > 1 else ""
-            nights = parts[2].strip() if len(parts) > 2 else "2"
-            return self.deals.hotel_deals(city, checkin, nights)
-        if text == "/errorfares":
-            return self.deals.error_fares()
-        if text.startswith("/traveladvice "):
-            return await self.deals.travel_advisor(text[14:].strip())
-
-        # ================
-        # === BOOKING ====
-        # ================
-
-        if text.startswith("/bookbad"):
-            city = text[9:].strip() if len(text) > 9 else "paris"
-            return self.booking.anybuddy("badminton", city)
-        if text.startswith("/bookpadel"):
-            city = text[11:].strip() if len(text) > 11 else "paris"
-            return self.booking.padel(city)
-        if text.startswith("/booktennis"):
-            city = text[12:].strip() if len(text) > 12 else "paris"
-            return self.booking.tennis(city)
-        if text.startswith("/bookfoot"):
-            city = text[10:].strip() if len(text) > 10 else "paris"
-            return self.booking.foot5(city)
-        if text.startswith("/bookescalade"):
-            city = text[14:].strip() if len(text) > 14 else "paris"
-            return self.booking.escalade(city)
-        if text.startswith("/bookgym"):
-            city = text[9:].strip() if len(text) > 9 else "paris"
-            return self.booking.gym(city)
-        if text.startswith("/bookany "):
-            parts = text[9:].strip().split()
-            sport = parts[0] if parts else "badminton"
-            city = parts[1] if len(parts) > 1 else "paris"
-            return self.booking.anybuddy(sport, city)
-        if text == "/sports":
-            return self.booking.sports_list()
+        # movies_v2, music_v2, deals, booking — REMOVED
 
         # =============
         # === BIBLE ====
@@ -1409,19 +1219,7 @@ class TitanTelegram:
         if text == "/planday":
             return await self.task_master.plan_day()
 
-        # ================
-        # === PERSONAL ===
-        # ================
-
-        if text == "/myprofile":
-            return self.brain.personal.get_profile_summary()
-        if text.startswith("/profileset "):
-            parts = text[12:].strip().split(" ", 1)
-            if len(parts) == 2:
-                return self.brain.personal.update_profile(parts[0], parts[1])
-            return "Format: /profileset champ valeur"
-        if text.startswith("/profileclear "):
-            return self.brain.personal.clear_field(text[14:].strip())
+        # personal — REMOVED
 
         # ===================
         # === PRESIDENT ===
@@ -1429,16 +1227,16 @@ class TitanTelegram:
 
         if text == "/president" or text == "/pres":
             return (
-                "JACQUES — Le President\n"
-                "━━━━━━━━━━━━━━━━━━━━━━\n"
-                "/briefing — Briefing presidentiel du matin\n"
-                "/goals <texte> — Definir objectifs semaine\n"
-                "/task <texte> — Assigner une tache\n"
-                "/donetask <n> — Marquer tache completee\n"
-                "/tasks — Voir les taches en cours\n"
+                "🏛 JACQUES — Le Président\n"
+                "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                "/briefing — Briefing présidentiel\n"
+                "/goals <texte> — Objectifs semaine\n"
+                "/ptask <texte> — Assigner une tâche\n"
+                "/pdone <n> — Compléter tâche\n"
+                "/ptasks — Voir les tâches\n"
                 "/review — Revue de performance\n"
-                "/directive <sujet> — Directive sur un sujet\n"
-                "/decide <question> — DECISION ULTIME de Jacques\n"
+                "/directive <sujet> — Directive\n"
+                "/decide <question> — DÉCISION ULTIME\n"
                 "/roast — Se faire roaster\n"
                 "/presidreset — Reset complet"
             )
@@ -1449,17 +1247,17 @@ class TitanTelegram:
         if text.startswith("/goals "):
             return await self.president.set_weekly_goals(text[7:].strip())
 
-        if text.startswith("/task "):
-            return await self.president.assign_task(text[6:].strip())
+        if text.startswith("/ptask "):
+            return await self.president.assign_task(text[7:].strip())
 
-        if text.startswith("/donetask "):
+        if text.startswith("/pdone "):
             try:
-                idx = int(text[10:].strip())
+                idx = int(text[7:].strip())
                 return await self.president.complete_task(idx)
             except ValueError:
-                return "Format: /donetask <numero>"
+                return "Format: /pdone <numero>"
 
-        if text == "/tasks":
+        if text == "/ptasks":
             return await self.president.get_tasks()
 
         if text == "/review":
@@ -1485,6 +1283,62 @@ class TitanTelegram:
             self.gamification.track_action("news_check")
             self.gamification.track_action("market_check")
             return await self._generate_brief()
+
+        # ======================================
+        # === BUILDING LIFE MODULES (12 new) ===
+        # ======================================
+
+        # Journal du Suzerain
+        if text.startswith("/journal") or text == "/j":
+            if self.journal.is_waiting():
+                return self.journal.receive_answer(text)
+            return self.journal.handle_command(text)
+
+        # Agrégateur Personnel
+        if text in ("/digest", "/agreg") or text.startswith("/digest "):
+            return await self.aggregator.generate_daily_digest()
+
+        # Coach Invisible (stats)
+        if text.startswith("/coach") or text == "/stats":
+            if text == "/stats":
+                pass  # Let dashboard handle /stats above
+            else:
+                return self.coach.handle_command(text)
+
+        # Auto-Healer
+        if text in ("/health", "/healer") or text.startswith("/healer "):
+            return self.auto_healer.handle_command(text)
+
+        # Morning Digest (manual trigger)
+        if text == "/morningdigest":
+            return await self.morning_digest_mod.generate()
+
+        # Mega-Prompt
+        if text.startswith("/megaprompt") or text.startswith("/mega"):
+            return self.mega_prompt.handle_command(text)
+
+        # Film du Building
+        if text.startswith("/film") or text == "/script":
+            return self.film.handle_command(text)
+
+        # Armée de Clones
+        if text.startswith("/clone"):
+            if text.lower().startswith("/clone ") and len(text) > 7:
+                idea = text[7:].strip()
+                return await self.clones.generate_clones(idea)
+            return self.clones.handle_command(text)
+
+        # Portfolio Vivant
+        if text.startswith("/folio") or (text.startswith("/portfolio") and "add" in text.lower()):
+            return self.portfolio_live.handle_command(text)
+
+        # Empire Visuel
+        if text.startswith("/visual") or text == "/brand":
+            return self.empire_visual.handle_command(text)
+
+        # Bibliothèque d'Augus
+        if text.startswith("/library") or text == "/biblio":
+            return self.library.handle_command(text)
 
         # ===============================
         # === DEFAULT: BRAIN (AI) ===
@@ -1531,7 +1385,6 @@ class TitanTelegram:
         state_data = _load_state()
         self.president.state = state_data
         goals = state_data.get("weekly_goals", [])
-        score = state_data.get("performance_score", 50)
         recent = memory.get_conversation_context(5)
 
         prompt = f"""L'Empereur te parle directement. Il dit: "{text}"
@@ -1550,10 +1403,10 @@ REGLE ABSOLUE: Reponds en 2-5 phrases MAX. Conversationnel, direct, presidentiel
         """Generate the daily brief."""
         now = datetime.now()
         sections = [
-            f"{'=' * 30}",
-            f"  BRIEF TITAN",
-            f"  {now.strftime('%A %d %B %Y')}",
-            f"{'=' * 30}\n",
+            "╔══════════════════════════════╗",
+            "║  T.I.T.A.N. — BRIEF         ║",
+            f"║  {now.strftime('%d %B %Y'):^28} ║",
+            "╚══════════════════════════════╝\n",
         ]
 
         # News
@@ -1562,13 +1415,6 @@ REGLE ABSOLUE: Reponds en 2-5 phrases MAX. Conversationnel, direct, presidentiel
             sections.append(f"📰 ACTUALITES\n{news}\n")
         except Exception as e:
             sections.append(f"📰 News indisponibles: {e}\n")
-
-        # Crypto
-        try:
-            crypto = await self.finance.get_crypto_brief()
-            sections.append(f"{crypto}\n")
-        except Exception as e:
-            sections.append(f"🪙 Crypto indisponible: {e}\n")
 
         # Tasks
         try:
@@ -1585,35 +1431,6 @@ REGLE ABSOLUE: Reponds en 2-5 phrases MAX. Conversationnel, direct, presidentiel
         except Exception:
             pass
 
-        # Daily challenge
-        try:
-            daily = self.gamification.get_daily_status()
-            sections.append(f"\n{daily}\n")
-        except Exception:
-            pass
-
-        # TaskMaster proactive check
-        try:
-            task_alert = self.task_master.proactive_check()
-            if task_alert:
-                sections.append(f"\n{task_alert}\n")
-        except Exception:
-            pass
-
-        # Bible verse
-        try:
-            verse = self.bible.verse_of_day()
-            sections.append(f"\n{verse}\n")
-        except Exception:
-            pass
-
-        # Culture fact
-        try:
-            fact = self.culture.fact_of_day()
-            sections.append(f"\n{fact}\n")
-        except Exception:
-            pass
-
         # Mindset
         try:
             mindset = self.strategic.mindset()
@@ -1621,7 +1438,7 @@ REGLE ABSOLUE: Reponds en 2-5 phrases MAX. Conversationnel, direct, presidentiel
         except Exception:
             pass
 
-        sections.append("Bonne journée boss. Go conquérir le monde. 💪")
+        sections.append("⚡ Systèmes en ligne. L'Empire attend tes ordres, Sire.")
         return "\n".join(sections)
 
     # === HELPERS ===
@@ -1632,7 +1449,6 @@ REGLE ABSOLUE: Reponds en 2-5 phrases MAX. Conversationnel, direct, presidentiel
 
         module_map = {
             "/news": "news", "/newsai": "news", "/searchnews": "news",
-            "/crypto": "finance", "/stocks": "finance", "/market": "finance",
             "/search": "web", "/url": "web", "/translate": "web",
             "/analyze": "upwork", "/proposal": "upwork", "/loom": "upwork",
             "/n8n": "n8n", "/workflow": "n8n",
@@ -1659,16 +1475,8 @@ REGLE ABSOLUE: Reponds en 2-5 phrases MAX. Conversationnel, direct, presidentiel
             "/brief": "brief",
         }
 
-        # New modules
+        # Extended modules (kept after audit)
         module_map.update({
-            "/movietop": "movies", "/moviereco": "movies", "/movieai": "movies",
-            "/rt": "movies", "/whatson": "movies",
-            "/discover": "music", "/similar": "music", "/topalbums": "music", "/newmusic": "music",
-            "/flights": "deals", "/weekenddeals": "deals", "/hotels": "deals",
-            "/errorfares": "deals", "/traveladvice": "deals",
-            "/bookbad": "booking", "/bookpadel": "booking", "/booktennis": "booking",
-            "/bookfoot": "booking", "/bookescalade": "booking", "/bookgym": "booking",
-            "/bookany": "booking", "/sports": "booking",
             "/verse": "bible", "/bibletheme": "bible", "/biblebook": "bible",
             "/proverb": "bible", "/devotion": "bible", "/versesearch": "bible",
             "/aitools": "ai_watch", "/ainews": "ai_watch", "/aitrends": "ai_watch",
@@ -1678,203 +1486,156 @@ REGLE ABSOLUE: Reponds en 2-5 phrases MAX. Conversationnel, direct, presidentiel
             "/weeklyreview": "strategic", "/mindset": "strategic", "/sidehustles": "strategic",
             "/sportlog": "sport", "/sportstats": "sport", "/sportprog": "sport",
             "/nutrition": "sport", "/customworkout": "sport", "/sportmotiv": "sport",
+            # Building Life modules
+            "/journal": "journal", "/j": "journal",
+            "/digest": "aggregator", "/agreg": "aggregator",
+            "/coach": "coach",
+            "/health": "healer", "/healer": "healer",
+            "/morningdigest": "morning_digest",
+            "/megaprompt": "mega_prompt", "/mega": "mega_prompt",
+            "/film": "film", "/script": "film",
+            "/clone": "clones", "/clones": "clones",
+            "/folio": "portfolio_live",
+            "/visual": "empire_visual", "/brand": "empire_visual",
+            "/library": "library", "/biblio": "library",
             "/fact": "culture", "/mentalmodel": "culture", "/bookreco": "culture",
             "/booklist": "culture", "/deeptopic": "culture", "/debate": "culture", "/vocabulary": "culture",
             "/taskadd": "taskmaster", "/tasklist": "taskmaster", "/taskdone": "taskmaster",
             "/taskdelete": "taskmaster", "/taskweek": "taskmaster", "/planday": "taskmaster",
+            "/linkedin": "social", "/thread": "social", "/caption": "social",
+            "/hashtags": "social", "/bio": "social", "/contentcal": "social",
+            "/blogpost": "writing", "/copywriting": "writing", "/story": "writing",
+            "/summarize": "writing", "/paraphrase": "writing", "/slogan": "writing",
+            "/midjourney": "ai_prompt", "/dalle": "ai_prompt", "/sdprompt": "ai_prompt",
+            "/promptgen": "ai_prompt", "/improvePrompt": "ai_prompt",
+            "/seocheck": "seo", "/keywords": "seo", "/metatags": "seo",
+            "/domaincheck": "domains", "/dns": "domains", "/domainsuggest": "domains",
+            "/invoice": "invoice", "/estimate": "invoice",
+            "/startupname": "startup", "/pitch": "startup", "/businessmodel": "startup",
+            "/competitors": "startup", "/pricing": "startup",
+            "/motivation": "motivation", "/quote": "motivation", "/affirmation": "motivation",
+            "/stoic": "motivation", "/hustle": "motivation", "/reflect": "motivation",
+            "/president": "president", "/briefing": "president", "/goals": "president",
+            "/ptask": "president", "/pdone": "president", "/ptasks": "president",
+            "/directive": "president", "/decide": "president", "/roast": "president",
         })
         return module_map.get(cmd, "brain")
 
     def _get_welcome(self) -> str:
-        """Welcome message — stylish."""
+        """Welcome message — futuristic HUD style."""
         return (
-            f"{'=' * 30}\n"
-            f"  🏛 TITAN v2.0\n"
-            f"  L'Empereur des Agents IA\n"
-            f"{'=' * 30}\n\n"
-            f"Ah, te voilà boss. J'ai cru que t'allais me laisser m'ennuyer.\n\n"
-            f"🧠 Intelligence artificielle\n"
-            f"📰 News & Veille IA\n"
-            f"💰 Finance, Crypto & Stratégie\n"
-            f"✈️ Deals voyage & Bons plans\n"
-            f"🏸 Réservation sport (Anybuddy)\n"
-            f"🎬 Films & Séries (Rotten Tomatoes)\n"
-            f"🎵 Découverte musicale IA\n"
-            f"📖 Bible & Dévotion\n"
-            f"🏋️ Coach sportif\n"
-            f"📚 Culture & Savoir\n"
-            f"🎯 TaskMaster proactif\n"
-            f"💡 Business & Side Hustles\n"
-            f"+ 40 autres modules\n\n"
-            f"50 modules. 250+ commandes. 0 excuse.\n\n"
-            f"Tape /help pour les commandes.\n"
-            f"Ou parle-moi, je comprends tout."
+            "╔══════════════════════════════╗\n"
+            "║  T.I.T.A.N. v3.0            ║\n"
+            "║  Tactical Intelligence &     ║\n"
+            "║  Total Autonomous Network    ║\n"
+            "╚══════════════════════════════╝\n\n"
+            "⚡ SYSTÈME INITIALISÉ\n"
+            "━━━━━━━━━━━━━━━━━━━━━\n"
+            "▸ 32 modules — zero bloat\n"
+            "▸ 150+ commandes actives\n"
+            "▸ Cascade IA : 6 modèles\n"
+            "▸ Coût opérationnel : 0€\n"
+            "━━━━━━━━━━━━━━━━━━━━━\n\n"
+            "🧠 IA libre\n"
+            "📰 Veille IA       🎯 Stratégie\n"
+            "💻 Code & Dev      🏛 Président\n"
+            "🎤 20+ Voix        📚 Culture\n"
+            "📧 Outreach        🏅 Sport\n\n"
+            "Commandant. Systèmes prêts.\n"
+            "/help → commandes  |  Parle-moi → IA"
         )
 
     def _get_help(self) -> str:
-        """Complete help — all commands."""
+        """Help — futuristic HUD."""
         return (
-            f"🏛 TITAN v2.0 — L'EMPEREUR\n"
-            f"{'=' * 30}\n\n"
+            "╔══════════════════════════════╗\n"
+            "║   T.I.T.A.N. — COMMANDES    ║\n"
+            "╚══════════════════════════════╝\n\n"
 
-            f"🧠 INTELLIGENCE\n"
-            f"  (parle-moi) — IA conversationnelle\n"
-            f"  /brief — Brief quotidien\n\n"
+            "⚡ CORE\n"
+            "  (parle-moi) → IA libre\n"
+            "  /brief → Brief quotidien\n\n"
 
-            f"🎯 STRATÉGIE & BUSINESS\n"
-            f"  /intel — Brief stratégique du matin\n"
-            f"  /bizidea [domaine] — Idée business\n"
-            f"  /wealthplan <situation> — Plan enrichissement\n"
-            f"  /marketanalysis <marché> — Analyse marché\n"
-            f"  /negotiate <contexte> — Stratégie négo\n"
-            f"  /sidehustles — Side hustles tech\n"
-            f"  /weeklyreview — Revue stratégique\n"
-            f"  /mindset — Mindset du jour\n\n"
+            "🎯 STRATÉGIE & BUSINESS\n"
+            "  /intel  /bizidea  /wealthplan\n"
+            "  /marketanalysis  /negotiate\n"
+            "  /sidehustles  /mindset\n"
+            "  /pitch  /businessmodel  /pricing\n\n"
 
-            f"🤖 VEILLE IA\n"
-            f"  /aitools [cat] — Meilleurs outils IA\n"
-            f"  /ainews — Sources veille IA\n"
-            f"  /aitrends — Tendances IA actuelles\n"
-            f"  /aidigest — Digest IA hebdo\n"
-            f"  /notaireia — IA pour notaires\n"
-            f"  /aibusiness — Opportunités IA\n\n"
+            "🤖 VEILLE IA\n"
+            "  /aitools  /ainews  /aitrends\n"
+            "  /aidigest  /aibusiness\n\n"
 
-            f"📋 TASKMASTER\n"
-            f"  /taskadd titre [|prio|date|cat]\n"
-            f"  /tasklist — Voir tâches\n"
-            f"  /taskdone <id> — Compléter\n"
-            f"  /taskweek — Bilan hebdo\n"
-            f"  /planday — Plan du jour IA\n\n"
+            "📋 TÂCHES\n"
+            "  /task <texte>  /done <n>  /tasks\n"
+            "  /habit <nom>  /pomodoro  /planday\n\n"
 
-            f"✈️ DEALS & VOYAGES\n"
-            f"  /flights [origin dest budget]\n"
-            f"  /weekenddeals — Weekends pas chers\n"
-            f"  /hotels ville [|checkin|nuits]\n"
-            f"  /errorfares — Erreurs tarifaires\n"
-            f"  /traveladvice <demande>\n\n"
+            "🏛 PRÉSIDENT JACQUES\n"
+            "  /president  /briefing  /goals\n"
+            "  /ptask  /pdone  /decide  /roast\n\n"
 
-            f"🏸 RÉSERVATION SPORT\n"
-            f"  /bookbad [ville] — Badminton\n"
-            f"  /bookpadel [ville] — Padel\n"
-            f"  /booktennis [ville] — Tennis\n"
-            f"  /bookfoot [ville] — Foot 5\n"
-            f"  /bookescalade [ville] — Escalade\n"
-            f"  /bookgym [ville] — Salle\n"
-            f"  /sports — Liste complète\n\n"
+            "🎤 VOIX — 20+ imitations\n"
+            "  /voix → liste des personnages\n"
+            "  /voix <perso> <texte>\n"
+            "  /fx → 18 effets vocaux\n\n"
 
-            f"🏋️ SPORT PRO\n"
-            f"  /sportlog sport [|durée|notes]\n"
-            f"  /sportstats — Mes stats\n"
-            f"  /sportprog [sport] — Programme\n"
-            f"  /nutrition [timing] — Nutrition\n"
-            f"  /customworkout <objectif>\n"
-            f"  /sportmotiv — Motivation\n\n"
+            "📖 BIBLE  |  📚 CULTURE\n"
+            "  /verse  /devotion  /fact\n"
+            "  /bookreco  /debate\n\n"
 
-            f"🎬 FILMS & SÉRIES\n"
-            f"  /trending — Tendances\n"
-            f"  /moviesearch <nom> — Chercher\n"
-            f"  /movietop [cat] — Top listes\n"
-            f"  /moviereco <mood> — Par humeur\n"
-            f"  /movieai <goûts> — Reco IA\n"
-            f"  /rt <film> — Rotten Tomatoes\n"
-            f"  /whatson — Streaming\n\n"
+            "🧠 MÉMOIRE\n"
+            "  /remember  /recall  /contact\n\n"
 
-            f"🎵 MUSIQUE\n"
-            f"  /playlist <mood> — Playlist\n"
-            f"  /discover <goûts> — Découverte IA\n"
-            f"  /similar <artiste> — Similaires\n"
-            f"  /topalbums [genre] — Top albums\n"
-            f"  /songofday — Chanson du jour\n"
-            f"  /newmusic — Nouveautés\n\n"
-
-            f"📖 BIBLE\n"
-            f"  /verse — Verset du jour\n"
-            f"  /bibletheme <thème> — Par thème\n"
-            f"  /proverb — Proverbe\n"
-            f"  /devotion [sujet] — Dévotion IA\n"
-            f"  /versesearch <mot>\n\n"
-
-            f"📚 CULTURE & SAVOIR\n"
-            f"  /fact — Fait du jour\n"
-            f"  /mentalmodel — Modèle mental\n"
-            f"  /bookreco — Livre à lire\n"
-            f"  /deeptopic <sujet> — Deep dive\n"
-            f"  /debate <sujet> — Débat\n"
-            f"  /vocabulary — Mot du jour\n\n"
-
-            f"👔 LE PRESIDENT\n"
-            f"  /president — Menu President\n"
-            f"  /briefing — Briefing du matin\n"
-            f"  /goals <texte> — Objectifs semaine\n"
-            f"  /task <texte> — Assigner tache\n"
-            f"  /donetask <n> — Completer tache\n"
-            f"  /tasks — Voir taches\n"
-            f"  /review — Revue performance\n"
-            f"  /directive <sujet> — Directive\n"
-            f"  /roast — Se faire roaster\n"
-            f"  /decide <question> — DECISION ULTIME\n\n"
-
-            f"Tape /help2 pour les commandes avancées."
+            "/help2 → commandes avancées"
         )
 
     def _get_help2(self) -> str:
-        """Advanced help — more commands."""
+        """Advanced commands — HUD style."""
         return (
-            f"🏛 TITAN — COMMANDES AVANCÉES\n"
-            f"{'=' * 30}\n\n"
+            "╔══════════════════════════════╗\n"
+            "║  T.I.T.A.N. — AVANCÉ        ║\n"
+            "╚══════════════════════════════╝\n\n"
 
-            f"📰 NEWS & FINANCE\n"
-            f"  /news /newsai /searchnews\n"
-            f"  /crypto /stocks /market\n\n"
+            "📰 NEWS\n"
+            "  /news  /newsai  /searchnews\n\n"
 
-            f"🌐 WEB & SEARCH\n"
-            f"  /search /url /translate\n\n"
+            "🌐 WEB\n"
+            "  /search  /url  /translate\n\n"
 
-            f"💼 UPWORK\n"
-            f"  /analyze /proposal /loom\n\n"
+            "💼 UPWORK & CLIENTS\n"
+            "  /analyze  /proposal  /loom\n"
+            "  /portfolio  /invoice  /estimate\n\n"
 
-            f"📧 EMAILS\n"
-            f"  /email /coldemail /followup /rewrite\n\n"
+            "📧 OUTREACH\n"
+            "  /email  /coldemail  /followup\n"
+            "  /linkedin  /thread  /caption\n\n"
 
-            f"💻 CODE\n"
-            f"  /code /debug /explain /review /regex /sql\n\n"
+            "💻 CODE\n"
+            "  /code  /debug  /explain\n"
+            "  /review  /regex  /sql\n\n"
 
-            f"🔧 TOOLBOX\n"
-            f"  /calc /convert /currency /timezone\n"
-            f"  /password /uuid /weather /ip /countdown\n\n"
+            "🔧 TOOLBOX\n"
+            "  /calc  /convert  /currency\n"
+            "  /weather  /password  /countdown\n\n"
 
-            f"🎨 CRÉATIF\n"
-            f"  /midjourney /dalle /sdprompt /promptgen\n"
-            f"  /blogpost /copywriting /story /slogan\n"
-            f"  /linkedin /thread /caption /hashtags\n"
-            f"  /ascii /banner /palette /colors\n\n"
+            "✍️ ÉCRITURE\n"
+            "  /blogpost  /copywriting  /slogan\n"
+            "  /summarize  /paraphrase\n\n"
 
-            f"🧰 OUTILS DEV\n"
-            f"  /seocheck /keywords /metatags\n"
-            f"  /domaincheck /dns /domainsuggest\n"
-            f"  /hash /base64 /morse /gentoken\n"
-            f"  /jsonformat /jsonvalidate /jsonsample\n"
-            f"  /invoice /estimate\n\n"
+            "🎨 PROMPTS IA\n"
+            "  /midjourney  /dalle  /sdprompt\n"
+            "  /promptgen  /improvePrompt\n\n"
 
-            f"🎤 VOICE & FX\n"
-            f"  /voice <texte> — Vocal TTS\n"
-            f"  /voix <perso> <texte> — Vocal style perso\n"
-            f"  /voix list — Liste personnages\n"
-            f"  /fx <effet> — Effet sur dernier vocal\n"
-            f"  /fx list — Liste effets\n\n"
+            "📊 SEO & DOMAINES\n"
+            "  /seocheck  /keywords  /metatags\n"
+            "  /domaincheck  /dns\n\n"
 
-            f"🎲 FUN\n"
-            f"  /meme /funfact /dadjoke /riddle\n"
-            f"  /trivia /horoscope /randomwiki\n"
-            f"  /iss /astronauts /apod\n\n"
+            "🏅 SPORT & STATS\n"
+            "  /sportlog  /sportstats  /sportprog\n"
+            "  /dashboard  /weekly  /heatmap\n\n"
 
-            f"🧠 MEMOIRE\n"
-            f"  /remember /recall /memories /forget\n"
-            f"  /contact /contacts\n\n"
-
-            f"🏅 GAMIFICATION\n"
-            f"  /profile /achievements /daily /leaderboard\n"
-            f"  /dashboard /weekly /heatmap"
+            "💪 MOTIVATION\n"
+            "  /motivation  /quote  /stoic  /hustle"
         )
 
     # === MAIN LOOP ===
@@ -1903,15 +1664,46 @@ REGLE ABSOLUE: Reponds en 2-5 phrases MAX. Conversationnel, direct, presidentiel
         """Main bot loop — Titan is alive."""
         self.running = True
 
+        # Register lazy modules in brain (triggers lazy load only for these core ones)
+        for name in ("news", "web", "finance", "upwork", "n8n", "email", "code", "portfolio"):
+            self.brain.register_module(name, getattr(self, name))
+
         # Load persisted offset — prevents reprocessing on restart
         self.offset = self._load_offset()
 
+        # On startup: drop pending updates to avoid replaying old messages
+        # This also kicks out any other polling instance (Render etc.) — only 1 can poll at a time
+        try:
+            requests.post(
+                f"{self.base_url}/deleteWebhook",
+                json={"drop_pending_updates": True},
+                timeout=5
+            )
+            log.info("  Startup: pending updates dropped (anti-doublon)")
+        except Exception:
+            pass
+
+        # If offset is 0 (fresh start), get the latest update_id to skip old messages
+        if self.offset == 0:
+            try:
+                resp = requests.get(
+                    f"{self.base_url}/getUpdates",
+                    params={"offset": -1, "limit": 1, "timeout": 0},
+                    timeout=5
+                )
+                results = resp.json().get("result", [])
+                if results:
+                    self.offset = results[-1]["update_id"] + 1
+                    self._save_offset(self.offset)
+                    log.info(f"  Fresh start — offset set to {self.offset}")
+            except Exception:
+                pass
+
         log.info("=" * 50)
-        log.info(f"  {TITAN_NAME} v1.0 — ONLINE")
-        log.info(f"  Modules: 50 modules actifs — L'Empereur est en ligne")
-        log.info(f"  Memory: loaded")
+        log.info(f"  T.I.T.A.N. v3.0 — ONLINE")
+        log.info(f"  32 modules — zero bloat")
         log.info(f"  Offset: {self.offset}")
-        log.info(f"  Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        log.info(f"  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         log.info("=" * 50)
 
         # No boot message — silent start, no spam
@@ -1939,26 +1731,11 @@ REGLE ABSOLUE: Reponds en 2-5 phrases MAX. Conversationnel, direct, presidentiel
         log.info("Titan shutdown complete.")
 
 
-async def _health_server():
-    """Minimal HTTP server so Render Web Service doesn't timeout on port scan."""
-    import socket
-    port = int(os.environ.get("PORT", 10000))
-    server = await asyncio.start_server(
-        lambda r, w: (w.write(b"HTTP/1.1 200 OK\r\n\r\nOK"), w.close()),
-        "0.0.0.0", port
-    )
-    async with server:
-        await server.serve_forever()
-
-
 async def main():
     """Entry point."""
     bot = TitanTelegram()
     try:
-        await asyncio.gather(
-            bot.run(),
-            _health_server(),
-        )
+        await bot.run()
     except KeyboardInterrupt:
         bot.stop()
 

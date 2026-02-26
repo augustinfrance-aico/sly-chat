@@ -4,23 +4,34 @@ Automated tasks that run on schedule — Titan works while you sleep.
 
 Features:
 - Daily morning brief (8h00)
-- Crypto alerts (significant price changes)
 - Streak reminders (evening)
 - Gamification daily reset
 """
 
 import asyncio
 import logging
-from datetime import datetime, time as dtime
+from datetime import datetime, time as dtime, timezone, timedelta
 from typing import Callable
 
 import requests
 
+# Timezone Paris (UTC+1 hiver, UTC+2 été)
+PARIS_TZ = timezone(timedelta(hours=1))  # CET — ajuster à +2 en été si besoin
+
+
+def _now_paris() -> datetime:
+    """Heure actuelle en Europe/Paris."""
+    return datetime.now(PARIS_TZ)
+
 from .config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
 from .modules.news import TitanNews
-from .modules.finance import TitanFinance
 from .modules.calendar import TitanCalendar
 from .modules.gamification import TitanGamification
+from .modules.morning_digest import TitanMorningDigest
+from .modules.journal import TitanJournal
+from .modules.auto_healer import TitanAutoHealer
+from .modules.aggregator import TitanAggregator
+from .modules.library import TitanLibrary
 
 log = logging.getLogger("titan.scheduler")
 
@@ -35,16 +46,21 @@ class TitanScheduler:
 
         # Modules
         self.news = TitanNews()
-        self.finance = TitanFinance()
         self.calendar = TitanCalendar()
         self.gamification = TitanGamification()
+        self.morning_digest = TitanMorningDigest()
+        self.journal = TitanJournal()
+        self.auto_healer = TitanAutoHealer()
+        self.aggregator = TitanAggregator()
+        self.library = TitanLibrary()
 
         # State
         self.last_brief_date = None
-        self.last_crypto_check = None
         self.last_evening_reminder = None
-        self.crypto_prices_cache = {}
-        self.crypto_alerted_today = {}  # symbol -> date string (ne respamme pas le même jour)
+        self.last_digest_date = None
+        self.last_journal_prompt = None
+        self.last_health_check = None
+        self.last_aggregator_date = None
 
     def send_telegram(self, text: str):
         """Send a message to Telegram. Truncate if too long."""
@@ -63,7 +79,7 @@ class TitanScheduler:
 
     async def morning_brief(self):
         """Send the daily morning brief at 8:00 AM."""
-        now = datetime.now()
+        now = _now_paris()
 
         if now.hour == 8 and now.minute < 5:
             today = now.strftime("%Y-%m-%d")
@@ -87,20 +103,6 @@ class TitanScheduler:
             except Exception as e:
                 sections.append(f"📰 News indisponibles: {e}\n")
 
-            # Crypto
-            try:
-                crypto = await self.finance.get_crypto_brief()
-                sections.append(f"{crypto}\n")
-            except Exception as e:
-                sections.append(f"🪙 Crypto indisponible: {e}\n")
-
-            # Stocks
-            try:
-                stocks = await self.finance.get_stocks_brief()
-                sections.append(f"{stocks}\n")
-            except Exception:
-                pass
-
             # Tasks for today
             try:
                 tasks = self.calendar.list_tasks()
@@ -122,48 +124,9 @@ class TitanScheduler:
             self.send_telegram("\n".join(sections))
             log.info("Morning brief sent.")
 
-    async def crypto_alerts(self):
-        """Check for significant crypto price changes."""
-        now = datetime.now()
-
-        if self.last_crypto_check and (now - self.last_crypto_check).total_seconds() < 14400:
-            return
-
-        self.last_crypto_check = now
-        today = now.strftime("%Y-%m-%d")
-
-        try:
-            prices = self.finance.get_crypto_prices()
-            if "error" in prices:
-                return
-
-            alerts = []
-            for symbol, data in prices.items():
-                change = abs(data.get("change_24h", 0))
-
-                # Ne pas respammer le même symbole le même jour
-                if self.crypto_alerted_today.get(symbol) == today:
-                    continue
-
-                if change > 10:
-                    direction = "📈" if data["change_24h"] > 0 else "📉"
-                    alerts.append(
-                        f"{direction} {symbol}: {data['change_24h']:+.1f}% "
-                        f"(${data['usd']:,.0f})"
-                    )
-                    self.crypto_alerted_today[symbol] = today
-
-            if alerts:
-                msg = "🚨 ALERTE CRYPTO\n\n" + "\n".join(alerts)
-                self.send_telegram(msg)
-                log.info(f"Crypto alert sent: {len(alerts)} alerts")
-
-        except Exception as e:
-            log.error(f"Crypto alert error: {e}")
-
     async def evening_reminder(self):
         """Send an evening reminder about streak and habits at 21:00."""
-        now = datetime.now()
+        now = _now_paris()
 
         if now.hour == 21 and now.minute < 5:
             today = now.strftime("%Y-%m-%d")
@@ -186,16 +149,90 @@ class TitanScheduler:
             self.send_telegram("\n".join(sections))
             log.info("Evening reminder sent.")
 
+    async def smart_morning_digest(self):
+        """Send the smart morning digest at 8:00 AM (replaces old brief)."""
+        now = _now_paris()
+        if now.hour == 8 and now.minute < 5:
+            today = now.strftime("%Y-%m-%d")
+            if self.last_digest_date == today:
+                return
+            self.last_digest_date = today
+            log.info("Generating smart morning digest...")
+            try:
+                digest = await self.morning_digest.generate()
+                self.send_telegram(digest)
+                log.info("Smart morning digest sent.")
+            except Exception as e:
+                log.error(f"Morning digest error: {e}")
+
+    async def evening_journal_prompt(self):
+        """Send journal prompt at 21:30 — FLEMMARD approved (just 3 questions)."""
+        now = _now_paris()
+        if now.hour == 21 and 25 <= now.minute <= 35:
+            today = now.strftime("%Y-%m-%d")
+            if self.last_journal_prompt == today:
+                return
+            self.last_journal_prompt = today
+            log.info("Sending journal prompt...")
+            try:
+                prompt = self.journal.start_evening_session()
+                self.send_telegram(prompt)
+                log.info("Journal prompt sent.")
+            except Exception as e:
+                log.error(f"Journal prompt error: {e}")
+
+    async def daily_health_check(self):
+        """Run auto-healer health check at 6:00 AM."""
+        now = _now_paris()
+        if now.hour == 6 and now.minute < 5:
+            today = now.strftime("%Y-%m-%d")
+            if self.last_health_check == today:
+                return
+            self.last_health_check = today
+            log.info("Running daily health check...")
+            try:
+                report = self.auto_healer.health_check()
+                # Only send if issues found
+                if "NOMINAL" not in report:
+                    self.send_telegram(report)
+                log.info("Health check done.")
+            except Exception as e:
+                log.error(f"Health check error: {e}")
+
+    async def afternoon_digest(self):
+        """Send aggregator digest at 14:00."""
+        now = _now_paris()
+        if now.hour == 14 and now.minute < 5:
+            today = now.strftime("%Y-%m-%d")
+            if self.last_aggregator_date == today:
+                return
+            self.last_aggregator_date = today
+            log.info("Generating afternoon digest...")
+            try:
+                digest = await self.aggregator.generate_daily_digest()
+                self.send_telegram(digest)
+                log.info("Afternoon digest sent.")
+            except Exception as e:
+                log.error(f"Aggregator error: {e}")
+
     async def run(self):
         """Main scheduler loop."""
         self.running = True
-        log.info("Scheduler started.")
+        log.info("Scheduler started (with Building Life modules).")
+
+        # Boot delay — skip 2 min after deploy to avoid spam
+        log.info("Scheduler boot delay: 120s (anti-spam on deploy)")
+        await asyncio.sleep(120)
+        log.info("Scheduler active.")
 
         while self.running:
             try:
-                await self.morning_brief()
-                await self.crypto_alerts()
-                await self.evening_reminder()
+                await self.daily_health_check()       # 6h — santé TITAN
+                await self.smart_morning_digest()      # 8h — digest du matin
+                # morning_brief supprimé — doublon avec smart_morning_digest
+                await self.afternoon_digest()          # 14h — agrégateur
+                await self.evening_reminder()          # 21h — rappel habitudes
+                await self.evening_journal_prompt()    # 21h30 — journal du soir
             except Exception as e:
                 log.error(f"Scheduler error: {e}")
 
