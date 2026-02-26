@@ -103,10 +103,6 @@ class TitanTelegram:
         return _lazy(".modules.web", "TitanWeb")
 
     @property
-    def finance(self):
-        return _lazy(".modules.finance", "TitanFinance")
-
-    @property
     def upwork(self):
         return _lazy(".modules.upwork", "TitanUpwork")
 
@@ -145,10 +141,6 @@ class TitanTelegram:
     @property
     def ai_prompt(self):
         return _lazy(".modules.ai_prompt", "TitanAIPrompt")
-
-    @property
-    def defi(self):
-        return _lazy(".modules.crypto_defi", "TitanDeFi")
 
     @property
     def seo(self):
@@ -1665,7 +1657,7 @@ REGLE ABSOLUE: Reponds en 2-5 phrases MAX. Conversationnel, direct, presidentiel
         self.running = True
 
         # Register lazy modules in brain (triggers lazy load only for these core ones)
-        for name in ("news", "web", "finance", "upwork", "n8n", "email", "code", "portfolio"):
+        for name in ("news", "web", "upwork", "n8n", "email", "code", "portfolio"):
             self.brain.register_module(name, getattr(self, name))
 
         # Load persisted offset — prevents reprocessing on restart
