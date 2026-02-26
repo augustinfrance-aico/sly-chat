@@ -9,7 +9,11 @@ from typing import Optional
 
 import requests
 
-from ..config import CRYPTO_WATCHLIST, STOCK_WATCHLIST
+try:
+    from ..config import CRYPTO_WATCHLIST, STOCK_WATCHLIST
+except ImportError:
+    CRYPTO_WATCHLIST = []
+    STOCK_WATCHLIST = []
 from ..ai_client import chat as ai_chat
 
 

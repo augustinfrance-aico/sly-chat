@@ -1,0 +1,3952 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TITAN-COMMAND v2 — Centre de Commandement</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TITAN-CMD">
+<meta name="theme-color" content="#080810">
+<link rel="manifest" href="data:application/json,{%22name%22:%22TITAN-COMMAND%22,%22short_name%22:%22TITAN%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23080810%22,%22theme_color%22:%22%237B2FF7%22}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+:root {
+    --bg: #080810;
+    --bg2: #0f0f1a;
+    --bg3: #161628;
+    --bg4: #1e1e35;
+    --primary: #7B2FF7;
+    --secondary: #00D4FF;
+    --accent: #FF6B35;
+    --green: #00FF88;
+    --red: #FF3366;
+    --yellow: #FFD700;
+    --text: #e0e0e0;
+    --text-dim: #8888aa;
+    --border: #252540;
+    --glow-p: rgba(123,47,247,0.3);
+    --glow-s: rgba(0,212,255,0.2);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* === HEX GRID BACKGROUND === */
+.hex-bg {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.08;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%237B2FF7' fill-opacity='1'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* === HEADER === */
+.header {
+    background: linear-gradient(135deg, rgba(15,15,26,0.95) 0%, rgba(20,10,40,0.95) 50%, rgba(10,15,30,0.95) 100%);
+    background-size: 200% 200%;
+    border-bottom: 1px solid rgba(123,47,247,0.3);
+    padding: 12px 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    animation: gradientShift 8s ease infinite, glowBreathe 4s ease infinite;
+}
+.header-left { display: flex; align-items: center; gap: 15px; }
+.logo {
+    font-size: 22px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.logo-raccoon {
+    width: 32px;
+    height: 32px;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 0 6px rgba(37,99,235,0.5));
+    flex-shrink: 0;
+}
+.logo-sub { font-size: 10px; color: var(--text-dim); letter-spacing: 4px; text-transform: uppercase; }
+.status-bar { display: flex; gap: 15px; font-size: 11px; align-items: center; }
+.status-item { display: flex; align-items: center; gap: 4px; }
+.dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+.dot.on { background: var(--green); box-shadow: 0 0 6px var(--green), 0 0 12px rgba(0,255,136,0.3); }
+.dot.warn { background: var(--yellow); }
+.dot.off { background: var(--red); }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)} }
+@keyframes slideIn { from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)} }
+@keyframes gradientShift { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
+@keyframes loadBar { from{width:0}to{width:100%} }
+
+/* Intro Splash — Cinematic Raccoon */
+.splash {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #080810;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+.splash.gone { opacity: 0; visibility: hidden; pointer-events: none; }
+.raccoon-grid {
+    width: fit-content;
+    height: fit-content;
+    display: grid;
+    grid-template-columns: repeat(16,6px);
+    grid-template-rows: repeat(20,6px);
+    gap: 0;
+    margin-bottom: 18px;
+    image-rendering: pixelated;
+    position: relative;
+}
+.raccoon-grid .px {
+    opacity: 0;
+    animation: pxAppear 0.04s ease forwards;
+}
+.raccoon-grid .px.eye {
+    animation: pxAppear 0.04s ease forwards, eyeGlow 1.5s ease-in-out 2s infinite;
+}
+@keyframes pxAppear { to { opacity:1; } }
+@keyframes eyeGlow {
+    0%, 100% { box-shadow: 0 0 4px #D4A017, 0 0 8px rgba(212,160,23,0.5); filter: brightness(1.2); }
+    50% { box-shadow: 0 0 12px #D4A017, 0 0 24px rgba(212,160,23,0.8); filter: brightness(1.8); }
+}
+/* Scanline effect over raccoon */
+.raccoon-scanline {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.6), transparent);
+    animation: scanlineDown 2s ease-in-out 1.2s infinite;
+    pointer-events: none;
+    z-index: 2;
+    border-radius: 2px;
+}
+@keyframes scanlineDown {
+    0% { top: -3px; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+}
+.splash-logo {
+    font-size: 52px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #7B2FF7, #00D4FF, #00FF88);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 3px;
+    opacity: 0;
+    animation: glitchReveal 0.6s ease 1.6s forwards;
+}
+@keyframes glitchReveal {
+    0% { opacity:0; transform:translateX(-8px) skewX(-5deg); filter:blur(4px); }
+    30% { opacity:1; transform:translateX(4px) skewX(2deg); filter:blur(0); }
+    50% { transform:translateX(-2px) skewX(-1deg); }
+    70% { transform:translateX(1px) skewX(0); }
+    100% { opacity:1; transform:translateX(0); }
+}
+.splash-hello {
+    font-size: 22px;
+    color: #8888aa;
+    opacity: 0;
+    animation: fadeIn 0.6s ease 2.2s forwards;
+}
+.splash-name {
+    font-size: 28px;
+    font-weight: 700;
+    color: #e0e0e0;
+    opacity: 0;
+    animation: fadeIn 0.6s ease 2.5s forwards;
+    margin-top: 4px;
+}
+.splash-bar {
+    width: 200px;
+    height: 2px;
+    background: var(--bg3);
+    border-radius: 1px;
+    margin-top: 18px;
+    overflow: hidden;
+    opacity: 0;
+    animation: fadeIn 0.3s ease 1.5s forwards;
+}
+.splash-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7B2FF7, #00D4FF, #00FF88);
+    background-size: 200% 100%;
+    border-radius: 1px;
+    animation: loadBar 2s ease 1.5s both, gradientShift 1s ease infinite;
+}
+
+/* Matrix Rain Background */
+.matrix-rain {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+    opacity: 0.03;
+}
+.matrix-col {
+    position: absolute;
+    top: -100%;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #00FF88;
+    writing-mode: vertical-rl;
+    animation: matrixFall linear infinite;
+    will-change: transform;
+    contain: layout style;
+}
+@keyframes matrixFall {
+    0% { top: -100%; }
+    100% { top: 100%; }
+}
+
+/* Glow Breathing Header */
+@keyframes glowBreathe {
+    0%, 100% { border-bottom-color: rgba(123,47,247,0.4); box-shadow: 0 1px 12px rgba(123,47,247,0.15); }
+    50% { border-bottom-color: rgba(0,212,255,0.4); box-shadow: 0 1px 12px rgba(0,212,255,0.15); }
+}
+
+/* Header Orb */
+.header-orb {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #7B2FF7, #00D4FF);
+    box-shadow: 0 0 8px #7B2FF7, 0 0 16px rgba(0,212,255,0.3);
+    animation: orbFloat 3s ease-in-out infinite, pulse 2s infinite;
+    margin-left: 10px;
+}
+@keyframes orbFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+}
+
+/* Ticker — BFM Style */
+.ticker-wrap {
+    background: rgba(15,15,26,0.9);
+    border-top: 1px solid rgba(255,51,102,0.2);
+    padding: 0;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    grid-column: 1 / -1;
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    opacity: 0.7;
+}
+.ticker-status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 10px;
+    font-size: 9px;
+    font-weight: 800;
+    color: white;
+    white-space: nowrap;
+    border-right: 1px solid rgba(255,51,102,0.3);
+    height: 100%;
+    z-index: 2;
+    background: linear-gradient(135deg, #CC0000, #880000);
+    flex-shrink: 0;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    animation: bfmPulse 2s ease infinite;
+}
+@keyframes bfmPulse {
+    0%, 100% { background: linear-gradient(135deg, #CC0000, #880000); }
+    50% { background: linear-gradient(135deg, #FF1133, #AA0000); }
+}
+.ticker-track {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+.ticker-content {
+    display: flex;
+    white-space: nowrap;
+    animation: tickerScroll 60s linear infinite;
+    font-size: 10px;
+    color: var(--text);
+    gap: 0;
+}
+.ticker-content span {
+    padding: 0 10px;
+}
+@keyframes tickerScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* 3D Isometric Tower */
+.iso-tower {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    padding: 30px 20px;
+    gap: 4px;
+    perspective: 800px;
+    min-height: 500px;
+    position: relative;
+}
+.iso-floor {
+    width: 280px;
+    padding: 14px 18px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    transform: rotateX(10deg) rotateY(-5deg);
+    transform-style: preserve-3d;
+    transition: all 0.4s ease;
+    position: relative;
+    cursor: default;
+}
+.iso-floor:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 20px var(--glow-p);
+    transform: rotateX(10deg) rotateY(-5deg) translateY(-4px);
+}
+.iso-floor-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+}
+.iso-agents {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.iso-agent {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    padding: 2px 6px;
+    background: var(--bg);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    border: 1px solid transparent;
+}
+.iso-agent:hover { background: var(--bg3); border-color: var(--primary); box-shadow: 0 0 6px var(--glow-p); }
+@keyframes isoFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+}
+.iso-particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    top: 0; left: 0;
+}
+.iso-particle {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: var(--primary);
+    border-radius: 50%;
+    opacity: 0.4;
+    animation: particleRise 4s linear infinite;
+}
+@keyframes particleRise {
+    0% { bottom: 0; opacity: 0.4; }
+    100% { bottom: 100%; opacity: 0; }
+}
+@keyframes glowPulse { 0%,100%{box-shadow:0 0 5px var(--glow-p)}50%{box-shadow:0 0 20px var(--glow-p)} }
+.clock { color: var(--yellow); font-weight: bold; font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', 'Courier New', monospace; }
+
+/* === MAIN LAYOUT === */
+.main {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: calc(100vh - 55px);
+    position: relative;
+    z-index: 1;
+}
+
+/* === LEFT SIDEBAR === */
+.sidebar {
+    background: rgba(15,15,26,0.85);
+    border-right: 1px solid var(--border);
+    padding: 15px;
+    overflow-y: auto;
+    backdrop-filter: blur(12px);
+}
+.section-title {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+}
+
+/* Planet cards */
+.planet {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 0.5s ease;
+}
+.planet:hover { border-color: var(--primary); transform: translateX(2px); }
+.planet.active { border-color: var(--secondary); box-shadow: 0 0 15px var(--glow-s); }
+.planet-bar {
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    border-radius: 0 2px 2px 0;
+}
+.planet-bar.r { background: var(--secondary); }
+.planet-bar.f { background: var(--accent); }
+.planet-bar.d { background: var(--green); }
+.planet-name { font-size: 13px; font-weight: 700; margin-left: 5px; }
+.planet-role { font-size: 10px; color: var(--text-dim); margin: 2px 0 8px 5px; }
+.health-row { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+.health-track { flex:1; height:3px; background:var(--bg); border-radius:2px; overflow:hidden; }
+.health-fill { height:100%; border-radius:2px; transition: width 1s ease; }
+.planet-agents-text { font-size: 9px; color: var(--text-dim); margin-top: 6px; margin-left: 5px; }
+
+/* Agent list */
+.agent-list { margin-top: 15px; }
+.agent-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 6px;
+    border-radius: 5px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    animation: slideIn 0.3s ease;
+}
+.agent-row:hover { background: var(--bg3); }
+.agent-em { font-size: 14px; }
+.agent-nm { flex: 1; }
+.agent-nm .gov { color: var(--yellow); font-size: 9px; }
+.agent-dot { width:5px; height:5px; border-radius:50%; background:var(--green); }
+.agent-status {
+    font-size: 8px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    min-width: 50px;
+    text-align: right;
+    animation: statusFade 0.4s ease;
+}
+@keyframes statusFade { from{opacity:0;transform:translateX(4px)}to{opacity:1;transform:translateX(0)} }
+/* Health bar pulse */
+@keyframes healthPulse {
+    0% { box-shadow: none; }
+    50% { box-shadow: 0 0 8px currentColor, 0 0 16px currentColor; }
+    100% { box-shadow: none; }
+}
+.health-track.pulsing .health-fill {
+    animation: healthPulse 0.8s ease;
+}
+
+/* === CENTER === */
+.center { display: flex; flex-direction: column; background: var(--bg); }
+.view-head {
+    background: var(--bg2);
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    overflow: hidden;
+}
+.view-title { font-size: 15px; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+.tabs { display: flex; gap: 4px; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; -ms-overflow-style: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+    padding: 4px 12px;
+    font-size: 10px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.tab:hover, .tab.on { background: var(--primary); color: white; border-color: var(--primary); }
+
+/* Grid */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    padding: 20px;
+    flex: 1;
+    overflow-y: auto;
+    align-content: start;
+}
+.card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    transition: all 0.3s;
+    animation: fadeIn 0.4s ease;
+    will-change: transform;
+    position: relative;
+    overflow: hidden;
+    min-height: 100px;
+    line-height: 1.7;
+}
+.card:hover { border-color: var(--primary); box-shadow: 0 0 20px var(--glow-p), inset 0 0 30px rgba(123,47,247,0.05); transform: translateY(-2px); }
+.card::after { content:''; position:absolute; top:0; left:-100%; width:60%; height:100%; background:linear-gradient(90deg,transparent,rgba(123,47,247,0.06),transparent); transition:left 0.5s ease; pointer-events:none; }
+.card:hover::after { left:120%; }
+.card h4 { font-size: 10px; letter-spacing: 2px; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; }
+.card .big {
+    font-size: 30px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.card .sub { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
+.card.w2 { grid-column: span 2; }
+.card.w3 { grid-column: span 2; }
+
+/* Mini chart */
+.chart { display:flex; align-items:flex-end; gap:3px; height:45px; margin-top:10px; }
+.bar {
+    flex:1; background: linear-gradient(180deg, var(--primary), var(--secondary));
+    border-radius: 2px 2px 0 0;
+    min-height: 3px;
+    transition: height 0.6s ease;
+    opacity: 0.7;
+    position: relative;
+}
+.bar:hover { opacity: 1; }
+.bar .tip {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg4);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 9px;
+    white-space: nowrap;
+}
+.bar:hover .tip { display: block; }
+
+/* Flux rows */
+.flux { display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid var(--border); font-size:12px; }
+.flux:last-child { border: none; }
+.flux-name { flex: 1; }
+.badge {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.badge.ok { background: rgba(0,255,136,0.1); color: var(--green); }
+.badge.warn { background: rgba(255,215,0,0.1); color: var(--yellow); }
+.badge.err { background: rgba(255,51,102,0.1); color: var(--red); }
+
+/* Boucle R→F→D */
+.boucle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    padding: 15px 0;
+}
+.boucle-node { text-align: center; }
+.boucle-node .icon { font-size: 26px; margin-bottom: 4px; }
+.boucle-node .label { font-weight: 700; font-size: 12px; }
+.boucle-node .desc { font-size: 9px; color: var(--text-dim); }
+.boucle-arrow {
+    font-size: 20px;
+    color: var(--primary);
+    animation: glowPulse 2s infinite;
+}
+
+/* Module grid */
+.mod-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.mod-cell {
+    padding: 8px;
+    background: var(--bg);
+    border-radius: 5px;
+    font-size: 11px;
+    border: 1px solid transparent;
+    transition: border-color 0.2s;
+}
+.mod-cell:hover { border-color: var(--border); }
+
+/* (bottom-panel removed — replaced by dock) */
+.panel {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border);
+}
+.panel h3 { font-size: 10px; letter-spacing: 3px; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; }
+.omega-line { font-size: 12px; line-height: 1.8; display: flex; justify-content: space-between; align-items: center; }
+.omega-val { text-align: right; }
+
+/* Rapport de situation */
+.rapport-btn {
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(135deg, var(--primary), #5a1fd0);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    margin-top: 8px;
+}
+.rapport-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 15px var(--glow-p); }
+
+/* Activity feed */
+.feed { max-height: 180px; overflow-y: auto; }
+.feed-item {
+    display: flex;
+    gap: 6px;
+    padding: 4px 0;
+    font-size: 10px;
+    border-bottom: 1px solid rgba(37,37,64,0.5);
+    animation: slideIn 0.3s ease;
+}
+.feed-time { color: var(--text-dim); white-space: nowrap; min-width: 40px; }
+
+/* Console */
+.console {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 15px;
+    min-height: 0;
+}
+.console h3 { font-size: 10px; letter-spacing: 3px; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; }
+.con-out {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 10px;
+    overflow-y: auto;
+    line-height: 1.6;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+}
+.con-line { margin-bottom: 1px; }
+.con-line.sys { color: var(--secondary); }
+.con-line.ok { color: var(--green); }
+.con-line.err { color: var(--red); }
+.con-line.wrn { color: var(--yellow); }
+.con-line .t { color: var(--text-dim); margin-right: 6px; }
+.con-wrap {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+}
+.con-in {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 7px 10px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 11px;
+    outline: none;
+}
+.con-in:focus { border-color: var(--primary); box-shadow: 0 0 8px var(--glow-p); }
+.con-btn {
+    background: var(--primary);
+    border: none;
+    border-radius: 4px;
+    padding: 7px 12px;
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/* Bottom (replaced by ticker) */
+
+/* Modal */
+.overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+.overlay.show { display: flex; }
+.modal {
+    background: var(--bg2);
+    border: 1px solid var(--primary);
+    border-radius: 14px;
+    padding: 25px;
+    max-width: 650px;
+    width: 92%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 0 50px var(--glow-p);
+    animation: fadeIn 0.3s ease;
+    position: relative;
+}
+.modal h2 {
+    font-size: 18px;
+    margin-bottom: 12px;
+    margin-right: 30px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.modal-x {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 22px;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+}
+.modal-x:hover { color: var(--text); }
+
+/* (shortcuts hint removed) */
+
+/* Chat */
+.chat-msg {
+    padding: 12px 16px;
+    margin-bottom: 0;
+    border-radius: 16px;
+    animation: fadeIn 0.3s ease;
+    max-width: 80%;
+    word-break: break-word;
+}
+.chat-msg.user {
+    background: linear-gradient(135deg, rgba(123,47,247,0.15), rgba(123,47,247,0.05));
+    border: 1px solid rgba(123,47,247,0.2);
+    border-left: none;
+    margin-left: auto;
+    border-radius: 16px 16px 4px 16px;
+}
+.chat-msg.ai {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-left: none;
+    margin-right: auto;
+    border-radius: 16px 16px 16px 4px;
+}
+.chat-msg .sender { font-size: 10px; color: var(--text-dim); margin-bottom: 3px; }
+.chat-msg .text { font-size: 12px; line-height: 1.6; }
+.chat-msg .model-tag {
+    display: inline-block;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: rgba(123,47,247,0.15);
+    color: var(--primary);
+    margin-left: 6px;
+    letter-spacing: 0.5px;
+}
+.typewriter-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: var(--secondary);
+    animation: blink 0.6s step-end infinite;
+    vertical-align: text-bottom;
+    margin-left: 1px;
+}
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
+
+/* Extensions */
+.ext-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+.ext-card:hover { border-color: var(--primary); }
+.ext-card.disabled { opacity: 0.4; }
+.ext-icon { font-size: 20px; }
+.ext-info { flex: 1; }
+.ext-name { font-size: 12px; font-weight: 700; }
+.ext-desc { font-size: 10px; color: var(--text-dim); }
+.ext-toggle {
+    width: 36px; height: 20px;
+    background: var(--border);
+    border-radius: 10px;
+    position: relative;
+    transition: background 0.3s;
+    cursor: pointer;
+}
+.ext-toggle.on { background: var(--green); }
+.ext-toggle::after {
+    content: '';
+    width: 16px; height: 16px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px; left: 2px;
+    transition: transform 0.3s;
+}
+.ext-toggle.on::after { transform: translateX(16px); }
+
+/* Directives */
+.dir-item {
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    border-bottom: 1px solid var(--border);
+}
+.dir-item:hover { background: var(--bg3); }
+.dir-item.active { background: var(--bg3); border-left: 2px solid var(--primary); }
+.dir-icon { font-size: 12px; }
+.dir-cat {
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-left: auto;
+}
+.dir-cat.core { background: rgba(123,47,247,0.2); color: var(--primary); }
+.dir-cat.directive { background: rgba(0,212,255,0.2); color: var(--secondary); }
+.dir-cat.personnalite { background: rgba(255,107,53,0.2); color: var(--accent); }
+
+/* Anneal animation */
+@keyframes annealSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+.annealing { animation: annealSpin 1s linear infinite; display: inline-block; }
+
+/* Pokédex */
+.poke-card {
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 15px;
+    transition: all 0.3s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+.poke-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+.poke-card.legendary { border-color: #7B2FF7; box-shadow: 0 0 15px rgba(123,47,247,0.2); }
+.poke-card.rare { border-color: #FFD700; }
+.poke-card .poke-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.poke-card .poke-name { font-size: 16px; font-weight: 800; }
+.poke-card .poke-form { font-size: 10px; padding: 2px 8px; border-radius: 10px; background: var(--bg3); }
+.poke-card .poke-form.mythical { background: rgba(123,47,247,0.2); color: #7B2FF7; }
+.poke-card .poke-form.evolved { background: rgba(0,212,255,0.2); color: #00D4FF; }
+.poke-card .poke-form.rookie { background: rgba(255,255,255,0.1); color: #888; }
+.poke-card .poke-type { font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-left: 4px; }
+.poke-card .poke-stats { margin-top: 10px; }
+.poke-card .poke-stat { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 10px; }
+.poke-card .poke-stat-label { width: 70px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+.poke-card .poke-stat-bar { flex: 1; height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.poke-card .poke-stat-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+.poke-card .poke-stat-val { width: 25px; text-align: right; font-weight: 700; }
+.poke-card .poke-moves { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 4px; }
+.poke-card .poke-move { font-size: 9px; padding: 2px 8px; border-radius: 4px; background: var(--bg3); border: 1px solid var(--border); }
+.poke-card .poke-quote { font-style: italic; font-size: 10px; color: var(--text-dim); margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px; }
+.poke-card .poke-xp { margin-top: 8px; }
+.poke-card .poke-xp-bar { height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+.poke-card .poke-xp-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 2px; }
+
+/* Sparkline mini chart */
+.sparkline { display: flex; align-items: flex-end; gap: 2px; height: 20px; margin-top: 8px; }
+.sparkline .spark-bar {
+    flex: 1;
+    background: linear-gradient(180deg, var(--secondary), var(--primary));
+    border-radius: 1px 1px 0 0;
+    min-height: 2px;
+    opacity: 0.7;
+    transition: height 0.4s ease;
+}
+.sparkline .spark-bar:hover { opacity: 1; }
+
+/* Mini donut chart (CSS only) */
+.mini-donut {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    position: relative;
+    margin-top: 6px;
+    display: inline-block;
+    vertical-align: middle;
+}
+.mini-donut-label {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+/* Revenue counter */
+.revenue-counter {
+    font-variant-numeric: tabular-nums;
+    font-family: 'JetBrains Mono', monospace;
+}
+@keyframes revenuePulse {
+    0%, 100% { text-shadow: 0 0 0px transparent; }
+    50% { text-shadow: 0 0 12px rgba(0,255,136,0.5); }
+}
+
+/* Matrix flash overlay */
+.matrix-flash {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    background: #000;
+    color: #00FF88;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.2;
+    overflow: hidden;
+    pointer-events: none;
+    animation: matrixFlashFade 2s ease forwards;
+    padding: 10px;
+    white-space: pre;
+    word-break: break-all;
+}
+@keyframes matrixFlashFade {
+    0% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* View content fade transition */
+.view-content { animation: fadeIn 0.3s ease; }
+
+/* Active state for touch */
+.tab:active, .planet:active, .rapport-btn:active, .con-btn:active, .ext-card:active, .dir-item:active, .agent-row:active {
+    transform: scale(0.97);
+    opacity: 0.8;
+}
+
+/* Toast notification system */
+.toast-container { position: fixed; top: 20px; right: 20px; z-index: 300; display: flex; flex-direction: column; gap: 8px; }
+.toast { padding: 12px 20px; border-radius: 8px; font-size: 12px; animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s forwards; backdrop-filter: blur(12px); border: 1px solid var(--border); max-width: 320px; }
+.toast.success { background: rgba(0,255,136,0.15); border-color: var(--green); color: var(--green); }
+.toast.error { background: rgba(255,51,102,0.15); border-color: var(--red); color: var(--red); }
+.toast.info { background: rgba(0,212,255,0.15); border-color: var(--secondary); color: var(--secondary); }
+@keyframes slideInRight { from{opacity:0;transform:translateX(100px)}to{opacity:1;transform:translateX(0)} }
+@keyframes fadeOut { to{opacity:0;transform:translateY(-10px)} }
+
+/* Chat typing dots */
+.chat-typing { display: flex; gap: 4px; align-items: center; padding: 8px 12px; }
+.chat-typing .dot-anim { width: 6px; height: 6px; border-radius: 50%; background: var(--secondary); animation: typingBounce 1.4s infinite; }
+.chat-typing .dot-anim:nth-child(2) { animation-delay: 0.2s; }
+.chat-typing .dot-anim:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce { 0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-8px)} }
+
+/* Click particle effect */
+.click-particle { position: fixed; width: 4px; height: 4px; border-radius: 50%; pointer-events: none; z-index: 999; animation: particleFly 0.6s ease-out forwards; }
+@keyframes particleFly { 0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(0) translate(var(--dx), var(--dy))} }
+
+/* Quick Actions Bar (mobile) */
+.quick-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(15,15,26,0.95);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    padding: 6px 8px env(safe-area-inset-bottom);
+    z-index: 150;
+    display: none;
+}
+.quick-bar-inner { display: flex; justify-content: space-around; gap: 4px; }
+.quick-btn {
+    flex: 1;
+    padding: 10px 4px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+.quick-btn:active { transform: scale(0.95); background: var(--primary); }
+.quick-btn .qicon { font-size: 16px; display: block; margin-bottom: 2px; }
+
+/* Bottom connected indicator */
+.bottom-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+}
+.bottom-dot.on { background: var(--green); box-shadow: 0 0 4px var(--green); }
+.bottom-dot.off { background: var(--red); box-shadow: 0 0 4px var(--red); }
+
+/* DNA Helix */
+.dna-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0.15;
+}
+.dna-strand {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    animation: dnaRotate 3s linear infinite;
+}
+@keyframes dnaRotate {
+    0% { transform: translateX(calc(30px * var(--sin))) translateY(var(--y)); opacity: 0.3; }
+    25% { opacity: 1; }
+    50% { transform: translateX(calc(-30px * var(--sin))) translateY(var(--y)); opacity: 0.3; }
+    75% { opacity: 1; }
+    100% { transform: translateX(calc(30px * var(--sin))) translateY(var(--y)); opacity: 0.3; }
+}
+
+/* Agent Avatar */
+.agent-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--bg3), var(--bg4));
+    flex-shrink: 0;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.agent-avatar:hover {
+    border-color: var(--primary);
+    box-shadow: 0 0 12px var(--glow-p);
+    transform: scale(1.1);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1100px) {
+    .main { grid-template-columns: 200px 1fr; }
+}
+@media (max-width: 1024px) {
+    .main { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+}
+@media (max-width: 850px) {
+    .main { grid-template-columns: 1fr; grid-template-rows: auto; }
+    .sidebar { display: none; }
+    .dock { display: none !important; }
+    .console-drawer { bottom: 70px; }
+    .omega-overlay { bottom: 70px; }
+    .grid { grid-template-columns: 1fr; }
+    .card.w2, .card.w3 { grid-column: span 1; }
+    .header { padding: 10px 15px; flex-wrap: wrap; gap: 8px; }
+    .status-bar { font-size: 9px; gap: 8px; flex-wrap: wrap; }
+    /* Tabs: icon only on mobile */
+    .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; padding-bottom: 2px; }
+    .tab { font-size: 14px; padding: 6px 10px; white-space: nowrap; }
+    .tab .tab-label { display: none; }
+    .tab::before { content: attr(data-icon); }
+    .view-head { flex-direction: column; gap: 8px; padding: 10px 15px; }
+    .grid { padding: 10px; gap: 8px; }
+    .boucle { flex-wrap: wrap; }
+    .mod-grid { grid-template-columns: 1fr 1fr; }
+    .agent-row { padding: 10px 12px; }
+    .dir-item { padding: 10px 12px; }
+    .ext-card { padding: 14px; }
+    iframe { max-height: 70vh !important; }
+    #chatMessages { max-height: 250px !important; }
+    .quick-bar { display: block !important; }
+    body { padding-bottom: 70px; }
+    .hub-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; max-width: 340px; }
+    .hub-tile { padding: 22px 12px; }
+    .hub-title { font-size: 24px; }
+}
+
+/* PWA standalone mode */
+@media (display-mode: standalone) {
+    body { padding-top: env(safe-area-inset-top); }
+}
+
+/* ============================
+   HUB — Post-splash navigation
+   ============================ */
+.hub {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+.hub.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.hub-header { text-align: center; margin-bottom: 50px; }
+.hub-title {
+    font-size: 32px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 2px;
+}
+.hub-sub { font-size: 12px; color: var(--text-dim); letter-spacing: 4px; text-transform: uppercase; margin-top: 6px; }
+.hub-clock { font-size: 14px; color: var(--yellow); font-family: 'JetBrains Mono', monospace; margin-top: 12px; }
+.hub-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 170px);
+    gap: 20px;
+    max-width: 560px;
+}
+.hub-tile {
+    background: rgba(22,22,40,0.8);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 18px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    animation: hubTileIn 0.5s ease forwards;
+}
+.hub-tile:nth-child(1) { animation-delay: 0s; }
+.hub-tile:nth-child(2) { animation-delay: 0.08s; }
+.hub-tile:nth-child(3) { animation-delay: 0.16s; }
+.hub-tile:nth-child(4) { animation-delay: 0.24s; }
+.hub-tile:nth-child(5) { animation-delay: 0.32s; }
+.hub-tile:nth-child(6) { animation-delay: 0.4s; }
+@keyframes hubTileIn { from { opacity:0; transform:translateY(20px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+.hub-tile:hover {
+    transform: translateY(-4px) scale(1.03);
+    border-color: var(--primary);
+    box-shadow: 0 8px 30px rgba(123,47,247,0.2);
+}
+.hub-tile:active { transform: scale(0.97); }
+.hub-icon { font-size: 36px; margin-bottom: 10px; }
+.hub-label { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.hub-desc { font-size: 10px; color: var(--text-dim); }
+/* Daily Picks */
+.hub-picks {
+    display: flex;
+    gap: 30px;
+    margin-top: 36px;
+    max-width: 700px;
+    width: 100%;
+}
+.hub-picks-section { flex: 1; }
+.picks-header {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+.picks-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.pick-card {
+    background: rgba(22,22,40,0.6);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text);
+}
+.pick-card:hover {
+    border-color: var(--primary);
+    transform: translateX(4px);
+    box-shadow: 0 2px 12px rgba(123,47,247,0.15);
+}
+.pick-icon { font-size: 20px; flex-shrink: 0; }
+.pick-info { flex: 1; min-width: 0; }
+.pick-title { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pick-meta { font-size: 9px; color: var(--text-dim); margin-top: 2px; }
+.pick-score {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+.pick-score.high { background: rgba(0,255,136,0.15); color: var(--green); }
+.pick-score.mid { background: rgba(255,215,0,0.15); color: var(--yellow); }
+@media (max-width: 560px) {
+    .hub-picks { flex-direction: column; gap: 20px; padding: 0 16px; }
+}
+
+.hub-status {
+    margin-top: 30px;
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+@media (max-width: 560px) {
+    .hub-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; max-width: 340px; }
+    .hub-tile { padding: 22px 12px; }
+    .hub-title { font-size: 24px; }
+}
+
+/* ============================
+   DOCK — Floating bottom bar
+   ============================ */
+.dock {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15,15,26,0.95);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 80;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    transition: all 0.3s ease;
+}
+.dock-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    font-family: inherit;
+}
+.dock-btn:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    transform: translateY(-4px) scale(1.1);
+    box-shadow: 0 4px 12px var(--glow-p);
+}
+.dock-btn:active { transform: scale(0.95); }
+.dock-btn .dock-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--green);
+    border: 2px solid var(--bg);
+    font-size: 0;
+}
+.dock-sep {
+    width: 1px;
+    height: 24px;
+    background: var(--border);
+}
+.console-drawer {
+    position: fixed;
+    bottom: 95px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    width: min(500px, 90vw);
+    background: rgba(15,15,26,0.98);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    z-index: 79;
+    box-shadow: 0 -4px 30px rgba(0,0,0,0.5);
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    max-height: 300px;
+    overflow: hidden;
+}
+.console-drawer.open {
+    display: block;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Omega overlay on hover */
+.omega-overlay {
+    position: fixed;
+    bottom: 95px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15,15,26,0.98);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    z-index: 78;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+    display: none;
+    font-size: 11px;
+    line-height: 2;
+    min-width: 200px;
+}
+.omega-overlay.show { display: block; animation: fadeIn 0.2s ease; }
+
+/* ============================
+   SKELETON LOADERS
+   ============================ */
+.skeleton {
+    background: linear-gradient(90deg, var(--bg3) 25%, var(--bg4) 50%, var(--bg3) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+}
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+.skeleton-text { height: 12px; width: 60%; margin: 8px 0; }
+.skeleton-big { height: 28px; width: 40%; margin: 8px 0; }
+
+/* ============================
+   VIEW TRANSITIONS
+   ============================ */
+.view-content {
+    animation: viewSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes viewSlideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================
+   SYSTEME VIVANT — Animations
+   ============================ */
+
+/* Hub scan beam — barre laser qui traverse les tiles */
+.hub-scan {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--secondary) 40%, var(--primary) 60%, transparent 100%);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10;
+    animation: hubScanBeam 6s ease-in-out infinite 2s;
+}
+@keyframes hubScanBeam {
+    0% { top: 0; opacity: 0; }
+    5% { opacity: 0.8; }
+    50% { top: 100%; opacity: 0.6; }
+    55% { opacity: 0; }
+    100% { opacity: 0; top: 100%; }
+}
+
+/* Heartbeat — battement cardiaque système */
+.heartbeat {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: var(--green);
+    letter-spacing: 1px;
+}
+.heartbeat-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: heartbeat 1.5s ease infinite;
+    box-shadow: 0 0 8px rgba(0,255,136,0.4);
+}
+@keyframes heartbeat {
+    0% { transform: scale(1); opacity: 1; }
+    15% { transform: scale(1.4); opacity: 1; }
+    30% { transform: scale(1); opacity: 0.8; }
+    45% { transform: scale(1.2); opacity: 1; }
+    60% { transform: scale(1); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}
+/* EKG line */
+.heartbeat-line {
+    width: 50px;
+    height: 16px;
+    overflow: hidden;
+    position: relative;
+}
+.heartbeat-line svg {
+    position: absolute;
+    top: 0; left: 0;
+    animation: ekgScroll 2s linear infinite;
+}
+@keyframes ekgScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* Data sync indicator */
+.sync-indicator {
+    position: fixed;
+    top: 60px;
+    right: 20px;
+    padding: 6px 14px;
+    background: rgba(15,15,26,0.95);
+    border: 1px solid var(--secondary);
+    border-radius: 20px;
+    font-size: 10px;
+    color: var(--secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 200;
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+}
+.sync-indicator.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+.sync-spinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid transparent;
+    border-top: 2px solid var(--secondary);
+    border-radius: 50%;
+    animation: annealSpin 0.8s linear infinite;
+}
+
+/* System scan flash (periodic) */
+.system-scan-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    pointer-events: none;
+    opacity: 0;
+}
+.scan-line {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.5), rgba(123,47,247,0.5), transparent);
+    box-shadow: 0 0 20px rgba(0,212,255,0.3);
+    animation: scanDown 1.5s ease-in-out forwards;
+}
+@keyframes scanDown {
+    0% { top: 0; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 0.6; }
+    100% { top: 100%; opacity: 0; }
+}
+
+/* Boot sequence typing effect */
+.boot-line {
+    opacity: 0;
+    animation: bootLineIn 0.3s ease forwards;
+}
+@keyframes bootLineIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Neural pulse on cards — periodic glow */
+.card.neural-pulse {
+    animation: neuralPulse 0.8s ease;
+}
+@keyframes neuralPulse {
+    0% { box-shadow: inset 0 0 0 rgba(123,47,247,0); border-color: var(--border); }
+    50% { box-shadow: inset 0 0 20px rgba(123,47,247,0.1); border-color: rgba(123,47,247,0.5); }
+    100% { box-shadow: inset 0 0 0 rgba(123,47,247,0); border-color: var(--border); }
+}
+
+/* Orbital ring on hub */
+.hub-orbital {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border: 1px solid rgba(123,47,247,0.08);
+    border-radius: 50%;
+    animation: orbitalSpin 30s linear infinite;
+    pointer-events: none;
+}
+.hub-orbital:nth-child(2) {
+    width: 400px; height: 400px;
+    border-color: rgba(0,212,255,0.05);
+    animation-duration: 45s;
+    animation-direction: reverse;
+}
+.hub-orbital:nth-child(3) {
+    width: 500px; height: 500px;
+    border-color: rgba(0,255,136,0.04);
+    animation-duration: 60s;
+}
+.hub-orbital-dot {
+    position: absolute;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--primary);
+    box-shadow: 0 0 6px var(--primary);
+    top: -2px; left: 50%;
+}
+@keyframes orbitalSpin {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Processing dots (like self-annealing loading) */
+.processing {
+    display: inline-flex;
+    gap: 3px;
+    align-items: center;
+}
+.processing-dot {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--secondary);
+    animation: processingBounce 1s ease infinite;
+}
+.processing-dot:nth-child(2) { animation-delay: 0.15s; }
+.processing-dot:nth-child(3) { animation-delay: 0.3s; }
+@keyframes processingBounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1.2); opacity: 1; }
+}
+
+/* Sidebar live activity line */
+.sidebar-pulse {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent);
+    background-size: 200% 100%;
+    animation: sidebarPulse 3s ease infinite;
+    border-radius: 1px;
+    margin: 10px 0;
+    opacity: 0.5;
+}
+@keyframes sidebarPulse {
+    0% { background-position: 200% 0; opacity: 0.3; }
+    50% { background-position: -200% 0; opacity: 0.7; }
+    100% { background-position: 200% 0; opacity: 0.3; }
+}
+</style>
+</head>
+<body>
+
+<!-- MATRIX RAIN -->
+<div class="matrix-rain" id="matrixRain"></div>
+
+<!-- INTRO SPLASH — Cinematic Raccoon -->
+<div class="splash" id="splash">
+    <div class="dna-container" id="dnaHelix"></div>
+    <div class="raccoon-grid" id="raccoonGrid"></div>
+    <div class="splash-logo">TITAN</div>
+    <div class="splash-hello">Bonjour,</div>
+    <div class="splash-name">Augustin</div>
+    <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<!-- SYNC INDICATOR -->
+<div class="sync-indicator" id="syncIndicator">
+    <div class="sync-spinner"></div>
+    <span id="syncText">Synchronisation...</span>
+</div>
+
+<!-- SYSTEM SCAN OVERLAY -->
+<div class="system-scan-overlay" id="systemScanOverlay"></div>
+
+<div class="hex-bg"></div>
+
+<!-- HEADER -->
+<div class="header" id="mainHeader" style="display:none;">
+    <div class="header-left">
+        <div>
+            <div class="logo"><canvas id="logoRaccoon" class="logo-raccoon" width="16" height="20"></canvas> TITAN-COMMAND</div>
+        </div>
+    </div>
+    <div class="status-bar">
+        <div class="status-item"><span class="dot on" id="dotServer"></span> <span id="serverStatus">Connecte</span></div>
+        <div class="status-item clock" id="clock">00:00:00</div>
+        <button onclick="goHub()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:4px 12px;color:var(--text);cursor:pointer;font-size:11px;font-family:inherit;transition:all 0.2s;" onmouseenter="this.style.borderColor='var(--primary)'" onmouseleave="this.style.borderColor='var(--border)'">&#x1F3E0; Hub</button>
+    </div>
+</div>
+
+<!-- HUB — Post-splash navigation -->
+<div class="hub" id="hub" style="display:none;">
+    <!-- Orbital rings background -->
+    <div class="hub-orbital" style="top:50%;left:50%;"><div class="hub-orbital-dot"></div></div>
+    <div class="hub-orbital" style="top:50%;left:50%;"><div class="hub-orbital-dot" style="background:var(--secondary);box-shadow:0 0 6px var(--secondary);"></div></div>
+    <div class="hub-orbital" style="top:50%;left:50%;"><div class="hub-orbital-dot" style="background:var(--green);box-shadow:0 0 6px var(--green);"></div></div>
+    <div class="hub-header">
+        <div class="hub-title">TITAN-COMMAND</div>
+        <div class="hub-sub">Centre de Commandement</div>
+        <div class="hub-clock" id="hubClock">00:00</div>
+    </div>
+    <div class="hub-grid" style="position:relative;">
+        <div class="hub-scan"></div>
+        <div class="hub-tile" onclick="enterSection('synapse')" data-color="var(--primary)">
+            <div class="hub-icon">⚡</div>
+            <div class="hub-label">Synapse</div>
+            <div class="hub-desc">Dashboard temps reel</div>
+        </div>
+        <div class="hub-tile" onclick="enterSection('chat')" data-color="var(--secondary)">
+            <div class="hub-icon">💬</div>
+            <div class="hub-label">Chat IA</div>
+            <div class="hub-desc">Parler aux agents</div>
+        </div>
+        <div class="hub-tile" onclick="enterSection('tower')" data-color="var(--green)">
+            <div class="hub-icon">🏰</div>
+            <div class="hub-label">Moon Tower</div>
+            <div class="hub-desc">Visualisation empire</div>
+        </div>
+        <div class="hub-tile" onclick="enterSection('pokedex')" data-color="var(--accent)">
+            <div class="hub-icon">🎮</div>
+            <div class="hub-label">Pokedex</div>
+            <div class="hub-desc">Fiches agents</div>
+        </div>
+        <div class="hub-tile" onclick="enterSection('rpg')" data-color="var(--yellow)">
+            <div class="hub-icon">🕹️</div>
+            <div class="hub-label">RPG</div>
+            <div class="hub-desc">Exploration tour</div>
+        </div>
+        <div class="hub-tile" onclick="enterSection('system')" data-color="var(--text-dim)">
+            <div class="hub-icon">⚙️</div>
+            <div class="hub-label">Systeme</div>
+            <div class="hub-desc">Console & config</div>
+        </div>
+    </div>
+    <!-- DAILY PICKS — Films + Videos IA -->
+    <div class="hub-picks" id="hubPicks">
+        <div class="hub-picks-section">
+            <div class="picks-header">🎬 Films du jour</div>
+            <div class="picks-grid" id="filmPicks">
+                <div class="pick-card skeleton" style="height:80px;"></div>
+                <div class="pick-card skeleton" style="height:80px;"></div>
+                <div class="pick-card skeleton" style="height:80px;"></div>
+            </div>
+        </div>
+        <div class="hub-picks-section">
+            <div class="picks-header">🤖 Videos IA du jour</div>
+            <div class="picks-grid" id="videoPicks">
+                <div class="pick-card skeleton" style="height:80px;"></div>
+                <div class="pick-card skeleton" style="height:80px;"></div>
+                <div class="pick-card skeleton" style="height:80px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hub-status">
+        <span class="dot on"></span> TITAN actif — 29 agents — Cout 0€
+    </div>
+</div>
+
+<!-- MAIN -->
+<div class="main" style="display:none;">
+
+    <!-- LEFT -->
+    <div class="sidebar">
+        <div class="section-title">Systeme Planetaire</div>
+
+        <div class="planet active" data-pole="recon" onclick="selectPlanet('recon')">
+            <div class="planet-bar r"></div>
+            <div class="planet-name">🔭 RECON</div>
+            <div class="planet-role">Renseignement & Strategie</div>
+            <div class="health-row">
+                <span style="color:var(--green)" id="reconHP">98%</span>
+                <div class="health-track"><div class="health-fill" id="reconBar" style="width:98%;background:var(--green)"></div></div>
+            </div>
+            <div class="planet-agents-text">Murphy · Oracle · Maya · Ghost · Nash · Cypher · Rick</div>
+        </div>
+
+        <div class="planet" data-pole="forge" onclick="selectPlanet('forge')">
+            <div class="planet-bar f"></div>
+            <div class="planet-name">🔨 FORGE</div>
+            <div class="planet-role">Production & Creation</div>
+            <div class="health-row">
+                <span style="color:var(--green)" id="forgeHP">95%</span>
+                <div class="health-track"><div class="health-fill" id="forgeBar" style="width:95%;background:var(--green)"></div></div>
+            </div>
+            <div class="planet-agents-text">Nikola · Philomene · Forge · Basquiat · Zara · Murray · Leon · Baloo · Arcade</div>
+        </div>
+
+        <div class="planet" data-pole="deploy" onclick="selectPlanet('deploy')">
+            <div class="planet-bar d"></div>
+            <div class="planet-name">🚀 DEPLOY</div>
+            <div class="planet-role">Distribution & Operations</div>
+            <div class="health-row">
+                <span style="color:var(--secondary)" id="deployHP">92%</span>
+                <div class="health-track"><div class="health-fill" id="deployBar" style="width:92%;background:var(--secondary)"></div></div>
+            </div>
+            <div class="planet-agents-text">Bagheera · Spartan · Belfort · Stanley · Sly · Vito · Bentley · Grimaldi · X-O1 · Zen</div>
+        </div>
+
+        <div class="sidebar-pulse"></div>
+
+        <div class="heartbeat" style="margin:8px 0;">
+            <div class="heartbeat-dot"></div>
+            <div class="heartbeat-line">
+                <svg width="100" height="16" viewBox="0 0 100 16">
+                    <polyline fill="none" stroke="#00FF88" stroke-width="1.5" points="0,8 8,8 12,8 15,2 18,14 21,8 25,8 33,8 37,8 40,2 43,14 46,8 50,8 58,8 62,8 65,2 68,14 71,8 75,8 83,8 87,8 90,2 93,14 96,8 100,8"/>
+                </svg>
+            </div>
+            <span>SYSTEME ACTIF</span>
+        </div>
+
+        <div class="agent-list">
+            <div class="section-title" style="margin-top:15px">Agents</div>
+            <div id="agentList"></div>
+        </div>
+    </div>
+
+    <!-- CENTER -->
+    <div class="center">
+        <div class="view-head">
+            <div class="view-title" id="viewTitle">⚡ Vue Synaptique</div>
+            <div class="tabs">
+                <div class="tab on" onclick="switchTab('synapse',this)" data-icon="⚡"><span class="tab-label">Synapse</span></div>
+                <div class="tab" onclick="switchTab('agents',this)" data-icon="👥"><span class="tab-label">Agents</span></div>
+                <div class="tab" onclick="switchTab('chat',this)" data-icon="💬"><span class="tab-label">Chat IA</span></div>
+                <div class="tab" onclick="switchTab('pokedex',this)" data-icon="🎮"><span class="tab-label">Pokedex</span></div>
+                <div class="tab" onclick="switchTab('tower',this)" data-icon="🏰"><span class="tab-label">Tower</span></div>
+                <div class="tab" onclick="switchTab('rpg',this)" data-icon="🕹️"><span class="tab-label">RPG</span></div>
+                <div class="tab" onclick="switchTab('system',this)" data-icon="⚙️"><span class="tab-label">Systeme</span></div>
+                <div class="tab" onclick="switchTab('flux',this)" data-icon="🔄"><span class="tab-label">Flux</span></div>
+            </div>
+        </div>
+
+        <!-- SYNAPSE -->
+        <div class="grid" id="vSynapse">
+            <div class="card" id="cardMsg">
+                <h4>Messages Aujourd'hui</h4>
+                <div class="big" id="msgToday">—</div>
+                <div class="sub">vs hier : <span id="msgDelta" style="color:var(--green)">—</span></div>
+                <div class="sparkline" id="msgSparkline"></div>
+            </div>
+            <div class="card">
+                <h4>Agents Actifs</h4>
+                <div style="display:flex;align-items:center;gap:12px">
+                    <div class="big">26</div>
+                    <div class="mini-donut" id="poleDonut"><div class="mini-donut-label">3P</div></div>
+                </div>
+                <div class="sub">3 poles · Boucle R→F→D</div>
+            </div>
+            <div class="card" id="cardXP">
+                <h4>Niveau & XP</h4>
+                <div class="big" id="xpDisplay">—</div>
+                <div class="sub" id="xpTitle">—</div>
+            </div>
+            <div class="card" id="cardRevenue">
+                <h4>Revenus (Mois)</h4>
+                <div class="big revenue-counter" id="revenueDisplay" style="animation: revenuePulse 3s ease infinite;">0€</div>
+                <div class="sub">KDP + Stock + Upwork + Leads</div>
+            </div>
+
+            <div class="card w2">
+                <h4>Activite 7 Jours</h4>
+                <div class="chart" id="weekChart"></div>
+            </div>
+            <div class="card">
+                <h4>Cascade IA</h4>
+                <div style="font-size:11px;line-height:1.9">
+                    <div>🦙 Ollama <span class="omega-val" id="cascOllama" style="color:var(--text-dim)">...</span></div>
+                    <div>⚡ Groq <span class="omega-val" style="color:var(--green)">6 modeles</span></div>
+                    <div>💎 Gemini <span class="omega-val" style="color:var(--yellow)">Fallback</span></div>
+                    <div style="margin-top:4px;font-size:10px;color:var(--text-dim)">Cout total : <b style="color:var(--green)">0€</b></div>
+                </div>
+            </div>
+
+            <div class="card w2">
+                <h4>Sante des Flux (Ruisseaux)</h4>
+                <div class="flux"><span>📚</span><span class="flux-name">KDP Pipeline</span><span class="badge ok">Nominal</span></div>
+                <div class="flux"><span>📷</span><span class="flux-name">Stock Photos IA</span><span class="badge ok">Nominal</span></div>
+                <div class="flux"><span>💼</span><span class="flux-name">Upwork Pipeline</span><span class="badge ok">Actif</span></div>
+                <div class="flux"><span>📧</span><span class="flux-name">Leads Outreach</span><span class="badge warn">Attente</span></div>
+                <div class="flux"><span>📰</span><span class="flux-name">News Lurie (n8n)</span><span class="badge ok">7/7</span></div>
+            </div>
+            <div class="card">
+                <h4>Top Modules</h4>
+                <div id="topModules" style="font-size:11px;line-height:1.9"></div>
+            </div>
+
+            <div class="card w3">
+                <h4>Boucle Perpetuelle</h4>
+                <div class="boucle">
+                    <div class="boucle-node"><div class="icon">🔭</div><div class="label" style="color:var(--secondary)">RECON</div><div class="desc">Brief & Data</div></div>
+                    <div class="boucle-arrow">→</div>
+                    <div class="boucle-node"><div class="icon">🔨</div><div class="label" style="color:var(--accent)">FORGE</div><div class="desc">Creation</div></div>
+                    <div class="boucle-arrow">→</div>
+                    <div class="boucle-node"><div class="icon">🚀</div><div class="label" style="color:var(--green)">DEPLOY</div><div class="desc">Distribution</div></div>
+                    <div class="boucle-arrow">→</div>
+                    <div class="boucle-node"><div class="icon">🔄</div><div class="label" style="color:var(--yellow)">FEEDBACK</div><div class="desc">Loop ∞</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AGENTS -->
+        <div class="grid" id="vAgents" style="display:none"></div>
+
+        <!-- CHAT IA -->
+        <div id="vChat" style="display:none;padding:20px;height:calc(100vh - 280px);flex-direction:column;">
+            <div class="chat-container" style="flex:1;display:flex;flex-direction:column;background:var(--bg2);border-radius:16px;border:1px solid var(--border);overflow:hidden;">
+                <!-- Header du chat -->
+                <div class="chat-header" style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(15,15,26,0.5);">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div class="chat-avatar" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;font-size:20px;" id="chatAvatarIcon">⚡</div>
+                        <div>
+                            <div style="font-weight:700;font-size:14px;" id="chatAgentName">TITAN</div>
+                            <div style="font-size:10px;color:var(--green);display:flex;align-items:center;gap:4px;"><span class="dot on" style="width:5px;height:5px;"></span> En ligne</div>
+                        </div>
+                    </div>
+                    <select id="chatPersona" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:11px;font-family:inherit;cursor:pointer;">
+                        <option value="">⚡ TITAN Standard</option>
+                        <option value="omega">♾️ Omega — Meta-intelligence</option>
+                        <option value="murphy">🏗️ Murphy — Structure</option>
+                        <option value="rick">🧪 Rick — Innovation</option>
+                        <option value="bagheera">🐆 Bagheera — Orchestration</option>
+                        <option value="philomene">✍️ Philomene — Redaction</option>
+                        <option value="maya">🕵️ Maya — Niches</option>
+                        <option value="zen">🧘 Zen — Sagesse</option>
+                        <option value="belfort">🐺 Belfort — Vente</option>
+                        <option value="nikola">⚡ Nikola — Infra</option>
+                        <option value="claude">&#x1F9E0; Claude Code — Local</option>
+                    </select>
+                </div>
+                <!-- Messages -->
+                <div id="chatMessages" style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px;"></div>
+                <!-- Input bar -->
+                <div class="chat-input-bar" style="padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;background:rgba(15,15,26,0.3);">
+                    <button id="voiceBtn" onclick="toggleVoice()" style="background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:40px;height:40px;color:var(--text);cursor:pointer;font-size:16px;transition:all 0.3s;flex-shrink:0;" title="Parler en vocal">🎤</button>
+                    <input id="chatInput" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 16px;color:var(--text);font-family:inherit;font-size:13px;outline:none;transition:border-color 0.2s;" placeholder="Envoie un message a TITAN..." onkeydown="if(event.key==='Enter')sendChat()" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'" autocomplete="off">
+                    <button onclick="sendChat()" style="background:linear-gradient(135deg,var(--primary),#5a1fd0);border:none;border-radius:12px;padding:12px 20px;color:white;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;transition:all 0.3s;letter-spacing:1px;flex-shrink:0;">ENVOYER ⚡</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- POKÉDEX -->
+        <div id="vPokedex" class="grid" style="display:none;grid-template-columns:1fr;padding:15px;">
+            <div class="card w3" style="min-height:80vh;">
+                <h4>🎮 POKÉDEX — Agents Évolutifs du Building</h4>
+                <div style="display:flex;gap:8px;margin-bottom:15px;flex-wrap:wrap;" id="pokedexFilters">
+                    <button onclick="filterPokedex('all',this)" class="tab on" style="font-size:10px;">TOUS</button>
+                    <button onclick="filterPokedex('RECON',this)" class="tab" style="font-size:10px;color:#00D4FF;">🔭 RECON</button>
+                    <button onclick="filterPokedex('FORGE',this)" class="tab" style="font-size:10px;color:#FF6B35;">🔨 FORGE</button>
+                    <button onclick="filterPokedex('DEPLOY',this)" class="tab" style="font-size:10px;color:#00FF88;">🚀 DEPLOY</button>
+                    <button onclick="filterPokedex('CHAOS',this)" class="tab" style="font-size:10px;color:#FF3366;">🎲 CHAOS</button>
+                    <button onclick="filterPokedex('BALANCE',this)" class="tab" style="font-size:10px;color:#FFD700;">🧘 BALANCE</button>
+                    <button onclick="filterPokedex('OMEGA',this)" class="tab" style="font-size:10px;color:#7B2FF7;">♾️ OMEGA</button>
+                </div>
+                <div id="pokedexGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;"></div>
+            </div>
+        </div>
+
+        <!-- TOWER (embedded) -->
+        <div id="vTower" style="display:none;width:100%;height:calc(100vh - 280px)">
+            <div style="position:relative;width:100%;height:calc(100vh - 280px);">
+                <iframe src="moon_tower.html" style="width:100%;height:100%;border:none;border-radius:8px;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"></iframe>
+                <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;background:var(--bg2);border-radius:8px;color:var(--text-dim);flex-direction:column;gap:10px;">
+                    <div style="font-size:40px;">🏰</div>
+                    <div>Moon Tower non disponible</div>
+                    <div style="font-size:10px;">Fichier moon_tower.html introuvable</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RPG (embedded) -->
+        <div id="vRpg" style="display:none;width:100%;height:calc(100vh - 280px)">
+            <div style="position:relative;width:100%;height:calc(100vh - 280px);">
+                <iframe src="tower_rpg.html" style="width:100%;height:100%;border:none;border-radius:8px;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"></iframe>
+                <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;background:var(--bg2);border-radius:8px;color:var(--text-dim);flex-direction:column;gap:10px;">
+                    <div style="font-size:40px;">🎮</div>
+                    <div>Tower RPG non disponible</div>
+                    <div style="font-size:10px;">Fichier tower_rpg.html introuvable</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SYSTEM (merged: System + Extensions + Directives) -->
+        <div class="grid" id="vSystem" style="display:none">
+            <div class="card">
+                <h4>CPU</h4>
+                <div class="big" id="sysCPU">—</div>
+                <div class="sub">Utilisation processeur</div>
+            </div>
+            <div class="card">
+                <h4>RAM</h4>
+                <div class="big" id="sysRAM">—</div>
+                <div class="sub" id="sysRAMDetail">—</div>
+            </div>
+            <div class="card">
+                <h4>Disque</h4>
+                <div class="big" id="sysDisk">—</div>
+                <div class="sub" id="sysDiskDetail">—</div>
+            </div>
+            <div class="card w3">
+                <h4>Sante Fichiers Memoire</h4>
+                <div id="healthFiles" style="font-size:12px"></div>
+            </div>
+            <div class="card w3">
+                <h4>Ollama — Modeles Locaux</h4>
+                <div id="ollamaModels" style="font-size:12px">Detection en cours...</div>
+            </div>
+            <div class="card w3">
+                <h4>&#x1F9E9; EXTENSIONS & MODULES</h4>
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                    <button class="tab on" onclick="filterExt('all',this)" data-filter="all">Tous</button>
+                    <button class="tab" onclick="filterExt('vie',this)" data-filter="vie">&#x1F331; Vie</button>
+                    <button class="tab" onclick="filterExt('systeme',this)" data-filter="systeme">&#x2699;&#xFE0F; Systeme</button>
+                    <button class="tab" onclick="filterExt('info',this)" data-filter="info">&#x1F4F0; Info</button>
+                    <button class="tab" onclick="filterExt('creatif',this)" data-filter="creatif">&#x1F3A8; Creatif</button>
+                    <button class="tab" onclick="filterExt('deploy',this)" data-filter="deploy">&#x1F680; Deploy</button>
+                </div>
+                <div id="extGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px"></div>
+            </div>
+            <div class="card w3">
+                <h4>&#x1F3E5; SELF-ANNEALING</h4>
+                <div style="display:flex;gap:10px;align-items:start">
+                    <div style="flex:1">
+                        <div id="annealReport" style="font-size:12px;line-height:1.8">Aucun rapport. Lance un scan pour verifier le systeme.</div>
+                    </div>
+                    <button class="rapport-btn" style="width:auto;padding:10px 20px" onclick="runAnneal()">&#x1F527; Self-Annealing</button>
+                </div>
+            </div>
+            <div class="card" style="max-height:400px;overflow-y:auto">
+                <h4>&#x1F4DC; DIRECTIVES</h4>
+                <input type="text" id="dirSearch" placeholder="&#x1F50D; Rechercher..." style="width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;margin-bottom:8px;outline:none;font-family:inherit;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'" oninput="filterDirectives(this.value)" autocomplete="off">
+                <div id="directivesList" style="font-size:12px"></div>
+            </div>
+            <div class="card w2" style="max-height:400px;overflow-y:auto">
+                <h4 id="directiveTitle">Selectionne une directive</h4>
+                <pre id="directiveContent" style="font-size:11px;line-height:1.6;white-space:pre-wrap;color:var(--text-dim)">Clique sur une directive a gauche pour voir son contenu.</pre>
+            </div>
+        </div>
+
+        <!-- FLUX + TIMELINE (merged) -->
+        <div class="grid" id="vFlux" style="display:none">
+            <div class="card w3">
+                <h4>Scheduler TITAN — Flux Automatiques</h4>
+                <div id="fluxTimeline" style="font-size:12px;line-height:1.8"></div>
+            </div>
+            <div class="card w3">
+                <h4>Modules Silencieux (Flemmard-Approved)</h4>
+                <div class="mod-grid">
+                    <div class="mod-cell">&#x1F9E0; Coach — nudge 1x/jour</div>
+                    <div class="mod-cell">&#x1F4DA; Library — extraction auto</div>
+                    <div class="mod-cell">&#x1F3E5; Auto-Healer — fix auto</div>
+                    <div class="mod-cell">☀️ Digest — 5 bullets/matin</div>
+                    <div class="mod-cell">&#x1F5DE;️ Aggregator — HN + RSS</div>
+                    <div class="mod-cell">&#x1F4D3; Journal — 3 questions</div>
+                    <div class="mod-cell">&#x1F3AC; Film — scripts cinema</div>
+                    <div class="mod-cell">&#x1F9EC; Clones — 1→8 formats</div>
+                    <div class="mod-cell">&#x1F4CA; Portfolio — auto HTML</div>
+                    <div class="mod-cell">&#x1F3A8; Empire Visual — brand</div>
+                    <div class="mod-cell">&#x1F48A; Mega-Prompt — export</div>
+                    <div class="mod-cell">🦙 Ollama — IA locale</div>
+                </div>
+            </div>
+            <div class="card w3">
+                <h4>Timeline — Derniers Evenements</h4>
+                <div id="timelineContent" style="font-size:12px"></div>
+            </div>
+            <div class="card w3">
+                <h4>Dernieres Conversations</h4>
+                <div id="convContent" style="font-size:11px;max-height:400px;overflow-y:auto"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DOCK -->
+    <div class="dock" id="dock" style="display:none;">
+        <button class="dock-btn" onclick="toggleConsoleDrawer()" title="Console">&#x1F4BB;</button>
+        <button class="dock-btn" onclick="enterSection('chat')" title="Chat IA">&#x1F4AC;</button>
+        <button class="dock-btn" id="ttsToggle" onclick="toggleTTS()" title="Voix agents">&#x1F50A;</button>
+        <button class="dock-btn" onclick="toggleVoice()" id="dockVoiceBtn" title="Vocal">&#x1F3A4;</button>
+        <div class="dock-sep"></div>
+        <button class="dock-btn" onclick="genRapport()" title="Rapport" onmouseenter="showOmegaOverlay()" onmouseleave="hideOmegaOverlay()"><div class="dock-badge"></div>⚡</button>
+        <button class="dock-btn" onclick="goHub()" title="Hub">&#x1F3E0;</button>
+    </div>
+
+    <!-- OMEGA OVERLAY (hover on rapport btn) -->
+    <div class="omega-overlay" id="omegaOverlay">
+        <div class="omega-line">Mode <span class="omega-val" style="color:var(--green)">AUTONOME</span></div>
+        <div class="omega-line">Cascade <span class="omega-val" id="cascadeLabel" style="color:var(--secondary)">—</span></div>
+        <div class="omega-line">Streak <span class="omega-val" id="streakVal" style="color:var(--yellow)">—</span></div>
+        <div class="omega-line">Cout 24h <span class="omega-val" style="color:var(--green)">0&#x20AC;</span></div>
+    </div>
+
+    <!-- CONSOLE DRAWER -->
+    <div class="console-drawer" id="consoleDrawer">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-size:10px;letter-spacing:3px;color:var(--text-dim);text-transform:uppercase;">Console TITAN</span>
+            <button onclick="toggleConsoleDrawer()" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:16px;font-family:inherit;">&#x00D7;</button>
+        </div>
+        <div class="con-out" id="conOut" style="height:180px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:10px;overflow-y:auto;line-height:1.6;font-family:'JetBrains Mono','Courier New',monospace;">
+            <div class="con-line sys"><span class="t">[BOOT]</span> TITAN-COMMAND v3 initialise...</div>
+        </div>
+        <div class="con-wrap" style="margin-top:8px;display:flex;gap:6px;">
+            <input class="con-in" id="conIn" placeholder="Commande..." onkeydown="if(event.key==='Enter')execCmd()" autocomplete="off" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:11px;font-family:'JetBrains Mono',monospace;outline:none;">
+            <button class="con-btn" onclick="execCmd()" style="background:var(--primary);border:none;border-radius:8px;padding:8px 14px;color:white;cursor:pointer;font-family:inherit;">⚡</button>
+        </div>
+    </div>
+
+    <!-- ACTIVITY FEED (hidden, still populated for data) -->
+    <div id="feed" style="display:none;"></div>
+
+</div>
+
+<!-- TICKER BFM (fixed bottom) -->
+<div class="ticker-wrap" id="tickerWrap">
+    <div class="ticker-status">
+        <span style="animation:pulse 1s infinite;">&#x1F534;</span>
+        <span>AI NEWS</span>
+    </div>
+    <div class="ticker-track">
+        <div class="ticker-content" id="tickerContent">
+            <span>Chargement des flux IA...</span>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="modal">
+    <div class="modal">
+        <button class="modal-x" onclick="closeModal()">&times;</button>
+        <h2 id="mTitle"></h2>
+        <div id="mBody"></div>
+    </div>
+</div>
+
+
+<script>
+// ============================
+// DATA
+// ============================
+// Auto-detect host — fonctionne sur PC (localhost) ET téléphone (IP réseau)
+const API = `http://${window.location.hostname || 'localhost'}:7777/api`;
+let serverOnline = false;
+let liveData = null;
+let firstLoad = true;
+
+// ============================
+// TOAST NOTIFICATIONS
+// ============================
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toasts');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+// ============================
+// XSS PROTECTION
+// ============================
+function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+const AGENTS = {
+    recon: [
+        {n:'Murphy',e:'🏗️',r:'Structure & organisation',gov:true,binomes:['Omega','Nash']},
+        {n:'Oracle',e:'🔮',r:'Predictions & patterns',gov:true,binomes:['Maya','Cypher']},
+        {n:'Maya',e:'🕵️',r:'Niches & opportunites',binomes:['Rick','Nash']},
+        {n:'Ghost',e:'👻',r:'Securite & OSINT',binomes:['Cypher']},
+        {n:'Nash',e:'🎲',r:'Theorie des jeux & data',binomes:['Grimaldi','Maya']},
+        {n:'Cypher',e:'📊',r:'Analyse & metriques',binomes:['Ghost','Nash']},
+        {n:'Rick',e:'🧪',r:'Innovation & disruption',binomes:['Maya','Basquiat']},
+    ],
+    forge: [
+        {n:'Nikola',e:'⚡',r:'Infrastructure & pipelines',gov:true,binomes:['Forge','Ghost']},
+        {n:'Philomene',e:'✍️',r:'Redaction & qualite',gov:true,binomes:['Basquiat','Murray']},
+        {n:'Forge',e:'🔨',r:'Production code',binomes:['Nikola','X-O1']},
+        {n:'Basquiat',e:'🎨',r:'Direction artistique',binomes:['Zara','Philomene']},
+        {n:'Zara',e:'💅',r:'Contenu viral',binomes:['Basquiat','Belfort']},
+        {n:'Murray',e:'😏',r:'Humour & ton',binomes:['Philomene']},
+        {n:'Leon',e:'💰',r:'Comptabilite',binomes:['Grimaldi']},
+        {n:'Baloo',e:'🐻',r:'Vulgarisation',binomes:['Philomene']},
+        {n:'Arcade',e:'🕹️',r:'Game design & UX interactive',binomes:['Basquiat','Rick']},
+    ],
+    deploy: [
+        {n:'Bagheera',e:'🐆',r:'Orchestration',gov:true,binomes:['Spartan','Omega']},
+        {n:'Spartan',e:'⚔️',r:'Discipline & deadlines',gov:true,binomes:['Bagheera']},
+        {n:'Belfort',e:'🐺',r:'Vente & closing',binomes:['Philomene','Sly']},
+        {n:'Stanley',e:'🎬',r:'Pitchs & presentations',binomes:['Belfort']},
+        {n:'Sly',e:'🦊',r:'Negociation',binomes:['Belfort','Vito']},
+        {n:'Vito',e:'🎩',r:'Relations & influence',binomes:['Sly']},
+        {n:'Bentley',e:'🎭',r:'Avatars & clones',binomes:['Basquiat']},
+        {n:'Grimaldi',e:'🔍',r:'Audit & qualite',binomes:['Leon','Nash']},
+        {n:'X-O1',e:'🤖',r:'Setup & DevOps',binomes:['Forge','Nikola']},
+        {n:'Zen',e:'🧘',r:'Recul & sagesse',binomes:['Omega']},
+    ],
+    core: [
+        {n:'Omega',e:'♾️',r:'Meta-intelligence',binomes:['Murphy','Bagheera','Zen']},
+        {n:'Dreyfus',e:'🎯',r:'Decision complexe',binomes:['Omega']},
+        {n:'Flemmard',e:'🦥',r:'Anti-complexite',binomes:['Spartan']},
+    ]
+};
+
+const poleNames = {recon:'🔭 RECON',forge:'🔨 FORGE',deploy:'🚀 DEPLOY',core:'♾️ OMEGA-CORE'};
+const poleColors = {recon:'var(--secondary)',forge:'var(--accent)',deploy:'var(--green)',core:'var(--primary)'};
+let activePole = 'recon';
+
+// ============================
+// CLOCK
+// ============================
+setInterval(() => {
+    const n = new Date();
+    document.getElementById('clock').textContent = n.toLocaleTimeString('fr-FR');
+}, 1000);
+
+// ============================
+// FETCH DATA
+// ============================
+async function fetchData() {
+    showSync('Synchronisation donnees...');
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    try {
+        const r = await fetch(`${API}/all`, { signal: controller.signal });
+        clearTimeout(timeout);
+        if (!r.ok) throw new Error('Server error');
+        liveData = await r.json();
+        serverOnline = true;
+        document.getElementById('dotServer').className = 'dot on';
+        const ss = document.getElementById('serverStatus');
+        if (ss) ss.textContent = 'Connecte';
+        updateDashboard();
+        if (firstLoad) {
+            showToast('Donnees synchronisees', 'success');
+            firstLoad = false;
+        }
+        hideSync();
+        return true;
+    } catch (e) {
+        clearTimeout(timeout);
+        hideSync();
+        const wasOnline = serverOnline;
+        serverOnline = false;
+        document.getElementById('dotServer').className = 'dot off';
+        const ss2 = document.getElementById('serverStatus');
+        if (ss2) ss2.textContent = 'Hors ligne';
+        if (wasOnline || firstLoad) {
+            showToast('Serveur hors-ligne', 'error');
+            addCon('wrn', 'Serveur non detecte. Mode demo actif.');
+        }
+        if (firstLoad) loadDemoData();
+        return false;
+    }
+}
+
+function loadDemoData() {
+    // Fallback demo data if server not running
+    document.getElementById('msgToday').textContent = '~15';
+    document.getElementById('msgDelta').textContent = '+3';
+    document.getElementById('xpDisplay').textContent = 'Lv.5';
+    document.getElementById('xpTitle').textContent = 'Specialiste';
+    document.getElementById('streakVal').textContent = '3 🔥';
+    document.getElementById('cascadeLabel').textContent = 'Groq→Gemini';
+    document.getElementById('cascOllama').textContent = 'Detecte';
+    document.getElementById('cascOllama').style.color = 'var(--green)';
+    renderWeekChart([30,45,28,55,42,20,35]);
+    renderTopModules([{n:'brain',c:450},{n:'president',c:120},{n:'finance',c:85},{n:'news',c:72},{n:'voice',c:48}]);
+    renderSparkline([8,12,10,15,20,14,18]);
+    renderPoleDonut();
+    setTimeout(animateCounters, 100);
+}
+
+function renderSparkline(values) {
+    const container = document.getElementById('msgSparkline');
+    if (!container) return;
+    const max = Math.max(...values, 1);
+    container.innerHTML = values.map(v => {
+        const h = Math.max(8, (v / max) * 100);
+        return `<div class="spark-bar" style="height:${h}%" title="${v}"></div>`;
+    }).join('');
+}
+
+function renderPoleDonut() {
+    const donut = document.getElementById('poleDonut');
+    if (!donut) return;
+    // RECON=7, FORGE=9, DEPLOY=10 agents — CSS conic-gradient donut
+    const r = 7, f = 9, d = 10;
+    const total = r + f + d;
+    const p1 = (r / total) * 360;
+    const p2 = p1 + (f / total) * 360;
+    donut.style.background = `conic-gradient(
+        #00D4FF 0deg ${p1}deg,
+        #FF6B35 ${p1}deg ${p2}deg,
+        #00FF88 ${p2}deg 360deg
+    )`;
+    // Inner cutout for donut effect
+    donut.style.webkitMask = 'radial-gradient(circle at center, transparent 55%, black 56%)';
+    donut.style.mask = 'radial-gradient(circle at center, transparent 55%, black 56%)';
+}
+
+function updateDashboard() {
+    if (!liveData) return;
+    const d = liveData;
+
+    // Gamification
+    if (d.gamification && !d.gamification.error) {
+        const g = d.gamification;
+        document.getElementById('xpDisplay').textContent = `Lv.${g.level || 1}`;
+        document.getElementById('xpTitle').textContent = g.title || 'Novice';
+        document.getElementById('streakVal').textContent = `${g.streak || 0} 🔥`;
+    }
+
+    // Stats
+    if (d.stats && !d.stats.error) {
+        const s = d.stats;
+        // Weekly activity
+        if (s.weekly_activity) {
+            const days = Object.entries(s.weekly_activity).sort((a,b) => a[0].localeCompare(b[0])).slice(-7);
+            const values = days.map(([_,v]) => v.total || 0);
+            renderWeekChart(values);
+
+            // Today
+            const today = new Date().toISOString().split('T')[0];
+            const todayData = s.weekly_activity[today];
+            if (todayData) {
+                document.getElementById('msgToday').textContent = todayData.total || 0;
+            }
+        }
+        // Module usage
+        if (s.module_usage) {
+            const mods = Object.entries(s.module_usage)
+                .sort((a,b) => b[1] - a[1])
+                .slice(0, 5)
+                .map(([n,c]) => ({n,c}));
+            renderTopModules(mods);
+        }
+    }
+
+    // Conversations — recent
+    if (d.conversations && d.conversations.history) {
+        const recent = d.conversations.history.slice(-5).reverse();
+        recent.forEach(c => {
+            const time = c.timestamp ? new Date(c.timestamp).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '';
+            addFeed(`${time} — ${(c.user || '').substring(0, 50)}`);
+        });
+    }
+
+    // Health — Ollama
+    if (d.health) {
+        const ollamaOk = d.health.ollama && d.health.ollama.status === 'ok';
+        const cascOllama = document.getElementById('cascOllama');
+        if (cascOllama) {
+            cascOllama.textContent = ollamaOk ? 'LOCAL \u2713' : 'Offline';
+            cascOllama.style.color = ollamaOk ? 'var(--green)' : 'var(--text-dim)';
+        }
+        document.getElementById('cascadeLabel').textContent = ollamaOk ? 'Ollama\u2192Groq\u2192Gemini' : 'Groq\u2192Gemini';
+    }
+
+    // System
+    if (d.system && !d.system.error) {
+        const sys = d.system;
+        document.getElementById('sysCPU').textContent = `${sys.cpu_percent}%`;
+        document.getElementById('sysRAM').textContent = `${sys.ram_percent}%`;
+        document.getElementById('sysRAMDetail').textContent = `${sys.ram_used_gb}/${sys.ram_total_gb} GB`;
+        document.getElementById('sysDisk').textContent = `${sys.disk_percent}%`;
+        document.getElementById('sysDiskDetail').textContent = `${sys.disk_used_gb}/${sys.disk_total_gb} GB`;
+    }
+
+    // Health files
+    if (d.health) {
+        const hc = document.getElementById('healthFiles');
+        hc.innerHTML = Object.entries(d.health)
+            .filter(([k]) => k !== 'ollama')
+            .map(([k,v]) => {
+                const ok = v.status === 'ok';
+                const size = v.size ? ` (${(v.size/1024).toFixed(1)}KB)` : '';
+                return `<div class="flux"><span>${ok?'✅':'❌'}</span><span class="flux-name">${escapeHTML(k)}.json${size}</span><span class="badge ${ok?'ok':'err'}">${ok?'OK':'ERR'}</span></div>`;
+            }).join('');
+
+        // Ollama models
+        if (d.health.ollama && d.health.ollama.models) {
+            document.getElementById('ollamaModels').innerHTML = d.health.ollama.models
+                .map(m => `<div class="flux"><span>🦙</span><span class="flux-name">${escapeHTML(String(m))}</span><span class="badge ok">Pret</span></div>`)
+                .join('') || 'Aucun modele installe.';
+        }
+    }
+
+    // Sparkline from weekly activity
+    if (d.stats && d.stats.weekly_activity) {
+        const days = Object.entries(d.stats.weekly_activity).sort((a,b) => a[0].localeCompare(b[0])).slice(-7);
+        renderSparkline(days.map(([_,v]) => v.total || 0));
+    } else {
+        renderSparkline([8,12,10,15,20,14,18]);
+    }
+    renderPoleDonut();
+
+    addCon('ok', 'Donnees live chargees.');
+    setTimeout(animateCounters, 100);
+}
+
+// ============================
+// RENDERING
+// ============================
+function renderWeekChart(values) {
+    const chart = document.getElementById('weekChart');
+    const max = Math.max(...values, 1);
+    const days = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+    chart.innerHTML = values.map((v, i) => {
+        const h = Math.max(3, (v / max) * 100);
+        return `<div class="bar" style="height:${h}%"><div class="tip">${days[i % 7]}: ${v}</div></div>`;
+    }).join('');
+}
+
+function renderTopModules(mods) {
+    const c = document.getElementById('topModules');
+    if (!mods.length) { c.innerHTML = '—'; return; }
+    const max = mods[0].c;
+    c.innerHTML = mods.map(m => {
+        const w = (m.c / max) * 100;
+        return `<div style="display:flex;align-items:center;gap:6px">
+            <span style="min-width:65px;font-size:11px">${m.n}</span>
+            <div style="flex:1;height:5px;background:var(--bg);border-radius:3px;overflow:hidden">
+                <div style="height:100%;width:${w}%;background:linear-gradient(90deg,var(--primary),var(--secondary));border-radius:3px"></div>
+            </div>
+            <span style="font-size:9px;color:var(--text-dim);min-width:25px;text-align:right">${m.c}</span>
+        </div>`;
+    }).join('');
+}
+
+const AGENT_STATUSES = ['idle', 'working', 'scanning', 'deploying', 'analyzing', 'ready'];
+const STATUS_COLORS = { idle: 'var(--text-dim)', working: 'var(--green)', scanning: 'var(--secondary)', deploying: 'var(--accent)', analyzing: 'var(--primary)', ready: 'var(--yellow)' };
+
+function getRandomStatus() {
+    return AGENT_STATUSES[Math.floor(Math.random() * AGENT_STATUSES.length)];
+}
+
+function renderAgentList() {
+    const agents = AGENTS[activePole] || AGENTS.recon;
+    document.getElementById('agentList').innerHTML = agents.map(a => {
+        const status = getRandomStatus();
+        return `<div class="agent-row" onclick="showAgent('${a.n}')" data-agent="${a.n}">
+            <div class="agent-avatar">${a.e}</div>
+            <span class="agent-nm">${a.n} ${a.gov?'<span class="gov">★ GOV</span>':''}</span>
+            <span class="agent-status" style="color:${STATUS_COLORS[status]}">${status}</span>
+            <span class="agent-dot"></span>
+        </div>`;
+    }).join('');
+}
+
+// Rotate agent statuses every 5 seconds
+setInterval(() => {
+    document.querySelectorAll('.agent-status').forEach(el => {
+        const status = getRandomStatus();
+        el.textContent = status;
+        el.style.color = STATUS_COLORS[status];
+        el.style.animation = 'none';
+        el.offsetHeight;
+        el.style.animation = 'statusFade 0.4s ease';
+    });
+}, 5000);
+
+// Pulse health bars on random intervals
+setInterval(() => {
+    const tracks = document.querySelectorAll('.health-track');
+    const idx = Math.floor(Math.random() * tracks.length);
+    if (tracks[idx]) {
+        tracks[idx].classList.add('pulsing');
+        setTimeout(() => tracks[idx].classList.remove('pulsing'), 800);
+    }
+}, 4000);
+
+// ============================
+// NAVIGATION
+// ============================
+function selectPlanet(pole) {
+    activePole = pole;
+    document.querySelectorAll('.planet').forEach(p => p.classList.toggle('active', p.dataset.pole === pole));
+    renderAgentList();
+    addCon('sys', `Planete ${pole.toUpperCase()} selectionnee.`);
+}
+
+function switchTab(view, el) {
+    document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('on'));
+    if (el) el.classList.add('on');
+    ['vSynapse','vFlux','vAgents','vSystem','vChat','vPokedex','vTower','vRpg'].forEach(id => {
+        const e = document.getElementById(id);
+        if (e) e.style.display = 'none';
+    });
+    const map = {synapse:'vSynapse',flux:'vFlux',agents:'vAgents',system:'vSystem',chat:'vChat',pokedex:'vPokedex',tower:'vTower',rpg:'vRpg'};
+    const displayMode = (view === 'tower' || view === 'rpg') ? 'block' : (view === 'chat' ? 'flex' : 'grid');
+    const targetEl = document.getElementById(map[view]);
+    if (!targetEl) return;
+    targetEl.style.display = displayMode;
+    targetEl.style.animation = 'none';
+    targetEl.offsetHeight;
+    targetEl.style.animation = 'viewSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+    const titles = {synapse:'⚡ Vue Synaptique',flux:'🔄 Flux & Timeline',agents:'👥 Agents du Building',system:'⚙️ Systeme',chat:'💬 Chat IA',pokedex:'🎮 Pokedex',tower:'🏰 Moon Tower',rpg:'🕹️ Tower RPG'};
+    document.getElementById('viewTitle').textContent = titles[view] || view;
+    if (view === 'agents') renderAgentsView();
+    if (view === 'flux') { renderFluxTimeline(); renderTimeline(); }
+    if (view === 'system') { renderExtensions(); loadDirectives(); }
+    if (view === 'pokedex' && !pokedexData) loadPokedex();
+}
+
+function renderAgentsView() {
+    const c = document.getElementById('vAgents');
+    let h = '';
+    for (const [pole, agents] of Object.entries(AGENTS)) {
+        h += `<div class="card w3"><h4>${poleNames[pole]}</h4><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px">`;
+        for (const a of agents) {
+            h += `<div onclick="showAgent('${a.n}')" style="padding:8px;background:var(--bg);border-radius:5px;cursor:pointer;transition:all 0.2s;border:1px solid transparent" onmouseover="this.style.borderColor='var(--border)'" onmouseout="this.style.borderColor='transparent'">
+                <div>${a.e} <b>${a.n}</b>${a.gov?' <span style="color:var(--yellow);font-size:9px">★</span>':''}</div>
+                <div style="font-size:9px;color:var(--text-dim)">${a.r}</div>
+            </div>`;
+        }
+        h += '</div></div>';
+    }
+    c.innerHTML = h;
+}
+
+function renderFluxTimeline() {
+    const now = new Date();
+    const h = now.getHours();
+    const scheds = [
+        {t:'06:00',txt:'🏥 Health Check — Auto-Healer',done:h>=6},
+        {t:'08:00',txt:'☀️ Morning Digest — Baloo compile',done:h>=8},
+        {t:'08:05',txt:'📰 Brief Classique (backup)',done:h>=8},
+        {t:'14:00',txt:'🗞️ Afternoon Digest — Aggregator',done:h>=14},
+        {t:'21:00',txt:'🌙 Evening Reminder — habitudes',done:h>=21},
+        {t:'21:30',txt:'📓 Journal Prompt — Zen',done:h>=21&&now.getMinutes()>=30},
+    ];
+    document.getElementById('fluxTimeline').innerHTML = scheds.map(s =>
+        `<div class="flux"><span style="min-width:45px;color:var(--text-dim)">${s.t}</span><span>${s.done?'✅':'⏳'}</span><span class="flux-name" style="color:${s.done?'var(--green)':'var(--text-dim)'}">${s.txt}</span><span class="badge ${s.done?'ok':'warn'}">${s.done?'FAIT':'Attente'}</span></div>`
+    ).join('');
+}
+
+function renderTimeline() {
+    const now = new Date();
+    const h = now.getHours();
+    const events = [
+        {t:'06:00',txt:'🏥 Health Check',done:h>=6},
+        {t:'08:00',txt:'☀️ Morning Digest',done:h>=8},
+        {t:'14:00',txt:'🗞️ Afternoon Digest',done:h>=14},
+        {t:'21:00',txt:'🌙 Evening Reminder',done:h>=21},
+        {t:'21:30',txt:'📓 Journal Prompt',done:h>=21&&now.getMinutes()>=30},
+    ];
+    document.getElementById('timelineContent').innerHTML = events.map(e =>
+        `<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+            <span style="color:var(--text-dim);min-width:45px">${e.t}</span>
+            <span>${e.done?'✅':'⏳'}</span>
+            <span style="color:${e.done?'var(--green)':'var(--text-dim)'}">${e.txt}</span>
+        </div>`
+    ).join('');
+
+    // Conversations
+    if (liveData && liveData.conversations && liveData.conversations.history) {
+        const convs = liveData.conversations.history.slice(-10).reverse();
+        document.getElementById('convContent').innerHTML = convs.map(c => {
+            const time = c.timestamp ? new Date(c.timestamp).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '';
+            const userMsg = escapeHTML((c.user||'').substring(0,80));
+            const titanMsg = escapeHTML((c.titan||'').substring(0,100));
+            return `<div style="padding:6px 0;border-bottom:1px solid var(--border)">
+                <div style="color:var(--secondary)"><span style="color:var(--text-dim)">${time}</span> 👤 ${userMsg}</div>
+                <div style="color:var(--text-dim);font-size:10px;margin-top:2px">⚡ ${titanMsg}</div>
+            </div>`;
+        }).join('') || '<div style="color:var(--text-dim)">Pas de donnees.</div>';
+    }
+}
+
+// ============================
+// AGENT MODAL
+// ============================
+function showAgent(name) {
+    const all = [...AGENTS.recon,...AGENTS.forge,...AGENTS.deploy,...AGENTS.core];
+    const a = all.find(x => x.n === name);
+    if (!a) return;
+    const pole = Object.entries(AGENTS).find(([_,arr]) => arr.includes(a));
+    const poleName = pole ? poleNames[pole[0]] : '?';
+    const poleColor = pole ? poleColors[pole[0]] : 'var(--text)';
+
+    document.getElementById('mTitle').textContent = `${a.e} ${a.n}`;
+    document.getElementById('mBody').innerHTML = `
+        <div style="font-size:13px;line-height:1.8">
+            <div><b>Role :</b> ${a.r}</div>
+            <div><b>Pole :</b> <span style="color:${poleColor}">${poleName}</span></div>
+            <div><b>Status :</b> <span style="color:var(--green)">● Actif</span></div>
+            ${a.gov?'<div><b>Grade :</b> <span style="color:var(--yellow)">★ Gouverneur</span></div>':''}
+            <div><b>Binomes :</b> ${(a.binomes||[]).join(', ') || 'Solo'}</div>
+            <div style="margin-top:12px;padding:10px;background:var(--bg);border-radius:6px;font-size:11px;color:var(--text-dim)">
+                Agent du Building AICO. Communique via la boucle R→F→D→R.
+                ${a.gov?'En tant que gouverneur, supervise les agents de son pole.':''}
+            </div>
+        </div>
+    `;
+    document.getElementById('modal').classList.add('show');
+}
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+// ============================
+// CONSOLE
+// ============================
+function addCon(type, text) {
+    const out = document.getElementById('conOut');
+    const time = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    const d = document.createElement('div');
+    d.className = `con-line ${type}`;
+    const timeSpan = document.createElement('span');
+    timeSpan.className = 't';
+    timeSpan.textContent = `[${time}]`;
+    d.appendChild(timeSpan);
+    d.appendChild(document.createTextNode(' ' + text));
+    out.appendChild(d);
+    // Limiter le nombre de lignes dans la console DOM (max 200)
+    while (out.children.length > 200) out.removeChild(out.firstChild);
+    out.scrollTop = out.scrollHeight;
+    // Save to localStorage
+    const history = JSON.parse(localStorage.getItem('titan_console') || '[]');
+    history.push({type, text, time});
+    if (history.length > 100) history.splice(0, history.length - 100);
+    localStorage.setItem('titan_console', JSON.stringify(history));
+}
+
+function execCmd() {
+    const inp = document.getElementById('conIn');
+    const cmd = inp.value.trim().toLowerCase();
+    if (!cmd) return;
+    inp.value = '';
+    addCon('', `> ${cmd}`);
+
+    const tabs = document.querySelectorAll('.tabs .tab');
+    const cmds = {
+        help: () => addCon('sys', 'Cmds: status | recon/forge/deploy | agents/flux/system/chat/pokedex/tower/rpg | scan/anneal/brief/rapport/refresh/clear/ollama/hub | matrix/raccoon/stats'),
+        status: () => addCon('ok', `29 agents actifs. 3 poles. Cascade IA: ${serverOnline?'Serveur OK':'Demo mode'}. Cout: 0€.`),
+        recon: () => { selectPlanet('recon'); addCon('sys','RECON selectionnee. Murphy + Oracle en poste.'); },
+        forge: () => { selectPlanet('forge'); addCon('sys','FORGE selectionnee. Nikola supervise la production.'); },
+        deploy: () => { selectPlanet('deploy'); addCon('sys','DEPLOY selectionnee. Bagheera orchestre.'); },
+        agents: () => { switchTab('agents', tabs[1]); addCon('sys','Vue agents chargee.'); },
+        flux: () => { switchTab('flux', tabs[7]); addCon('sys','Vue flux chargee.'); },
+        scan: () => { addCon('wrn','Scan en cours...'); setTimeout(()=>addCon('ok','Scan complet. 0 anomalies.'), 1500); },
+        brief: () => addCon('sys', `Prochain brief: ${new Date().getHours()<8?'08:00':'demain 08:00'}. Digest + brief classique.`),
+        ollama: () => addCon('sys', 'Ollama: verifiez dans System > Ollama.'),
+        rapport: () => genRapport(),
+        refresh: () => { addCon('sys','Rafraichissement...'); fetchData(); },
+        clear: () => { document.getElementById('conOut').innerHTML = ''; addCon('sys','Console videe.'); },
+        system: () => { switchTab('system', tabs[6]); addCon('sys','Vue systeme chargee.'); },
+        chat: () => { switchTab('chat', tabs[2]); addCon('sys','Chat IA ouvert.'); },
+        ext: () => { switchTab('system', tabs[6]); addCon('sys','Extensions dans Systeme.'); },
+        dir: () => { switchTab('system', tabs[6]); addCon('sys','Directives dans Systeme.'); },
+        pokedex: () => { switchTab('pokedex', tabs[3]); addCon('sys','Pokedex charge.'); },
+        tower: () => { switchTab('tower', tabs[4]); addCon('sys','Moon Tower chargee.'); },
+        rpg: () => { switchTab('rpg', tabs[5]); addCon('sys','Tower RPG charge.'); },
+        anneal: () => { runAnneal(); },
+        hub: () => { goHub(); addCon('sys','Retour au hub.'); },
+        matrix: () => { triggerMatrixFlash(); addCon('ok', 'Matrix flash active.'); },
+        raccoon: () => { triggerRaccoonRedraw(); addCon('ok', 'Raccoon redrawn.'); },
+        stats: () => { showAgentStats(); },
+    };
+
+    const handler = cmds[cmd];
+    if (handler) handler();
+    else {
+        addCon('wrn', `"${cmd}" — commande non reconnue. Tape "help".`);
+    }
+}
+
+// ============================
+// RAPPORT DE SITUATION
+// ============================
+function genRapport() {
+    const now = new Date();
+    const h = now.getHours();
+    const lines = [
+        `RAPPORT DE SITUATION — ${now.toLocaleDateString('fr-FR')} ${now.toLocaleTimeString('fr-FR')}`,
+        `━━━━━━━━━━━━━━━━━━━━━`,
+        `Systeme : ${serverOnline?'CONNECTE':'DEMO MODE'}`,
+        `Agents : 26 actifs / 3 poles`,
+        `Cascade IA : ${document.getElementById('cascadeLabel').textContent}`,
+        `Ollama : ${(document.getElementById('cascadeLabel')?.textContent||'').includes('Ollama')?'LOCAL ✓':'Offline'}`,
+        `Streak : ${document.getElementById('streakVal').textContent}`,
+        `Cout 24h : 0€`,
+        ``,
+        `Flux schedules :`,
+        `  ${h>=6?'✅':'⏳'} 06:00 — Health Check`,
+        `  ${h>=8?'✅':'⏳'} 08:00 — Morning Digest`,
+        `  ${h>=14?'✅':'⏳'} 14:00 — Afternoon Digest`,
+        `  ${h>=21?'✅':'⏳'} 21:00 — Evening Reminder`,
+        `  ${h>=21&&now.getMinutes()>=30?'✅':'⏳'} 21:30 — Journal Prompt`,
+        ``,
+        `Boucle : R → F → D → R ∞`,
+        `Status : NOMINAL. Commandant, tout est en ordre. ⚡`,
+    ];
+
+    document.getElementById('mTitle').textContent = '⚡ Rapport de Situation';
+    document.getElementById('mBody').innerHTML = `<pre style="font-size:12px;line-height:1.6;white-space:pre-wrap">${lines.join('\n')}</pre>`;
+    document.getElementById('modal').classList.add('show');
+    showToast('Rapport de situation genere', 'success');
+    addCon('ok', 'Rapport de situation genere.');
+}
+
+// ============================
+// ACTIVITY FEED
+// ============================
+const feedMsgs = [
+    '🔭 RECON: Maya scanne les niches trending',
+    '🔨 FORGE: Philomene redige un template',
+    '🚀 DEPLOY: Bagheera verifie les flux',
+    '⚡ Groq cascade: llama-3.3-70b actif',
+    '📊 Cypher analyse les metriques',
+    '🧪 Rick propose un concept disruptif',
+    '🐆 Bagheera orchestre trinome R→F→D',
+    '🏥 Auto-Healer: systemes nominaux',
+    '📚 Library: gems extraites',
+    '♾️ OMEGA-CORE: arbitrage OK',
+    '🔮 Oracle: prediction en cours',
+    '⚔️ Spartan: deadlines verifiees',
+    '🧠 Coach: pattern detecte',
+    '🐻 Baloo: vulgarisation terminee',
+];
+let feedIdx = 0;
+
+function addFeed(text) {
+    const feed = document.getElementById('feed');
+    const time = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    const d = document.createElement('div');
+    d.className = 'feed-item';
+    const timeSpan = document.createElement('span');
+    timeSpan.className = 'feed-time';
+    timeSpan.textContent = time;
+    const textSpan = document.createElement('span');
+    textSpan.textContent = text;
+    d.appendChild(timeSpan);
+    d.appendChild(textSpan);
+    feed.prepend(d);
+    if (feed.children.length > 25) feed.lastChild.remove();
+}
+
+function simFeed() {
+    addFeed(feedMsgs[feedIdx % feedMsgs.length]);
+    feedIdx++;
+    // Intervalle fixe de 8s pour eviter memory leak du setTimeout recursif
+    setTimeout(simFeed, 8000);
+}
+
+// ============================
+// CHAT IA
+// ============================
+const PERSONAS = {
+    '': 'Tu es TITAN, assistant IA. Reponds en francais, direct et concis.',
+    omega: 'Tu es OMEGA, meta-intelligence polymorphe. Grave, calibre, d\'une intensite focalisee. Tu vois les patterns que personne ne voit.',
+    murphy: 'Tu es MURPHY, architecte de structure. Tu organises, tu structures, tu construis des fondations solides.',
+    rick: 'Tu es RICK, genie insolent et visionnaire. References obscures, humour sec, idees qui cassent le moule.',
+    bagheera: 'Tu es BAGHEERA, orchestrateur energique. Tu multiplies les forces, tu coordonnes, tu catalyses.',
+    philomene: 'Tu es PHILOMENE, maitresse des mots. Precision chirurgicale, qualite redactionnelle supreme.',
+    maya: 'Tu es MAYA, espionne des niches. Tu detectes les opportunites avant tout le monde.',
+    zen: 'Tu es ZEN, sage du recul. Tu vois les choses avec distance et serenite.',
+    belfort: 'Tu es BELFORT, le loup de la vente. Angle commercial, closing, persuasion.',
+    nikola: 'Tu es NIKOLA, architecte invisible. Infrastructure, pipelines, systemes.',
+    claude: 'Tu es Claude Code, assistant local. Reponds en francais, direct et technique.',
+};
+
+const PERSONA_NAMES = {omega:'OMEGA',murphy:'MURPHY',rick:'RICK',bagheera:'BAGHEERA',philomene:'PHILOMENE',maya:'MAYA',zen:'ZEN',belfort:'BELFORT',nikola:'NIKOLA',claude:'CLAUDE CODE'};
+
+async function sendChat() {
+    const input = document.getElementById('chatInput');
+    const msg = input.value.trim();
+    if (!msg) return;
+    input.value = '';
+    const persona = document.getElementById('chatPersona').value;
+    const system = PERSONAS[persona] || PERSONAS[''];
+
+    // Add user message (XSS-safe)
+    const container = document.getElementById('chatMessages');
+    container.innerHTML += `<div class="chat-msg user"><div class="sender">👤 Commandant</div><div class="text">${escapeHTML(msg)}</div></div>`;
+
+    // Save user message to localStorage
+    const chatHistory = JSON.parse(localStorage.getItem('titan_chat_history') || '[]');
+    chatHistory.push({ role: 'user', text: msg, time: new Date().toISOString(), agent: persona || '' });
+
+    // Show typing dots
+    container.innerHTML += `<div class="chat-typing" id="chatTyping"><div class="dot-anim"></div><div class="dot-anim"></div><div class="dot-anim"></div></div>`;
+    container.scrollTop = container.scrollHeight;
+
+    let reply = '';
+    let modelUsed = '';
+    if (!serverOnline) {
+        document.getElementById('chatTyping')?.remove();
+        reply = 'Serveur non connecte. Lance: python -m execution.titan.command_server';
+        modelUsed = 'offline';
+        container.innerHTML += `<div class="chat-msg ai"><div class="sender">⚡ TITAN <span class="model-tag">via ${modelUsed}</span></div><div class="text">${escapeHTML(reply)}</div></div>`;
+        container.scrollTop = container.scrollHeight;
+        chatHistory.push({ role: 'ai', text: reply, time: new Date().toISOString() });
+        if (chatHistory.length > 50) chatHistory.splice(0, chatHistory.length - 50);
+        localStorage.setItem('titan_chat_history', JSON.stringify(chatHistory));
+        return;
+    }
+
+    try {
+        const chatEndpoint = persona === 'claude' ? `${API}/claude` : `${API}/chat`;
+        const r = await fetch(chatEndpoint, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({message: msg, system}),
+        });
+        const data = await r.json();
+        document.getElementById('chatTyping')?.remove();
+        reply = data.response || data.error || 'Pas de reponse.';
+        modelUsed = data.model || (persona === 'claude' ? 'Claude Code' : 'Groq llama-3.3-70b');
+        const senderName = persona ? (PERSONA_NAMES[persona] || 'TITAN') : 'TITAN';
+        // Create message with typewriter effect
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'chat-msg ai';
+        msgDiv.innerHTML = `<div class="sender">⚡ ${senderName} <span class="model-tag">via ${escapeHTML(modelUsed)}</span></div><div class="text"></div>`;
+        container.appendChild(msgDiv);
+        const textEl = msgDiv.querySelector('.text');
+        typewriterEffect(textEl, reply);
+        // TTS — speak the response
+        speakAgent(reply, persona);
+    } catch (e) {
+        document.getElementById('chatTyping')?.remove();
+        reply = `Erreur: ${e.message}`;
+        modelUsed = 'error';
+        container.innerHTML += `<div class="chat-msg ai"><div class="sender">⚡ TITAN <span class="model-tag">via ${modelUsed}</span></div><div class="text">${escapeHTML(reply)}</div></div>`;
+    }
+    // Save AI reply to localStorage
+    chatHistory.push({ role: 'ai', text: reply, time: new Date().toISOString(), agent: persona ? (PERSONA_NAMES[persona] || 'TITAN') : 'TITAN' });
+    if (chatHistory.length > 50) chatHistory.splice(0, chatHistory.length - 50);
+    localStorage.setItem('titan_chat_history', JSON.stringify(chatHistory));
+
+    container.scrollTop = container.scrollHeight;
+    addCon('sys', `Chat: "${msg.substring(0,40)}..."`);
+}
+
+function typewriterEffect(element, text, speed = 15) {
+    // insertAdjacentText is XSS-safe (text mode, not HTML)
+    let i = 0;
+    const cursor = document.createElement('span');
+    cursor.className = 'typewriter-cursor';
+    element.textContent = '';
+    element.appendChild(cursor);
+    const container = document.getElementById('chatMessages');
+
+    function type() {
+        if (i < text.length) {
+            cursor.insertAdjacentText('beforebegin', text[i]);
+            i++;
+            container.scrollTop = container.scrollHeight;
+            setTimeout(type, speed);
+        } else {
+            cursor.remove();
+        }
+    }
+    type();
+}
+
+// ============================
+// EXTENSIONS
+// ============================
+let extensionsData = {};
+let extFilter = 'all';
+
+async function renderExtensions() {
+    if (liveData && liveData.extensions) {
+        extensionsData = liveData.extensions;
+    } else if (serverOnline) {
+        try {
+            const r = await fetch(`${API}/extensions`);
+            extensionsData = await r.json();
+        } catch (e) {
+            extensionsData = {};
+        }
+    }
+
+    const grid = document.getElementById('extGrid');
+    const entries = Object.entries(extensionsData).filter(([_,v]) => extFilter === 'all' || v.category === extFilter);
+    grid.innerHTML = entries.map(([id, ext]) => `
+        <div class="ext-card ${ext.enabled?'':'disabled'}" data-cat="${ext.category}">
+            <div class="ext-icon">${ext.icon}</div>
+            <div class="ext-info">
+                <div class="ext-name">${ext.name}</div>
+                <div class="ext-desc">${ext.desc}</div>
+            </div>
+            <div class="ext-toggle ${ext.enabled?'on':''}" onclick="toggleExt('${id}', ${!ext.enabled})"></div>
+        </div>
+    `).join('');
+}
+
+function filterExt(cat, el) {
+    extFilter = cat;
+    document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('on'));
+    if (el) el.classList.add('on');
+    renderExtensions();
+}
+
+async function toggleExt(id, enabled) {
+    if (!serverOnline) {
+        addCon('wrn', 'Serveur requis pour modifier les extensions.');
+        return;
+    }
+    try {
+        await fetch(`${API}/extension`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({id, enabled}),
+        });
+        if (extensionsData[id]) extensionsData[id].enabled = enabled;
+        renderExtensions();
+        showToast(`Extension ${id}: ${enabled?'ACTIVEE':'DESACTIVEE'}`, enabled?'success':'info');
+        addCon(enabled?'ok':'wrn', `Extension ${id}: ${enabled?'ACTIVEE':'DESACTIVEE'}`);
+    } catch (e) {
+        showToast(`Erreur: ${e.message}`, 'error');
+        addCon('err', `Erreur toggle: ${e.message}`);
+    }
+}
+
+// ============================
+// DIRECTIVES
+// ============================
+let directivesList = [];
+
+async function loadDirectives() {
+    if (!serverOnline) {
+        document.getElementById('directivesList').innerHTML = '<div style="color:var(--text-dim)">Serveur requis.</div>';
+        return;
+    }
+    try {
+        const r = await fetch(`${API}/directives`);
+        directivesList = await r.json();
+        const container = document.getElementById('directivesList');
+        const catIcons = {core:'⚡',directive:'📜',personnalite:'🎭'};
+        container.innerHTML = directivesList.map(d => `
+            <div class="dir-item" onclick="loadDirective('${d.name}', this)">
+                <span class="dir-icon">${catIcons[d.category]||'📄'}</span>
+                <span>${d.name}</span>
+                <span class="dir-cat ${d.category}">${d.category}</span>
+            </div>
+        `).join('');
+    } catch (e) {
+        document.getElementById('directivesList').innerHTML = `<div style="color:var(--red)">Erreur: ${e.message}</div>`;
+    }
+}
+
+async function loadDirective(name, el) {
+    document.querySelectorAll('.dir-item').forEach(d => d.classList.remove('active'));
+    if (el) el.classList.add('active');
+    try {
+        const r = await fetch(`${API}/directive?name=${encodeURIComponent(name)}`);
+        const data = await r.json();
+        if (data.error) {
+            document.getElementById('directiveTitle').textContent = `❌ ${name}`;
+            document.getElementById('directiveContent').textContent = data.error;
+        } else {
+            document.getElementById('directiveTitle').textContent = `📜 ${name} — ${data.path || ''}`;
+            document.getElementById('directiveContent').textContent = data.content;
+        }
+    } catch (e) {
+        document.getElementById('directiveContent').textContent = `Erreur: ${e.message}`;
+    }
+    addCon('sys', `Directive chargee: ${name}`);
+}
+
+function filterDirectives(query) {
+    const items = document.querySelectorAll('.dir-item');
+    const q = query.toLowerCase();
+    items.forEach(item => {
+        const name = item.textContent.toLowerCase();
+        item.style.display = name.includes(q) ? 'flex' : 'none';
+    });
+}
+
+// ============================
+// SELF-ANNEALING
+// ============================
+async function runAnneal() {
+    const report = document.getElementById('annealReport');
+    report.innerHTML = '<span class="annealing">🔧</span> Self-annealing en cours...';
+    addCon('wrn', 'Self-annealing lance...');
+
+    if (!serverOnline) {
+        report.innerHTML = '❌ Serveur requis pour le self-annealing.';
+        addCon('err', 'Serveur non connecte.');
+        return;
+    }
+
+    try {
+        const r = await fetch(`${API}/anneal`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: '{}',
+        });
+        const data = await r.json();
+
+        let html = `<div style="margin-bottom:8px"><b>Status:</b> <span style="color:${data.status==='nominal'?'var(--green)':data.status==='repaired'?'var(--yellow)':'var(--red)'}">${data.status?.toUpperCase()}</span></div>`;
+        html += `<div style="margin-bottom:8px"><b>Timestamp:</b> ${data.timestamp}</div>`;
+
+        if (data.checks?.length) {
+            html += '<div style="margin-bottom:5px"><b>Checks:</b></div>';
+            data.checks.forEach(c => {
+                const ok = c.status === 'ok';
+                html += `<div class="flux"><span>${ok?'✅':'❌'}</span><span class="flux-name">${c.file || c.service}</span><span class="badge ${ok?'ok':'err'}">${c.status}</span></div>`;
+            });
+        }
+        if (data.fixes?.length) {
+            html += '<div style="margin-top:8px;margin-bottom:5px"><b>Reparations:</b></div>';
+            data.fixes.forEach(f => {
+                html += `<div class="flux"><span>🔧</span><span class="flux-name">${f.file}: ${f.action}</span><span class="badge ${f.status==='fixed'?'ok':'err'}">${f.status}</span></div>`;
+            });
+        }
+
+        report.innerHTML = html;
+        showToast(`Self-annealing: ${data.status}`, data.status === 'nominal' ? 'success' : 'info');
+        addCon(data.status === 'nominal' ? 'ok' : 'wrn', `Self-annealing: ${data.status}. ${data.fixes?.length||0} reparations.`);
+    } catch (e) {
+        report.innerHTML = `❌ Erreur: ${e.message}`;
+        showToast(`Annealing erreur: ${e.message}`, 'error');
+        addCon('err', `Annealing erreur: ${e.message}`);
+    }
+}
+
+// ============================
+// POKÉDEX
+// ============================
+let pokedexData = null;
+
+async function loadPokedex() {
+    try {
+        const resp = await fetch(API + '/pokedex');
+        pokedexData = await resp.json();
+    } catch {
+        // Use evolution data from liveData if available
+        pokedexData = null;
+    }
+    renderPokedex('all');
+}
+
+function renderPokedex(typeFilter) {
+    const container = document.getElementById('pokedexGrid');
+    if (!pokedexData || !pokedexData.agents) {
+        container.innerHTML = '<div style="color:var(--text-dim);padding:20px;">Chargement du Pokédex...</div>';
+        return;
+    }
+
+    const agents = Object.values(pokedexData.agents);
+    const types = pokedexData.types || {};
+    const forms = pokedexData.forms || {};
+
+    const filtered = typeFilter === 'all' ? agents : agents.filter(a => a.type === typeFilter);
+
+    // Sort: mythical first, then evolved, then rookie, then by XP
+    const formOrder = { mythical: 0, evolved: 1, rookie: 2 };
+    filtered.sort((a, b) => (formOrder[a.form] || 9) - (formOrder[b.form] || 9) || b.xp - a.xp);
+
+    container.innerHTML = filtered.map(a => {
+        const typeInfo = types[a.type] || {};
+        const formInfo = forms[a.form] || {};
+        const statMax = 100;
+        const nextForm = a.form === 'rookie' ? 'evolved' : a.form === 'evolved' ? 'mythical' : null;
+        const nextXP = nextForm ? (forms[nextForm]?.min_xp || 9999) : a.xp;
+        const xpPct = nextForm ? Math.min(100, (a.xp / nextXP) * 100) : 100;
+        const rarityClass = a.rarity === 'legendary' ? 'legendary' : a.rarity === 'rare' ? 'rare' : '';
+
+        const statColors = {
+            attack: '#FF3366',
+            defense: '#00D4FF',
+            speed: '#00FF88',
+            intelligence: '#7B2FF7',
+            creativity: '#FF6B35'
+        };
+
+        const statsHTML = Object.entries(a.stats || {}).map(([key, val]) => `
+            <div class="poke-stat">
+                <span class="poke-stat-label">${key.slice(0,3).toUpperCase()}</span>
+                <div class="poke-stat-bar"><div class="poke-stat-fill" style="width:${val}%;background:${statColors[key] || '#888'}"></div></div>
+                <span class="poke-stat-val">${val}</span>
+            </div>
+        `).join('');
+
+        const movesHTML = (a.moves || []).map(m => `<span class="poke-move">${m}</span>`).join('');
+
+        return `
+        <div class="poke-card ${rarityClass}" style="border-left:4px solid ${typeInfo.color || '#888'}">
+            <div class="poke-header">
+                <div>
+                    <span style="font-size:24px;">${a.emoji}</span>
+                    <span class="poke-name">${escapeHTML(a.name)}</span>
+                    <span class="poke-type" style="background:${typeInfo.color}22;color:${typeInfo.color}">${typeInfo.icon || ''} ${a.type}</span>
+                </div>
+                <span class="poke-form ${a.form}">${formInfo.icon || ''} ${formInfo.label || a.form}</span>
+            </div>
+            <div class="poke-stats">${statsHTML}</div>
+            <div class="poke-moves">${movesHTML}</div>
+            <div class="poke-xp">
+                <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-dim);margin-bottom:2px;">
+                    <span>XP: ${a.xp}</span>
+                    <span>${nextForm ? `→ ${forms[nextForm]?.label || nextForm} à ${nextXP} XP` : '✨ Forme finale'}</span>
+                </div>
+                <div class="poke-xp-bar"><div class="poke-xp-fill" style="width:${xpPct}%"></div></div>
+            </div>
+            <div class="poke-quote">"${escapeHTML(a.quote || '')}"</div>
+        </div>
+        `;
+    }).join('');
+}
+
+function filterPokedex(type, el) {
+    document.querySelectorAll('#pokedexFilters .tab').forEach(t => t.classList.remove('on'));
+    if (el) el.classList.add('on');
+    renderPokedex(type);
+}
+
+// ============================
+// CLICK PARTICLE EFFECT
+// ============================
+document.addEventListener('click', (e) => {
+    // Pas de particule sur input/textarea/select
+    if (['INPUT','TEXTAREA','SELECT','BUTTON'].includes(e.target.tagName)) return;
+    for (let i = 0; i < 4; i++) {
+        const p = document.createElement('div');
+        p.className = 'click-particle';
+        p.style.left = e.clientX + 'px';
+        p.style.top = e.clientY + 'px';
+        p.style.background = ['var(--primary)', 'var(--secondary)', 'var(--green)', 'var(--accent)'][i];
+        const angle = (Math.PI * 2 * i) / 4;
+        const dist = 18 + Math.random() * 24;
+        p.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+        p.style.setProperty('--dy', Math.sin(angle) * dist + 'px');
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 600);
+    }
+});
+
+// ============================
+// KEYBOARD SHORTCUTS
+// ============================
+document.addEventListener('keydown', e => {
+    const active = document.activeElement;
+    if (active === document.getElementById('conIn') || active === document.getElementById('chatInput') || active?.tagName === 'INPUT') return;
+    if (e.key === '/') {
+        e.preventDefault();
+        // Open console drawer first if not open
+        if (!consoleOpen) toggleConsoleDrawer();
+        setTimeout(() => document.getElementById('conIn').focus(), 100);
+    }
+    if (e.key === 'Escape') { closeModal(); if (consoleOpen) toggleConsoleDrawer(); }
+    // New tab indices: 0=synapse, 1=agents, 2=chat, 3=pokedex, 4=tower, 5=rpg, 6=system, 7=flux
+    const tabs = document.querySelectorAll('.tabs .tab');
+    if (e.key === '1') switchTab('synapse', tabs[0]);
+    if (e.key === '2') switchTab('agents', tabs[1]);
+    if (e.key === '3') switchTab('chat', tabs[2]);
+    if (e.key === '4') switchTab('pokedex', tabs[3]);
+    if (e.key === '5') switchTab('tower', tabs[4]);
+    if (e.key === '6') switchTab('rpg', tabs[5]);
+    if (e.key === '7') switchTab('system', tabs[6]);
+    if (e.key === '8') switchTab('flux', tabs[7]);
+    if (e.key === '0') goHub();
+    if (e.key === 'q') switchTab('chat', tabs[2]);
+    if (e.key === 'r' && !e.ctrlKey) { e.preventDefault(); selectPlanet('recon'); }
+    if (e.key === 'f' && !e.ctrlKey) { e.preventDefault(); selectPlanet('forge'); }
+    if (e.key === 'd' && !e.ctrlKey) { e.preventDefault(); selectPlanet('deploy'); }
+    if (e.key === 'p' && !e.ctrlKey) { e.preventDefault(); switchTab('pokedex', tabs[3]); }
+});
+
+// ============================
+// MINI RACCOON — Canvas logo (header + hub)
+// ============================
+function drawMiniRaccoon(canvasId) {
+    const c = document.getElementById(canvasId);
+    if (!c) return;
+    const ctx = c.getContext('2d');
+    const _=null;
+    const BL='#2563EB',DB='#1E40AF',GR='#9CA3AF',DG='#6B7280',LG='#D1D5DB';
+    const BK='#1F2937',MK='#111827',AM='#D4A017',YL='#EAB308',GD='#CA8A04',WH='#F3F4F6';
+    const W=16, H=20;
+    const pixels = [
+        _,_,_,_,_,_,BL,BL,BL,BL,_,_,_,_,_,_,
+        _,_,_,_,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,
+        _,_,GR,_,DB,BL,BL,BL,BL,BL,DB,_,GR,_,_,_,
+        _,GR,DG,_,DB,DB,BL,BL,BL,DB,DB,_,DG,GR,_,_,
+        _,_,DG,DB,DB,DB,DB,DB,DB,DB,DB,DB,DG,_,_,_,
+        _,_,_,GR,GR,GR,GR,GR,GR,GR,GR,GR,_,_,_,_,
+        _,_,_,GR,BK,BK,GR,GR,GR,BK,BK,GR,_,_,_,_,
+        _,_,GR,BK,MK,BK,GR,GR,GR,BK,MK,BK,GR,_,_,_,
+        _,_,GR,BK,MK,AM,BK,GR,BK,MK,AM,BK,GR,_,_,_,
+        _,_,_,GR,BK,BK,GR,GR,GR,BK,BK,GR,_,_,_,_,
+        _,_,_,LG,LG,GR,GR,BK,GR,GR,LG,LG,_,_,_,_,
+        _,_,_,_,LG,WH,WH,WH,WH,WH,LG,_,_,_,_,_,
+        _,_,_,_,_,WH,GR,GR,GR,WH,_,_,_,_,_,_,
+        _,_,_,_,YL,YL,YL,YL,YL,YL,YL,_,_,_,_,_,
+        _,_,_,BL,BL,BL,BL,BL,BL,BL,BL,BL,_,_,YL,_,
+        _,_,BL,BL,BL,BL,BL,BL,BL,BL,BL,BL,BL,_,YL,_,
+        _,_,BL,BL,YL,BL,BL,BL,BL,BL,YL,BL,BL,YL,GD,_,
+        _,_,BL,BL,YL,YL,YL,YL,YL,YL,YL,BL,BL,_,GD,_,
+        _,_,_,BL,BL,BL,BL,_,BL,BL,BL,BL,_,YL,YL,YL,
+        _,_,_,BL,BL,_,_,_,_,_,BL,BL,_,_,YL,_,
+    ];
+    for (let i = 0; i < pixels.length; i++) {
+        if (!pixels[i]) continue;
+        const x = i % W, y = Math.floor(i / W);
+        ctx.fillStyle = pixels[i];
+        // Glow effect on eyes
+        if ((i === 133 || i === 138)) {
+            ctx.shadowColor = AM;
+            ctx.shadowBlur = 2;
+        } else {
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+        }
+        ctx.fillRect(x, y, 1, 1);
+    }
+    ctx.shadowBlur = 0;
+}
+
+// ============================
+// RACCOON PIXEL ART (Sly Cooper style)
+// ============================
+function drawRaccoon(targetGrid) {
+    const grid = targetGrid || document.getElementById('raccoonGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    // Sly Cooper color palette
+    const _='transparent';
+    const BL='#2563EB'; // Blue (hat, suit)
+    const DB='#1E40AF'; // Dark blue (hat shadow)
+    const GR='#9CA3AF'; // Grey fur
+    const DG='#6B7280'; // Dark grey fur
+    const LG='#D1D5DB'; // Light grey (cheeks)
+    const BK='#1F2937'; // Black (mask, nose)
+    const MK='#111827'; // Mask dark
+    const AM='#D4A017'; // Amber eyes
+    const YL='#EAB308'; // Yellow/gold (cane, belt)
+    const GD='#CA8A04'; // Gold dark
+    const WH='#F3F4F6'; // White (muzzle)
+
+    // Amber eyes at positions (row 8, cols 5 and 10) — calculate indices
+    // Row 8 = index 8*16 = 128, cols 5=133, col 10=138
+    const eyeIndices = new Set([133, 138]);
+
+    const pixels = [
+        // Row 0: Hat top
+        _,_,_,_,_,_,BL,BL,BL,BL,_,_,_,_,_,_,
+        // Row 1: Hat wider
+        _,_,_,_,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,
+        // Row 2: Hat with brim + ears peeking
+        _,_,GR,_,DB,BL,BL,BL,BL,BL,DB,_,GR,_,_,_,
+        // Row 3: Ears + hat brim
+        _,GR,DG,_,DB,DB,BL,BL,BL,DB,DB,_,DG,GR,_,_,
+        // Row 4: Hat brim extends
+        _,_,DG,DB,DB,DB,DB,DB,DB,DB,DB,DB,DG,_,_,_,
+        // Row 5: Forehead grey fur
+        _,_,_,GR,GR,GR,GR,GR,GR,GR,GR,GR,_,_,_,_,
+        // Row 6: Top of mask
+        _,_,_,GR,BK,BK,GR,GR,GR,BK,BK,GR,_,_,_,_,
+        // Row 7: Mask with eye sockets
+        _,_,GR,BK,MK,BK,GR,GR,GR,BK,MK,BK,GR,_,_,_,
+        // Row 8: Eyes (amber glow)
+        _,_,GR,BK,MK,AM,BK,GR,BK,MK,AM,BK,GR,_,_,_,
+        // Row 9: Under eyes, bridge nose
+        _,_,_,GR,BK,BK,GR,GR,GR,BK,BK,GR,_,_,_,_,
+        // Row 10: Cheeks + nose
+        _,_,_,LG,LG,GR,GR,BK,GR,GR,LG,LG,_,_,_,_,
+        // Row 11: Muzzle
+        _,_,_,_,LG,WH,WH,WH,WH,WH,LG,_,_,_,_,_,
+        // Row 12: Smile
+        _,_,_,_,_,WH,GR,GR,GR,WH,_,_,_,_,_,_,
+        // Row 13: Neck / collar yellow
+        _,_,_,_,YL,YL,YL,YL,YL,YL,YL,_,_,_,_,_,
+        // Row 14: Blue suit top
+        _,_,_,BL,BL,BL,BL,BL,BL,BL,BL,BL,_,_,YL,_,
+        // Row 15: Suit + cane start
+        _,_,BL,BL,BL,BL,BL,BL,BL,BL,BL,BL,BL,_,YL,_,
+        // Row 16: Suit body + cane
+        _,_,BL,BL,YL,BL,BL,BL,BL,BL,YL,BL,BL,YL,GD,_,
+        // Row 17: Suit with belt
+        _,_,BL,BL,YL,YL,YL,YL,YL,YL,YL,BL,BL,_,GD,_,
+        // Row 18: Legs
+        _,_,_,BL,BL,BL,BL,_,BL,BL,BL,BL,_,YL,YL,YL,
+        // Row 19: Feet + cane hook
+        _,_,_,BL,BL,_,_,_,_,_,BL,BL,_,_,YL,_,
+    ];
+
+    let delay = 0;
+    pixels.forEach((color, i) => {
+        const px = document.createElement('div');
+        px.className = eyeIndices.has(i) ? 'px eye' : 'px';
+        px.style.background = color;
+        px.style.animationDelay = delay + 'ms';
+        grid.appendChild(px);
+        if (color !== _) delay += 4;
+    });
+    // Add scanline overlay
+    if (!grid.querySelector('.raccoon-scanline')) {
+        const scanline = document.createElement('div');
+        scanline.className = 'raccoon-scanline';
+        grid.appendChild(scanline);
+    }
+}
+
+// ============================
+// MATRIX RAIN (CSS-driven)
+// ============================
+function initMatrixRain() {
+    const container = document.getElementById('matrixRain');
+    if (!container) return;
+    const chars = 'ΑΒΓΔΕΖΗΘΛΞΠΣΦΨΩαβγδεζηθλξπσφψω01';
+    for (let i = 0; i < 30; i++) {
+        const col = document.createElement('div');
+        col.className = 'matrix-col';
+        col.style.left = (i * 3.33) + '%';
+        col.style.animationDuration = (8 + Math.random() * 12) + 's';
+        col.style.animationDelay = (Math.random() * -15) + 's';
+        let txt = '';
+        const len = 10 + Math.floor(Math.random() * 20);
+        for (let j = 0; j < len; j++) txt += chars[Math.floor(Math.random() * chars.length)] + '\n';
+        col.textContent = txt;
+        container.appendChild(col);
+    }
+}
+
+// ============================
+// NEWS TICKER (RSS + fallback)
+// ============================
+const FALLBACK_TICKER = [
+    'OpenAI lance GPT-5 avec raisonnement avance — performances record sur tous les benchmarks',
+    'Anthropic Claude Opus 4.6 — nouveau SOTA en coding et analyse complexe',
+    'Google DeepMind Gemini 2.5 Pro disponible gratuitement via API',
+    'Meta Llama 4 Maverick domine les benchmarks open-source',
+    'Mistral Large 2 rivalise avec GPT-4o sur le raisonnement multilingue',
+    'xAI Grok 3 integre la recherche web en temps reel',
+    'Groq atteint 1200 tok/s en inference LPU — le plus rapide du marche',
+    'Nvidia H200 : les GPUs IA battent tous les records de performance',
+    'Agents IA autonomes — marche estime a $65B en 2027',
+    'Midjourney v7 genere des images photoréalistes indistinguables',
+    'Suno AI v4 compose de la musique professionnelle en 30 secondes',
+    'GitHub Copilot X integre Claude pour le pair programming avance',
+];
+
+async function loadTickerNews() {
+    let items = [];
+    try {
+        const r = await fetch('https://hnrss.org/newest?count=8', { signal: AbortSignal.timeout(4000) });
+        const txt = await r.text();
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(txt, 'text/xml');
+        const entries = xml.querySelectorAll('item title');
+        entries.forEach(t => { if (t.textContent) items.push(t.textContent.trim()); });
+    } catch (e) {}
+    if (items.length < 3) items = [...FALLBACK_TICKER];
+    const doubled = [...items, ...items];
+    const ticker = document.getElementById('tickerContent');
+    if (!ticker) return;
+    ticker.innerHTML = doubled.map(t => `<span>${t} &nbsp;⚡&nbsp;</span>`).join('');
+}
+
+// ============================
+// COUNTER ANIMATION
+// ============================
+function animateCounters() {
+    document.querySelectorAll('.big').forEach(el => {
+        if (el.dataset.animating) return;
+        const raw = el.textContent.trim();
+        const num = parseInt(raw.replace(/[^0-9]/g, ''));
+        if (isNaN(num) || num === 0) return;
+        const prefix = raw.replace(/[0-9]+.*/, '');
+        const suffix = raw.replace(/.*[0-9]/, '');
+        const duration = 700;
+        const start = performance.now();
+        el.dataset.animating = '1';
+        const step = (now) => {
+            const t = Math.min((now - start) / duration, 1);
+            const ease = 1 - Math.pow(1 - t, 3);
+            el.textContent = prefix + Math.round(num * ease) + suffix;
+            if (t < 1) requestAnimationFrame(step);
+            else delete el.dataset.animating;
+        };
+        el.textContent = prefix + '0' + suffix;
+        requestAnimationFrame(step);
+    });
+}
+
+// ============================
+// 3D ISOMETRIC TOWER
+// ============================
+function renderIsoTower() {
+    const tower = document.getElementById('isoTower');
+    if (!tower) return;
+    const particles = document.getElementById('isoParticles');
+    const floors = [
+        { name: 'OMEGA-CORE', color: 'var(--primary)', agents: AGENTS.core },
+        { name: 'DEPLOY — Distribution', color: 'var(--green)', agents: AGENTS.deploy },
+        { name: 'FORGE — Production', color: 'var(--accent)', agents: AGENTS.forge },
+        { name: 'RECON — Renseignement', color: 'var(--secondary)', agents: AGENTS.recon },
+    ];
+    const existingFloors = tower.querySelectorAll('.iso-floor');
+    existingFloors.forEach(f => f.remove());
+
+    floors.forEach((floor, i) => {
+        const div = document.createElement('div');
+        div.className = 'iso-floor';
+        div.style.borderLeftColor = floor.color;
+        div.style.borderLeftWidth = '3px';
+        div.style.zIndex = floors.length - i;
+        div.style.boxShadow = `0 ${2+i*2}px ${8+i*4}px rgba(0,0,0,0.3)`;
+        div.innerHTML = `
+            <div class="iso-floor-label" style="color:${floor.color}">${floor.name}</div>
+            <div class="iso-agents">
+                ${floor.agents.map((a,j) => `<div class="iso-agent" style="animation-delay:${j*0.3}s" onclick="showAgent('${a.n}')">${a.e} <span style="font-size:9px">${a.n}</span></div>`).join('')}
+            </div>
+        `;
+        tower.appendChild(div);
+    });
+
+    particles.innerHTML = '';
+    for (let i = 0; i < 12; i++) {
+        const p = document.createElement('div');
+        p.className = 'iso-particle';
+        p.style.left = (15 + Math.random() * 70) + '%';
+        p.style.animationDelay = (Math.random() * -4) + 's';
+        p.style.animationDuration = (3 + Math.random() * 3) + 's';
+        p.style.background = ['var(--primary)','var(--secondary)','var(--green)','var(--accent)'][Math.floor(Math.random()*4)];
+        particles.appendChild(p);
+    }
+}
+
+// ============================
+// MATRIX FLASH (console command)
+// ============================
+function triggerMatrixFlash() {
+    const overlay = document.createElement('div');
+    overlay.className = 'matrix-flash';
+    const chars = 'ΑΒΓΔΕΖΗΘΛΞΠΣΦΨΩαβγδεζηθλξπσφψω01アイウエオカキクケコサシスセソ';
+    const cols = Math.floor(window.innerWidth / 10);
+    const rows = Math.floor(window.innerHeight / 14);
+    let text = '';
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            text += chars[Math.floor(Math.random() * chars.length)];
+        }
+        text += '\n';
+    }
+    overlay.textContent = text;
+    document.body.appendChild(overlay);
+    setTimeout(() => overlay.remove(), 2100);
+}
+
+// ============================
+// RACCOON REDRAW (console command)
+// ============================
+function triggerRaccoonRedraw() {
+    // Create a temporary splash-like overlay with raccoon
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(8,8,16,0.95);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;';
+    const grid = document.createElement('div');
+    grid.className = 'raccoon-grid';
+    grid.style.gridTemplateColumns = 'repeat(16,6px)';
+    grid.style.gridTemplateRows = 'repeat(20,6px)';
+    overlay.appendChild(grid);
+    const label = document.createElement('div');
+    label.className = 'splash-logo';
+    label.style.cssText = 'opacity:1;animation:none;font-size:36px;margin-top:12px;';
+    label.textContent = 'TITAN';
+    overlay.appendChild(label);
+    document.body.appendChild(overlay);
+    drawRaccoon(grid);
+    overlay.addEventListener('click', () => overlay.remove());
+    setTimeout(() => {
+        overlay.style.transition = 'opacity 0.6s ease';
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.remove(), 600);
+    }, 3000);
+}
+
+// ============================
+// AGENT STATS (console command)
+// ============================
+function showAgentStats() {
+    const poles = { recon: AGENTS.recon, forge: AGENTS.forge, deploy: AGENTS.deploy, core: AGENTS.core };
+    for (const [pole, agents] of Object.entries(poles)) {
+        addCon('sys', `--- ${pole.toUpperCase()} (${agents.length} agents) ---`);
+        agents.forEach(a => {
+            const gov = a.gov ? ' [GOV]' : '';
+            const binomes = (a.binomes || []).join(', ') || 'solo';
+            addCon('', `  ${a.e} ${a.n}${gov} — ${a.r} (binomes: ${binomes})`);
+        });
+    }
+    addCon('ok', `Total: ${Object.values(poles).flat().length} agents charges.`);
+}
+
+// ============================
+// DNA HELIX (Splash animation)
+// ============================
+function initDNAHelix() {
+    const container = document.getElementById('dnaHelix');
+    if (!container) return;
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    for (let i = 0; i < 24; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'dna-strand';
+        const angle = (i / 24) * Math.PI * 4;
+        const y = centerY - 120 + (i * 10);
+        const x = centerX + Math.sin(angle) * 40;
+        dot.style.left = x + 'px';
+        dot.style.top = y + 'px';
+        dot.style.background = i % 2 === 0 ? 'var(--primary)' : 'var(--secondary)';
+        dot.style.animationDelay = (i * 0.12) + 's';
+        dot.style.width = (3 + Math.sin(angle) * 2) + 'px';
+        dot.style.height = dot.style.width;
+        container.appendChild(dot);
+
+        // Bridge between strands
+        if (i % 3 === 0) {
+            const bridge = document.createElement('div');
+            bridge.style.cssText = `position:absolute;left:${x - 20}px;top:${y}px;width:40px;height:1px;background:linear-gradient(90deg,var(--primary),transparent,var(--secondary));opacity:0.3;animation:fadeIn 0.5s ease ${i*0.12}s both;`;
+            container.appendChild(bridge);
+        }
+    }
+}
+
+// ============================
+// VOICE INPUT (Web Speech API)
+// ============================
+let isListening = false;
+let recognition = null;
+
+function initVoice() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+    recognition = new SpeechRecognition();
+    recognition.lang = 'fr-FR';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onresult = (event) => {
+        const text = event.results[0][0].transcript;
+        document.getElementById('chatInput').value = text;
+        stopVoice();
+        // Auto-send
+        sendChat();
+    };
+
+    recognition.onerror = (event) => {
+        stopVoice();
+        showToast('Erreur micro: ' + event.error, 'error');
+    };
+
+    recognition.onend = () => {
+        stopVoice();
+    };
+}
+
+function toggleVoice() {
+    if (isListening) {
+        stopVoice();
+    } else {
+        startVoice();
+    }
+}
+
+function startVoice() {
+    if (!recognition) {
+        showToast('Speech Recognition non supportee par ce navigateur', 'error');
+        return;
+    }
+    isListening = true;
+    const btn = document.getElementById('voiceBtn');
+    btn.style.background = 'var(--red)';
+    btn.style.borderColor = 'var(--red)';
+    btn.style.boxShadow = '0 0 12px rgba(255,51,102,0.4)';
+    btn.style.animation = 'pulse 1s infinite';
+    btn.textContent = '🔴';
+    recognition.start();
+    showToast('Ecoute en cours... Parle !', 'info');
+}
+
+function stopVoice() {
+    isListening = false;
+    const btn = document.getElementById('voiceBtn');
+    if (btn) {
+        btn.style.background = 'var(--bg3)';
+        btn.style.borderColor = 'var(--border)';
+        btn.style.boxShadow = 'none';
+        btn.style.animation = 'none';
+        btn.textContent = '🎤';
+    }
+    if (recognition) {
+        try { recognition.stop(); } catch {}
+    }
+}
+
+// ============================
+// TEXT-TO-SPEECH — Agents parlent
+// ============================
+const AGENT_VOICES = {
+    '': { rate: 1.0, pitch: 1.0 },
+    omega: { rate: 0.9, pitch: 0.8 },
+    murphy: { rate: 1.0, pitch: 0.9 },
+    rick: { rate: 1.2, pitch: 1.2 },
+    bagheera: { rate: 0.95, pitch: 0.85 },
+    philomene: { rate: 0.95, pitch: 1.1 },
+    maya: { rate: 1.05, pitch: 1.0 },
+    zen: { rate: 0.8, pitch: 0.7 },
+    belfort: { rate: 1.15, pitch: 1.0 },
+    nikola: { rate: 1.0, pitch: 0.95 },
+    claude: { rate: 1.0, pitch: 1.0 },
+};
+
+let ttsEnabled = true;
+let currentUtterance = null;
+
+function speakAgent(text, agentKey) {
+    if (!ttsEnabled || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'fr-FR';
+    const voiceConfig = AGENT_VOICES[agentKey] || AGENT_VOICES[''];
+    utterance.rate = voiceConfig.rate;
+    utterance.pitch = voiceConfig.pitch;
+    const voices = window.speechSynthesis.getVoices();
+    const frVoice = voices.find(v => v.lang.startsWith('fr'));
+    if (frVoice) utterance.voice = frVoice;
+    currentUtterance = utterance;
+    window.speechSynthesis.speak(utterance);
+}
+
+function toggleTTS() {
+    ttsEnabled = !ttsEnabled;
+    const btn = document.getElementById('ttsToggle');
+    if (btn) {
+        btn.textContent = ttsEnabled ? '\u{1F50A}' : '\u{1F507}';
+        btn.title = ttsEnabled ? 'Couper la voix' : 'Activer la voix';
+    }
+    if (!ttsEnabled) window.speechSynthesis.cancel();
+    showToast(ttsEnabled ? 'Voix activee' : 'Voix desactivee', 'info');
+}
+
+// ============================
+// HUB NAVIGATION
+// ============================
+function enterSection(section) {
+    const hub = document.getElementById('hub');
+    hub.classList.add('hidden');
+    setTimeout(() => hub.style.display = 'none', 500);
+
+    document.getElementById('mainHeader').style.display = 'flex';
+    document.querySelector('.main').style.display = 'grid';
+    document.getElementById('dock').style.display = 'flex';
+
+    const tabMap = {
+        synapse: 0, agents: 1, chat: 2, pokedex: 3, tower: 4, rpg: 5, system: 6, flux: 7
+    };
+    const tabs = document.querySelectorAll('.tabs .tab');
+    const idx = tabMap[section] !== undefined ? tabMap[section] : 0;
+    if (tabs[idx]) switchTab(section, tabs[idx]);
+
+    // Load extensions & directives when entering system
+    if (section === 'system') {
+        renderExtensions();
+        loadDirectives();
+    }
+}
+
+function goHub() {
+    document.getElementById('mainHeader').style.display = 'none';
+    document.querySelector('.main').style.display = 'none';
+    document.getElementById('dock').style.display = 'none';
+    // Close console drawer if open
+    const drawer = document.getElementById('consoleDrawer');
+    drawer.classList.remove('open');
+    setTimeout(() => drawer.style.display = 'none', 300);
+    consoleOpen = false;
+
+    const hub = document.getElementById('hub');
+    hub.style.display = 'flex';
+    hub.classList.remove('hidden');
+    // Re-trigger tile animations
+    document.querySelectorAll('.hub-tile').forEach((tile, i) => {
+        tile.style.animation = 'none';
+        tile.offsetHeight;
+        tile.style.animation = `hubTileIn 0.5s ease ${i * 0.08}s forwards`;
+    });
+}
+
+// ============================
+// CONSOLE DRAWER
+// ============================
+let consoleOpen = false;
+function toggleConsoleDrawer() {
+    const drawer = document.getElementById('consoleDrawer');
+    consoleOpen = !consoleOpen;
+    if (consoleOpen) {
+        drawer.style.display = 'block';
+        requestAnimationFrame(() => drawer.classList.add('open'));
+    } else {
+        drawer.classList.remove('open');
+        setTimeout(() => drawer.style.display = 'none', 300);
+    }
+}
+
+// ============================
+// OMEGA OVERLAY (hover rapport btn)
+// ============================
+let omegaTimeout = null;
+function showOmegaOverlay() {
+    clearTimeout(omegaTimeout);
+    document.getElementById('omegaOverlay').classList.add('show');
+}
+function hideOmegaOverlay() {
+    omegaTimeout = setTimeout(() => {
+        document.getElementById('omegaOverlay').classList.remove('show');
+    }, 300);
+}
+
+// ============================
+// SYSTEM VIVANT — Animations automatiques
+// ============================
+
+// Sync indicator (pendant fetchData)
+function showSync(text) {
+    const el = document.getElementById('syncIndicator');
+    const txt = document.getElementById('syncText');
+    if (el && txt) {
+        txt.textContent = text || 'Synchronisation...';
+        el.classList.add('active');
+    }
+}
+function hideSync() {
+    const el = document.getElementById('syncIndicator');
+    if (el) el.classList.remove('active');
+}
+
+// System scan periodique (toutes les 90s)
+function triggerSystemScan() {
+    const overlay = document.getElementById('systemScanOverlay');
+    if (!overlay) return;
+    overlay.style.opacity = '1';
+    const line = document.createElement('div');
+    line.className = 'scan-line';
+    overlay.appendChild(line);
+    addCon('sys', 'Scan neural en cours...');
+
+    setTimeout(() => {
+        overlay.style.opacity = '0';
+        line.remove();
+        addCon('ok', 'Scan complet — systeme nominal.');
+    }, 1800);
+}
+
+// Neural pulse on random cards (toutes les 15s)
+function triggerNeuralPulse() {
+    const cards = document.querySelectorAll('.card:not(.neural-pulse)');
+    if (cards.length === 0) return;
+    const card = cards[Math.floor(Math.random() * cards.length)];
+    card.classList.add('neural-pulse');
+    setTimeout(() => card.classList.remove('neural-pulse'), 800);
+}
+
+// Boot sequence animée
+function bootSequence() {
+    const steps = [
+        { delay: 200, type: 'sys', text: 'Initialisation cascade IA...' },
+        { delay: 600, type: 'ok', text: 'Groq (6 modeles) ✓' },
+        { delay: 900, type: 'ok', text: 'Gemini fallback ✓' },
+        { delay: 1200, type: 'sys', text: 'Chargement agents (29)...' },
+        { delay: 1800, type: 'ok', text: 'RECON (7) · FORGE (9) · DEPLOY (10) · OMEGA (3) ✓' },
+        { delay: 2200, type: 'sys', text: 'Verification memoire...' },
+        { delay: 2600, type: 'ok', text: 'Memoire persistante OK — facts charges.' },
+        { delay: 3000, type: 'sys', text: 'Self-diagnostic rapide...' },
+        { delay: 3400, type: 'ok', text: 'Tous les systemes nominaux.' },
+    ];
+    steps.forEach(s => {
+        setTimeout(() => addCon(s.type, s.text), s.delay);
+    });
+}
+
+// Lancer les animations periodiques
+function startLiveSystems() {
+    // Boot sequence
+    bootSequence();
+
+    // Scan neural toutes les 90s
+    setInterval(triggerSystemScan, 90000);
+
+    // Neural pulse sur cards toutes les 15s
+    setInterval(triggerNeuralPulse, 15000);
+
+    // Premier scan apres 30s
+    setTimeout(triggerSystemScan, 30000);
+}
+
+// ============================
+// DAILY PICKS — Films Netflix + Videos IA
+// ============================
+
+const FILM_PICKS_FALLBACK = [
+    { title: "The Social Network", year: 2010, score: 96, genre: "Drama/Tech", icon: "🎬", reason: "Fondation d'un empire tech — ton histoire" },
+    { title: "Ex Machina", year: 2014, score: 92, genre: "Sci-Fi/IA", icon: "🤖", reason: "IA autonome, conscience artificielle" },
+    { title: "The Imitation Game", year: 2014, score: 90, genre: "Bio/Tech", icon: "🧠", reason: "Turing — les origines de l'IA" },
+    { title: "Her", year: 2013, score: 94, genre: "Sci-Fi/Romance", icon: "💬", reason: "Relation humain-IA, pertinent pour TITAN" },
+    { title: "Moneyball", year: 2011, score: 94, genre: "Sport/Data", icon: "📊", reason: "Data-driven decisions — Nash approuverait" },
+    { title: "Pirates of Silicon Valley", year: 1999, score: 88, genre: "Drama/Tech", icon: "💻", reason: "Jobs vs Gates — construction d'empire" },
+    { title: "Margin Call", year: 2011, score: 87, genre: "Finance", icon: "💰", reason: "Risk management — Belfort prend des notes" },
+    { title: "The Matrix", year: 1999, score: 88, genre: "Sci-Fi", icon: "🕶️", reason: "Simulation, agents autonomes, TITAN vibes" },
+    { title: "Tenet", year: 2020, score: 83, genre: "Sci-Fi/Action", icon: "⏰", reason: "Inversion temporelle — Nolan x complexité" },
+    { title: "Sly Cooper (Fan Film)", year: 2023, score: 82, genre: "Animation", icon: "🦝", reason: "Le raton — mascotte officielle TITAN" },
+    { title: "Blade Runner 2049", year: 2017, score: 88, genre: "Sci-Fi", icon: "🌆", reason: "IA, réplicants, questions existentielles" },
+    { title: "The Big Short", year: 2015, score: 88, genre: "Finance", icon: "📉", reason: "Quand tout le monde a tort sauf toi" },
+];
+
+const VIDEO_PICKS_FALLBACK = [
+    { title: "Building AI Agents That Actually Work", channel: "AI Jason", views: "340K", icon: "🔧", url: "https://youtube.com/results?search_query=building+ai+agents+that+work" },
+    { title: "Multi-Agent Systems Explained", channel: "Two Minute Papers", views: "520K", icon: "🤖", url: "https://youtube.com/results?search_query=multi+agent+systems+explained" },
+    { title: "Claude Code — Build Anything", channel: "Anthropic", views: "180K", icon: "🧠", url: "https://youtube.com/results?search_query=claude+code+anthropic" },
+    { title: "AutoGPT vs CrewAI vs LangGraph", channel: "Matt Berman", views: "290K", icon: "⚔️", url: "https://youtube.com/results?search_query=autogpt+vs+crewai+vs+langgraph" },
+    { title: "How to Orchestrate AI Agents", channel: "AI Explained", views: "420K", icon: "🎯", url: "https://youtube.com/results?search_query=orchestrate+ai+agents" },
+    { title: "Zero Cost AI Stack for Startups", channel: "Fireship", views: "1.2M", icon: "💸", url: "https://youtube.com/results?search_query=zero+cost+ai+stack+startups" },
+    { title: "Build a Telegram Bot with AI", channel: "Tech With Tim", views: "210K", icon: "📱", url: "https://youtube.com/results?search_query=telegram+bot+ai+python" },
+    { title: "The Future of AI Agents 2026", channel: "Lex Fridman", views: "1.8M", icon: "🔮", url: "https://youtube.com/results?search_query=future+ai+agents+2026" },
+    { title: "n8n Automation Masterclass", channel: "n8n", views: "150K", icon: "⚡", url: "https://youtube.com/results?search_query=n8n+automation+masterclass" },
+];
+
+function loadDailyPicks() {
+    // Use date as seed for daily rotation
+    const today = new Date();
+    const dayIndex = today.getDate() + today.getMonth() * 31;
+
+    // Pick 3 films from rotation
+    const filmContainer = document.getElementById('filmPicks');
+    if (filmContainer) {
+        const films = [];
+        for (let i = 0; i < 3; i++) {
+            films.push(FILM_PICKS_FALLBACK[(dayIndex + i) % FILM_PICKS_FALLBACK.length]);
+        }
+        filmContainer.innerHTML = films.map(f => `
+            <div class="pick-card" onclick="window.open('https://www.google.com/search?q=${encodeURIComponent(f.title + ' netflix')}','_blank')">
+                <div class="pick-icon">${f.icon}</div>
+                <div class="pick-info">
+                    <div class="pick-title">${f.title} (${f.year})</div>
+                    <div class="pick-meta">${f.genre} — ${f.reason}</div>
+                </div>
+                <div class="pick-score ${f.score >= 90 ? 'high' : 'mid'}">${f.score}%</div>
+            </div>
+        `).join('');
+    }
+
+    // Pick 3 videos from rotation
+    const videoContainer = document.getElementById('videoPicks');
+    if (videoContainer) {
+        const videos = [];
+        for (let i = 0; i < 3; i++) {
+            videos.push(VIDEO_PICKS_FALLBACK[(dayIndex + i) % VIDEO_PICKS_FALLBACK.length]);
+        }
+        videoContainer.innerHTML = videos.map(v => `
+            <div class="pick-card" onclick="window.open('${v.url}','_blank')">
+                <div class="pick-icon">${v.icon}</div>
+                <div class="pick-info">
+                    <div class="pick-title">${v.title}</div>
+                    <div class="pick-meta">${v.channel} · ${v.views} vues</div>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+// ============================
+// HUB CLOCK
+// ============================
+setInterval(() => {
+    const hubClock = document.getElementById('hubClock');
+    if (hubClock) {
+        const n = new Date();
+        hubClock.textContent = n.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+    }
+}, 1000);
+
+// ============================
+// INIT
+// ============================
+async function init() {
+    drawRaccoon();
+    drawMiniRaccoon('logoRaccoon');
+    initDNAHelix();
+    initMatrixRain();
+    initVoice();
+
+    // Boost matrix rain opacity during splash
+    const matrixEl = document.getElementById('matrixRain');
+    if (matrixEl) matrixEl.style.opacity = '0.06';
+
+    setTimeout(() => {
+        const splash = document.getElementById('splash');
+        if (splash) splash.classList.add('gone');
+        // Reduce matrix rain opacity after splash
+        if (matrixEl) matrixEl.style.opacity = '0.03';
+        setTimeout(() => {
+            if (splash) splash.remove();
+            // Show hub instead of main directly
+            document.getElementById('hub').style.display = 'flex';
+            animateCounters();
+        }, 600);
+    }, 3500);
+
+    renderAgentList();
+
+    // Persona change listener for chat header
+    document.getElementById('chatPersona').addEventListener('change', function() {
+        const persona = this.value;
+        const emojis = {'':'⚡',omega:'♾️',murphy:'🏗️',rick:'🧪',bagheera:'🐆',philomene:'✍️',maya:'🕵️',zen:'🧘',belfort:'🐺',nikola:'⚡',claude:'🧠'};
+        const names = {'':'TITAN',omega:'OMEGA',murphy:'MURPHY',rick:'RICK',bagheera:'BAGHEERA',philomene:'PHILOMENE',maya:'MAYA',zen:'ZEN',belfort:'BELFORT',nikola:'NIKOLA',claude:'CLAUDE CODE'};
+        document.getElementById('chatAvatarIcon').textContent = emojis[persona] || '⚡';
+        document.getElementById('chatAgentName').textContent = names[persona] || 'TITAN';
+    });
+
+    // Restore chat history
+    const savedChat = JSON.parse(localStorage.getItem('titan_chat_history') || '[]');
+    const chatContainer = document.getElementById('chatMessages');
+    savedChat.slice(-30).forEach(m => {
+        const div = document.createElement('div');
+        div.className = `chat-msg ${m.role === 'user' ? 'user' : 'ai'}`;
+        const senderLabel = m.role === 'user' ? '👤 Commandant' : `⚡ ${m.agent || 'TITAN'}`;
+        div.innerHTML = `<div class="sender">${senderLabel}</div><div class="text">${escapeHTML(m.text)}</div>`;
+        chatContainer.appendChild(div);
+    });
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    // Restore console history
+    const history = JSON.parse(localStorage.getItem('titan_console') || '[]').slice(-20);
+    history.forEach(h => {
+        const out = document.getElementById('conOut');
+        const d = document.createElement('div');
+        d.className = `con-line ${escapeHTML(h.type)}`;
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 't';
+        timeSpan.textContent = `[${h.time}]`;
+        d.appendChild(timeSpan);
+        d.appendChild(document.createTextNode(' ' + h.text));
+        out.appendChild(d);
+    });
+
+    addCon('sys', 'Connexion au serveur...');
+    const ok = await fetchData();
+    if (ok) {
+        addCon('ok', 'TITAN-COMMAND operationnel. Donnees live. Tape "help".');
+    } else {
+        addCon('wrn', 'Mode demo. Lancez le serveur pour les donnees live.');
+        addCon('sys', 'python -m execution.titan.command_server');
+    }
+    firstLoad = false;
+
+    setTimeout(simFeed, 3000);
+
+    loadTickerNews();
+    setInterval(loadTickerNews, 300000);
+
+    setInterval(fetchData, 30000);
+
+    // Start living system animations
+    startLiveSystems();
+
+    // Load daily picks (films + videos)
+    loadDailyPicks();
+}
+
+init();
+</script>
+
+<!-- QUICK ACTIONS (mobile) -->
+<div class="quick-bar" id="quickActions">
+    <div class="quick-bar-inner">
+        <button class="quick-btn" onclick="goHub()"><span class="qicon">&#x1F3E0;</span>Hub</button>
+        <button class="quick-btn" onclick="switchTab('synapse')"><span class="qicon">⚡</span>Home</button>
+        <button class="quick-btn" onclick="switchTab('chat')"><span class="qicon">&#x1F4AC;</span>Chat</button>
+        <button class="quick-btn" onclick="switchTab('pokedex')"><span class="qicon">&#x1F3AE;</span>Dex</button>
+        <button class="quick-btn" onclick="switchTab('tower')"><span class="qicon">&#x1F3F0;</span>Tower</button>
+        <button class="quick-btn" onclick="switchTab('rpg')"><span class="qicon">&#x1F579;&#xFE0F;</span>RPG</button>
+    </div>
+</div>
+
+</body>
+</html>

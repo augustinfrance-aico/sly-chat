@@ -178,11 +178,17 @@ def list_contacts() -> list:
 # === CONVERSATION HISTORY ===
 
 def save_conversation(user_msg: str, titan_reply: str, context: str = "telegram"):
-    """Save a conversation exchange."""
+    """Save a conversation exchange. Skips exact duplicates."""
     convos = _load_json(CONVERSATIONS_FILE)
 
     if "history" not in convos:
         convos["history"] = []
+
+    # Déduplication — skip si le dernier message est identique
+    if convos["history"]:
+        last = convos["history"][-1]
+        if last.get("user") == user_msg and last.get("titan") == titan_reply:
+            return
 
     convos["history"].append({
         "user": user_msg,

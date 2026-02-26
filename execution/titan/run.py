@@ -11,7 +11,7 @@ Launch: python -m titan.run
 
 This starts:
 1. Telegram Bot (responds to messages)
-2. Scheduler (morning brief, crypto alerts)
+2. Scheduler (morning brief, digest, journal)
 3. All modules (news, web, finance, upwork, n8n)
 """
 

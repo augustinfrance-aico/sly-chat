@@ -122,7 +122,7 @@ FORMAT:
         score = state.get("performance_score", 50)
         streak = state.get("streak", 0)
 
-        prompt = f"""C'est le matin. Genere le briefing presidentiel pour Augustin.
+        prompt = f"""C'est le matin. Genere le briefing presidentiel pour l'Empereur.
 
 DATE: {now.strftime('%A %d %B %Y, %H:%M')}
 OBJECTIFS SEMAINE: {json.dumps(active_goals, ensure_ascii=False) if active_goals else 'Aucun defini'}
@@ -132,7 +132,9 @@ CONTEXTE RECENT: {recent[:500]}
 Genere:
 1. ETAT DES LIEUX (2 lignes max)
 2. ORDRES DU JOUR (3-5 taches concretes avec priorite)
-3. DEADLINE de la journee"""
+3. DEADLINE de la journee
+
+ZERO score chiffre. ZERO points. PAS de notes numeriques."""
 
         briefing = self._ai(prompt)
 
@@ -209,23 +211,20 @@ Format: numerote, une ligne par objectif."""
         score = state.get("performance_score", 50)
         streak = state.get("streak", 0)
 
-        prompt = f"""Fais une revue de performance pour Augustin.
+        prompt = f"""Fais une revue de performance pour l'Empereur.
 
 STATS:
 - Taches totales: {total_tasks}
 - Completees: {done_tasks}
 - En attente: {pending}
 - Objectifs semaine: {len(goals)} (dont {done_goals} atteints)
-- Score performance: {score}/100
-- Streak: {streak} jours
 
 Donne:
-1. NOTE GLOBALE (lettre A-F)
-2. CE QUI VA (1-2 points)
-3. CE QUI NE VA PAS (1-2 points)
-4. ORDRES D'AMELIORATION (2-3 actions concretes)
+1. CE QUI VA (1-2 points)
+2. CE QUI NE VA PAS (1-2 points)
+3. ORDRES D'AMELIORATION (2-3 actions concretes)
 
-Sois exigeant. Si c'est moyen, dis que c'est moyen."""
+Sois exigeant. PAS de score chiffre sur 100. Pas de note numerique. Que des faits et des ordres."""
 
         review = self._ai(prompt)
 
@@ -293,12 +292,12 @@ Dis-lui exactement quoi faire, dans quel ordre, avec quelle deadline."""
         score = state.get("performance_score", 50)
         pending = len([t for t in state.get("daily_tasks", []) if not t.get("done")])
 
-        prompt = f"""Augustin demande que tu le roastes sur sa productivite.
+        prompt = f"""L'Empereur demande que tu le roastes sur sa productivite.
 
-Score: {score}/100
 Taches en retard: {pending}
 
 Sois brutalement honnete mais constructif. Pas mechant, mais sans pitie.
+ZERO score chiffre. ZERO notes sur 100. Que des verdicts.
 Termine par UN ordre clair pour la prochaine heure."""
 
         return self._ai(prompt)
@@ -310,17 +309,16 @@ Termine par UN ordre clair pour la prochaine heure."""
         score = state.get("performance_score", 50)
         recent = memory.get_conversation_context(5)
 
-        prompt = f"""Augustin te pose une question qui demande une DECISION PRESIDENTIELLE.
+        prompt = f"""L'Empereur te pose une question qui demande une DECISION PRESIDENTIELLE.
 
 SA QUESTION: "{question}"
 
 CONTEXTE:
-- Il est freelance en AI/automation, il veut devenir riche
-- Score actuel: {score}/100
+- Freelance AI/automation, objectif: devenir riche
 - Objectifs en cours: {json.dumps(goals, ensure_ascii=False) if goals else 'Aucun'}
 - Activite recente: {recent[:300]}
 
-Rends ton verdict. UNE decision. Pas d'alternatives. Tranche."""
+Rends ton verdict. UNE decision. Pas d'alternatives. Tranche. JAMAIS de score ou de note chiffree."""
 
         verdict = self._ai(prompt, max_tokens=1500, mode="decide")
 

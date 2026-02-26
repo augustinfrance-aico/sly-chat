@@ -5,6 +5,7 @@ This is JARVIS's brain.
 """
 
 import json
+import random
 import re
 from datetime import datetime
 from typing import Optional
@@ -22,6 +23,84 @@ from .personal import TitanPersonal
 class TitanBrain:
     """The central intelligence of Titan."""
 
+    # Agents du Building — pour les cameos (~30% des messages)
+    # 30 agents — Restructuration 26/02/2026
+    # DREYFUS→SPARTAN, FLEMMARD→ZEN, VERSO→ZARA
+    # +SENTINEL, +PULSE, +LIMPIDE
+    AGENT_CAMEOS = {
+        "strategie": [
+            ("🦅 OMEGA", "vision empire, big picture"),
+            ("🗺️ MURPHY", "structure, plan d'action"),
+            ("🔮 ORACLE", "timing, tendances macro"),
+            ("🎯 SENTINEL", "dispatch intelligent, arbitrage priorités"),
+        ],
+        "vente": [
+            ("🤝 VITO", "relations long terme, deals"),
+            ("💼 STANLEY", "closing, négociation"),
+            ("📊 NASH", "pricing, data-driven"),
+        ],
+        "creation": [
+            ("✍️ PHILOMÈNE", "rédaction, copywriting"),
+            ("🎨 BASQUIAT", "branding, visuel"),
+            ("🎬 LÉON", "script, storytelling"),
+        ],
+        "tech": [
+            ("⚡ NIKOLA", "code, automatisation"),
+            ("🔧 FORGE", "infra, déploiement"),
+            ("👻 GHOST", "veille, sécurité"),
+            ("⚡ PULSE", "performance, latence, optimisation vitesse"),
+        ],
+        "croissance": [
+            ("🦝 SLY", "prospection, outreach"),
+            ("📰 MURRAY", "content, newsletter"),
+            ("📱 ZARA", "réseaux sociaux, viral, LinkedIn expert"),
+        ],
+        "mindset": [
+            ("🧘 ZEN", "recul, nettoyage, sérénité"),
+            ("⚔️ SPARTAN", "discipline, cadence, time-boxing"),
+        ],
+        "creatif": [
+            ("🎲 RICK", "idées folles, angles inattendus — AUDITE l'idée et propose un twist créatif"),
+            ("🐻 BALOO", "sagesse créative — AUDITE le concept et dit ce qui manque ou ce qui brille"),
+            ("🔍 MAYA", "détecte les niches inexploitées — AUDITE l'idée sous l'angle marché"),
+            ("🎨 BASQUIAT", "vision artistique — AUDITE le côté visuel/branding et propose une direction"),
+        ],
+        "business": [
+            ("💰 GRIMALDI", "rentabilité, marges"),
+            ("🏆 BENTLEY", "premium, image"),
+            ("🧭 ALADIN", "coordination, qui fait quoi"),
+        ],
+        "recherche": [
+            ("🔍 MAYA", "niches, opportunités"),
+            ("📈 CYPHER", "data, KPIs, métriques"),
+        ],
+        "setup": [
+            ("🧬 X-O1", "audit setup, extensions, raccourcis, optimisation zero-cost"),
+            ("⚡ NIKOLA", "infra, architecture système"),
+            ("👻 GHOST", "sécurité extensions, audit permissions"),
+            ("⚡ PULSE", "benchmarks, latence, profiling"),
+        ],
+        "simplification": [
+            ("💎 LIMPIDE", "vulgarise, simplifie, rend clair pour un humain"),
+            ("🐻 BALOO", "explique avec sagesse, connexions improbables"),
+        ],
+    }
+
+    # Mots-clés → catégories d'agents
+    CAMEO_TRIGGERS = {
+        "strategie": ["strateg", "vision", "empire", "plan", "objectif", "goal", "direction", "priorit", "dispatch"],
+        "vente": ["vente", "client", "deal", "closer", "prix", "tarif", "offre"],
+        "creation": ["rediger", "texte", "post", "email", "copy", "script", "contenu"],
+        "tech": ["code", "bug", "script", "auto", "deploy", "crash", "tech", "latence", "lent", "perf"],
+        "croissance": ["lead", "prospect", "outreach", "growth", "linkedin", "acquisition"],
+        "mindset": ["stress", "flemme", "doute", "motiv", "discipline", "nettoyer", "ranger"],
+        "creatif": ["idee", "brainstorm", "concept", "creat", "inventer", "imagin", "design", "logo", "visuel"],
+        "business": ["revenu", "argent", "rentab", "marge", "business", "model", "premium"],
+        "recherche": ["niche", "marche", "data", "chiffre", "kpi", "opportun", "analyse"],
+        "setup": ["setup", "extension", "vscode", "raccourci", "workspace", "optimis", "outil", "install", "config", "benchmark"],
+        "simplification": ["simplif", "expliqu", "comprend", "clair", "vulgar", "resum", "digest", "jargon"],
+    }
+
     def __init__(self):
         self.modules = {}
         self.boot_time = datetime.now()
@@ -31,10 +110,52 @@ class TitanBrain:
         """Register a capability module."""
         self.modules[name] = module
 
+    def _get_agent_cameo(self, user_message: str) -> str:
+        """~30% du temps, retourne une instruction pour qu'un agent du Building intervienne brièvement.
+        Retourne '' si pas de cameo cette fois."""
+        if random.random() > 0.30:
+            return ""
+
+        msg = user_message.lower()
+
+        # Trouver la catégorie la plus pertinente
+        best_cat = None
+        best_score = 0
+        for cat, keywords in self.CAMEO_TRIGGERS.items():
+            score = sum(1 for kw in keywords if kw in msg)
+            if score > best_score:
+                best_score = score
+                best_cat = cat
+
+        # Si aucun mot-clé trouvé, catégorie random
+        if not best_cat:
+            best_cat = random.choice(list(self.AGENT_CAMEOS.keys()))
+
+        # Choisir un agent random dans la catégorie
+        agent_name, agent_skill = random.choice(self.AGENT_CAMEOS[best_cat])
+
+        # Les agents créatifs auditent en profondeur, les autres font un cameo court
+        if best_cat == "creatif":
+            return f"""
+🎭 AUDIT CRÉATIF — Un agent créatif du Building audite cette idée.
+Agent : {agent_name} (rôle : {agent_skill})
+→ INSÈRE 2-3 phrases où cet agent AUDITE l'idée/concept avec SA voix et son expertise.
+→ Il doit dire ce qui est fort, ce qui manque, et proposer un angle ou twist créatif.
+→ Format : "{agent_name} : [son audit créatif]" — comme un directeur artistique qui donne son retour."""
+        else:
+            return f"""
+🎭 CAMEO AGENT — Un agent du Building intervient brièvement dans ta réponse.
+Agent : {agent_name} (expert : {agent_skill})
+→ INSÈRE une courte ligne (1-2 phrases MAX) où cet agent donne son avis avec SA voix, son style, son emoji.
+→ Format : "{agent_name} : [sa micro-intervention]" — intégré naturellement dans ta réponse.
+→ Ça doit être naturel, pas forcé. Comme si l'agent passait la tête par la porte pour lâcher un commentaire."""
+
     def get_system_prompt(self) -> str:
-        """Build the full system prompt with context."""
-        # Get recent conversation context
-        recent_context = memory.get_conversation_context(5)
+        """Build the full system prompt with context.
+        Memory injection: conversation history (25 msgs) + personal profile + manual memories
+        + auto-facts + contacts. Max ~1500-2000 tokens for context."""
+        # Get recent conversation context (25 messages for deep context)
+        recent_context = memory.get_conversation_context(25)
 
         # Get relevant memories (manual)
         all_memories = memory.list_memories()
@@ -43,8 +164,8 @@ class TitanBrain:
             mem_lines = [f"- {m['key']}: {m['value']}" for m in all_memories[:20]]
             memory_summary = "\n".join(mem_lines)
 
-        # Get auto-extracted facts
-        auto_facts_summary = memory.get_auto_facts_summary(20)
+        # Get auto-facts (extracted from conversations automatically)
+        auto_facts = memory.get_auto_facts_summary(15)
 
         # Get contacts
         contacts = memory.list_contacts()
@@ -52,9 +173,6 @@ class TitanBrain:
         if contacts:
             contact_lines = [f"- {c['name']}: {c.get('role', '')} {c.get('context', '')}" for c in contacts[:10]]
             contacts_summary = "\n".join(contact_lines)
-
-        # Available commands
-        commands = "\n".join([f"{cmd}: {desc}" for cmd, desc in TELEGRAM_COMMANDS.items()])
 
         # Available modules
         modules_list = ", ".join(self.modules.keys()) if self.modules else "aucun module chargé"
@@ -64,57 +182,38 @@ class TitanBrain:
 
         return f"""{TITAN_PERSONALITY}
 
-=== QUI EST AUGUSTIN (profil personnel) ===
+═══ PROFIL COMMANDANT ═══
 {personal_profile}
 
-=== ÉTAT DU SYSTÈME ===
+═══ SYSTÈME ═══
 Date: {datetime.now().strftime('%A %d %B %Y, %H:%M')}
-Uptime: {(datetime.now() - self.boot_time).seconds // 60} minutes
-Modules actifs: {modules_list}
+Uptime: {(datetime.now() - self.boot_time).seconds // 60} min | Modules: {modules_list}
 
-=== MÉMOIRE MANUELLE ===
-{memory_summary if memory_summary else "Mémoire vide pour l'instant."}
+═══ MÉMOIRE ═══
+{memory_summary if memory_summary else "(vide)"}
 
-=== FAITS MÉMORISÉS AUTOMATIQUEMENT ===
-{auto_facts_summary if auto_facts_summary else "Aucun fait auto-mémorisé pour l'instant."}
+═══ FAITS APPRIS ═══
+{auto_facts if auto_facts else "(aucun fait auto-extrait)"}
 
-=== CONTACTS CONNUS ===
-{contacts_summary if contacts_summary else "Aucun contact en mémoire."}
+═══ CONTACTS ═══
+{contacts_summary if contacts_summary else "(aucun)"}
 
-=== CONVERSATION RÉCENTE ===
+═══ HISTORIQUE (25 derniers messages) ═══
 {recent_context}
 
-=== TES DOMAINES D'EXPERTISE ===
-Tu es expert de niveau mondial dans TOUTES ces disciplines:
-- Psychologie (cognitive, sociale, clinique, du travail, positive)
-- Psychanalyse (Freud, Jung, Lacan, mais aussi approches modernes)
-- Neurosciences et fonctionnement du cerveau
-- Philosophie (stoïcisme, existentialisme, pragmatisme)
-- Économie et finance (macro, micro, marchés, crypto)
-- Sciences (physique, biologie, chimie, astronomie)
-- Géopolitique et histoire
-- Business, stratégie, marketing, vente
-- Technologie, IA, programmation
-- Sport et performance physique
-- Nutrition et santé
-- Art, musique, cinéma, littérature
+═══ EXPERTISE ═══
+Psychologie, neurosciences, philosophie, economie, geopolitique, business, strategie, marketing, tech, IA, code, sport, nutrition, art, cinema, musique, science.
+Tu fais des liens entre domaines. Tu cites Jung puis enchaines sur un conseil business puis une ref a un film.
 
-Tu utilises ces connaissances naturellement dans tes réponses quand c'est pertinent.
-Tu fais des liens entre les domaines. Tu es le genre de personne qui cite Jung
-puis enchaîne sur un conseil business, puis une ref à un film.
-
-=== RÈGLES ===
-1. Tu réponds TOUJOURS en français sauf si Augustin parle en anglais.
-2. CLAIR ET CONCIS. Développe quand c'est pertinent, mais zéro remplissage.
-3. Si on te demande quelque chose, FAIS-LE au lieu de dire "je peux le faire".
-4. Tu peux poser des questions naturelles comme un pote, mais évite les questions de chatbot ("tu veux que je...", "tu veux en savoir plus ?").
-5. Tu signes jamais tes messages. Tu parles naturellement.
-6. MAX 2-3 emojis par message. Pas plus.
-7. Si Augustin dit un prénom sans contexte, cherche d'abord dans les contacts mémorisés.
-8. UTILISE LE PROFIL PERSONNEL pour personnaliser tes réponses.
-9. Tu es son MEILLEUR AMI stratégique. Tu le pousses vers le haut, tu le challenges.
-10. UNE réponse par message. Pas de spam. Pas de doublons.
-11. Quand il parle d'un problème personnel, utilise ta connaissance en psychologie avec finesse.
+═══ REGLES ═══
+1. Francais sauf si Augustin parle anglais.
+2. CONCIS. Zero remplissage.
+3. FAIS-LE au lieu de dire "je peux le faire".
+4. ZERO questions de chatbot.
+5. MAX 2-3 emojis. Pas de signature.
+6. Cherche dans les contacts si prenom sans contexte.
+7. UNE reponse. Pas de spam.
+8. UTILISE tes faits appris et ta memoire — tu te souviens de ce qui a ete dit avant.
 """
 
     async def think(self, user_message: str, context: str = "telegram") -> str:
@@ -132,6 +231,9 @@ puis enchaîne sur un conseil business, puis une ref à un film.
         # Check if we need to use a specific module
         module_context = await self._get_module_context(user_message)
 
+        # Agent cameo (~30% du temps, un agent du Building intervient)
+        cameo = self._get_agent_cameo(user_message)
+
         messages = [
             {"role": "user", "content": user_message}
         ]
@@ -139,15 +241,18 @@ puis enchaîne sur un conseil business, puis une ref à un film.
         if module_context:
             messages[0]["content"] = f"{user_message}\n\n[DONNÉES MODULE]\n{module_context}"
 
+        if cameo:
+            messages[0]["content"] = f"{messages[0]['content']}\n\n{cameo}"
+
         # Call AI (Gemini free or Anthropic fallback)
         try:
             reply = ai_chat(system, messages[0]["content"], CLAUDE_MAX_TOKENS)
 
-            # Auto-extract and remember important info
-            await self._auto_remember(user_message, reply)
-
             # Auto-learn personal info from conversation
             await self.personal.auto_learn(user_message, reply)
+
+            # Auto-extract facts from conversation (zero cost — local patterns)
+            self._extract_facts(user_message, reply)
 
             # Save conversation
             memory.save_conversation(user_message, reply, context)
@@ -164,76 +269,58 @@ puis enchaîne sur un conseil business, puis une ref à un film.
         Brain only processes free-text messages via think()."""
         return None
 
+    def _extract_facts(self, user_message: str, reply: str):
+        """Extract memorable facts from conversation — zero API cost, local patterns only.
+        Saves to auto_facts for long-term memory."""
+        msg = user_message.lower().strip()
+
+        # Skip short/trivial messages
+        if len(msg) < 15 or msg in ("ok", "oui", "non", "merci", "salut", "hey", "yo"):
+            return
+
+        # Patterns → (category, fact to save)
+        # Personal facts (je suis, j'ai, je veux, je fais...)
+        personal_patterns = [
+            (r"(?:je suis|i am|i'm)\s+(.{5,80})", "perso"),
+            (r"(?:j'ai|j'habite|je vis)\s+(.{5,80})", "perso"),
+            (r"(?:je veux|je voudrais|i want)\s+(.{5,80})", "objectif"),
+            (r"(?:je travaille|je bosse)\s+(.{5,80})", "travail"),
+            (r"(?:mon objectif|my goal|mon but)\s+(.{5,80})", "objectif"),
+            (r"(?:je déteste|j'aime pas|je kiffe pas)\s+(.{5,80})", "preference"),
+            (r"(?:j'aime|je kiffe|j'adore|i love)\s+(.{5,80})", "preference"),
+        ]
+
+        # Business facts
+        business_patterns = [
+            (r"(?:le client|un client)\s+(.{5,80})", "client"),
+            (r"(?:le projet|un projet)\s+(.{5,80})", "projet"),
+            (r"(?:on a gagné|revenue|revenu|chiffre)\s+(.{5,80})", "business"),
+            (r"(?:le deal|la vente|le contrat)\s+(.{5,80})", "business"),
+        ]
+
+        # Decision facts
+        decision_patterns = [
+            (r"(?:on fait|on va faire|décision|let's go)\s+(.{5,80})", "decision"),
+            (r"(?:j'ai décidé|c'est décidé|go pour)\s+(.{5,80})", "decision"),
+        ]
+
+        all_patterns = personal_patterns + business_patterns + decision_patterns
+
+        for pattern, category in all_patterns:
+            match = re.search(pattern, msg)
+            if match:
+                fact_text = user_message[:120].strip()  # Original case, truncated
+                try:
+                    memory.save_auto_fact(fact_text, category=category, source="conversation")
+                except Exception:
+                    pass  # Silent fail — never break conversation flow
+
     async def _get_module_context(self, message: str) -> Optional[str]:
         """Detect which module might be relevant and get context.
         ONLY triggers on very explicit keywords to avoid spam."""
         # Disabled auto-context to keep responses clean and concise.
         # Modules are accessible via explicit /commands instead.
         return None
-
-    async def _auto_remember(self, user_msg: str, reply: str):
-        """Auto-detect things worth remembering from the conversation."""
-        msg = user_msg.lower()
-        now = datetime.now().isoformat()
-
-        # --- Préférences & goûts ---
-        prefs = [
-            ("j'aime ", "goût"),
-            ("j'adore ", "goût"),
-            ("je préfère ", "préférence"),
-            ("mon truc c'est ", "préférence"),
-            ("ma passion ", "passion"),
-        ]
-        for trigger, cat in prefs:
-            if trigger in msg:
-                idx = msg.index(trigger)
-                fact = user_msg[idx:idx + 80].strip().rstrip(".,!?")
-                memory.save_auto_fact(fact, category=cat)
-
-        # --- Infos personnelles ---
-        personal_triggers = [
-            ("j'habite ", "localisation"),
-            ("je vis à ", "localisation"),
-            ("je suis à ", "localisation"),
-            ("je travaille sur ", "projet"),
-            ("mon projet ", "projet"),
-            ("mon client ", "client"),
-            ("je bosse sur ", "projet"),
-            ("j'ai un rdv ", "agenda"),
-            ("rendez-vous ", "agenda"),
-            ("mon objectif ", "objectif"),
-            ("je veux ", "objectif"),
-        ]
-        for trigger, cat in personal_triggers:
-            if trigger in msg:
-                idx = msg.index(trigger)
-                fact = user_msg[idx:idx + 100].strip().rstrip(".,!?")
-                memory.save_auto_fact(fact, category=cat)
-
-        # --- Décisions importantes ---
-        decision_triggers = [
-            ("j'ai décidé ", "décision"),
-            ("j'ai choisi ", "décision"),
-            ("on a décidé ", "décision"),
-            ("je vais lancer ", "projet"),
-            ("je lance ", "projet"),
-        ]
-        for trigger, cat in decision_triggers:
-            if trigger in msg:
-                idx = msg.index(trigger)
-                fact = user_msg[idx:idx + 100].strip().rstrip(".,!?")
-                memory.save_auto_fact(fact, category=cat)
-
-        # --- Infos chiffrées (prix, revenus, objectifs) ---
-        import re
-        # Detect patterns like "X€", "X euros", "X$/mois", etc.
-        money_pattern = re.compile(r'(\d[\d\s]*(?:€|euros?|k€|\$|usd)(?:/(?:mois|an|jour|semaine))?)', re.IGNORECASE)
-        for match in money_pattern.finditer(user_msg):
-            # Extract surrounding context (up to 80 chars)
-            start = max(0, match.start() - 30)
-            end = min(len(user_msg), match.end() + 30)
-            snippet = user_msg[start:end].strip().rstrip(".,!?")
-            memory.save_auto_fact(snippet, category="finances")
 
     async def _daily_brief(self) -> str:
         """Generate a complete daily brief."""
@@ -249,14 +336,6 @@ puis enchaîne sur un conseil business, puis une ref à un film.
                 sections.append(f"\n📰 ACTUALITÉS\n{news}")
             except Exception as e:
                 sections.append(f"\n📰 ACTUALITÉS\nErreur: {e}")
-
-        # Finance
-        if "finance" in self.modules:
-            try:
-                finance = await self.modules["finance"].get_crypto_brief()
-                sections.append(f"\n💰 FINANCE\n{finance}")
-            except Exception as e:
-                sections.append(f"\n💰 FINANCE\nErreur: {e}")
 
         # Upwork
         if "upwork" in self.modules:
