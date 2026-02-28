@@ -114,3 +114,11 @@
 ### 2026-02-28 — Cooper Building 10/10 â€” 49 agents tracked + nettoyage total + .env.example
 - **Commit** : 41d4495
 - **Impact** : .env.example, CLAUDE.md, SLY-Assistant.bat, agents/agent_profiles.py, directives/AGENTS.md (+154 fichiers)
+
+### 2026-02-28 — Cooper Building 10/10 â€” 49 agents tracked + nettoyage total + .env.example
+- **Commit** : 41d4495
+- **Impact** : .env.example, CLAUDE.md, SLY-Assistant.bat, agents/agent_profiles.py, directives/AGENTS.md (+154 fichiers)
+
+### 2026-02-28 — Purge Ascension â€” suppression 42 anciens agents absorbÃ©s + decision_log maj
+- **Commit** : d74f746
+- **Impact** : AGENT_OMEGA.md, memory/decision_log.md, personnalites/AGENT_OMEGA.md, personnalites/aladin.md, personnalites/analytics.md (+38 fichiers)
