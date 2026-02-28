@@ -1,0 +1,182 @@
+{
+  "project": "Leboncoin Automated Prospecting System",
+  "engine": "n8n",
+  "author": "Augustin",
+  "modules": 5,
+  "architecture": {
+
+    "module_1_listing_monitor": {
+      "name": "Listing Monitor",
+      "description": "Detects newly published vehicle listings from private sellers on Leboncoin",
+      "trigger": "Scheduled (every 10-15 min)",
+      "tools": ["Playwright (stealth mode)", "n8n HTTP/Code nodes"],
+      "logic": [
+        "Scrape Leboncoin vehicle category with filters",
+        "Filter: private sellers only — exclude professionals",
+        "Filter: functional vehicles only — exclude damaged/non-running",
+        "Optional geographic filtering (city, radius)",
+        "Keyword exclusion (accidenté, panne, pour pièces, HS, épave)",
+        "Deduplication check against processed listings database",
+        "New listings → pass to Module 2"
+      ],
+      "output": "Qualified listing objects (title, price, URL, seller, location, description)",
+      "anti_detection": {
+        "random_delays": "3-8 seconds between requests",
+        "user_agent_rotation": true,
+        "residential_proxies": true,
+        "stealth_plugin": "puppeteer-extra-plugin-stealth"
+      }
+    },
+
+    "module_2_qualification": {
+      "name": "Qualification Engine",
+      "description": "Analyzes listing content to determine if the vehicle is a valid prospect",
+      "tools": ["n8n Code node", "AI (Claude/GPT) for edge cases"],
+      "logic": [
+        "Parse title + description",
+        "Keyword scoring: positive (bon état, CT OK, faible km) vs negative (accidenté, moteur HS)",
+        "AI classification for ambiguous descriptions",
+        "Score threshold → qualified or rejected",
+        "Rejected listings logged with rejection reason for traceability"
+      ],
+      "output": "Qualified leads → Module 3 | Rejected → Log database",
+      "traceability": {
+        "log_all_decisions": true,
+        "fields": ["listing_url", "decision", "reason", "score", "timestamp"]
+      }
+    },
+
+    "module_3_messaging": {
+      "name": "Messaging Automation",
+      "description": "Engages sellers via Leboncoin internal messaging to obtain phone number",
+      "tools": ["Playwright (session-based)", "n8n workflow orchestration"],
+      "logic": [
+        "Login to Leboncoin seller account (session management)",
+        "Send personalized first message using listing details (vehicle name, price, location)",
+        "Monitor inbox for seller replies",
+        "Parse reply content — detect phone number or continue conversation",
+        "Conditional reply logic based on seller response",
+        "Phone number detected → stop automation on that thread → Module 4",
+        "No reply after X hours → send follow-up (max 1)",
+        "Manage multiple parallel conversations simultaneously"
+      ],
+      "message_templates": {
+        "first_contact": "Bonjour, je suis intéressé par votre {vehicle} à {price}. Est-il toujours disponible ? Pourriez-vous me contacter par téléphone pour en discuter ?",
+        "follow_up": "Bonjour, je me permets de relancer — seriez-vous disponible pour un échange rapide par téléphone ?",
+        "customization": "AI-assisted personalization based on listing details"
+      },
+      "human_behavior_simulation": {
+        "response_delay": "2-15 minutes (randomized)",
+        "typing_simulation": true,
+        "active_hours_only": "8h-21h",
+        "max_conversations_per_day": 15,
+        "cooldown_between_messages": "30-90 seconds"
+      },
+      "stop_conditions": [
+        "Phone number obtained",
+        "Seller explicitly refuses",
+        "No reply after follow-up",
+        "Listing deleted/sold"
+      ]
+    },
+
+    "module_4_phone_extraction": {
+      "name": "Phone Number Extraction",
+      "description": "Detects, validates, and processes phone numbers from conversations",
+      "tools": ["n8n Code node (regex)", "Validation logic"],
+      "logic": [
+        "Regex scan on every incoming message",
+        "Detect French phone formats: 06/07, +33, with/without spaces/dots",
+        "Validate: 10 digits, mobile prefix check",
+        "Duplicate check against existing leads",
+        "Valid number → deactivate thread automation → Module 5"
+      ],
+      "regex_patterns": [
+        "0[67][ .-]?\\d{2}[ .-]?\\d{2}[ .-]?\\d{2}[ .-]?\\d{2}",
+        "\\+33[ .-]?[67][ .-]?\\d{2}[ .-]?\\d{2}[ .-]?\\d{2}[ .-]?\\d{2}",
+        "zero six/sept (written format detection)"
+      ],
+      "output": "Validated phone number + conversation thread → Module 5"
+    },
+
+    "module_5_lead_creation": {
+      "name": "Lead Creation + Notification",
+      "description": "Creates structured lead record and sends real-time notification",
+      "tools": ["n8n nodes", "Airtable/Notion/Google Sheets", "Pushover/Ntfy"],
+      "lead_record": {
+        "fields": [
+          "seller_username",
+          "phone_number",
+          "listing_url",
+          "vehicle_make_model",
+          "vehicle_price",
+          "vehicle_year",
+          "vehicle_mileage",
+          "vehicle_location",
+          "conversation_history_full",
+          "ai_conversation_summary",
+          "status",
+          "created_at"
+        ],
+        "default_status": "New Lead",
+        "crm_options": ["Airtable", "Notion", "Google Sheets"]
+      },
+      "notification": {
+        "channel": "iPhone push (Pushover or Ntfy)",
+        "content": {
+          "title": "🚗 New Leboncoin Lead",
+          "body": "{vehicle} — {price}\n📞 {phone_number}\n📍 {location}",
+          "url": "{listing_url}"
+        },
+        "trigger": "Immediate on lead creation"
+      },
+      "ai_processing": {
+        "conversation_summary": "AI-generated 2-3 sentence summary",
+        "data_cleanup": "Standardize vehicle details, format phone number",
+        "reply_optimization": "Suggest best follow-up approach based on conversation tone"
+      }
+    }
+  },
+
+  "infrastructure": {
+    "n8n": "Self-hosted or cloud (client preference)",
+    "browser_automation": "Playwright with stealth plugins",
+    "proxy": "Residential rotating proxies (French IPs)",
+    "database": "SQLite or Postgres for dedup + tracking",
+    "ai": "Claude API or GPT for qualification + summaries",
+    "notifications": "Pushover (iOS push)",
+    "hosting": "Railway / VPS / client infrastructure"
+  },
+
+  "error_handling": {
+    "retry_logic": "3 retries with exponential backoff",
+    "session_recovery": "Auto re-login on session expiry",
+    "rate_limit_detection": "Auto-pause on 429/Cloudflare challenge",
+    "captcha_handling": "Alert + manual intervention or 2Captcha fallback",
+    "dead_letter_queue": "Failed items stored for manual review",
+    "daily_health_check": "Automated system status report"
+  },
+
+  "scalability": {
+    "multiple_accounts": "Support for N accounts with rotation",
+    "geographic_expansion": "Filter sets per region",
+    "vehicle_category_expansion": "Configurable for motos, utilitaires, etc.",
+    "conversation_parallelism": "Up to 15 simultaneous threads per account"
+  },
+
+  "timeline": {
+    "week_1": "Listing monitor + qualification engine + deduplication database",
+    "week_2": "Messaging automation + phone extraction + stealth layer",
+    "week_3": "Lead creation + CRM + notifications + AI summaries + full testing",
+    "delivery": "Production-ready system with documentation"
+  },
+
+  "deliverables": [
+    "Complete n8n workflow (importable JSON)",
+    "Playwright automation scripts",
+    "CRM/database setup",
+    "iPhone notification system",
+    "Full documentation + user guide",
+    "1 week post-delivery support"
+  ]
+}

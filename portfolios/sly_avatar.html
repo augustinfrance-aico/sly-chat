@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SLY — Avatar 3D</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background: #05070A;
+    color: #E6EDF5;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Particle background */
+canvas#bgCanvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Main container */
+.container {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 20px;
+    width: 100%;
+    max-width: 600px;
+}
+
+/* 3D Scene */
+#scene-container {
+    width: 320px;
+    height: 360px;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(31,111,255,0.2);
+    box-shadow: 0 0 40px rgba(31,111,255,0.15), 0 0 80px rgba(122,60,255,0.1);
+    position: relative;
+}
+
+/* Name badge */
+.name-badge {
+    text-align: center;
+}
+.name-badge h1 {
+    font-size: 28px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #1F6FFF, #7A3CFF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 2px;
+}
+.name-badge p {
+    font-size: 12px;
+    color: #6B7682;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+/* Speech bubble */
+.speech-bubble {
+    background: rgba(18,24,33,0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(31,111,255,0.3);
+    border-radius: 16px;
+    padding: 16px 20px;
+    max-width: 400px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #E6EDF5;
+    min-height: 50px;
+    transition: all 0.3s ease;
+    text-align: center;
+    width: 100%;
+}
+.speech-bubble.speaking {
+    border-color: #1F6FFF;
+    box-shadow: 0 0 20px rgba(31,111,255,0.2);
+}
+.speech-bubble.empty {
+    color: #6B7682;
+    font-style: italic;
+}
+
+/* Input area */
+.input-area {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 400px;
+}
+.input-area input {
+    flex: 1;
+    background: #0B0F14;
+    border: 1px solid rgba(31,111,255,0.3);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: #E6EDF5;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.input-area input:focus {
+    border-color: #1F6FFF;
+}
+.input-area input::placeholder {
+    color: #6B7682;
+}
+.speak-btn {
+    background: linear-gradient(135deg, #1F6FFF, #7A3CFF);
+    border: none;
+    border-radius: 12px;
+    padding: 12px 20px;
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    white-space: nowrap;
+}
+.speak-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(31,111,255,0.4);
+}
+.speak-btn:active {
+    transform: scale(0.97);
+}
+.speak-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Voice selector */
+.voice-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.voice-chip {
+    background: #0B0F14;
+    border: 1px solid rgba(31,111,255,0.2);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 11px;
+    color: #9BA7B4;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.voice-chip:hover {
+    border-color: #1F6FFF;
+    color: #E6EDF5;
+}
+.voice-chip.active {
+    background: rgba(31,111,255,0.15);
+    border-color: #1F6FFF;
+    color: #1F6FFF;
+    font-weight: 600;
+}
+
+/* Loading spinner */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(31,111,255,0.3);
+    border-top-color: #1F6FFF;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+</style>
+</head>
+<body>
+
+<!-- Particle background -->
+<canvas id="bgCanvas"></canvas>
+
+<!-- 3D scene -->
+<div class="container">
+    <div id="scene-container"></div>
+
+    <div class="name-badge">
+        <h1>SLY</h1>
+        <p>Cooper Building AI</p>
+    </div>
+
+    <div class="speech-bubble empty" id="speechBubble">
+        Tape un message et je le dirai avec ma voix...
+    </div>
+
+    <div class="voice-bar" id="voiceBar">
+        <div class="voice-chip active" data-voice="2b09b784775945ba94a63b993eb8d924" data-name="DiCaprio FR">DiCaprio FR</div>
+        <div class="voice-chip" data-voice="97b41e766600452e91035a4010e7f48a" data-name="Freeman FR">Freeman FR</div>
+        <div class="voice-chip" data-voice="9cafdfc66d094d37bf3c7f310f6e6b1a" data-name="Brad Pitt FR">Brad Pitt FR</div>
+        <div class="voice-chip" data-voice="71829085db2341f4b68deb66a4437f03" data-name="Tom Hanks FR">Tom Hanks FR</div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="textInput" placeholder="Dis quelque chose a SLY..." />
+        <button class="speak-btn" id="speakBtn" onclick="handleSpeak()">
+            <span id="btnText">Parler</span>
+            <span class="spinner" id="spinner"></span>
+        </button>
+    </div>
+</div>
+
+<!-- Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+// =============================
+// PARTICLE BACKGROUND
+// =============================
+(function() {
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    const PARTICLE_COUNT = 60;
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 0.3,
+            vy: (Math.random() - 0.5) * 0.3,
+            r: Math.random() * 2 + 0.5,
+            color: ['#1F6FFF', '#7A3CFF', '#00E5FF'][Math.floor(Math.random() * 3)],
+            opacity: Math.random() * 0.4 + 0.1
+        });
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+            if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = p.opacity;
+            ctx.fill();
+        });
+        // Draw connections
+        ctx.globalAlpha = 0.05;
+        ctx.strokeStyle = '#1F6FFF';
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+                const dx = particles[i].x - particles[j].x;
+                const dy = particles[i].y - particles[j].y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 120) {
+                    ctx.beginPath();
+                    ctx.moveTo(particles[i].x, particles[i].y);
+                    ctx.lineTo(particles[j].x, particles[j].y);
+                    ctx.stroke();
+                }
+            }
+        }
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+
+// =============================
+// THREE.JS RACCOON AVATAR
+// =============================
+let scene, camera, renderer, raccoon, mouthMesh;
+let isSpeaking = false;
+let speakingTime = 0;
+
+(function initScene() {
+    const container = document.getElementById('scene-container');
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x05070A);
+
+    camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 100);
+    camera.position.set(0, 1.5, 5);
+    camera.lookAt(0, 0.8, 0);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(w, h);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
+
+    // Lighting
+    const ambient = new THREE.AmbientLight(0x404050, 0.8);
+    scene.add(ambient);
+
+    const keyLight = new THREE.DirectionalLight(0x1F6FFF, 1.2);
+    keyLight.position.set(2, 3, 4);
+    scene.add(keyLight);
+
+    const fillLight = new THREE.DirectionalLight(0x7A3CFF, 0.5);
+    fillLight.position.set(-3, 1, 2);
+    scene.add(fillLight);
+
+    const rimLight = new THREE.PointLight(0x00E5FF, 0.6, 10);
+    rimLight.position.set(0, 2, -3);
+    scene.add(rimLight);
+
+    // Build raccoon
+    raccoon = new THREE.Group();
+
+    // Body
+    const bodyGeo = new THREE.CapsuleGeometry(0.55, 0.8, 8, 16);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x4A4A5A, roughness: 0.7 });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.y = 0;
+    raccoon.add(body);
+
+    // Head
+    const headGeo = new THREE.SphereGeometry(0.55, 16, 16);
+    const headMat = new THREE.MeshStandardMaterial({ color: 0x5A5A6A, roughness: 0.6 });
+    const head = new THREE.Mesh(headGeo, headMat);
+    head.position.y = 1.1;
+    head.scale.set(1, 0.9, 0.95);
+    raccoon.add(head);
+
+    // Face mask (dark raccoon mask)
+    const maskGeo = new THREE.SphereGeometry(0.35, 16, 8, 0, Math.PI * 2, 0, Math.PI * 0.5);
+    const maskMat = new THREE.MeshStandardMaterial({ color: 0x1A1A2E, roughness: 0.5 });
+    const mask = new THREE.Mesh(maskGeo, maskMat);
+    mask.position.set(0, 1.15, 0.25);
+    mask.rotation.x = -0.3;
+    mask.scale.set(1.4, 0.6, 0.8);
+    raccoon.add(mask);
+
+    // Eyes (golden — Sly Cooper signature)
+    const eyeGeo = new THREE.SphereGeometry(0.1, 12, 12);
+    const eyeMat = new THREE.MeshStandardMaterial({ color: 0xFFD700, emissive: 0xD4A017, emissiveIntensity: 0.5 });
+
+    const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+    leftEye.position.set(-0.18, 1.2, 0.42);
+    raccoon.add(leftEye);
+
+    const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+    rightEye.position.set(0.18, 1.2, 0.42);
+    raccoon.add(rightEye);
+
+    // Pupils
+    const pupilGeo = new THREE.SphereGeometry(0.045, 8, 8);
+    const pupilMat = new THREE.MeshStandardMaterial({ color: 0x050505 });
+
+    const leftPupil = new THREE.Mesh(pupilGeo, pupilMat);
+    leftPupil.position.set(-0.18, 1.2, 0.52);
+    raccoon.add(leftPupil);
+
+    const rightPupil = new THREE.Mesh(pupilGeo, pupilMat);
+    rightPupil.position.set(0.18, 1.2, 0.52);
+    raccoon.add(rightPupil);
+
+    // Nose
+    const noseGeo = new THREE.SphereGeometry(0.06, 8, 8);
+    const noseMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+    const nose = new THREE.Mesh(noseGeo, noseMat);
+    nose.position.set(0, 1.05, 0.5);
+    raccoon.add(nose);
+
+    // Mouth (animated during speech)
+    const mouthGeo = new THREE.BoxGeometry(0.15, 0.04, 0.05);
+    const mouthMat = new THREE.MeshStandardMaterial({ color: 0x1A1A2E });
+    mouthMesh = new THREE.Mesh(mouthGeo, mouthMat);
+    mouthMesh.position.set(0, 0.95, 0.48);
+    raccoon.add(mouthMesh);
+
+    // Ears
+    const earGeo = new THREE.ConeGeometry(0.15, 0.25, 8);
+    const earMat = new THREE.MeshStandardMaterial({ color: 0x5A5A6A });
+
+    const leftEar = new THREE.Mesh(earGeo, earMat);
+    leftEar.position.set(-0.3, 1.6, 0);
+    leftEar.rotation.z = 0.3;
+    raccoon.add(leftEar);
+
+    const rightEar = new THREE.Mesh(earGeo, earMat);
+    rightEar.position.set(0.3, 1.6, 0);
+    rightEar.rotation.z = -0.3;
+    raccoon.add(rightEar);
+
+    // Hat brim (Sly Cooper's cap)
+    const brimGeo = new THREE.CylinderGeometry(0.4, 0.45, 0.06, 16);
+    const brimMat = new THREE.MeshStandardMaterial({ color: 0x1F6FFF, roughness: 0.4 });
+    const brim = new THREE.Mesh(brimGeo, brimMat);
+    brim.position.set(0, 1.5, 0.15);
+    brim.rotation.x = -0.2;
+    raccoon.add(brim);
+
+    // Hat top
+    const hatGeo = new THREE.SphereGeometry(0.3, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.5);
+    const hatTop = new THREE.Mesh(hatGeo, brimMat);
+    hatTop.position.set(0, 1.52, 0.05);
+    hatTop.rotation.x = -0.1;
+    raccoon.add(hatTop);
+
+    // Tail (striped)
+    const tailGeo = new THREE.CylinderGeometry(0.08, 0.12, 0.8, 8);
+    const tailMat = new THREE.MeshStandardMaterial({ color: 0x5A5A6A });
+    const tail = new THREE.Mesh(tailGeo, tailMat);
+    tail.position.set(0, -0.1, -0.5);
+    tail.rotation.x = 0.8;
+    tail.rotation.z = 0.2;
+    raccoon.add(tail);
+
+    // Glow ring at feet
+    const ringGeo = new THREE.RingGeometry(0.6, 0.8, 32);
+    const ringMat = new THREE.MeshBasicMaterial({
+        color: 0x1F6FFF,
+        transparent: true,
+        opacity: 0.15,
+        side: THREE.DoubleSide
+    });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.y = -0.6;
+    raccoon.add(ring);
+
+    scene.add(raccoon);
+
+    // Animation loop
+    function animate() {
+        requestAnimationFrame(animate);
+        const t = Date.now() * 0.001;
+
+        // Idle breathing
+        raccoon.position.y = Math.sin(t * 1.2) * 0.03;
+        raccoon.rotation.y = Math.sin(t * 0.5) * 0.1;
+
+        // Eye glow pulse
+        eyeMat.emissiveIntensity = 0.3 + Math.sin(t * 2) * 0.2;
+
+        // Mouth animation when speaking
+        if (isSpeaking) {
+            speakingTime += 0.15;
+            const mouthOpen = 0.02 + Math.abs(Math.sin(speakingTime * 3)) * 0.08;
+            mouthMesh.scale.y = 1 + mouthOpen * 10;
+            mouthMesh.position.y = 0.95 - mouthOpen * 0.5;
+
+            // Head slight movement while talking
+            raccoon.rotation.x = Math.sin(speakingTime * 1.5) * 0.03;
+            raccoon.rotation.z = Math.sin(speakingTime * 0.8) * 0.02;
+        } else {
+            mouthMesh.scale.y = 1;
+            mouthMesh.position.y = 0.95;
+            raccoon.rotation.x = 0;
+            raccoon.rotation.z = 0;
+        }
+
+        // Glow ring pulse
+        ringMat.opacity = 0.1 + Math.sin(t * 2) * 0.05 + (isSpeaking ? 0.15 : 0);
+
+        renderer.render(scene, camera);
+    }
+    animate();
+})();
+
+// =============================
+// VOICE & SPEECH
+// =============================
+const FISH_API_KEY = '888db9c104a6453b90362091b50624f7';
+let selectedVoice = '2b09b784775945ba94a63b993eb8d924'; // DiCaprio FR default
+let currentAudio = null;
+
+// Voice chip selection
+document.querySelectorAll('.voice-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+        document.querySelectorAll('.voice-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        selectedVoice = chip.dataset.voice;
+    });
+});
+
+// Enter to send
+document.getElementById('textInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleSpeak();
+});
+
+async function handleSpeak() {
+    const input = document.getElementById('textInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const bubble = document.getElementById('speechBubble');
+    const btn = document.getElementById('speakBtn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+
+    // UI: loading state
+    btn.disabled = true;
+    btnText.textContent = '';
+    spinner.style.display = 'inline-block';
+    bubble.textContent = text;
+    bubble.classList.remove('empty');
+    bubble.classList.add('speaking');
+    input.value = '';
+
+    try {
+        // Call FishAudio TTS API
+        const response = await fetch('https://api.fish.audio/v1/tts', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${FISH_API_KEY}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                text: text,
+                reference_id: selectedVoice,
+                format: 'mp3',
+                latency: 'balanced',
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`TTS error: ${response.status}`);
+        }
+
+        // Get audio blob
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        // Stop any playing audio
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
+
+        // Play audio with mouth animation
+        currentAudio = new Audio(audioUrl);
+        isSpeaking = true;
+        speakingTime = 0;
+
+        currentAudio.addEventListener('ended', () => {
+            isSpeaking = false;
+            bubble.classList.remove('speaking');
+            URL.revokeObjectURL(audioUrl);
+            currentAudio = null;
+        });
+
+        currentAudio.addEventListener('error', () => {
+            isSpeaking = false;
+            bubble.classList.remove('speaking');
+            bubble.textContent = 'Erreur de lecture audio';
+        });
+
+        await currentAudio.play();
+
+    } catch (err) {
+        console.error('TTS error:', err);
+        bubble.textContent = `Erreur: ${err.message}`;
+        bubble.classList.remove('speaking');
+        isSpeaking = false;
+    }
+
+    // UI: reset button
+    btn.disabled = false;
+    btnText.textContent = 'Parler';
+    spinner.style.display = 'none';
+}
+</script>
+
+</body>
+</html>

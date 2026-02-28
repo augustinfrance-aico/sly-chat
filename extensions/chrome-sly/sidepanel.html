@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SLY — AI Assistant</title>
+<link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-left">
+    <div class="hdr-logo">SLY</div>
+    <div>
+      <div class="hdr-name">SLY</div>
+      <div class="hdr-sub"><span class="dot-g"></span> Cooper Building</div>
+    </div>
+  </div>
+  <button class="btn-clr" id="clearBtn">Effacer</button>
+</div>
+
+<div id="chat">
+  <div class="welcome" id="welcomeScreen">
+    <div class="w-logo">SLY</div>
+    <h2>Cooper Building</h2>
+    <p>50 agents specialises. Pose ta question ou selectionne du texte sur une page et clic droit pour "Ask SLY".</p>
+  </div>
+</div>
+
+<div id="typingIndicator">
+  <div class="dots"><span></span><span></span><span></span></div>
+  SLY pense...
+</div>
+
+<div class="inp-area">
+  <div class="inp-wrap">
+    <textarea id="msgInput" placeholder="Demande a SLY..." rows="1"></textarea>
+    <button id="sendBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script src="sidepanel.js"></script>
+</body>
+</html>

@@ -7,3 +7,6 @@ groq
 google-genai
 pydub
 numpy
+ddgs
+aiohttp
+beautifulsoup4

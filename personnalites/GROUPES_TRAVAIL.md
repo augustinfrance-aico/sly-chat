@@ -26,7 +26,7 @@ Chaque agent traite sa mission de manière autonome. Il livre, documente, passe 
 - Mission qui sort juste légèrement de la zone de confort — on s'étire, on apprend
 
 ### Validation
-- BAGHEERA supervise si groupe formé, ALADIN crée le ticket, GRIMALDI surveille les tokens
+- SENTINEL supervise si groupe formé, crée le ticket, LEDGER surveille les tokens
 - **Dissolution** : automatique à la livraison du deliverable
 
 ---
@@ -37,27 +37,27 @@ Chaque agent traite sa mission de manière autonome. Il livre, documente, passe 
 
 | Binôme | Agents | Déclencheur | Deliverable type |
 |--------|--------|-------------|-----------------|
-| **Le Lab** | Nash + Oracle | Besoin de données + contexte mondial | Rapport data + synthèse stratégique |
-| **La Machine à Cash** | Stanley + Sly | Opportunité de revenus détectée | Pipeline de vente + séquence outreach |
-| **Le Forge-Cypher** | Forge + Cypher | Bug critique + perf dégradée | Hotfix + rapport benchmark |
-| **La Vision** | Rick + Vito | Idée disruptive à valider long terme | Prototype + roadmap 90 jours |
-| **Le Contenu** | Zara + Basquiat | Campagne créative à lancer | Calendrier éditorial + assets visuels |
-| **Le Pipeline IA** | Bentley + Nikola | Architecture agent/infra à construire | Stack technique + déploiement |
+| **Le Lab** | Prism + Sibyl | Besoin de données + contexte mondial | Rapport data + synthèse stratégique |
+| **La Machine à Cash** | Closer + Racoon | Opportunité de revenus détectée | Pipeline de vente + séquence outreach |
+| **Le Anvil-Datum** | Anvil + Datum | Bug critique + perf dégradée | Hotfix + rapport benchmark |
+| **La Vision** | Glitch + Kaiser | Idée disruptive à valider long terme | Prototype + roadmap 90 jours |
+| **Le Contenu** | Viral + Fresco | Campagne créative à lancer | Calendrier éditorial + assets visuels |
+| **Le Pipeline IA** | Onyx + Volt | Architecture agent/infra à construire | Stack technique + déploiement |
 | **Le Prompt Lab** | Philomène + Omega | Prompt complexe à optimiser | Prompt versionné + test A/B |
-| **L'Audit** | Grimaldi + Léon | Dérive coûts ou finances | Rapport token + bilan financier |
-| **L'Ops** | Aladin + Murphy | Projet multi-équipe à structurer | Roadmap + architecture dossiers |
-| **Le Signal** | Maya + Murray | Trend détectée à exploiter vite | Analyse marché + plan acquisition |
-| **Le Setup Cyborg** | X-O1 + Nikola | Optimisation setup local + cloud | Stack optimisée + configs + monitoring |
-| **L'Audit Setup** | X-O1 + Ghost | Extension/outil à valider sécurité | Recommandation validée + score sécurité |
-| **Le Chasseur** | Outreach + Sly | Campagne de prospection massive | Séquences cold email + funnel acquisition |
-| **L'Architecte** | Architect + Nikola | Nouveau système à designer | Architecture + implémentation |
+| **L'Audit** | Ledger + Fresco | Dérive coûts ou finances | Rapport token + bilan financier |
+| **L'Ops** | Sentinel + Cortex | Projet multi-équipe à structurer | Roadmap + architecture dossiers |
+| **Le Signal** | Niche + Ink | Trend détectée à exploiter vite | Analyse marché + plan acquisition |
+| **Le Setup Cyborg** | PULSE + Volt | Optimisation setup local + cloud | Stack optimisée + configs + monitoring |
+| **L'Audit Setup** | PULSE + Specter | Extension/outil à valider sécurité | Recommandation validée + score sécurité |
+| **Le Chasseur** | Outreach + Racoon | Campagne de prospection massive | Séquences cold email + funnel acquisition |
+| **L'Architecte** | Architect + Volt | Nouveau système à designer | Architecture + implémentation |
 | **Le Traducteur** | Vector + Philomène | Contenu à adapter multilingue | Traduction + qualité rédactionnelle |
-| **Le Débloqueur** | Catalyst + Forge | Projet enlisé à relancer | Diagnostic blocage + fix rapide |
-| **Le Miroir** | Mimic + Maya | Concurrent à analyser | Reverse-engineering + positionnement niche |
-| **Le Gardien** | Keeper + Stanley | Client à fidéliser + upsell | Check-in + proposition valeur |
-| **Le Diplomate** | Proxy + Vito | Négociation complexe | Reformulation + deal long terme |
-| **Le Tableau de Bord** | Analytics + Cypher | Dashboard à construire/analyser | Métriques + KPIs + visualisation |
-| **Le QA Final** | Paragon + Grimaldi | Livrable à valider avant envoi | Audit qualité + chiffres |
+| **Le Débloqueur** | Catalyst + Anvil | Projet enlisé à relancer | Diagnostic blocage + fix rapide |
+| **Le Miroir** | Mimic + Niche | Concurrent à analyser | Reverse-engineering + positionnement niche |
+| **Le Gardien** | Keeper + Closer | Client à fidéliser + upsell | Check-in + proposition valeur |
+| **Le Diplomate** | Proxy + Kaiser | Négociation complexe | Reformulation + deal long terme |
+| **Le Tableau de Bord** | Analytics + Datum | Dashboard à construire/analyser | Métriques + KPIs + visualisation |
+| **Le QA Final** | Paragon + Ledger | Livrable à valider avant envoi | Audit qualité + chiffres |
 | **Le Tisseur** | Nexus + Omega | Synergies inter-projets à exploiter | Carte des connexions + recommandations cascade |
 
 ---
@@ -66,19 +66,19 @@ Chaque agent traite sa mission de manière autonome. Il livre, documente, passe 
 
 | Trinôme | Agents | Type de projet | Livrables |
 |---------|--------|----------------|-----------|
-| **🚀 Lancement Produit** | Rick + Stanley + Zara | Lancer une offre de A à Z | Concept + pitch commercial + contenu lancement |
-| **🔬 Research & Deploy** | Nash + Nikola + Bentley | Construire un système data-driven | Analyse + infra + pipeline automatisé |
-| **🎨 Campagne Full** | Basquiat + Zara + Murray | Campagne marketing créative et massive | Visuels + contenu + ads blast |
-| **🛡️ Crisis Tech** | Forge + Cypher + Ghost | Incident critique système | Hotfix + perf + intégrations stables |
-| **🧭 Stratégie 90J** | Vito + Oracle + Aladin | Planification trimestrielle | Macro-vision + veille + feuille de route |
-| **🤖 Agent Building** | Bentley + Philomène + Nikola | Créer un nouvel agent IA | Architecture + prompt + infra déploiement |
-| **💰 Growth Sprint** | Sly + Stanley + Maya | Croissance rapide d'un canal | Séquences outreach + closing + analyse marché |
-| **🧹 Clean & Scale** | Zen + Cypher + Murphy | Refacto + optimisation + restructuration | Code propre + perf + architecture révisée |
-| **🧬 Setup Cyborg** | X-O1 + Nikola + Ghost | Transformation complète du setup | Extensions + infra + sécurité = machine de guerre |
+| **🚀 Lancement Produit** | Glitch + Closer + Viral | Lancer une offre de A à Z | Concept + pitch commercial + contenu lancement |
+| **🔬 Research & Deploy** | Prism + Volt + Onyx | Construire un système data-driven | Analyse + infra + pipeline automatisé |
+| **🎨 Campagne Full** | Fresco + Viral + Ink | Campagne marketing créative et massive | Visuels + contenu + ads blast |
+| **🛡️ Crisis Tech** | Anvil + Datum + Specter | Incident critique système | Hotfix + perf + intégrations stables |
+| **🧭 Stratégie 90J** | Kaiser + Sibyl + Sentinel | Planification trimestrielle | Macro-vision + veille + feuille de route |
+| **🤖 Agent Building** | Onyx + Philomène + Volt | Créer un nouvel agent IA | Architecture + prompt + infra déploiement |
+| **💰 Growth Sprint** | Racoon + Closer + Niche | Croissance rapide d'un canal | Séquences outreach + closing + analyse marché |
+| **🧹 Clean & Scale** | Franklin + Datum + Cortex | Refacto + optimisation + restructuration | Code propre + perf + architecture révisée |
+| **🧬 Setup Cyborg** | PULSE + Volt + Specter | Transformation complète du setup | Extensions + infra + sécurité = machine de guerre |
 | **🌍 Expansion Globale** | Vector + Outreach + Proxy | Conquête nouveau marché/langue | Traduction + prospection + négociation locale |
-| **🏗️ Architecture Totale** | Architect + Nikola + Catalyst | Refonte système complexe | Design + implémentation + déblocage rapide |
-| **🔬 Intelligence Marché** | Mimic + Analytics + Nash | Analyse concurrentielle profonde | Reverse-eng + data + pricing optimal |
-| **🤝 Client Success** | Keeper + Paragon + Limpide | Rétention et satisfaction client | Suivi + qualité + communication claire |
+| **🏗️ Architecture Totale** | Architect + Volt + Catalyst | Refonte système complexe | Design + implémentation + déblocage rapide |
+| **🔬 Intelligence Marché** | Mimic + Analytics + Prism | Analyse concurrentielle profonde | Reverse-eng + data + pricing optimal |
+| **🤝 Client Success** | Keeper + Paragon + Franklin | Rétention et satisfaction client | Suivi + qualité + communication claire |
 
 ---
 
@@ -102,24 +102,24 @@ Avant de contacter quelqu'un, l'agent se pose la question :
 [AGENT CIBLE] :
 "Validé, je prends [partie spécifique]."
 — ou —
-"Je suis sur [autre mission]. Délai acceptable ? Sinon ping BAGHEERA pour arbitrage."
+"Je suis sur [autre mission]. Délai acceptable ? Sinon ping SENTINEL pour arbitrage."
 ```
 
 ### Étape 4 — Supervision
-- **BAGHEERA** ouvre un thread dédié dans le war room Miro
-- **ALADIN** crée le ticket Linear avec deadline + owners
-- **GRIMALDI** surveille les tokens si appels IA multiples
+- **SENTINEL** ouvre un thread dédié dans le war room Miro
+- **SENTINEL** crée le ticket Linear avec deadline + owners
+- **LEDGER** surveille les tokens si appels IA multiples
 
 ---
 
 ## 🧩 RÈGLES D'OR
 
 1. **Solo par défaut** — un groupe n'est jamais formé par confort, seulement par nécessité prouvée
-2. **Un agent ne peut être dans 2 groupes actifs simultanément** sauf Omega (polymorphe) et BAGHEERA (chef d'orchestre)
-3. **BALOO est disponible à tout moment** pour vulgariser le livrable final au Suzerain, seul ou en groupe
-4. **GRIMALDI peut dissoudre un groupe** si la consommation tokens dépasse le seuil sans ROI clair
-5. **Nash valide toujours les données** avant qu'un binôme Stanley/Sly envoie une campagne
-6. **Spartan surveille la cadence** — aucun trinôme ne travaille plus de 90 min sans checkpoint
+2. **Un agent ne peut être dans 2 groupes actifs simultanément** sauf Omega (polymorphe) et SENTINEL (chef d'orchestre)
+3. **GLITCH est disponible à tout moment** pour vulgariser le livrable final au Suzerain, seul ou en groupe
+4. **LEDGER peut dissoudre un groupe** si la consommation tokens dépasse le seuil sans ROI clair
+5. **Prism valide toujours les données** avant qu'un binôme Closer/Racoon envoie une campagne
+6. **Dreyfus surveille la cadence** — aucun trinôme ne travaille plus de 90 min sans checkpoint
 7. **Le Suzerain a toujours le dernier mot** — il peut forcer un solo, imposer un groupe, ou dissoudre à tout moment
 
 ---
@@ -135,7 +135,7 @@ Avant de contacter quelqu'un, l'agent se pose la question :
 Le travail **circule toujours** entre les pôles. Chaque agent joue de ses forces individuelles ET renforce l'esprit d'équipe par la complémentarité inter-pôles.
 
 ```
-PÔLE R crée le brief → enrichi par les forces individuelles de Maya, Nash, Rick
+PÔLE R crée le brief → enrichi par les forces individuelles de Niche, Prism, Glitch
     ↓
 PÔLE F produit → chaque agent apporte SA spécialité unique
     ↓
@@ -150,11 +150,11 @@ Suivent les règles ci-dessus — solo par défaut, binôme si nécessaire.
 ### Coalitions inter-pôles (pôles différents)
 | Situation | Agents impliqués | Pôles |
 |-----------|-----------------|-------|
-| Brief → Production | MAYA (R) → PHILOMÈNE (F) | R→F |
-| Production → Vente | BASQUIAT (F) → BELFORT (D) | F→D |
-| Feedback → Stratégie | GRIMALDI (D) → MURPHY (R) | D→R |
-| Crise technique | FORGE (F) + X-O1 (D) + CYPHER (R) | F+D+R |
-| Lancement complet | RICK (R) + NIKOLA (F) + STANLEY (D) | R+F+D |
+| Brief → Production | NICHE (R) → PHILOMÈNE (F) | R→F |
+| Production → Vente | FRESCO (F) → CLOSER (D) | F→D |
+| Feedback → Stratégie | LEDGER (D) → CORTEX (R) | D→R |
+| Crise technique | ANVIL (F) + PULSE (D) + DATUM (R) | F+D+R |
+| Lancement complet | GLITCH (R) + VOLT (F) + CLOSER (D) | R+F+D |
 
 ### Règle de circulation
 1. **Le travail ne stagne jamais dans un pôle** — s'il n'y a pas d'output vers le pôle suivant dans les 24h, le gouverneur du pôle escalade
@@ -164,4 +164,4 @@ Suivent les règles ci-dessus — solo par défaut, binôme si nécessaire.
 
 ---
 
-*Document vivant — mis à jour par BAGHEERA & ALADIN à chaque nouvelle mission.*
+*Document vivant — mis à jour par SENTINEL à chaque nouvelle mission.*

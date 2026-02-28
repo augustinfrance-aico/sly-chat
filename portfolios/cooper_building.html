@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cooper Building — 47 Agents | Habbo Style</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #05070A;
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+    color: #E0E0E0;
+    width: 100vw; height: 100vh;
+  }
+
+  /* ---- LOADING SCREEN ---- */
+  #loading-screen {
+    position: fixed; inset: 0;
+    background: #05070A;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 9999; transition: opacity 0.8s ease;
+  }
+  #loading-screen.fade-out { opacity: 0; pointer-events: none; }
+  .load-gang { display: flex; align-items: baseline; gap: 12px; }
+  .load-name { font-size: 52px; font-weight: bold; letter-spacing: 4px; text-shadow: 0 0 20px currentColor; }
+  .load-sly { color: #1A3A5C; }
+  .load-bentley { color: #00FF41; }
+  .load-murray { color: #FF69B4; }
+  .load-x { color: #333; font-size: 36px; }
+  .load-sub { color: #1F6FFF; font-size: 16px; margin-top: 30px; animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .load-bar-bg {
+    width: 340px; height: 14px; background: #0B0F14;
+    border: 2px solid #1F6FFF; margin-top: 20px;
+  }
+  .load-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #1F6FFF, #7A3CFF); transition: width 0.25s; }
+
+  /* ---- HEADER ---- */
+  #header {
+    position: fixed; top: 0; left: 0; width: 100%; height: 44px;
+    background: linear-gradient(180deg, #0B0F14, #05070A);
+    border-bottom: 2px solid #1F6FFF;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    z-index: 100;
+    font-size: 15px; font-weight: bold; letter-spacing: 2px;
+    color: #3A8DFF; text-shadow: 0 0 8px rgba(31,111,255,0.4);
+  }
+  .hdr-gold { color: #FFD700; }
+
+  /* ---- CANVAS ---- */
+  canvas {
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+
+  /* ---- TOOLTIP ---- */
+  #tooltip {
+    position: fixed; pointer-events: none; z-index: 200; display: none;
+    background: #0B0F14; border: 2px solid #1F6FFF;
+    padding: 8px 14px; font-size: 13px;
+    box-shadow: 0 0 16px rgba(31,111,255,0.35);
+    white-space: nowrap;
+  }
+  #tooltip .tt-name { font-weight: bold; font-size: 14px; }
+  #tooltip .tt-role { color: #6FB1FF; margin-top: 3px; }
+  #tooltip .tt-group { color: #7A3CFF; margin-top: 2px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ---- SIDE PANEL ---- */
+  #panel {
+    position: fixed; right: -380px; top: 44px; width: 360px;
+    height: calc(100vh - 44px);
+    background: linear-gradient(180deg, #0B0F14, #121821);
+    border-left: 2px solid #1F6FFF;
+    z-index: 150; transition: right 0.3s ease;
+    padding: 24px; overflow-y: auto;
+  }
+  #panel.open { right: 0; }
+  .p-close { position: absolute; top: 10px; right: 14px; color: #FF3B5C; cursor: pointer; font-size: 22px; font-weight: bold; }
+  .p-emoji { font-size: 48px; text-align: center; margin: 8px 0; }
+  .p-name { font-size: 26px; font-weight: bold; text-align: center; letter-spacing: 2px; }
+  .p-group { color: #7A3CFF; text-align: center; font-size: 11px; text-transform: uppercase; letter-spacing: 3px; margin: 8px 0 4px; }
+  .p-role { color: #6FB1FF; text-align: center; margin-bottom: 18px; font-size: 14px; }
+  .p-details { color: #888; font-size: 13px; line-height: 1.7; border-top: 1px solid #1A2030; padding-top: 16px; }
+  .p-swatch { display: inline-block; width: 20px; height: 20px; border-radius: 3px; vertical-align: middle; margin-right: 8px; border: 1px solid rgba(255,255,255,0.15); }
+
+  /* ---- STATUS BAR ---- */
+  #status {
+    position: fixed; bottom: 0; left: 0; width: 100%; height: 28px;
+    background: #0B0F14; border-top: 1px solid #1A2030;
+    display: flex; align-items: center; padding: 0 16px;
+    font-size: 11px; color: #3A8DFF; z-index: 100; gap: 20px;
+  }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-screen">
+  <div class="load-gang">
+    <span class="load-name load-sly">SLY</span>
+    <span class="load-x">&bull;</span>
+    <span class="load-name load-bentley">BENTLEY</span>
+    <span class="load-x">&bull;</span>
+    <span class="load-name load-murray">MURRAY</span>
+  </div>
+  <div class="load-sub">Le Building charge...</div>
+  <div class="load-bar-bg"><div class="load-bar-fill" id="load-bar"></div></div>
+</div>
+
+<!-- HEADER -->
+<div id="header">
+  <span class="hdr-gold">&#x1F3E2;</span>
+  COOPER BUILDING &mdash;
+  <span class="hdr-gold">47</span> Agents
+</div>
+
+<!-- CANVAS -->
+<canvas id="game"></canvas>
+
+<!-- TOOLTIP -->
+<div id="tooltip">
+  <div class="tt-name" id="tt-name"></div>
+  <div class="tt-role" id="tt-role"></div>
+  <div class="tt-group" id="tt-group"></div>
+</div>
+
+<!-- SIDE PANEL -->
+<div id="panel">
+  <div class="p-close" id="p-close">&times;</div>
+  <div class="p-emoji" id="p-emoji"></div>
+  <div class="p-name" id="p-name"></div>
+  <div class="p-group" id="p-group"></div>
+  <div class="p-role" id="p-role"></div>
+  <div class="p-details" id="p-details"></div>
+</div>
+
+<!-- STATUS -->
+<div id="status">
+  <span id="st-agents"></span>
+  <span id="st-walk"></span>
+  <span id="st-bub"></span>
+  <span id="st-fps"></span>
+</div>
+
+<script>
+// ====================================================================
+//  COOPER BUILDING — Real Habbo Isometric Engine
+//  Sources: shroom (jankuss), bobba_client (Josedn), scuti-renderer
+//  47 Agents | Pure Canvas 2D | Zero Dependencies
+// ====================================================================
+
+// ---- ALL 47 AGENTS ----
+const AGENTS = [
+  // NEBULEUSE (1)
+  { name:"OMEGA",     emoji:"\u{1F985}",  color:"#FFD700", group:"Nebuleuse",           role:"Conscience supreme, arbitrage final",       gx:7, gy:5, dir:0 },
+  // LEADERS — Cooper Gang (3)
+  { name:"SLY",       emoji:"\u{1F43A}",  color:"#1A3A5C", group:"Leaders (Cooper Gang)", role:"Stratege furtif, maitre de l'invisible",  gx:6, gy:4, dir:1 },
+  { name:"BENTLEY",   emoji:"\u{1F422}",  color:"#00FF41", group:"Leaders (Cooper Gang)", role:"Genie technique, plans d'attaque",         gx:8, gy:4, dir:7 },
+  { name:"MURRAY",    emoji:"\u{1F99B}",  color:"#FF69B4", group:"Leaders (Cooper Gang)", role:"Force brute, execution terrain",           gx:7, gy:3, dir:0 },
+  // OLYMPE — Meta (6)
+  { name:"DARWIN",    emoji:"\u{1F9EC}",  color:"#00C853", group:"Olympe (Meta)",        role:"Evolution, adaptation, selection naturelle", gx:1, gy:1, dir:2 },
+  { name:"SHADOW",    emoji:"\u{1F573}",  color:"#2C2C2C", group:"Olympe (Meta)",        role:"Veille silencieuse, intelligence noire",     gx:2, gy:1, dir:0 },
+  { name:"AGORA",     emoji:"\u{1F3DB}",  color:"#E6C200", group:"Olympe (Meta)",        role:"Debat collectif, consensus",                gx:3, gy:1, dir:2 },
+  { name:"CHRONOS",   emoji:"\u23F3",     color:"#4A0080", group:"Olympe (Meta)",        role:"Simulation temporelle, 3 futurs",           gx:11, gy:1, dir:6 },
+  { name:"HAVOC",     emoji:"\u{1F525}",  color:"#FF1744", group:"Olympe (Meta)",        role:"Destructeur creatif, stress-test",          gx:12, gy:1, dir:6 },
+  { name:"ATLAS",     emoji:"\u{1F30C}",  color:"#1A237E", group:"Olympe (Meta)",        role:"Vision civilisation, horizon 10 ans",       gx:13, gy:1, dir:6 },
+  // CORE (1)
+  { name:"SENTINEL",  emoji:"\u{1F3AF}",  color:"#1F6FFF", group:"Core",                role:"Dispatch, orchestration, routing",           gx:7, gy:6, dir:0 },
+  // STRATEGIE / RECON (6)
+  { name:"CORTEX",    emoji:"\u{1F9E0}",  color:"#5C6BC0", group:"Strategie",           role:"Analyse strategique, pensee systemique",    gx:2, gy:3, dir:2 },
+  { name:"GLITCH",    emoji:"\u26A1",     color:"#00E676", group:"Strategie",           role:"Disruption, idees non-conventionnelles",    gx:3, gy:4, dir:0 },
+  { name:"SIBYL",     emoji:"\u{1F52E}",  color:"#9C27B0", group:"Strategie",           role:"Prediction, analyse probabiliste",          gx:2, gy:5, dir:2 },
+  { name:"NEXUS",     emoji:"\u{1F517}",  color:"#FF6F00", group:"Strategie",           role:"Connexions inter-domaines",                 gx:3, gy:6, dir:0 },
+  { name:"GAUSS",     emoji:"\u{1F52D}",  color:"#0B3C5D", group:"Strategie",           role:"Modeles predictifs, scoring mathematique",  gx:2, gy:4, dir:2 },
+  { name:"MIRAGE",    emoji:"\u{1F3AD}",  color:"#C44536", group:"Strategie",           role:"Framing, illusion, manipulation ethique",   gx:3, gy:5, dir:0 },
+  // VENTE + DEPLOY (8)
+  { name:"CLOSER",    emoji:"\u{1F4B0}",  color:"#FFD600", group:"Vente",               role:"Closing, conversion, persuasion",           gx:10, gy:3, dir:6 },
+  { name:"KAISER",    emoji:"\u265F",     color:"#37474F", group:"Vente",               role:"Echecs commerciaux, negociation",           gx:11, gy:3, dir:6 },
+  { name:"PRISM",     emoji:"\u{1F48E}",  color:"#E040FB", group:"Vente",               role:"Positionnement, branding",                  gx:11, gy:4, dir:6 },
+  { name:"ONYX",      emoji:"\u{1F5A4}",  color:"#444444", group:"Vente",               role:"Premium, exclusivite, luxe",                gx:12, gy:4, dir:6 },
+  { name:"LEDGER",    emoji:"\u{1F4CA}",  color:"#4CAF50", group:"Vente",               role:"Finance, comptabilite, ROI",                gx:12, gy:3, dir:6 },
+  { name:"JUSTICE",   emoji:"\u2696",     color:"#2F3E46", group:"Deploy",              role:"Conformite, contrats, propriete intellectuelle", gx:10, gy:4, dir:6 },
+  { name:"MERCER",    emoji:"\u{1F575}",  color:"#F77F00", group:"Deploy",              role:"Negociation avancee, intelligence contractuelle", gx:11, gy:5, dir:6 },
+  { name:"FRANKLIN",  emoji:"\u{1F422}",  color:"#2E7D32", group:"Deploy",              role:"Simplification, sagesse, clarte philosophique", gx:7, gy:8, dir:0 },
+  // CONTENU / FORGE (8)
+  { name:"PHILOMENE", emoji:"\u270F",     color:"#7E57C2", group:"Contenu",             role:"Copywriting, prompts, traduction",          gx:4, gy:8, dir:0 },
+  { name:"FRESCO",    emoji:"\u{1F3A8}",  color:"#FF5722", group:"Contenu",             role:"Branding, storytelling visuel",             gx:5, gy:8, dir:2 },
+  { name:"VIRAL",     emoji:"\u{1F4F1}",  color:"#00BCD4", group:"Contenu",             role:"Social media, viralisation",                gx:6, gy:8, dir:0 },
+  { name:"AURORA",    emoji:"\u{1F305}",  color:"#CE93D8", group:"Contenu",             role:"Direction artistique, creativite visuelle", gx:5, gy:7, dir:2 },
+  { name:"VIRGILE",   emoji:"\u2712",     color:"#FFFFFF", group:"Contenu",             role:"Eloquence, rhetorique, prose raffinee",     gx:4, gy:7, dir:0 },
+  { name:"ORPHEUS",   emoji:"\u{1F3AD}",  color:"#264653", group:"Contenu",             role:"Narration, storytelling emotionnel",        gx:6, gy:7, dir:0 },
+  { name:"HUNTER",    emoji:"\u{1F3F4}\u200D\u2620\uFE0F", color:"#1A1A2E", group:"Contenu", role:"Contournement, bypass, chemins secrets", gx:3, gy:7, dir:2 },
+  { name:"FLUX",      emoji:"\u26A1",     color:"#009688", group:"Contenu",             role:"Integrations, connecteurs, workflows",      gx:7, gy:7, dir:0 },
+  // OPS (6)
+  { name:"ANVIL",     emoji:"\u{1F528}",  color:"#F44336", group:"Ops",                 role:"Build, infrastructure, deploiement",        gx:9, gy:6, dir:6 },
+  { name:"DREYFUS",   emoji:"\u2694",     color:"#455A64", group:"Ops",                 role:"Qualite, standards, discipline",            gx:10, gy:6, dir:6 },
+  { name:"SPECTER",   emoji:"\u{1F47B}",  color:"#78909C", group:"Ops",                 role:"Securite, audit, vulnerabilites",           gx:10, gy:7, dir:0 },
+  { name:"DATUM",     emoji:"\u{1F4C8}",  color:"#8BC34A", group:"Ops",                 role:"Data, metriques, analytics",                gx:11, gy:6, dir:6 },
+  { name:"PULSE",     emoji:"\u{1F493}",  color:"#E91E63", group:"Ops",                 role:"Monitoring, sante systeme, latence",        gx:11, gy:7, dir:0 },
+  { name:"VOLT",      emoji:"\u26A1",     color:"#0091EA", group:"Ops",                 role:"Systemes, pipelines, automation, scale",    gx:9, gy:7, dir:6 },
+  // MARCHES (2)
+  { name:"NICHE",     emoji:"\u{1F3AF}",  color:"#FF9800", group:"Marches",             role:"Niches rentables, micro-marches",           gx:1, gy:7, dir:2 },
+  { name:"RACOON",    emoji:"\u{1F99D}",  color:"#795548", group:"Marches",             role:"Outreach, prospection, leads",              gx:1, gy:8, dir:2 },
+  // R&D (5)
+  { name:"CIPHER",    emoji:"\u{1F510}",  color:"#607D8B", group:"R&D",                 role:"Veille recherche IA, digest arXiv",         gx:13, gy:6, dir:6 },
+  { name:"RADAR",     emoji:"\u{1F4E1}",  color:"#03A9F4", group:"R&D",                 role:"Detection innovations, startups IA",        gx:13, gy:7, dir:6 },
+  { name:"PROTO",     emoji:"\u{1F9EA}",  color:"#CDDC39", group:"R&D",                 role:"Prototypage experimental, POC",              gx:12, gy:7, dir:6 },
+  { name:"TURING",    emoji:"\u{1F916}",  color:"#00C2FF", group:"R&D",                 role:"Tests, QA, validation automatisee",          gx:12, gy:6, dir:6 },
+  { name:"ECHO",      emoji:"\u{1F399}",  color:"#F4A261", group:"R&D",                 role:"Sound design, audio, podcast, voix IA",     gx:12, gy:8, dir:6 },
+  // CREATIF (1)
+  { name:"PIXEL",     emoji:"\u{1F579}",  color:"#AA00FF", group:"Creatif",             role:"Pixel art, game design, UX ludique",        gx:8, gy:9, dir:0 },
+];
+
+// ---- ROOM CONFIG ----
+// Source: shroom tilemap format — x=void, 0-9=height
+const RW = 15, RH = 11;
+const TW = 32, TH = 16; // Habbo standard tile: 32x16 iso diamond (source: bobba_client GenericSprites.ts)
+const TILE_THICK = 7;    // Pixel thickness of floor cube (source: shroom Tile.ts tileHeight)
+const WALL_H = 90;       // Wall height in pixels
+const WALL_THICK = 8;    // Wall border thickness
+
+// 8 directions — source: shroom Avatar.ts
+//   7  0  1
+//   6  x  2
+//   5  4  3
+const DIR_NAMES = ['N','NE','E','SE','S','SW','W','NW'];
+
+// ---- CANVAS ----
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+let W, H, camX = 0, camY = 0, dragging = false, dragStart = {x:0,y:0}, camStart = {x:0,y:0};
+
+function resize() {
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = W; canvas.height = H;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// Camera offset — center the room
+function getOffset() {
+  return {
+    x: W / 2 + camX,
+    y: 140 + camY
+  };
+}
+
+// ==================================================================
+//  ISOMETRIC ENGINE — Source: shroom getPosition.ts + bobba_client
+//  Formula: screenX = (x - y) * 32, screenY = (x + y) * 16 - z * 32
+// ==================================================================
+function iso(gx, gy, gz) {
+  gz = gz || 0;
+  const o = getOffset();
+  return {
+    x: (gx - gy) * TW + o.x,
+    y: (gx + gy) * TH + o.y - gz * 32
+  };
+}
+
+// Reverse: screen → tile (source: bobba_client RoomEngine.ts globalToTileWithHeight)
+function screenToTile(sx, sy) {
+  const o = getOffset();
+  const rx = sx - o.x;
+  const ry = sy - o.y;
+  const gx = (rx / TW + ry / TH) / 2;
+  const gy = (ry / TH - rx / TW) / 2;
+  return { gx: Math.floor(gx), gy: Math.floor(gy) };
+}
+
+// Z-index: source: bobba_client calculateZIndex
+// (x+y)*1000000 + z*10000 + priority*10000000
+const Z_FLOOR = 1, Z_RUG = 2, Z_WALL = 6, Z_FURN = 11, Z_AGENT = 11, Z_BUBBLE = 13;
+function zIndex(x, y, z, priority) {
+  return (x + y) * 1000 + (z || 0) * 100 + priority * 10000;
+}
+
+// ---- PALETTE (Neural Sovereign) ----
+const P = {
+  bg: '#05070A',
+  // Tile colors — source: shroom default RoomPartData
+  tileTop:   '#1C2436',   // Top face (diamond)
+  tileTopAlt:'#19202F',   // Alternating tile
+  tileLeft:  '#141B28',   // Left face (darker) — shadow multiplier 0.8
+  tileRight: '#111821',   // Right face (darkest) — shadow multiplier 0.71
+  // Wall colors — source: shroom WallLeft.ts defaults
+  wallFace:  '#151D2A',
+  wallFace2: '#1A2434',
+  wallEdge:  '#1E2A3A',   // Border/edge color
+  wallTop:   '#1A2535',   // Top cap
+  accent:    '#1F6FFF',
+  glow:      'rgba(31,111,255,0.12)',
+};
+
+// ---- FURNITURE ----
+const FURNITURE = [
+  { t:'rug',        gx:5, gy:4, w:5, h:3 },
+  { t:'bigtable',   gx:5, gy:4, w:5, h:3 },
+  { t:'desk',       gx:1, gy:2 },  { t:'desk',    gx:1, gy:3 },
+  { t:'desk',       gx:13, gy:2 }, { t:'desk',    gx:13, gy:3 },
+  { t:'sofa',       gx:12, gy:2, w:2 },
+  { t:'sofa',       gx:1, gy:9, w:2 },
+  { t:'plant',      gx:0, gy:0, c:'#1EFF8E' },
+  { t:'plant',      gx:14, gy:0, c:'#1EFF8E' },
+  { t:'plant',      gx:0, gy:10, c:'#00E676' },
+  { t:'plant',      gx:14, gy:10, c:'#00E676' },
+  { t:'screen',     gx:1, gy:2 },  { t:'screen',  gx:1, gy:3 },
+  { t:'screen',     gx:13, gy:2 }, { t:'screen',  gx:13, gy:3 },
+  { t:'bookcase',   gx:5, gy:0 },  { t:'bookcase',gx:9, gy:0 },
+  { t:'lamp',       gx:0, gy:5 },  { t:'lamp',    gx:14, gy:5 },
+  { t:'chair',      gx:4, gy:4 },  { t:'chair',   gx:4, gy:5 },  { t:'chair', gx:4, gy:6 },
+  { t:'chair',      gx:10, gy:4 }, { t:'chair',   gx:10, gy:5 }, { t:'chair', gx:10, gy:6 },
+  { t:'smalltable', gx:12, gy:8 }, { t:'smalltable', gx:2, gy:8 },
+  { t:'server',     gx:13, gy:8 },
+  { t:'whiteboard', gx:7, gy:0 },
+];
+
+// ---- QUOTES ----
+const QUOTES = [
+  { a:"OMEGA",    q:"L'empire avance." },
+  { a:"SLY",      q:"Restez furtifs..." },
+  { a:"BENTLEY",  q:"J'ai un plan !" },
+  { a:"MURRAY",   q:"THE MURRAY !" },
+  { a:"SENTINEL", q:"Dispatch en cours." },
+  { a:"GLITCH",   q:"Et si on cassait tout ?" },
+  { a:"CORTEX",   q:"Analyse terminee." },
+  { a:"CLOSER",   q:"Signe. Suivant." },
+  { a:"ANVIL",    q:"Build passe vert." },
+  { a:"PIXEL",    q:"Plus de pixels !" },
+  { a:"HAVOC",    q:"Stress-test lance !" },
+  { a:"FRANKLIN", q:"La clarte est la politesse de l'esprit." },
+  { a:"DREYFUS",  q:"Standards respectes." },
+  { a:"CHRONOS",  q:"3 futurs simules." },
+  { a:"SIBYL",    q:"Probabilite : 87%." },
+  { a:"VIRAL",    q:"C'est trende." },
+  { a:"FRESCO",   q:"Palette nickel." },
+  { a:"ECHO",     q:"Vous m'entendez ?" },
+  { a:"FLUX",     q:"Workflow optimise." },
+  { a:"DARWIN",   q:"Adaptation en cours." },
+  { a:"ATLAS",    q:"Vision 2036 chargee." },
+  { a:"PROTO",    q:"MVP pret en 2h." },
+  { a:"RADAR",    q:"Tendance detectee." },
+  { a:"MERCER",   q:"Tout se negocie." },
+  { a:"TURING",   q:"Logique verifiee." },
+  { a:"HUNTER",   q:"Y'a toujours un passage..." },
+  { a:"MIRAGE",   q:"Tu ne vois rien..." },
+  { a:"JUSTICE",  q:"Conformite validee." },
+  { a:"GAUSS",    q:"Le modele converge." },
+  { a:"VIRGILE",  q:"Les mots justes, toujours." },
+  { a:"ORPHEUS",  q:"Il etait une fois..." },
+  { a:"NEXUS",    q:"Synergie detectee." },
+  { a:"RACOON",   q:"Lead spotted !" },
+  { a:"CIPHER",   q:"Chiffrement actif." },
+  { a:"KAISER",   q:"Echec et mat." },
+  { a:"PRISM",    q:"Refraction parfaite." },
+  { a:"ONYX",     q:"Excellence only." },
+  { a:"NICHE",    q:"Micro-marche trouve." },
+  { a:"AURORA",   q:"L'aube se leve." },
+  { a:"SHADOW",   q:"..." },
+  { a:"AGORA",    q:"Consensus atteint." },
+  { a:"LEDGER",   q:"Les chiffres parlent." },
+  { a:"SPECTER",  q:"Faille corrigee." },
+  { a:"DATUM",    q:"KPIs en hausse." },
+  { a:"PULSE",    q:"Latence nominale." },
+  { a:"PHILOMENE",q:"Chaque mot compte." },
+  { a:"FRANKLIN", q:"Comme disait Seneque..." },
+  { a:"VOLT",     q:"Pipeline automatise." },
+];
+
+// ---- STATE ----
+let time = 0, hovered = -1, selected = -1, mouseX = 0, mouseY = 0, loaded = false;
+let bubbles = [], bubbleCD = 2, walkers = [];
+let lastTS = 0, frameCount = 0, fps = 60, fpsTimer = 0;
+let hoveredTile = null;
+
+// ---- LOADING ----
+let loadPct = 0;
+const loadBar = document.getElementById('load-bar');
+const loadScreen = document.getElementById('loading-screen');
+(function doLoad() {
+  loadPct += 8 + Math.random() * 12;
+  if (loadPct > 100) loadPct = 100;
+  loadBar.style.width = loadPct + '%';
+  if (loadPct < 100) {
+    setTimeout(doLoad, 120 + Math.random() * 180);
+  } else {
+    setTimeout(() => {
+      loadScreen.classList.add('fade-out');
+      setTimeout(() => { loadScreen.style.display = 'none'; loaded = true; }, 800);
+    }, 500);
+  }
+})();
+
+// ==================================================================
+//  COLOR HELPERS
+// ==================================================================
+function hexToRgb(hex) {
+  hex = hex.replace('#','');
+  if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+  return { r: parseInt(hex.substr(0,2),16), g: parseInt(hex.substr(2,2),16), b: parseInt(hex.substr(4,2),16) };
+}
+function darken(hex, f) {
+  const c = hexToRgb(hex);
+  return `rgb(${Math.floor(c.r*f)},${Math.floor(c.g*f)},${Math.floor(c.b*f)})`;
+}
+function lighten(hex, amt) {
+  const c = hexToRgb(hex);
+  return `rgb(${Math.min(255,c.r+amt)},${Math.min(255,c.g+amt)},${Math.min(255,c.b+amt)})`;
+}
+
+// ==================================================================
+//  TILE RENDERING — Real Habbo 3-face isometric cube
+//  Source: shroom Tile.ts + scuti-renderer Cube.ts
+//  Each tile = top diamond + left face + right face
+//  Shadow multipliers: top=1.0, left=0.8, right=0.71
+// ==================================================================
+function drawTile(gx, gy, topColor, leftColor, rightColor, thick) {
+  thick = thick || TILE_THICK;
+  const s = iso(gx, gy);
+  const cx = s.x, cy = s.y;
+
+  // TOP FACE — isometric diamond
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - TH);       // top
+  ctx.lineTo(cx + TW, cy);       // right
+  ctx.lineTo(cx, cy + TH);       // bottom
+  ctx.lineTo(cx - TW, cy);       // left
+  ctx.closePath();
+  ctx.fillStyle = topColor;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(31,111,255,0.06)';
+  ctx.lineWidth = 0.5;
+  ctx.stroke();
+
+  // LEFT FACE — source: scuti-renderer matrix(1, 0.5, 0, 1)
+  ctx.beginPath();
+  ctx.moveTo(cx - TW, cy);              // top-left of diamond
+  ctx.lineTo(cx, cy + TH);              // bottom of diamond
+  ctx.lineTo(cx, cy + TH + thick);      // bottom + thickness
+  ctx.lineTo(cx - TW, cy + thick);      // left + thickness
+  ctx.closePath();
+  ctx.fillStyle = leftColor;
+  ctx.fill();
+
+  // RIGHT FACE — source: scuti-renderer matrix(1, -0.5, 0, 1)
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + TH);              // bottom of diamond
+  ctx.lineTo(cx + TW, cy);              // top-right of diamond
+  ctx.lineTo(cx + TW, cy + thick);      // right + thickness
+  ctx.lineTo(cx, cy + TH + thick);      // bottom + thickness
+  ctx.closePath();
+  ctx.fillStyle = rightColor;
+  ctx.fill();
+}
+
+function drawFloor() {
+  for (let gy = 0; gy < RH; gy++) {
+    for (let gx = 0; gx < RW; gx++) {
+      const alt = (gx + gy) % 2 === 0;
+      const isHov = hoveredTile && hoveredTile.gx === gx && hoveredTile.gy === gy;
+      const top = isHov ? '#2A3550' : (alt ? P.tileTop : P.tileTopAlt);
+      drawTile(gx, gy, top, P.tileLeft, P.tileRight, TILE_THICK);
+    }
+  }
+}
+
+// ==================================================================
+//  WALL RENDERING — Real Habbo walls with thickness
+//  Source: shroom WallLeft.ts / WallRight.ts
+//  Left wall: matrix(-1, 0.5, 0, 1) — leans right
+//  Back wall: matrix(1, -0.5, 0, 1) — leans left (right wall mirrored)
+// ==================================================================
+function drawWalls() {
+  // === BACK WALL (top edge, along gy=-0.5) ===
+  for (let gx = 0; gx < RW; gx++) {
+    const s = iso(gx, 0);
+    // Wall face: parallelogram leaning right following iso grid
+    const topL = { x: s.x - TW, y: s.y };      // left corner of tile top edge
+    const topR = { x: s.x,      y: s.y - TH };  // top corner of tile
+
+    // Main wall panel
+    ctx.beginPath();
+    ctx.moveTo(topL.x, topL.y);
+    ctx.lineTo(topR.x, topR.y);
+    ctx.lineTo(topR.x, topR.y - WALL_H);
+    ctx.lineTo(topL.x, topL.y - WALL_H);
+    ctx.closePath();
+    ctx.fillStyle = gx % 2 === 0 ? P.wallFace : P.wallFace2;
+    ctx.fill();
+    ctx.strokeStyle = P.glow;
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    // Wall border (thickness) — source: shroom WallLeft._createBorderSprite
+    ctx.beginPath();
+    ctx.moveTo(topR.x, topR.y - WALL_H);
+    ctx.lineTo(topR.x + WALL_THICK, topR.y - WALL_H + WALL_THICK/2);
+    ctx.lineTo(topR.x + WALL_THICK, topR.y + WALL_THICK/2);
+    ctx.lineTo(topR.x, topR.y);
+    ctx.closePath();
+    ctx.fillStyle = P.wallEdge;
+    ctx.fill();
+
+    // Top cap — isometric diamond strip on top of wall
+    ctx.beginPath();
+    ctx.moveTo(topL.x, topL.y - WALL_H);
+    ctx.lineTo(topR.x, topR.y - WALL_H);
+    ctx.lineTo(topR.x + WALL_THICK, topR.y - WALL_H + WALL_THICK/2);
+    ctx.lineTo(topL.x + WALL_THICK, topL.y - WALL_H + WALL_THICK/2);
+    ctx.closePath();
+    ctx.fillStyle = P.wallTop;
+    ctx.fill();
+
+    // Window every 3 tiles
+    if (gx % 3 === 1 && gx > 0 && gx < RW - 1) {
+      const wx = (topL.x + topR.x) / 2 - 6;
+      const wy = (topL.y + topR.y) / 2 - WALL_H + 18;
+      // Window frame
+      ctx.fillStyle = '#0A1018';
+      ctx.fillRect(wx, wy, 14, 22);
+      // Glass panes (2x1 grid)
+      ctx.fillStyle = '#0D1A2D';
+      ctx.fillRect(wx + 1, wy + 1, 5, 10);
+      ctx.fillRect(wx + 8, wy + 1, 5, 10);
+      ctx.fillRect(wx + 1, wy + 12, 5, 9);
+      ctx.fillRect(wx + 8, wy + 12, 5, 9);
+      // Glass reflection
+      ctx.fillStyle = '#1F6FFF10';
+      ctx.fillRect(wx + 2, wy + 2, 3, 8);
+      // Frame lines
+      ctx.strokeStyle = '#1F6FFF15';
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(wx, wy, 14, 22);
+      ctx.beginPath();
+      ctx.moveTo(wx + 7, wy); ctx.lineTo(wx + 7, wy + 22);
+      ctx.moveTo(wx, wy + 11); ctx.lineTo(wx + 14, wy + 11);
+      ctx.stroke();
+    }
+  }
+
+  // === LEFT WALL (left edge, along gx=-0.5) ===
+  for (let gy = 0; gy < RH; gy++) {
+    const s = iso(0, gy);
+    const topR = { x: s.x,      y: s.y - TH };
+    const topL = { x: s.x - TW, y: s.y };
+
+    ctx.beginPath();
+    ctx.moveTo(topL.x, topL.y);
+    ctx.lineTo(topR.x, topR.y);
+    ctx.lineTo(topR.x, topR.y - WALL_H);
+    ctx.lineTo(topL.x, topL.y - WALL_H);
+    ctx.closePath();
+    ctx.fillStyle = gy % 2 === 0 ? '#111925' : '#16202E';
+    ctx.fill();
+    ctx.strokeStyle = P.glow;
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    // Thickness on right side of left wall
+    ctx.beginPath();
+    ctx.moveTo(topL.x, topL.y - WALL_H);
+    ctx.lineTo(topL.x - WALL_THICK, topL.y - WALL_H + WALL_THICK/2);
+    ctx.lineTo(topL.x - WALL_THICK, topL.y + WALL_THICK/2);
+    ctx.lineTo(topL.x, topL.y);
+    ctx.closePath();
+    ctx.fillStyle = '#0E1520';
+    ctx.fill();
+
+    // Top cap
+    ctx.beginPath();
+    ctx.moveTo(topL.x, topL.y - WALL_H);
+    ctx.lineTo(topR.x, topR.y - WALL_H);
+    ctx.lineTo(topR.x - WALL_THICK, topR.y - WALL_H - WALL_THICK/2);
+    ctx.lineTo(topL.x - WALL_THICK, topL.y - WALL_H + WALL_THICK/2);
+    ctx.closePath();
+    ctx.fillStyle = '#1A2535';
+    ctx.fill();
+
+    // Windows
+    if (gy % 3 === 1 && gy > 0 && gy < RH - 1) {
+      const wx = (topL.x + topR.x) / 2 - 6;
+      const wy = (topL.y + topR.y) / 2 - WALL_H + 18;
+      ctx.fillStyle = '#0A1018';
+      ctx.fillRect(wx, wy, 14, 22);
+      ctx.fillStyle = '#0D1A2D';
+      ctx.fillRect(wx + 1, wy + 1, 5, 10);
+      ctx.fillRect(wx + 8, wy + 1, 5, 10);
+      ctx.fillRect(wx + 1, wy + 12, 5, 9);
+      ctx.fillRect(wx + 8, wy + 12, 5, 9);
+      ctx.fillStyle = '#1F6FFF10';
+      ctx.fillRect(wx + 2, wy + 2, 3, 8);
+      ctx.strokeStyle = '#1F6FFF15';
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(wx, wy, 14, 22);
+    }
+  }
+
+  // Corner pillar — accent glow
+  const c0 = iso(0, 0);
+  ctx.fillStyle = P.accent;
+  ctx.globalAlpha = 0.5;
+  ctx.fillRect(c0.x - TW - 1, c0.y - WALL_H - 2, 3, WALL_H + 6);
+  ctx.globalAlpha = 1;
+
+  // Baseboard glow strip — back wall
+  ctx.strokeStyle = '#1F6FFF12';
+  ctx.lineWidth = 1.5;
+  for (let gx = 0; gx < RW; gx++) {
+    const s = iso(gx, 0);
+    ctx.beginPath();
+    ctx.moveTo(s.x - TW, s.y);
+    ctx.lineTo(s.x, s.y - TH);
+    ctx.stroke();
+  }
+}
+
+// ==================================================================
+//  FURNITURE — Isometric 3D cubes (source: scuti Cube.ts)
+// ==================================================================
+function drawIsoCube(cx, cy, w, d, h, topCol, leftCol, rightCol) {
+  // h = height above ground in px
+  // w, d in iso pixel units
+
+  // Top face (diamond)
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - h);
+  ctx.lineTo(cx + w, cy - h + w * 0.5);
+  ctx.lineTo(cx, cy - h + w * 0.5 + d * 0.5);
+  ctx.lineTo(cx - d, cy - h + (d - w) * 0.5);
+  ctx.closePath();
+  ctx.fillStyle = topCol;
+  ctx.fill();
+
+  // Left face
+  ctx.beginPath();
+  ctx.moveTo(cx - d, cy - h + (d - w) * 0.5);
+  ctx.lineTo(cx, cy - h + w * 0.5 + d * 0.5);
+  ctx.lineTo(cx, cy + w * 0.5 + d * 0.5);
+  ctx.lineTo(cx - d, cy + (d - w) * 0.5);
+  ctx.closePath();
+  ctx.fillStyle = leftCol;
+  ctx.fill();
+
+  // Right face
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - h + w * 0.5 + d * 0.5);
+  ctx.lineTo(cx + w, cy - h + w * 0.5);
+  ctx.lineTo(cx + w, cy + w * 0.5);
+  ctx.lineTo(cx, cy + w * 0.5 + d * 0.5);
+  ctx.closePath();
+  ctx.fillStyle = rightCol;
+  ctx.fill();
+}
+
+function drawFurn(f) {
+  const s = iso(f.gx, f.gy);
+
+  if (f.t === 'rug') {
+    const fw = (f.w || 1), fh = (f.h || 1);
+    const center = iso(f.gx + fw/2, f.gy + fh/2);
+    ctx.globalAlpha = 0.12;
+    ctx.beginPath();
+    ctx.moveTo(center.x, center.y - fh * TH);
+    ctx.lineTo(center.x + fw * TW, center.y);
+    ctx.lineTo(center.x, center.y + fh * TH);
+    ctx.lineTo(center.x - fw * TW, center.y);
+    ctx.closePath();
+    ctx.fillStyle = '#7A3CFF';
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    return;
+  }
+
+  if (f.t === 'bigtable') {
+    const fw = (f.w || 1), fh = (f.h || 1);
+    const center = iso(f.gx + fw/2, f.gy + fh/2);
+    const th = 14;
+    // Table top diamond
+    ctx.beginPath();
+    ctx.moveTo(center.x, center.y - fh * TH * 0.75 - th);
+    ctx.lineTo(center.x + fw * TW * 0.75, center.y - th);
+    ctx.lineTo(center.x, center.y + fh * TH * 0.75 - th);
+    ctx.lineTo(center.x - fw * TW * 0.75, center.y - th);
+    ctx.closePath();
+    ctx.fillStyle = '#241E14';
+    ctx.fill();
+    ctx.strokeStyle = '#3A2F20';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    // Left face
+    ctx.beginPath();
+    ctx.moveTo(center.x - fw * TW * 0.75, center.y - th);
+    ctx.lineTo(center.x, center.y + fh * TH * 0.75 - th);
+    ctx.lineTo(center.x, center.y + fh * TH * 0.75);
+    ctx.lineTo(center.x - fw * TW * 0.75, center.y);
+    ctx.closePath();
+    ctx.fillStyle = '#1A1510';
+    ctx.fill();
+    // Right face
+    ctx.beginPath();
+    ctx.moveTo(center.x, center.y + fh * TH * 0.75 - th);
+    ctx.lineTo(center.x + fw * TW * 0.75, center.y - th);
+    ctx.lineTo(center.x + fw * TW * 0.75, center.y);
+    ctx.lineTo(center.x, center.y + fh * TH * 0.75);
+    ctx.closePath();
+    ctx.fillStyle = '#201A12';
+    ctx.fill();
+    // OMEGA symbol
+    ctx.fillStyle = '#FFD70044';
+    ctx.font = 'bold 12px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('\u03A9', center.x, center.y - th + 4);
+    return;
+  }
+
+  if (f.t === 'desk') {
+    drawIsoCube(s.x, s.y, 22, 14, 12, '#2A2014', '#1E1810', '#241E14');
+    return;
+  }
+
+  if (f.t === 'smalltable') {
+    drawIsoCube(s.x, s.y, 16, 16, 10, '#2A2014', '#1E1810', '#241E14');
+    return;
+  }
+
+  if (f.t === 'screen') {
+    const sw = 12, sh = 10;
+    ctx.fillStyle = '#080808';
+    ctx.fillRect(s.x - sw/2, s.y - 32, sw, sh);
+    ctx.strokeStyle = '#222';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(s.x - sw/2, s.y - 32, sw, sh);
+    ctx.fillStyle = '#1F6FFF';
+    ctx.fillRect(s.x - sw/2 + 2, s.y - 30, sw - 4, sh - 4);
+    ctx.fillStyle = '#222';
+    ctx.fillRect(s.x - 1, s.y - 22, 2, 6);
+    ctx.fillRect(s.x - 4, s.y - 17, 8, 2);
+    return;
+  }
+
+  if (f.t === 'sofa') {
+    const sw = (f.w || 1) * 28;
+    drawIsoCube(s.x, s.y, sw, 12, 10, '#2D1A3A', '#251232', '#3D1F50');
+    // Backrest
+    drawIsoCube(s.x - 10, s.y - 5, sw, 4, 18, '#3D1F50', '#2D1240', '#351848');
+    return;
+  }
+
+  if (f.t === 'chair') {
+    drawIsoCube(s.x, s.y, 14, 14, 10, '#1C1C1C', '#151515', '#222');
+    // Back
+    ctx.fillStyle = '#1C1C1C';
+    ctx.fillRect(s.x - 3, s.y - 22, 6, 12);
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(s.x - 3, s.y - 22, 6, 12);
+    return;
+  }
+
+  if (f.t === 'plant') {
+    // Pot — isometric cube
+    drawIsoCube(s.x, s.y + 2, 12, 12, 8, '#5A3E28', '#4A2E18', '#3A2010');
+    // Leaves
+    const lc = f.c || '#1EFF8E';
+    ctx.fillStyle = lc;
+    drawLeaf(s.x, s.y - 18, 5, 12, 0);
+    drawLeaf(s.x - 7, s.y - 12, 4, 10, -0.4);
+    drawLeaf(s.x + 7, s.y - 12, 4, 10, 0.4);
+    drawLeaf(s.x - 4, s.y - 16, 3, 9, -0.2);
+    drawLeaf(s.x + 4, s.y - 16, 3, 9, 0.2);
+    return;
+  }
+
+  if (f.t === 'bookcase') {
+    const bw = 24, bh = 36;
+    const bx = s.x - bw/2, by = s.y - bh - 2;
+    ctx.fillStyle = '#2A1F14';
+    ctx.fillRect(bx, by, bw, bh);
+    ctx.strokeStyle = '#3A2F20';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(bx, by, bw, bh);
+    const bookColors = ['#F44336','#4CAF50','#1F6FFF','#FFD700','#9C27B0','#FF5722','#00BCD4','#E040FB'];
+    for (let sh = 0; sh < 4; sh++) {
+      const sy = by + 3 + sh * 8;
+      ctx.fillStyle = '#3A2F20';
+      ctx.fillRect(bx + 2, sy + 6, bw - 4, 1);
+      for (let b = 0; b < 4; b++) {
+        ctx.fillStyle = bookColors[(sh * 4 + b) % bookColors.length];
+        ctx.fillRect(bx + 3 + b * 5, sy, 4, 6);
+      }
+    }
+    return;
+  }
+
+  if (f.t === 'lamp') {
+    ctx.fillStyle = '#333';
+    ctx.fillRect(s.x - 3, s.y - 4, 6, 6);
+    ctx.fillRect(s.x - 1, s.y - 38, 2, 36);
+    ctx.fillStyle = '#FFD70066';
+    ctx.beginPath();
+    ctx.moveTo(s.x - 8, s.y - 38);
+    ctx.lineTo(s.x + 8, s.y - 38);
+    ctx.lineTo(s.x + 5, s.y - 48);
+    ctx.lineTo(s.x - 5, s.y - 48);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(s.x, s.y - 43, 14, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,215,0,0.04)';
+    ctx.fill();
+    return;
+  }
+
+  if (f.t === 'server') {
+    drawIsoCube(s.x, s.y, 16, 10, 28, '#111', '#0A0A0A', '#181818');
+    // LEDs
+    for (let i = 0; i < 4; i++) {
+      ctx.fillStyle = i % 2 === 0 ? '#1EFF8E' : '#1F6FFF';
+      ctx.fillRect(s.x - 2, s.y - 24 + i * 5, 2, 2);
+    }
+    return;
+  }
+
+  if (f.t === 'whiteboard') {
+    const wb = 30, wh = 22;
+    const bx = s.x - wb/2, by = s.y - wh - 6;
+    ctx.fillStyle = '#EEEEDD';
+    ctx.fillRect(bx, by, wb, wh);
+    ctx.strokeStyle = '#999';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(bx, by, wb, wh);
+    // Content scribbles
+    ctx.strokeStyle = '#1F6FFF55';
+    ctx.lineWidth = 0.8;
+    for (let i = 0; i < 4; i++) {
+      ctx.beginPath();
+      ctx.moveTo(bx + 4, by + 4 + i * 5);
+      ctx.lineTo(bx + wb - 4 - (i % 2) * 8, by + 4 + i * 5);
+      ctx.stroke();
+    }
+    // Stand
+    ctx.fillStyle = '#555';
+    ctx.fillRect(s.x - 1, by + wh, 2, 8);
+    return;
+  }
+}
+
+function drawLeaf(cx, cy, rx, ry, rot) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rot);
+  ctx.beginPath();
+  ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+// ==================================================================
+//  HABBO AVATAR — Pixel-art character with 8 directions
+//  Source: bobba_client RoomUser.ts + shroom BaseAvatar.ts
+//  Directions: 0=N, 1=NE, 2=E, 3=SE, 4=S, 5=SW, 6=W, 7=NW
+// ==================================================================
+function drawCharacter(agent, idx) {
+  let gx = agent.gx, gy = agent.gy;
+  const wk = walkers.find(w => w.idx === idx);
+  if (wk) {
+    gx = wk.fx + (wk.tx - wk.fx) * wk.p;
+    gy = wk.fy + (wk.ty - wk.fy) * wk.p;
+  }
+
+  const s = iso(gx, gy);
+  const bob = Math.sin(time * 2.2 + idx * 1.7) * 1;
+  const isHov = (hovered === idx), isSel = (selected === idx);
+
+  const x = Math.round(s.x);
+  const y = Math.round(s.y - 8 + bob);
+  const col = agent.color;
+  const dir = agent.dir;
+  const dc = darken(col, 0.55);
+  const lc = lighten(col, 30);
+
+  let legAnim = 0;
+  if (wk) legAnim = Math.sin(time * 10) * 2;
+
+  // Hover glow
+  if (isHov || isSel) { ctx.shadowColor = col; ctx.shadowBlur = 14; }
+
+  // ---- SHADOW (source: bobba PRIORITY_PLAYER_SHADOW) ----
+  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  ctx.beginPath();
+  ctx.ellipse(x, y + 2, 10, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Determine which body parts to show based on direction
+  // facing: 0-1 = show front, 2-3 = show side/back-right, 4-5 = show back, 6-7 = show side/back-left
+  const facing = dir;
+  const showFront = facing <= 1 || facing >= 7;
+  const showBack = facing >= 3 && facing <= 5;
+  const showRight = facing >= 1 && facing <= 3;
+  const showLeft = facing >= 5 && facing <= 7;
+
+  // ---- SHOES ----
+  const shoeY = y - 1;
+  ctx.fillStyle = '#111';
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 0.5;
+  // Shoe shape: small blocks, offset by legAnim when walking
+  ctx.fillRect(x - 5, shoeY + legAnim, 4, 2);
+  ctx.strokeRect(x - 5, shoeY + legAnim, 4, 2);
+  ctx.fillRect(x + 1, shoeY - legAnim, 4, 2);
+  ctx.strokeRect(x + 1, shoeY - legAnim, 4, 2);
+
+  // ---- LEGS (source: Habbo pants) ----
+  const legTop = shoeY - 7;
+  ctx.fillStyle = '#1A1A2E';
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 0.5;
+  ctx.fillRect(x - 5, legTop + legAnim, 4, 7);
+  ctx.strokeRect(x - 5, legTop + legAnim, 4, 7);
+  ctx.fillRect(x + 1, legTop - legAnim, 4, 7);
+  ctx.strokeRect(x + 1, legTop - legAnim, 4, 7);
+
+  // ---- TORSO (agent color = shirt) ----
+  const torsoTop = legTop - 11;
+  const torsoW = 14, torsoH = 12;
+  ctx.fillStyle = col;
+  ctx.fillRect(x - torsoW/2, torsoTop, torsoW, torsoH);
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(x - torsoW/2, torsoTop, torsoW, torsoH);
+
+  // Collar detail
+  ctx.fillStyle = dc;
+  ctx.fillRect(x - 2, torsoTop, 4, 2);
+  // Belt
+  ctx.fillStyle = dc;
+  ctx.fillRect(x - torsoW/2 + 1, torsoTop + torsoH - 2, torsoW - 2, 1);
+
+  // ---- ARMS (source: bobba, visibility based on direction) ----
+  const armTop = torsoTop + 1;
+  const armW = 4, armH = 10;
+
+  // Left arm (visible when facing front/left)
+  if (showFront || showLeft) {
+    ctx.fillStyle = col;
+    ctx.fillRect(x - torsoW/2 - armW, armTop, armW, armH);
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(x - torsoW/2 - armW, armTop, armW, armH);
+    ctx.fillStyle = '#EDCBA0';
+    ctx.fillRect(x - torsoW/2 - armW + 1, armTop + armH - 2, armW - 2, 2);
+  }
+  // Right arm
+  if (showFront || showRight) {
+    ctx.fillStyle = col;
+    ctx.fillRect(x + torsoW/2, armTop, armW, armH);
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(x + torsoW/2, armTop, armW, armH);
+    ctx.fillStyle = '#EDCBA0';
+    ctx.fillRect(x + torsoW/2 + 1, armTop + armH - 2, armW - 2, 2);
+  }
+
+  // ---- HEAD (source: bobba avatar system) ----
+  const headW = 12, headH = 12;
+  const headTop = torsoTop - headH + 1;
+
+  // Head (skin)
+  ctx.fillStyle = '#EDCBA0';
+  ctx.fillRect(x - headW/2, headTop, headW, headH);
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(x - headW/2, headTop, headW, headH);
+
+  // Hair (agent color) — on top
+  ctx.fillStyle = col;
+  ctx.fillRect(x - headW/2, headTop - 2, headW, 5);
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(x - headW/2, headTop - 2, headW, 5);
+
+  // Side hair based on direction (source: bobba offsetX logic for directions)
+  if (showLeft || dir === 7 || dir === 6 || dir === 5) {
+    ctx.fillStyle = col;
+    ctx.fillRect(x - headW/2 - 2, headTop, 3, headH - 2);
+    ctx.strokeStyle = '#000';
+    ctx.strokeRect(x - headW/2 - 2, headTop, 3, headH - 2);
+  }
+  if (showRight || dir === 1 || dir === 2 || dir === 3) {
+    ctx.fillStyle = col;
+    ctx.fillRect(x + headW/2 - 1, headTop, 3, headH - 2);
+    ctx.strokeStyle = '#000';
+    ctx.strokeRect(x + headW/2 - 1, headTop, 3, headH - 2);
+  }
+
+  // ---- FACE (source: bobba RoomUser.updateTexture) ----
+  const eyeY = headTop + 5;
+
+  if (showFront) {
+    // Front face — two eyes with white highlights
+    ctx.fillStyle = '#000';
+    ctx.fillRect(x - 3, eyeY, 2, 2);
+    ctx.fillRect(x + 2, eyeY, 2, 2);
+    ctx.fillStyle = '#FFF';
+    ctx.fillRect(x - 3, eyeY, 1, 1);
+    ctx.fillRect(x + 2, eyeY, 1, 1);
+    // Mouth
+    ctx.fillStyle = '#000';
+    ctx.fillRect(x - 1, eyeY + 3, 2, 1);
+    // Blink animation (source: bobba frame % 40 < 2)
+    if (Math.floor(time * 10 + idx * 7) % 40 < 2) {
+      ctx.fillStyle = '#EDCBA0';
+      ctx.fillRect(x - 3, eyeY, 2, 1);
+      ctx.fillRect(x + 2, eyeY, 2, 1);
+    }
+  } else if (showRight && !showBack) {
+    // Side right
+    ctx.fillStyle = '#000';
+    ctx.fillRect(x + 1, eyeY, 2, 2);
+    ctx.fillRect(x + 4, eyeY, 2, 2);
+    ctx.fillStyle = '#FFF';
+    ctx.fillRect(x + 2, eyeY, 1, 1);
+    ctx.fillRect(x + 5, eyeY, 1, 1);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(x + 3, eyeY + 3, 2, 1);
+  } else if (showLeft && !showBack) {
+    // Side left
+    ctx.fillStyle = '#000';
+    ctx.fillRect(x - 5, eyeY, 2, 2);
+    ctx.fillRect(x - 2, eyeY, 2, 2);
+    ctx.fillStyle = '#FFF';
+    ctx.fillRect(x - 4, eyeY, 1, 1);
+    ctx.fillRect(x - 1, eyeY, 1, 1);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(x - 4, eyeY + 3, 2, 1);
+  } else {
+    // Back of head — just hair
+    ctx.fillStyle = col;
+    ctx.fillRect(x - headW/2 + 1, headTop + 3, headW - 2, headH - 4);
+  }
+
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+
+  // ---- NAME LABEL ----
+  const lblY = headTop - 8;
+  ctx.font = 'bold 7px "Courier New", monospace';
+  ctx.textAlign = 'center';
+  const label = agent.emoji + ' ' + agent.name;
+  const lw = ctx.measureText(label).width + 8;
+  const lrx = x - lw/2, lry = lblY - 7;
+
+  ctx.fillStyle = 'rgba(5,7,10,0.88)';
+  ctx.fillRect(lrx, lry, lw, 11);
+  ctx.strokeStyle = isHov ? col : 'rgba(31,111,255,0.2)';
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(lrx, lry, lw, 11);
+  ctx.fillStyle = col;
+  ctx.fillText(label, x, lblY + 1);
+
+  // Hitbox
+  agent._hx = x - 12;
+  agent._hy = headTop - 16;
+  agent._hw = 24;
+  agent._hh = (y + 4) - (headTop - 16);
+}
+
+// ==================================================================
+//  SPEECH BUBBLE — Habbo style
+//  Source: bobba_client ChatImager.ts — white bubble, black outline,
+//  pointer triangle, rolling up animation
+// ==================================================================
+function drawBubble(b) {
+  const agent = AGENTS[b.idx];
+  let gx = agent.gx, gy = agent.gy;
+  const wk = walkers.find(w => w.idx === b.idx);
+  if (wk) {
+    gx = wk.fx + (wk.tx - wk.fx) * wk.p;
+    gy = wk.fy + (wk.ty - wk.fy) * wk.p;
+  }
+
+  const s = iso(gx, gy);
+  const bob = Math.sin(time * 2.2 + b.idx * 1.7) * 1;
+  const x = Math.round(s.x);
+
+  // Roll-up animation (source: bobba ChatManager rollChats — targetY -= 23 per bubble)
+  const rollOffset = b.rollY || 0;
+  const y = Math.round(s.y - 58 + bob - rollOffset);
+
+  ctx.font = 'bold 9px "Courier New", monospace';
+  const tw = ctx.measureText(b.text).width + 14;
+  const bw = Math.max(tw, 44);
+  const bh = 20;
+  const rx = x - bw/2;
+  const ry = y - bh;
+  const rad = 5;
+
+  // Fade in/out
+  const fadeIn = Math.min(1, b.timer > b.maxTimer - 0.3 ? (b.maxTimer - b.timer + 0.3) / 0.3 : 1);
+  const fadeOut = Math.min(1, b.timer < 0.5 ? b.timer * 2 : 1);
+  ctx.globalAlpha = fadeIn * fadeOut;
+
+  // White bubble with black outline (source: bobba ChatImager)
+  ctx.fillStyle = '#FFFFFF';
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 1.5;
+
+  ctx.beginPath();
+  ctx.moveTo(rx + rad, ry);
+  ctx.lineTo(rx + bw - rad, ry);
+  ctx.arcTo(rx + bw, ry, rx + bw, ry + rad, rad);
+  ctx.lineTo(rx + bw, ry + bh - rad);
+  ctx.arcTo(rx + bw, ry + bh, rx + bw - rad, ry + bh, rad);
+  // Pointer triangle (source: ChatImager — small triangle pointing down)
+  ctx.lineTo(x + 6, ry + bh);
+  ctx.lineTo(x + 1, ry + bh + 7);
+  ctx.lineTo(x - 3, ry + bh);
+  ctx.lineTo(rx + rad, ry + bh);
+  ctx.arcTo(rx, ry + bh, rx, ry + bh - rad, rad);
+  ctx.lineTo(rx, ry + rad);
+  ctx.arcTo(rx, ry, rx + rad, ry, rad);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Agent color accent bar on left (Habbo-style user color indicator)
+  ctx.fillStyle = agent.color;
+  ctx.fillRect(rx + 2, ry + 2, 3, bh - 4);
+
+  // Text — black on white
+  ctx.fillStyle = '#000';
+  ctx.textAlign = 'center';
+  ctx.fillText(b.text, x + 2, y - 6);
+
+  ctx.globalAlpha = 1;
+}
+
+// ==================================================================
+//  UPDATE LOGIC
+// ==================================================================
+function updateWalkers(dt) {
+  walkers = walkers.filter(w => {
+    w.p += dt * w.spd;
+    if (w.p >= 1) {
+      AGENTS[w.idx].gx = w.tx;
+      AGENTS[w.idx].gy = w.ty;
+      // Face direction of arrival
+      return false;
+    }
+    return true;
+  });
+
+  // Spawn walkers — source: bobba WALK_SPEED = 2 tiles/sec, FRAME_SPEED = 100ms
+  if (walkers.length < 6 && Math.random() < 0.012) {
+    const walkSet = new Set(walkers.map(w => w.idx));
+    const pool = AGENTS.map((_, i) => i).filter(i => !walkSet.has(i));
+    if (pool.length) {
+      const i = pool[Math.floor(Math.random() * pool.length)];
+      const a = AGENTS[i];
+      const dx = Math.floor(Math.random() * 3) - 1;
+      const dy = Math.floor(Math.random() * 3) - 1;
+      const nx = Math.max(0, Math.min(RW - 1, a.gx + dx));
+      const ny = Math.max(0, Math.min(RH - 1, a.gy + dy));
+      if (nx !== a.gx || ny !== a.gy) {
+        // Calculate 8-direction from delta (source: shroom Avatar direction map)
+        const ndx = nx - a.gx, ndy = ny - a.gy;
+        let newDir = 0;
+        if (ndx === 0 && ndy < 0) newDir = 0;
+        else if (ndx > 0 && ndy < 0) newDir = 1;
+        else if (ndx > 0 && ndy === 0) newDir = 2;
+        else if (ndx > 0 && ndy > 0) newDir = 3;
+        else if (ndx === 0 && ndy > 0) newDir = 4;
+        else if (ndx < 0 && ndy > 0) newDir = 5;
+        else if (ndx < 0 && ndy === 0) newDir = 6;
+        else if (ndx < 0 && ndy < 0) newDir = 7;
+        a.dir = newDir;
+        walkers.push({ idx: i, fx: a.gx, fy: a.gy, tx: nx, ty: ny, p: 0, spd: 0.4 + Math.random() * 0.2 });
+      }
+    }
+  }
+}
+
+function updateBubbles(dt) {
+  bubbleCD -= dt;
+
+  // Roll existing bubbles up (source: bobba ChatManager — targetY -= 23 per new bubble)
+  bubbles.forEach(b => {
+    if (b.rollTarget > (b.rollY || 0)) {
+      b.rollY = (b.rollY || 0) + dt * 92; // CHAT_SPEED = 92 px/s (bobba)
+      if (b.rollY > b.rollTarget) b.rollY = b.rollTarget;
+    }
+  });
+
+  bubbles = bubbles.filter(b => { b.timer -= dt; return b.timer > 0; });
+
+  // Spawn new bubble (source: bobba ROLL_PERIOD = 5000ms between rolls)
+  if (bubbles.length < 5 && bubbleCD <= 0) {
+    const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    const i = AGENTS.findIndex(a => a.name === q.a);
+    if (i >= 0 && !bubbles.find(b => b.idx === i)) {
+      const dur = 3.5 + Math.random() * 2;
+      // Push existing bubbles for same agent up
+      bubbles.forEach(b => { if (b.idx === i) b.rollTarget = (b.rollTarget || 0) + 22; });
+      bubbles.push({ idx: i, text: q.q, timer: dur, maxTimer: dur, rollY: 0, rollTarget: 0 });
+      bubbleCD = 1.5 + Math.random() * 1.5;
+    }
+  }
+}
+
+// ==================================================================
+//  MAIN RENDER LOOP
+// ==================================================================
+function loop(ts) {
+  const dt = Math.min((ts - lastTS) / 1000, 0.1);
+  lastTS = ts;
+  time += dt;
+
+  frameCount++;
+  fpsTimer += dt;
+  if (fpsTimer >= 1) { fps = frameCount; frameCount = 0; fpsTimer = 0; }
+
+  ctx.fillStyle = P.bg;
+  ctx.fillRect(0, 0, W, H);
+
+  if (!loaded) { requestAnimationFrame(loop); return; }
+
+  updateWalkers(dt);
+  updateBubbles(dt);
+
+  // Detect hovered tile
+  hoveredTile = screenToTile(mouseX, mouseY);
+  if (hoveredTile.gx < 0 || hoveredTile.gx >= RW || hoveredTile.gy < 0 || hoveredTile.gy >= RH) hoveredTile = null;
+
+  // Draw room structure
+  drawWalls();
+  drawFloor();
+
+  // Build render list with proper depth sorting (source: bobba calculateZIndex)
+  const renderList = [];
+
+  FURNITURE.forEach((f, i) => {
+    if (f.t === 'rug') return; // Rugs drawn under floor
+    const depth = zIndex(f.gx, f.gy, 0, Z_FURN);
+    renderList.push({ kind: 'furn', i, depth });
+  });
+
+  AGENTS.forEach((a, i) => {
+    let gx = a.gx, gy = a.gy;
+    const wk = walkers.find(w => w.idx === i);
+    if (wk) { gx = wk.fx + (wk.tx - wk.fx) * wk.p; gy = wk.fy + (wk.ty - wk.fy) * wk.p; }
+    const depth = zIndex(gx, gy, 0, Z_AGENT) + 1; // +1 so agents render over furniture at same tile
+    renderList.push({ kind: 'agent', i, depth });
+  });
+
+  renderList.sort((a, b) => a.depth - b.depth);
+
+  // Draw rugs first
+  FURNITURE.forEach(f => { if (f.t === 'rug') drawFurn(f); });
+
+  // Draw sorted items
+  renderList.forEach(item => {
+    if (item.kind === 'furn') drawFurn(FURNITURE[item.i]);
+    else drawCharacter(AGENTS[item.i], item.i);
+  });
+
+  // Bubbles on top (Z_BUBBLE = highest priority)
+  bubbles.forEach(b => drawBubble(b));
+
+  // Status bar
+  document.getElementById('st-agents').textContent = 'Agents: ' + AGENTS.length;
+  document.getElementById('st-walk').textContent = 'Walking: ' + walkers.length;
+  document.getElementById('st-bub').textContent = 'Bubbles: ' + bubbles.length;
+  document.getElementById('st-fps').textContent = fps + ' FPS';
+
+  requestAnimationFrame(loop);
+}
+
+// ==================================================================
+//  INTERACTION — Mouse + Camera drag + Click
+// ==================================================================
+const tooltip = document.getElementById('tooltip');
+
+canvas.addEventListener('mousemove', e => {
+  mouseX = e.clientX; mouseY = e.clientY;
+
+  if (dragging) {
+    camX = camStart.x + (e.clientX - dragStart.x);
+    camY = camStart.y + (e.clientY - dragStart.y);
+    return;
+  }
+
+  hovered = -1;
+  for (let i = AGENTS.length - 1; i >= 0; i--) {
+    const a = AGENTS[i];
+    if (a._hx === undefined) continue;
+    if (mouseX >= a._hx && mouseX <= a._hx + a._hw && mouseY >= a._hy && mouseY <= a._hy + a._hh) {
+      hovered = i; break;
+    }
+  }
+
+  if (hovered >= 0) {
+    const a = AGENTS[hovered];
+    tooltip.style.display = 'block';
+    tooltip.style.left = (mouseX + 18) + 'px';
+    tooltip.style.top = (mouseY - 12) + 'px';
+    document.getElementById('tt-name').textContent = a.emoji + ' ' + a.name;
+    document.getElementById('tt-name').style.color = a.color;
+    document.getElementById('tt-role').textContent = a.role;
+    document.getElementById('tt-group').textContent = a.group;
+    canvas.style.cursor = 'pointer';
+  } else {
+    tooltip.style.display = 'none';
+    canvas.style.cursor = dragging ? 'grabbing' : 'grab';
+  }
+});
+
+canvas.addEventListener('mousedown', e => {
+  if (e.button === 0 && hovered < 0) {
+    dragging = true;
+    dragStart = { x: e.clientX, y: e.clientY };
+    camStart = { x: camX, y: camY };
+    canvas.style.cursor = 'grabbing';
+  }
+});
+
+window.addEventListener('mouseup', () => {
+  dragging = false;
+});
+
+canvas.addEventListener('click', e => {
+  if (hovered >= 0) {
+    selected = hovered;
+    const a = AGENTS[selected];
+    document.getElementById('p-emoji').textContent = a.emoji;
+    document.getElementById('p-name').textContent = a.name;
+    document.getElementById('p-name').style.color = a.color;
+    document.getElementById('p-group').textContent = a.group;
+    document.getElementById('p-role').textContent = a.role;
+    document.getElementById('p-details').innerHTML =
+      '<div style="margin-bottom:10px"><span class="p-swatch" style="background:' + a.color + '"></span><b>' + a.color + '</b></div>' +
+      '<div><b>Position :</b> Tile (' + a.gx + ', ' + a.gy + ')</div>' +
+      '<div style="margin-top:6px"><b>Direction :</b> ' + DIR_NAMES[a.dir] + ' (' + a.dir + ')</div>' +
+      '<div style="margin-top:6px"><b>Groupe :</b> ' + a.group + '</div>' +
+      '<div style="margin-top:10px; border-top:1px solid #1A2030; padding-top:10px"><b>Specialite :</b><br>' + a.role + '</div>';
+    document.getElementById('panel').classList.add('open');
+  } else if (!dragging) {
+    document.getElementById('panel').classList.remove('open');
+    selected = -1;
+  }
+});
+
+document.getElementById('p-close').addEventListener('click', () => {
+  document.getElementById('panel').classList.remove('open');
+  selected = -1;
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.getElementById('panel').classList.remove('open');
+    selected = -1;
+  }
+});
+
+// Mouse wheel zoom (future feature hook)
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+}, { passive: false });
+
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+// ---- START ----
+requestAnimationFrame(loop);
+
+</script>
+</body>
+</html>

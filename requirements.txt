@@ -9,3 +9,4 @@ google-genai
 pydub
 numpy
 httpx
+ddgs

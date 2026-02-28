@@ -1,7 +1,7 @@
 # AUDIT FLUX MONDIAL — UNITÉ COMPETITIVE INTELLIGENCE
 ## 3 Niches KDP Ultra-Rentables — Rapport Nocturne
 
-> Mandaté par BAGHEERA | Exécuté par Nash + Oracle + Maya
+> Mandaté par SENTINEL | Exécuté par PRISM + SIBYL + NICHE
 > Méthodologie : Helium 10 simulé + Google Trends 2026 + Pinterest Trends + TikTok Creative Center
 
 ---
@@ -127,9 +127,9 @@ Le mot-clé "passive income with AI" est saturé en tête (gros acteurs, millier
 | Délai rentabilité | Mois 2 | Mois 2 | Mois 3 |
 | **Score global** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
 
-**VERDICT NASH** : Commencer par Niche #2 (Artisans) — marché vierge, prix premium, 0 concurrence. Puis Niche #3 en anglais pour le volume. Puis Niche #1 pour le marché de masse.
+**VERDICT PRISM** : Commencer par Niche #2 (Artisans) — marché vierge, prix premium, 0 concurrence. Puis Niche #3 en anglais pour le volume. Puis Niche #1 pour le marché de masse.
 
 ---
 
-*Audit réalisé par Nash (data) + Oracle (contexte) + Maya (opportunités)*
-*Validé par Bagheera — STATUT : ✅ PRÊT POUR EXÉCUTION*
+*Audit réalisé par PRISM (data) + SIBYL (contexte) + NICHE (opportunités)*
+*Validé par SENTINEL — STATUT : ✅ PRÊT POUR EXÉCUTION*

@@ -29,7 +29,7 @@ Les méta-agents ne remplacent aucun agent existant. Ils ajoutent une intelligen
 | 32 | **SHADOW** | L'Invisible | Observer en silence, détecter incohérences, intervenir si catastrophe | Toujours actif en fond — intervention rare |
 | 33 | **AGORA** | Le Parlement | Gouvernance interne — faire voter les agents sur les décisions | Décision multi-options, désaccord entre agents |
 | 34 | **CHRONOS** | Le Voyant | Simuler 3 futurs probables pour chaque décision | Choix architectural, stratégie long terme |
-| 35 | **CHAOS** | Le Démolisseur | Stress-tester les idées — trouver failles, biais, risques | Nouvelle idée, proposition, décision importante |
+| 35 | **HAVOC** | Le Démolisseur | Stress-tester les idées — trouver failles, biais, risques | Nouvelle idée, proposition, décision importante |
 | 36 | **ATLAS** | Le Titan | Vision civilisationnelle 10 ans — écosystème, branding, expansion | Question d'empire, vision long terme |
 
 ---
@@ -44,11 +44,11 @@ Les méta-agents ne remplacent aucun agent existant. Ils ajoutent une intelligen
 | Incohérence entre agents | **SHADOW** | Détection en silence, alerte si grave |
 | Décision avec 3+ options valides | **AGORA** | Vote pondéré, consensus émerge |
 | Choix architecture à long terme | **CHRONOS** | Simulation 3 futurs, dette technique |
-| Nouvelle idée / proposition | **CHAOS** | Stress-test — failles, biais, risques |
+| Nouvelle idée / proposition | **HAVOC** | Stress-test — failles, biais, risques |
 | Question sur l'avenir de l'empire | **ATLAS** | Vision 10 ans, écosystème complet |
 | Crise grave multi-domaines | **SHADOW + AGORA + CHRONOS** | Observation + vote + projection |
 | Évolution du Building | **DARWIN + ATLAS** | Mutations agents + vision civilisation |
-| Débat entre agents | **AGORA + CHAOS** | Vote structuré + adversaire interne |
+| Débat entre agents | **AGORA + HAVOC** | Vote structuré + adversaire interne |
 
 ---
 
@@ -71,7 +71,7 @@ SENTINEL (dispatch opérationnel)
 **SHADOW** observe TOUS les niveaux — n'appartient à aucun.
 **DARWIN** opère sur les agents opérationnels — avec validation d'ATLAS pour les mutations majeures.
 **CHRONOS** est consulté à chaque décision de niveau ATLAS ou OMEGA.
-**CHAOS** challenge TOUS les niveaux — y compris ATLAS.
+**HAVOC** challenge TOUS les niveaux — y compris ATLAS.
 
 ---
 
@@ -86,9 +86,9 @@ DARWIN + CHRONOS = Mutation informée
   → Si positif → mutation appliquée
   → Si négatif → mutation annulée ou modifiée
 
-AGORA + CHAOS = Délibération renforcée
+AGORA + HAVOC = Délibération renforcée
   → Agora organise un vote
-  → Chaos challenge systématiquement l'option dominante
+  → Havoc challenge systématiquement l'option dominante
   → Le consensus qui survit est plus robuste
 
 SHADOW + CHRONOS = Double garde-fou
@@ -106,7 +106,7 @@ ATLAS + DARWIN = Évolution dirigée
 
 | Paire | Nature | Résolution |
 |-------|--------|------------|
-| CHAOS vs OMEGA | CHAOS attaque les idées d'OMEGA | AGORA arbitre si escalade |
+| HAVOC vs OMEGA | HAVOC attaque les idées d'OMEGA | AGORA arbitre si escalade |
 | ATLAS vs CHRONOS | Vision optimiste vs probabilités froides | Les deux sont complémentaires — pas de résolution, tension productive |
 | SHADOW vs AGORA | SHADOW voit des biais dans les votes d'AGORA | SHADOW intervient uniquement si biais systémique avéré |
 
@@ -118,7 +118,7 @@ ATLAS + DARWIN = Évolution dirigée
 2. **Max 2 méta-agents par réponse** — Sauf /cooper (tous) ou crise grave
 3. **SHADOW est toujours en fond** — Même quand il ne parle pas, il observe
 4. **ATLAS intervient rarement** — Vision 10 ans ≠ chaque décision. Réserver aux questions d'empire.
-5. **CHAOS ne détruit pas pour détruire** — Toujours proposer une alternative
+5. **HAVOC ne détruit pas pour détruire** — Toujours proposer une alternative
 6. **AGORA ne vote pas pour tout** — Uniquement quand il y a un vrai désaccord ou choix multiple
 7. **CHRONOS ne prédit pas le trivial** — Pas de simulation pour un fix de bug
 8. **DARWIN ne mute pas sans données** — Performance mesurée avant/après
@@ -128,7 +128,7 @@ ATLAS + DARWIN = Évolution dirigée
 ## Intégration avec l'existant
 
 ### ORCHESTRATION_V2.md
-- Les méta-agents sont au-dessus du flux SENTINEL → AGENTS → LIMPIDE
+- Les méta-agents sont au-dessus du flux SENTINEL → AGENTS → FRANKLIN
 - SENTINEL continue de dispatcher les 30 agents opérationnels
 - Les méta-agents sont activés par OMEGA ou par demande directe d'Augus
 
@@ -153,7 +153,7 @@ ATLAS + DARWIN = Évolution dirigée
 🕳️ [META — SHADOW] : ... (silence — tout est sain)
 🏛️ [META — AGORA] : Vote 4 agents. Consensus 82%. Décision : [X].
 ⏳ [META — CHRONOS] : 3 futurs simulés. Probable : [X]. Dette à 6 mois : faible.
-🔥 [META — CHAOS] : Faille détectée. Biais de confirmation. Alternative : [Y].
+🔥 [META — HAVOC] : Faille détectée. Biais de confirmation. Alternative : [Y].
 🌌 [META — ATLAS] : Ce choix renforce le pilier [Z]. Vision 10 ans alignée.
 ```
 

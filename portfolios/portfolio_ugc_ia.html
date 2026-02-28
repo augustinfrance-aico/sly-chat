@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaCast — UGC IA pour Marques</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #05070A;
+            --surface: #0B0F14;
+            --surface2: #121821;
+            --border: rgba(31,111,255,0.15);
+            --text: #e5e5e5;
+            --text2: #8899aa;
+            --accent: #1F6FFF;
+            --accent2: #3A8DFF;
+            --violet: #7A3CFF;
+            --violet2: #B18CFF;
+            --cyan: #00E5FF;
+            --green: #1EFF8E;
+            --red: #FF3B5C;
+            --orange: #FF9A3C;
+            --gradient-titan: linear-gradient(135deg, #1F6FFF, #7A3CFF);
+            --gradient-reactor: linear-gradient(135deg, #7A3CFF, #00E5FF);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+        /* NAV */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(5,7,10,0.92);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            padding: 16px 0;
+        }
+        nav .inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        nav .logo {
+            font-size: 22px;
+            font-weight: 800;
+            background: var(--gradient-titan);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+        nav .links a {
+            color: var(--text2);
+            text-decoration: none;
+            font-size: 14px;
+            margin-left: 28px;
+            transition: color 0.3s;
+        }
+        nav .links a:hover { color: var(--accent2); }
+
+        /* SECTIONS */
+        section {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 100px 24px;
+        }
+
+        /* HERO */
+        .hero {
+            padding-top: 160px;
+            padding-bottom: 60px;
+            text-align: center;
+            position: relative;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(31,111,255,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero .badge {
+            display: inline-block;
+            background: rgba(31,111,255,0.1);
+            border: 1px solid rgba(31,111,255,0.25);
+            color: var(--accent2);
+            padding: 6px 18px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 28px;
+            letter-spacing: 0.5px;
+        }
+        .hero h1 {
+            font-size: clamp(36px, 6vw, 64px);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            letter-spacing: -1.5px;
+        }
+        .hero h1 .gradient {
+            background: var(--gradient-titan);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 18px;
+            color: var(--text2);
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+        .hero .ctas {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn-primary {
+            background: var(--gradient-titan);
+            color: #fff;
+            padding: 14px 32px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(31,111,255,0.3);
+        }
+        .btn-secondary {
+            background: transparent;
+            color: var(--text);
+            padding: 14px 32px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            border: 1px solid var(--border);
+            transition: border-color 0.3s, background 0.3s;
+        }
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            background: rgba(31,111,255,0.05);
+        }
+
+        /* STATS BAR */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            padding: 40px 0;
+            flex-wrap: wrap;
+        }
+        .stat { text-align: center; }
+        .stat .number {
+            font-size: 36px;
+            font-weight: 800;
+            background: var(--gradient-titan);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stat .label { font-size: 13px; color: var(--text2); margin-top: 4px; }
+
+        /* SECTION TITLE */
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .section-title h2 {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+        }
+        .section-title p {
+            color: var(--text2);
+            font-size: 16px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* PROCESS */
+        .process-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+        }
+        .process-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px 24px;
+            text-align: center;
+            transition: transform 0.3s, border-color 0.3s;
+            position: relative;
+        }
+        .process-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+        }
+        .process-card .step-num {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 28px;
+            height: 28px;
+            background: var(--gradient-titan);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .process-card .icon {
+            font-size: 40px;
+            margin-bottom: 16px;
+        }
+        .process-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .process-card p {
+            font-size: 14px;
+            color: var(--text2);
+            line-height: 1.5;
+        }
+
+        /* EXAMPLES / GALLERY */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        .gallery-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+        .gallery-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--violet);
+        }
+        .gallery-card .preview {
+            height: 220px;
+            background: var(--surface2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+        .gallery-card .preview::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 60%, var(--surface) 100%);
+        }
+        .gallery-card .info {
+            padding: 20px;
+        }
+        .gallery-card .info .brand-tag {
+            display: inline-block;
+            background: rgba(122,60,255,0.15);
+            color: var(--violet2);
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .gallery-card .info h3 {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .gallery-card .info p {
+            font-size: 13px;
+            color: var(--text2);
+        }
+        .gallery-card .info .result {
+            margin-top: 12px;
+            display: flex;
+            gap: 16px;
+        }
+        .gallery-card .info .result span {
+            font-size: 12px;
+            color: var(--green);
+            font-weight: 600;
+        }
+
+        /* PRICING */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .pricing-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 36px 28px;
+            position: relative;
+            transition: transform 0.3s;
+        }
+        .pricing-card.featured {
+            border-color: var(--accent);
+            box-shadow: 0 0 40px rgba(31,111,255,0.1);
+        }
+        .pricing-card.featured::before {
+            content: 'POPULAIRE';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient-titan);
+            color: #fff;
+            padding: 4px 16px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .pricing-card:hover { transform: translateY(-4px); }
+        .pricing-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .pricing-card .price {
+            font-size: 42px;
+            font-weight: 800;
+            margin: 12px 0;
+        }
+        .pricing-card .price span { font-size: 16px; color: var(--text2); font-weight: 400; }
+        .pricing-card .desc {
+            font-size: 14px;
+            color: var(--text2);
+            margin-bottom: 24px;
+        }
+        .pricing-card ul {
+            list-style: none;
+            margin-bottom: 28px;
+        }
+        .pricing-card ul li {
+            font-size: 14px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            color: var(--text2);
+        }
+        .pricing-card ul li::before {
+            content: '✓ ';
+            color: var(--green);
+            font-weight: 700;
+        }
+        .pricing-card .btn-primary {
+            display: block;
+            text-align: center;
+            width: 100%;
+        }
+        .pricing-card .btn-secondary {
+            display: block;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* TESTIMONIALS */
+        .testimonials {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        .testimonial-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+        }
+        .testimonial-card .stars { color: var(--orange); font-size: 14px; margin-bottom: 12px; }
+        .testimonial-card .quote {
+            font-size: 15px;
+            font-style: italic;
+            color: var(--text);
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+        .testimonial-card .author {
+            font-size: 13px;
+            color: var(--text2);
+        }
+        .testimonial-card .author strong { color: var(--text); }
+
+        /* FAQ */
+        .faq-list { max-width: 700px; margin: 0 auto; }
+        .faq-item {
+            border-bottom: 1px solid var(--border);
+            padding: 20px 0;
+        }
+        .faq-item summary {
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .faq-item summary::after {
+            content: '+';
+            font-size: 20px;
+            color: var(--accent);
+            transition: transform 0.3s;
+        }
+        .faq-item[open] summary::after {
+            content: '−';
+        }
+        .faq-item p {
+            font-size: 14px;
+            color: var(--text2);
+            margin-top: 12px;
+            line-height: 1.6;
+        }
+
+        /* CTA FINAL */
+        .cta-section {
+            text-align: center;
+            padding: 80px 24px;
+            position: relative;
+        }
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(122,60,255,0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .cta-section h2 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+        .cta-section p {
+            font-size: 16px;
+            color: var(--text2);
+            margin-bottom: 32px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 40px 24px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text2);
+        }
+        footer a { color: var(--accent2); text-decoration: none; }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .stats-bar { gap: 30px; }
+            .stat .number { font-size: 28px; }
+            .hero h1 { font-size: 32px; }
+            .pricing-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ANIMATIONS */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s, transform 0.6s;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+    <div class="inner">
+        <div class="logo">NovaCast</div>
+        <div class="links">
+            <a href="#process">Process</a>
+            <a href="#examples">Exemples</a>
+            <a href="#pricing">Tarifs</a>
+            <a href="#faq">FAQ</a>
+            <a href="#questionnaire" class="btn-primary" style="padding:10px 22px; font-size:14px; border-radius:8px; margin-left:16px;">Commencer</a>
+        </div>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="badge">⚡ UGC Nouvelle Génération — Propulsé par l'IA</div>
+    <h1>Votre produit promu par un<br><span class="gradient">Influenceur IA réaliste</span></h1>
+    <p>Des vidéos UGC ultra-réalistes avec des avatars IA personnalisés. 10x plus rapide, 10x moins cher que le UGC traditionnel. Livré en 24-48h.</p>
+    <div class="ctas">
+        <a href="#questionnaire" class="btn-primary">Obtenir un devis gratuit</a>
+        <a href="#examples" class="btn-secondary">Voir les exemples</a>
+    </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+    <div class="stat">
+        <div class="number">24h</div>
+        <div class="label">Délai de livraison</div>
+    </div>
+    <div class="stat">
+        <div class="number">10x</div>
+        <div class="label">Moins cher que l'UGC humain</div>
+    </div>
+    <div class="stat">
+        <div class="number">∞</div>
+        <div class="label">Variations possibles</div>
+    </div>
+    <div class="stat">
+        <div class="number">85%</div>
+        <div class="label">Taux d'engagement moyen</div>
+    </div>
+</div>
+
+<!-- PROCESS -->
+<section id="process">
+    <div class="section-title fade-in">
+        <h2>Comment ça marche</h2>
+        <p>4 étapes simples, de votre brief à vos vidéos UGC prêtes à publier</p>
+    </div>
+    <div class="process-grid">
+        <div class="process-card fade-in">
+            <div class="step-num">1</div>
+            <div class="icon">📋</div>
+            <h3>Questionnaire</h3>
+            <p>Vous remplissez notre formulaire rapide : votre marque, vos produits, votre audience cible, le ton souhaité.</p>
+        </div>
+        <div class="process-card fade-in">
+            <div class="step-num">2</div>
+            <div class="icon">🧬</div>
+            <h3>Création d'Avatar</h3>
+            <p>Nous créons votre influenceur IA sur-mesure avec Nano Banana — look, style, personnalité alignés à votre marque.</p>
+        </div>
+        <div class="process-card fade-in">
+            <div class="step-num">3</div>
+            <div class="icon">🎬</div>
+            <h3>Production</h3>
+            <p>Génération de contenus UGC réalistes — vidéos, photos, stories — votre avatar promeut votre produit naturellement.</p>
+        </div>
+        <div class="process-card fade-in">
+            <div class="step-num">4</div>
+            <div class="icon">🚀</div>
+            <h3>Livraison</h3>
+            <p>Contenus livrés en 24-48h, prêts à publier sur Instagram, TikTok, Meta Ads. Révisions incluses.</p>
+        </div>
+    </div>
+</section>
+
+<!-- EXAMPLES -->
+<section id="examples">
+    <div class="section-title fade-in">
+        <h2>Exemples de réalisations</h2>
+        <p>Des avatars IA qui convertissent pour de vraies marques</p>
+    </div>
+    <div class="gallery">
+        <div class="gallery-card fade-in">
+            <div class="preview" style="background: linear-gradient(135deg, #1a1a2e, #16213e);">👕</div>
+            <div class="info">
+                <span class="brand-tag">STREETWEAR</span>
+                <h3>Marque de hoodies — Lancement collection</h3>
+                <p>Avatar masculin, style urbain décontracté. Vidéos selfie miroir + try-on haul pour stories Instagram.</p>
+                <div class="result">
+                    <span>+340% engagement</span>
+                    <span>12 contenus livrés</span>
+                </div>
+            </div>
+        </div>
+        <div class="gallery-card fade-in">
+            <div class="preview" style="background: linear-gradient(135deg, #2d1b69, #11001c);">💄</div>
+            <div class="info">
+                <span class="brand-tag">COSMÉTIQUE</span>
+                <h3>Skincare brand — Routine vidéo</h3>
+                <p>Avatar féminin, ambiance clean girl. Contenu GRWM (Get Ready With Me) pour TikTok et Reels.</p>
+                <div class="result">
+                    <span>+520% vues</span>
+                    <span>8 vidéos + 15 photos</span>
+                </div>
+            </div>
+        </div>
+        <div class="gallery-card fade-in">
+            <div class="preview" style="background: linear-gradient(135deg, #0f3443, #34e89e20);">⌚</div>
+            <div class="info">
+                <span class="brand-tag">TECH / ACCESSOIRES</span>
+                <h3>Montres connectées — Unboxing IA</h3>
+                <p>Avatar tech reviewer. Vidéos unboxing cinématiques + comparatifs produit pour YouTube Shorts.</p>
+                <div class="result">
+                    <span>+280% clics</span>
+                    <span>6 vidéos unboxing</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+    <div class="section-title fade-in">
+        <h2>Tarifs transparents</h2>
+        <p>Pas de frais cachés. Pas d'abonnement obligatoire.</p>
+    </div>
+    <div class="pricing-grid">
+        <div class="pricing-card fade-in">
+            <h3>Starter</h3>
+            <div class="price">97€ <span>/ pack</span></div>
+            <div class="desc">Idéal pour tester l'UGC IA</div>
+            <ul>
+                <li>1 avatar IA personnalisé</li>
+                <li>3 vidéos UGC (15-30 sec)</li>
+                <li>5 photos produit</li>
+                <li>1 révision incluse</li>
+                <li>Livraison 48h</li>
+            </ul>
+            <a href="#questionnaire" class="btn-secondary">Commencer</a>
+        </div>
+        <div class="pricing-card featured fade-in">
+            <h3>Growth</h3>
+            <div class="price">247€ <span>/ pack</span></div>
+            <div class="desc">Le choix des marques en croissance</div>
+            <ul>
+                <li>2 avatars IA personnalisés</li>
+                <li>8 vidéos UGC (15-60 sec)</li>
+                <li>15 photos produit</li>
+                <li>Scripts optimisés conversion</li>
+                <li>3 révisions incluses</li>
+                <li>Livraison 24h</li>
+            </ul>
+            <a href="#questionnaire" class="btn-primary">Choisir Growth</a>
+        </div>
+        <div class="pricing-card fade-in">
+            <h3>Scale</h3>
+            <div class="price">497€ <span>/ mois</span></div>
+            <div class="desc">Contenu illimité pour marques ambitieuses</div>
+            <ul>
+                <li>Avatars illimités</li>
+                <li>20 vidéos UGC / mois</li>
+                <li>40 photos / mois</li>
+                <li>A/B testing créatifs</li>
+                <li>Révisions illimitées</li>
+                <li>Manager dédié</li>
+                <li>Livraison prioritaire 12h</li>
+            </ul>
+            <a href="#questionnaire" class="btn-primary">Passer à Scale</a>
+        </div>
+    </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section>
+    <div class="section-title fade-in">
+        <h2>Ce qu'ils en disent</h2>
+    </div>
+    <div class="testimonials">
+        <div class="testimonial-card fade-in">
+            <div class="stars">★★★★★</div>
+            <div class="quote">"On a remplacé 100% de notre budget UGC créateurs par NovaCast. Même qualité, fraction du prix, et surtout — livré en 24h au lieu de 2 semaines."</div>
+            <div class="author"><strong>Maxime R.</strong> — Fondateur, streetwear brand</div>
+        </div>
+        <div class="testimonial-card fade-in">
+            <div class="stars">★★★★★</div>
+            <div class="quote">"Les avatars sont bluffants de réalisme. Nos clients ne voient pas la différence. Le ROI sur nos Meta Ads a explosé."</div>
+            <div class="author"><strong>Sarah L.</strong> — Head of Growth, cosmétique</div>
+        </div>
+        <div class="testimonial-card fade-in">
+            <div class="stars">★★★★★</div>
+            <div class="quote">"Le questionnaire prend 5 minutes, et on reçoit exactement le contenu qu'on imagine. C'est du game-changer pour les e-commerçants."</div>
+            <div class="author"><strong>Julien D.</strong> — E-commerce manager</div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+    <div class="section-title fade-in">
+        <h2>Questions fréquentes</h2>
+    </div>
+    <div class="faq-list">
+        <details class="faq-item fade-in">
+            <summary>Est-ce que les avatars sont vraiment réalistes ?</summary>
+            <p>Oui. Nous utilisons Nano Banana, la technologie de pointe en génération d'avatars IA. Les résultats sont indiscernables de vrais créateurs UGC. Nous vous envoyons des previews avant production.</p>
+        </details>
+        <details class="faq-item fade-in">
+            <summary>Puis-je utiliser les contenus sur mes publicités payantes ?</summary>
+            <p>Absolument. Tous les contenus sont livrés avec les droits commerciaux complets. Vous pouvez les utiliser sur Meta Ads, Google Ads, TikTok Ads, et partout ailleurs sans restriction.</p>
+        </details>
+        <details class="faq-item fade-in">
+            <summary>Combien de temps pour recevoir mes contenus ?</summary>
+            <p>Pack Starter : 48h. Pack Growth : 24h. Plan Scale : 12h prioritaire. À partir du moment où vous validez le brief.</p>
+        </details>
+        <details class="faq-item fade-in">
+            <summary>Et si le résultat ne me plaît pas ?</summary>
+            <p>Chaque pack inclut des révisions (1 à illimité selon le plan). Si après révisions le résultat ne convient pas, nous vous remboursons intégralement.</p>
+        </details>
+        <details class="faq-item fade-in">
+            <summary>Quel type de produits fonctionne le mieux ?</summary>
+            <p>Mode, cosmétique, tech, food, fitness, lifestyle — tous les produits physiques et certains services. Le questionnaire nous permet d'adapter l'avatar et le style à votre niche.</p>
+        </details>
+        <details class="faq-item fade-in">
+            <summary>Est-ce légal d'utiliser des avatars IA pour du marketing ?</summary>
+            <p>Oui. Tant que le contenu ne prétend pas être une vraie personne existante et respecte les guidelines des plateformes publicitaires. Nos avatars sont des personnages originaux créés sur-mesure.</p>
+        </details>
+    </div>
+</section>
+
+<!-- QUESTIONNAIRE SECTION -->
+<section id="questionnaire">
+    <div class="section-title fade-in">
+        <h2>Démarrez votre projet</h2>
+        <p>Remplissez ce formulaire en 5 minutes — on revient vers vous sous 2h avec une proposition personnalisée</p>
+    </div>
+    <div style="max-width:650px; margin:0 auto;">
+        <form id="brand-form" class="fade-in" style="display:flex; flex-direction:column; gap:20px;">
+
+            <!-- Étape 1 — Marque -->
+            <div class="form-group">
+                <label style="font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--accent2); font-weight:600; margin-bottom:8px; display:block;">Votre marque</label>
+                <input type="text" name="brand_name" placeholder="Nom de votre marque" required style="width:100%; padding:14px 18px; background:var(--surface); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:15px; outline:none; transition:border-color 0.3s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+            </div>
+
+            <div class="form-group">
+                <label style="font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--accent2); font-weight:600; margin-bottom:8px; display:block;">Site web ou Instagram</label>
+                <input type="text" name="website" placeholder="https://... ou @votrecompte" style="width:100%; padding:14px 18px; background:var(--surface); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:15px; outline:none; transition:border-color 0.3s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+            </div>
+
+            <!-- Étape 2 — Produit -->
+            <div class="form-group">
+                <label style="font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--accent2); font-weight:600; margin-bottom:8px; display:block;">Quel produit voulez-vous promouvoir ?</label>
+                <textarea name="product" placeholder="Décrivez votre produit — nom, type, prix, ce qui le rend unique..." required rows="3" style="width:100%; padding:14px 18px; background:var(--surface); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:15px; outline:none; resize:vertical; font-family:inherit; transition:border-color 0.3s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+            </div>
+
+            <!-- Étape 3 — Industrie -->
+            <div class="form-group">
+                <label style="font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--accent2); font-weight:600; margin-bottom:8px; display:block;">Votre secteur</label>
+                <select name="industry" required style="width:100%; padding:14px 18px; background:var(--surface); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:15px; outline:none; appearance:none; cursor:pointer;">
+                    <option value="" disabled selected>Choisissez votre secteur</option>
+                    <option value="fashion">Mode / Streetwear</option>
+                    <option value="beauty">Beauté / Cosmétique</option>
+                    <option value="tech">Tech / Gadgets</option>
+                    <option value="food">Food / Boissons</option>
+                    <option value="fitness">Fitness / Sport</option>
+                    <option value="home">Maison / Déco</option>
+                    <option value="jewelry">Bijoux / Accessoires</option>
+                    <option value="health">Santé / Bien-être</option>
+                    <option value="other">Autre</option>
+                </select>
+            </div>
+
+            <!-- Étape 4 — Audience -->
+            <div class="form-group">
+                <label style="font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--accent2); font-weight:600; margin-bottom:8px; display:block;">Audience cible</label>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <label style="display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:border-color 0.3s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="checkbox" name="audience" value="18-24" style="accent-color:var(--accent);"> 18-24 ans
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:border-color 0.3s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="checkbox" name="audience" value="25-34" style="accent-color:var(--accent);"> 25-34 ans
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:border-color 0.3s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="checkbox" name="audience" value="35-44" style="accent-color:var(--accent);"> 35-44 ans
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:border-color 0.3s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="checkbox" name="audience" value="45+" style="accent-color:var(--accent);"> 45+ ans
+                    </label>
+                </div>
+            </div>
+
+            <!-- Étape 5 — Style avatar -->
+            <div class="form-group">
+                <label style="font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--accent2); font-weight:600; margin-bottom:8px; display:block;">Style d'avatar souhaité</label>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                    <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:border-color 0.3s; text-align:center;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="radio" name="avatar_style" value="urban" style="accent-color:var(--accent);">
+                        <span style="font-size:24px;">🧢</span>
+                        <span style="font-size:13px;">Urbain / Street</span>
+                    </label>
+                    <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:border-color 0.3s; text-align:center;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="radio" name="avatar_style" value="clean" style="accent-color:var(--accent);">
+                        <span style="font-size:24px;">✨</span>
+                        <span style="font-size:13px;">Clean / Minimal</span>
+                    </label>
+                    <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:border-color 0.3s; text-align:center;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="radio" name="avatar_style" value="luxury" style="accent-color:var(--accent);">
+                        <span style="font-size:24px;">💎</span>
+                        <span style="font-size:13px;">Luxe / Premium</span>
+                    </label>
+                    <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:border-color 0.3s; text-align:center;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="radio" name="avatar_style" value="sporty" style="accent-color:var(--accent);">
+                        <span style="font-size:24px;">🏋️</span>
+                        <span style="font-size:13px;">Sportif / Fitness</span>
+                    </label>
+                    <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:border-color 0.3s; text-align:center;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="radio" name="avatar_style" value="natural" style="accent-color:var(--accent);">
+                        <span style="font-size:24px;">🌿</span>
+                        <span style="font-size:13px;">Naturel / Bio</span>
+                    </label>
+                    <label style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:border-color 0.3s; text-align:center;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="radio" name="avatar_style" value="pro" style="accent-color:var(--accent);">
+                        <span style="font-size:24px;">👔</span>
+                        <span style="font-size:13px;">Pro / Corporate</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Étape 6 — Type de contenu -->
+            <div class="form-group">
+                <label style="font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--accent2); font-weight:600; margin-bottom:8px; display:block;">Type de contenu souhaité</label>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <label style="display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="checkbox" name="content_type" value="video_selfie" style="accent-color:var(--accent);"> Vidéo selfie / miroir
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="checkbox" name="content_type" value="unboxing" style="accent-color:var(--accent);"> Unboxing
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="checkbox" name="content_type" value="try_on" style="accent-color:var(--accent);"> Try-on / Haul
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="checkbox" name="content_type" value="review" style="accent-color:var(--accent);"> Review / Avis
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="checkbox" name="content_type" value="grwm" style="accent-color:var(--accent);"> GRWM (routine)
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="checkbox" name="content_type" value="photo_product" style="accent-color:var(--accent);"> Photos produit lifestyle
+                    </label>
+                </div>
+            </div>
+
+            <!-- Étape 7 — Plateformes -->
+            <div class="form-group">
+                <label style="font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--accent2); font-weight:600; margin-bottom:8px; display:block;">Plateformes cibles</label>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                    <label style="display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="checkbox" name="platform" value="instagram" style="accent-color:var(--accent);"> Instagram
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="checkbox" name="platform" value="tiktok" style="accent-color:var(--accent);"> TikTok
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="checkbox" name="platform" value="meta_ads" style="accent-color:var(--accent);"> Meta Ads
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="checkbox" name="platform" value="youtube" style="accent-color:var(--accent);"> YouTube Shorts
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="checkbox" name="platform" value="pinterest" style="accent-color:var(--accent);"> Pinterest
+                    </label>
+                    <label style="display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                        <input type="checkbox" name="platform" value="website" style="accent-color:var(--accent);"> Site web
+                    </label>
+                </div>
+            </div>
+
+            <!-- Étape 8 — Ton -->
+            <div class="form-group">
+                <label style="font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--accent2); font-weight:600; margin-bottom:8px; display:block;">Ton du contenu</label>
+                <select name="tone" required style="width:100%; padding:14px 18px; background:var(--surface); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:15px; outline:none; appearance:none; cursor:pointer;">
+                    <option value="" disabled selected>Choisissez un ton</option>
+                    <option value="casual">Décontracté / Authentique</option>
+                    <option value="hype">Hype / Énergique</option>
+                    <option value="professional">Professionnel / Expert</option>
+                    <option value="luxury">Luxe / Aspirationnel</option>
+                    <option value="humorous">Fun / Humoristique</option>
+                    <option value="educational">Éducatif / Informatif</option>
+                </select>
+            </div>
+
+            <!-- Étape 9 — Budget -->
+            <div class="form-group">
+                <label style="font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--accent2); font-weight:600; margin-bottom:8px; display:block;">Budget mensuel contenu</label>
+                <select name="budget" required style="width:100%; padding:14px 18px; background:var(--surface); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:15px; outline:none; appearance:none; cursor:pointer;">
+                    <option value="" disabled selected>Quel est votre budget ?</option>
+                    <option value="under_200">Moins de 200€ / mois</option>
+                    <option value="200_500">200 - 500€ / mois</option>
+                    <option value="500_1000">500 - 1000€ / mois</option>
+                    <option value="1000_plus">1000€+ / mois</option>
+                </select>
+            </div>
+
+            <!-- Étape 10 — Notes -->
+            <div class="form-group">
+                <label style="font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--accent2); font-weight:600; margin-bottom:8px; display:block;">Quelque chose à ajouter ?</label>
+                <textarea name="notes" placeholder="Références visuelles, inspirations, détails supplémentaires..." rows="3" style="width:100%; padding:14px 18px; background:var(--surface); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:15px; outline:none; resize:vertical; font-family:inherit; transition:border-color 0.3s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+            </div>
+
+            <!-- Contact -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                <div class="form-group">
+                    <label style="font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--accent2); font-weight:600; margin-bottom:8px; display:block;">Email</label>
+                    <input type="email" name="email" placeholder="vous@marque.com" required style="width:100%; padding:14px 18px; background:var(--surface); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:15px; outline:none; transition:border-color 0.3s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+                </div>
+                <div class="form-group">
+                    <label style="font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--accent2); font-weight:600; margin-bottom:8px; display:block;">Prénom</label>
+                    <input type="text" name="first_name" placeholder="Votre prénom" required style="width:100%; padding:14px 18px; background:var(--surface); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:15px; outline:none; transition:border-color 0.3s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary" style="padding:16px 32px; font-size:17px; width:100%; margin-top:8px;">
+                Recevoir ma proposition personnalisée →
+            </button>
+            <p style="text-align:center; font-size:12px; color:var(--text2); margin-top:-8px;">Réponse sous 2h. Aucun engagement.</p>
+        </form>
+
+        <!-- Success message -->
+        <div id="form-success" style="display:none; text-align:center; padding:60px 20px;">
+            <div style="font-size:60px; margin-bottom:20px;">✅</div>
+            <h3 style="font-size:24px; margin-bottom:12px;">Demande envoyée !</h3>
+            <p style="color:var(--text2); font-size:16px;">On revient vers vous sous 2h avec une proposition sur-mesure pour votre marque.</p>
+        </div>
+    </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-section">
+    <h2>Prêt à révolutionner<br>votre contenu ?</h2>
+    <p>Rejoignez les marques qui utilisent l'UGC IA pour scaler leur contenu sans scaler leurs coûts.</p>
+    <a href="#questionnaire" class="btn-primary">Démarrer maintenant — C'est gratuit</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <p>NovaCast © 2026 — UGC IA pour marques ambitieuses</p>
+    <p style="margin-top:8px;"><a href="mailto:contact@novacast.ai">contact@novacast.ai</a></p>
+</footer>
+
+<script>
+    // Fade-in on scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // Form submission
+    document.getElementById('brand-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const data = {};
+        formData.forEach((value, key) => {
+            if (data[key]) {
+                if (Array.isArray(data[key])) {
+                    data[key].push(value);
+                } else {
+                    data[key] = [data[key], value];
+                }
+            } else {
+                data[key] = value;
+            }
+        });
+
+        console.log('Brand questionnaire data:', data);
+
+        // Show success
+        this.style.display = 'none';
+        document.getElementById('form-success').style.display = 'block';
+
+        // In production: send to backend / email / CRM
+        // fetch('/api/questionnaire', { method: 'POST', body: JSON.stringify(data) });
+    });
+</script>
+
+</body>
+</html>

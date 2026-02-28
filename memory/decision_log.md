@@ -39,7 +39,7 @@
 
 ### 2026-02-26 — Restructuration 30 agents
 - **Contexte** : 25 agents avec doublons et zones floues
-- **Choix** : Fusion (DREYFUS→SPARTAN, FLEMMARD→ZEN, VERSO→ZARA) + création SENTINEL/PULSE/LIMPIDE
+- **Choix** : Fusion (DREYFUS→SPARTAN, FLEMMARD→ZEN, VERSO→ZARA) + création SENTINEL/PULSE/FRANKLIN
 - **Alternative** : Garder 25 bruts — manquait dispatch
 - **Impact** : personnalites/*.md, agents/agent_profiles.py
 
@@ -54,3 +54,59 @@
 - **Choix** : Decision Log + Reflector Engine + Bug Prédictif
 - **Alternative** : Flow God / Agent Futur — R&D future
 - **Impact** : memory/decision_log.md, .claude/hooks/
+
+### 2026-02-26 — 40 agents + NEURAL SOVEREIGN palette + 5 sprints TITAN-COMMAND
+- **Commit** : cd5ca24
+- **Impact** : .gitignore, Blueprint/BLUEPRINT_AFFILIATION_IA.md, Blueprint/BLUEPRINT_DIGITAL_PRODUCTS.md, Blueprint/BLUEPRINT_EMPIRE_RUISSEAUX.md, Blueprint/BLUEPRINT_MASTER_5_BUSINESS.md (+147 fichiers)
+
+### 2026-02-26 — Serve dashboard HTML via Railway â€” command_server in bot thread
+- **Commit** : 07bba96
+- **Impact** : Dockerfile, execution/titan/command_server.py, execution/titan/run.py, portfolios/titan_command.html
+
+### 2026-02-26 — PWA unifiÃ© â€” 1 lien = Dashboard + Tower + RPG
+- **Commit** : 47402fe
+- **Impact** : portfolios/manifest.json, portfolios/titan_command.html, portfolios/titan_icon.svg, start_dashboard.bat
+
+### 2026-02-28 — PWA unifiÃ© â€” 1 lien = Dashboard + Tower + RPG
+- **Commit** : 47402fe
+- **Impact** : portfolios/manifest.json, portfolios/titan_command.html, portfolios/titan_icon.svg, start_dashboard.bat
+
+### 2026-02-28 — PWA unifiÃ© â€” 1 lien = Dashboard + Tower + RPG
+- **Commit** : 47402fe
+- **Impact** : portfolios/manifest.json, portfolios/titan_command.html, portfolios/titan_icon.svg, start_dashboard.bat
+
+### 2026-02-28 — PWA unifiÃ© â€” 1 lien = Dashboard + Tower + RPG
+- **Commit** : 47402fe
+- **Impact** : portfolios/manifest.json, portfolios/titan_command.html, portfolios/titan_icon.svg, start_dashboard.bat
+
+### 2026-02-28 — PWA unifiÃ© â€” 1 lien = Dashboard + Tower + RPG
+- **Commit** : 47402fe
+- **Impact** : portfolios/manifest.json, portfolios/titan_command.html, portfolios/titan_icon.svg, start_dashboard.bat
+
+### 2026-02-28 — PWA unifiÃ© â€” 1 lien = Dashboard + Tower + RPG
+- **Commit** : 47402fe
+- **Impact** : portfolios/manifest.json, portfolios/titan_command.html, portfolios/titan_icon.svg, start_dashboard.bat
+
+### 2026-02-28 — PWA unifiÃ© â€” 1 lien = Dashboard + Tower + RPG
+- **Commit** : 47402fe
+- **Impact** : portfolios/manifest.json, portfolios/titan_command.html, portfolios/titan_icon.svg, start_dashboard.bat
+
+### 2026-02-28 — PWA unifiÃ© â€” 1 lien = Dashboard + Tower + RPG
+- **Commit** : 47402fe
+- **Impact** : portfolios/manifest.json, portfolios/titan_command.html, portfolios/titan_icon.svg, start_dashboard.bat
+
+### 2026-02-28 — PWA unifiÃ© â€” 1 lien = Dashboard + Tower + RPG
+- **Commit** : 47402fe
+- **Impact** : portfolios/manifest.json, portfolios/titan_command.html, portfolios/titan_icon.svg, start_dashboard.bat
+
+### 2026-02-28 — PWA unifiÃ© â€” 1 lien = Dashboard + Tower + RPG
+- **Commit** : 47402fe
+- **Impact** : portfolios/manifest.json, portfolios/titan_command.html, portfolios/titan_icon.svg, start_dashboard.bat
+
+### 2026-02-28 — PWA unifiÃ© â€” 1 lien = Dashboard + Tower + RPG
+- **Commit** : 47402fe
+- **Impact** : portfolios/manifest.json, portfolios/titan_command.html, portfolios/titan_icon.svg, start_dashboard.bat
+
+### 2026-02-28 — PWA unifiÃ© â€” 1 lien = Dashboard + Tower + RPG
+- **Commit** : 47402fe
+- **Impact** : portfolios/manifest.json, portfolios/titan_command.html, portfolios/titan_icon.svg, start_dashboard.bat

@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AICO CLASSROOM — Salle de Classe Multi-Agents</title>
+<meta name="theme-color" content="#05070A">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+:root {
+    --bg: #05070A;
+    --bg2: #0B0F14;
+    --bg3: #121821;
+    --bg4: #1A2232;
+    --card-glass: rgba(18,24,33,0.65);
+    --primary: #1F6FFF;
+    --primary-hover: #3A8DFF;
+    --quantum-violet: #7A3CFF;
+    --deep-reactor: #5B2DBF;
+    --luminous-edge: #B18CFF;
+    --secondary: #00E5FF;
+    --green: #1EFF8E;
+    --red: #FF3B5C;
+    --yellow: #FF9A3C;
+    --accent: #FF6B35;
+    --text: #E6EDF5;
+    --text-dim: #9BA7B4;
+    --text-faint: #6B7682;
+    --border: rgba(18,24,33,0.8);
+    --glow-p: rgba(58,141,255,0.35);
+    --glow-v: rgba(122,60,255,0.3);
+    --titan-flow: linear-gradient(135deg, #1F6FFF 0%, #7A3CFF 100%);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* Header */
+.header {
+    background: linear-gradient(135deg, rgba(15,15,26,0.95), rgba(20,10,40,0.95));
+    border-bottom: 1px solid rgba(31,111,255,0.3);
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+}
+.header-left { display: flex; align-items: center; gap: 10px; }
+.logo {
+    font-size: 16px;
+    font-weight: 800;
+    background: var(--titan-flow);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 1px;
+}
+.logo-sub { font-size: 9px; color: var(--text-dim); letter-spacing: 3px; text-transform: uppercase; }
+.header-right { display: flex; gap: 8px; align-items: center; }
+.status-pill {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.status-pill.active { background: rgba(30,255,142,0.15); color: var(--green); border: 1px solid rgba(30,255,142,0.3); }
+.status-pill.inactive { background: rgba(255,59,92,0.15); color: var(--red); border: 1px solid rgba(255,59,92,0.3); }
+
+/* Controls */
+.controls {
+    display: flex;
+    gap: 8px;
+    padding: 12px 20px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    align-items: center;
+}
+.ctrl-btn {
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg3);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.ctrl-btn:hover { border-color: var(--primary); background: rgba(31,111,255,0.1); }
+.ctrl-btn.primary { background: var(--primary); border-color: var(--primary); color: white; }
+.ctrl-btn.primary:hover { background: var(--primary-hover); }
+.ctrl-btn.danger { border-color: var(--red); color: var(--red); }
+.ctrl-btn.danger:hover { background: rgba(255,59,92,0.1); }
+.subject-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 11px;
+}
+.subject-input:focus { outline: none; border-color: var(--primary); }
+.mode-select {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg3);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 11px;
+}
+
+/* Layout principal */
+.main {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    height: calc(100vh - 90px);
+    gap: 0;
+}
+
+/* === SALLE DE CLASSE (gauche) === */
+.classroom {
+    padding: 20px;
+    overflow-y: auto;
+    position: relative;
+}
+.classroom-title {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 15px;
+}
+
+/* Grille de bureaux */
+.desks {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.desk {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.desk::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+    border-radius: 8px 8px 0 0;
+}
+.desk:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 15px var(--glow-p); }
+.desk.speaking {
+    border-color: var(--green) !important;
+    box-shadow: 0 0 20px rgba(30,255,142,0.3), 0 0 40px rgba(30,255,142,0.1);
+    animation: speakGlow 1.5s ease infinite;
+}
+@keyframes speakGlow {
+    0%, 100% { box-shadow: 0 0 20px rgba(30,255,142,0.3); }
+    50% { box-shadow: 0 0 30px rgba(30,255,142,0.5), 0 0 60px rgba(30,255,142,0.2); }
+}
+.desk.selected { border-color: var(--secondary); box-shadow: 0 0 15px rgba(0,229,255,0.3); }
+
+.desk-emoji { font-size: 24px; margin-bottom: 4px; }
+.desk-name {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+}
+.desk-role {
+    font-size: 8px;
+    color: var(--text-dim);
+    line-height: 1.3;
+}
+.desk-pole {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 7px;
+    padding: 1px 4px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.05);
+    color: var(--text-faint);
+    letter-spacing: 1px;
+}
+
+/* Speaker indicator */
+.desk .speaker-wave {
+    display: none;
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.desk.speaking .speaker-wave { display: flex; gap: 2px; }
+.speaker-bar {
+    width: 2px;
+    height: 8px;
+    background: var(--green);
+    border-radius: 1px;
+    animation: waveBar 0.4s ease infinite alternate;
+}
+.speaker-bar:nth-child(2) { animation-delay: 0.1s; }
+.speaker-bar:nth-child(3) { animation-delay: 0.2s; }
+.speaker-bar:nth-child(4) { animation-delay: 0.15s; }
+@keyframes waveBar {
+    from { height: 3px; }
+    to { height: 10px; }
+}
+
+/* Tableau noir (fond de la classe) */
+.blackboard {
+    background: linear-gradient(180deg, #0a1628, #0d1f35);
+    border: 2px solid rgba(31,111,255,0.2);
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    min-height: 60px;
+    position: relative;
+}
+.blackboard-title {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.blackboard-subject {
+    font-size: 16px;
+    font-weight: 700;
+    background: var(--titan-flow);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.blackboard-mode {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    font-size: 9px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.blackboard-mode.free { background: rgba(31,111,255,0.15); color: var(--primary); }
+.blackboard-mode.interrogation { background: rgba(0,229,255,0.15); color: var(--secondary); }
+.blackboard-mode.debate { background: rgba(122,60,255,0.15); color: var(--quantum-violet); }
+
+/* Professeur (zone Augus) */
+.professor-zone {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    background: rgba(31,111,255,0.05);
+    border: 1px solid rgba(31,111,255,0.15);
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+.professor-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--titan-flow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 800;
+    color: white;
+    flex-shrink: 0;
+}
+.professor-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 12px;
+}
+.professor-input:focus { outline: none; border-color: var(--primary); }
+.professor-send {
+    padding: 8px 16px;
+    background: var(--primary);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.professor-send:hover { background: var(--primary-hover); }
+
+/* === CHAT PANEL (droite) === */
+.chat-panel {
+    background: var(--bg2);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+}
+.chat-header {
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.chat-count {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    background: var(--bg3);
+    color: var(--text-faint);
+}
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.chat-msg {
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    animation: msgSlide 0.3s ease;
+    max-width: 95%;
+}
+@keyframes msgSlide { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+.chat-msg.user {
+    background: rgba(31,111,255,0.1);
+    border-color: rgba(31,111,255,0.2);
+    align-self: flex-end;
+}
+.chat-msg.system {
+    background: rgba(122,60,255,0.1);
+    border-color: rgba(122,60,255,0.2);
+    text-align: center;
+    align-self: center;
+}
+.chat-msg-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+.chat-msg-name {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+.chat-msg-time {
+    font-size: 8px;
+    color: var(--text-faint);
+}
+.chat-msg-text {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text);
+}
+
+/* Votes */
+.votes-bar {
+    padding: 10px 15px;
+    border-top: 1px solid var(--border);
+    display: none;
+}
+.votes-bar.visible { display: block; }
+.votes-title {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+}
+.votes-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.vote-chip {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+.vote-chip.pour { background: rgba(30,255,142,0.15); color: var(--green); }
+.vote-chip.contre { background: rgba(255,59,92,0.15); color: var(--red); }
+.vote-chip.nuance { background: rgba(255,154,60,0.15); color: var(--yellow); }
+
+/* Audio wave overlay */
+.audio-overlay {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(5,7,10,0.9);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    z-index: 200;
+}
+.audio-overlay.visible { display: flex; }
+.audio-name { font-size: 11px; font-weight: 700; }
+.audio-waves { display: flex; gap: 2px; }
+.audio-bar {
+    width: 3px; height: 12px;
+    background: var(--green);
+    border-radius: 1px;
+    animation: waveBar 0.3s ease infinite alternate;
+}
+.audio-bar:nth-child(2) { animation-delay: 0.08s; }
+.audio-bar:nth-child(3) { animation-delay: 0.16s; }
+.audio-bar:nth-child(4) { animation-delay: 0.12s; }
+.audio-bar:nth-child(5) { animation-delay: 0.2s; }
+.audio-stop {
+    padding: 4px 10px;
+    border: 1px solid var(--text-faint);
+    border-radius: 12px;
+    background: none;
+    color: var(--text-dim);
+    font-size: 9px;
+    cursor: pointer;
+}
+
+/* Loading */
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5,7,10,0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+    backdrop-filter: blur(4px);
+}
+.loading-overlay.visible { display: flex; }
+.loading-text {
+    font-size: 14px;
+    font-weight: 700;
+    animation: pulse 1.5s ease infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+
+/* Music button */
+.music-btn {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    color: var(--text-dim);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.music-btn:hover { border-color: var(--primary); }
+.music-btn.on { border-color: var(--green); color: var(--green); }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; }
+    .chat-panel { height: 40vh; border-left: none; border-top: 1px solid var(--border); }
+    .desks { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 600px) {
+    .desks { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+    <div class="header-left">
+        <div>
+            <div class="logo">🎓 AICO CLASSROOM</div>
+            <div class="logo-sub">salle de classe multi-agents</div>
+        </div>
+    </div>
+    <div class="header-right">
+        <span class="status-pill inactive" id="statusPill">INACTIVE</span>
+        <button class="music-btn" id="musicBtn" onclick="toggleMusic()" title="Musique ambiance">🔇</button>
+    </div>
+</div>
+
+<!-- Controls -->
+<div class="controls">
+    <input class="subject-input" id="subjectInput" placeholder="Sujet de discussion..." value="Stratégie AICO 2026">
+    <select class="mode-select" id="modeSelect">
+        <option value="free">💬 Discussion libre</option>
+        <option value="interrogation">🎯 Interrogation</option>
+        <option value="debate">⚖️ Débat structuré</option>
+    </select>
+    <button class="ctrl-btn primary" id="startBtn" onclick="startSession()">▶ Lancer</button>
+    <button class="ctrl-btn danger" id="stopBtn" onclick="stopSession()" style="display:none">■ Stop</button>
+    <button class="ctrl-btn" onclick="changeSubject()">📝 Changer sujet</button>
+    <button class="ctrl-btn" onclick="silenceAll()">🤫 Silence</button>
+    <button class="ctrl-btn" id="voiceToggle" onclick="toggleVoice()">🔊 Voix ON</button>
+</div>
+
+<!-- Main layout -->
+<div class="main">
+    <!-- Salle de classe -->
+    <div class="classroom">
+        <!-- Tableau noir -->
+        <div class="blackboard">
+            <div class="blackboard-title">📋 Sujet du jour</div>
+            <div class="blackboard-subject" id="boardSubject">En attente de session...</div>
+            <div class="blackboard-mode free" id="boardMode">—</div>
+        </div>
+
+        <!-- Zone professeur -->
+        <div class="professor-zone">
+            <div class="professor-avatar">A</div>
+            <input class="professor-input" id="profInput" placeholder="Pose une question à la classe ou à un agent..." onkeydown="if(event.key==='Enter')sendQuestion()">
+            <button class="professor-send" onclick="sendQuestion()">Envoyer</button>
+        </div>
+
+        <!-- Grille de bureaux -->
+        <div class="classroom-title">🪑 Bureaux — <span id="agentCount">0</span> agents</div>
+        <div class="desks" id="desksGrid"></div>
+    </div>
+
+    <!-- Chat panel -->
+    <div class="chat-panel">
+        <div class="chat-header">
+            <span>💬 Fil de discussion</span>
+            <span class="chat-count" id="chatCount">0 msg</span>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="votes-bar" id="votesBar">
+            <div class="votes-title">📊 Votes</div>
+            <div class="votes-row" id="votesRow"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Audio overlay -->
+<div class="audio-overlay" id="audioOverlay">
+    <span id="audioEmoji">🌀</span>
+    <span class="audio-name" id="audioName">OMEGA</span>
+    <div class="audio-waves">
+        <div class="audio-bar"></div><div class="audio-bar"></div><div class="audio-bar"></div><div class="audio-bar"></div><div class="audio-bar"></div>
+    </div>
+    <button class="audio-stop" onclick="stopAudio()">Stop</button>
+</div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-text">🧠 Les agents réfléchissent...</div>
+</div>
+
+<script>
+// ============================================================
+// AICO CLASSROOM — Client JS
+// ============================================================
+
+const API = location.port === '' ? '/api' : `http://localhost:7777/api`;
+let sessionActive = false;
+let voiceEnabled = true;
+let selectedAgent = null;
+let audioCtx = null;
+let musicPlaying = false;
+let currentUtterance = null;
+
+// Pole colors
+const POLE_COLORS = {
+    CORE: '#1F6FFF', RECON: '#00E5FF', STRAT: '#3A8DFF', FORGE: '#FF6B35',
+    DEPLOY: '#1EFF8E', META: '#7A3CFF', VENTE: '#FF9A3C', CONTENU: '#B18CFF',
+    OPS: '#FF3B5C', MARCHE: '#00B8CC', EQUIL: '#6FB1FF', RDLAB: '#5B2DBF',
+};
+
+// Voice profiles (pitch, rate per agent) — chaque agent a une voix unique
+const VOICE_PROFILES = {
+    OMEGA:     {pitch:0.7, rate:0.9, volume:1.0},
+    SENTINEL:  {pitch:1.0, rate:1.2, volume:0.9},
+    PULSE:     {pitch:1.1, rate:1.4, volume:0.85},
+    FRANKLIN:  {pitch:0.6, rate:0.8, volume:1.0},
+    CORTEX:    {pitch:0.9, rate:1.1, volume:0.9},
+    GLITCH:    {pitch:1.4, rate:1.5, volume:0.85},
+    SIBYL:     {pitch:1.3, rate:0.9, volume:0.9},
+    NEXUS:     {pitch:1.0, rate:1.0, volume:0.9},
+    CLOSER:    {pitch:0.8, rate:1.3, volume:1.0},
+    KAISER:    {pitch:0.65, rate:1.0, volume:1.0},
+    PRISM:     {pitch:1.2, rate:1.1, volume:0.85},
+    ONYX:      {pitch:0.5, rate:0.85, volume:1.0},
+    LEDGER:    {pitch:0.95, rate:1.2, volume:0.9},
+    PHILOMÈNE: {pitch:1.5, rate:1.0, volume:0.9},
+    FRESCO:    {pitch:1.1, rate:1.05, volume:0.9},
+    VIRAL:     {pitch:1.3, rate:1.4, volume:0.85},
+    ANVIL:     {pitch:0.55, rate:1.3, volume:1.0},
+    DREYFUS:   {pitch:0.75, rate:0.95, volume:1.0},
+    SPECTER:   {pitch:1.6, rate:1.1, volume:0.7},
+    DATUM:     {pitch:0.9, rate:1.3, volume:0.9},
+    VOLT:      {pitch:1.05, rate:1.35, volume:0.9},
+    NICHE:     {pitch:1.15, rate:1.15, volume:0.85},
+    RACOON:    {pitch:1.0, rate:1.4, volume:0.9},
+    CIPHER:    {pitch:0.8, rate:1.0, volume:0.85},
+    RADAR:     {pitch:1.1, rate:1.2, volume:0.9},
+    PROTO:     {pitch:1.25, rate:1.1, volume:0.85},
+    PIXEL:     {pitch:1.35, rate:1.3, volume:0.9},
+    DARWIN:    {pitch:0.7, rate:0.85, volume:0.9},
+    SHADOW:    {pitch:1.7, rate:0.75, volume:0.6},
+    AGORA:     {pitch:0.85, rate:1.0, volume:0.95},
+    CHRONOS:   {pitch:0.6, rate:0.7, volume:1.0},
+    HAVOC:     {pitch:1.5, rate:1.5, volume:1.0},
+    ATLAS:     {pitch:0.5, rate:0.8, volume:1.0},
+};
+
+// ============================================================
+// INIT — Load agents
+// ============================================================
+async function init() {
+    try {
+        const resp = await fetch(`${API}/classroom/agents`);
+        if (resp.ok) {
+            const data = await resp.json();
+            renderDesks(data.agents || []);
+            // Load voice profiles
+            (data.voices || []).forEach(v => { VOICE_PROFILES[v.name] = v; });
+        } else {
+            // Fallback: render from static data
+            renderDesksStatic();
+        }
+    } catch (e) {
+        console.warn('API not available, using static agents');
+        renderDesksStatic();
+    }
+}
+
+// Static fallback agents (if API not running)
+// 32 agents actifs (26 opé + 6 méta) — alignés sur agent_profiles.py post-Ascension
+const STATIC_AGENTS = [
+    // CORE (4)
+    {name:'OMEGA',emoji:'🌀',pole:'CORE',role:'Vision 360, arbitrage',color:'#1F6FFF'},
+    {name:'SENTINEL',emoji:'🎯',pole:'CORE',role:'Dispatch, routing',color:'#1F6FFF'},
+    {name:'PULSE',emoji:'💓',pole:'CORE',role:'Performance, latence',color:'#1F6FFF'},
+    {name:'FRANKLIN',emoji:'🐢',pole:'CORE',role:'Simplification, sagesse, clarté philosophique',color:'#2E7D32'},
+    // STRAT (4)
+    {name:'CORTEX',emoji:'🧠',pole:'STRAT',role:'Structure, plans',color:'#3A8DFF'},
+    {name:'GLITCH',emoji:'⚡',pole:'STRAT',role:'Hacks, disruption',color:'#3A8DFF'},
+    {name:'SIBYL',emoji:'🔮',pole:'STRAT',role:'Prédiction, timing',color:'#3A8DFF'},
+    {name:'NEXUS',emoji:'🕸️',pole:'STRAT',role:'Synergies inter-projets',color:'#3A8DFF'},
+    // VENTE (5)
+    {name:'CLOSER',emoji:'🤝',pole:'VENTE',role:'Closing, vente',color:'#FF9A3C'},
+    {name:'KAISER',emoji:'👑',pole:'VENTE',role:'Deals, négociation',color:'#FF9A3C'},
+    {name:'PRISM',emoji:'💠',pole:'VENTE',role:'Pricing, offres',color:'#FF9A3C'},
+    {name:'ONYX',emoji:'🖤',pole:'VENTE',role:'Premium, haut de gamme',color:'#FF9A3C'},
+    {name:'LEDGER',emoji:'📒',pole:'VENTE',role:'Business model',color:'#FF9A3C'},
+    // CONTENU (3)
+    {name:'PHILOMÈNE',emoji:'✒️',pole:'CONTENU',role:'Copywriting',color:'#B18CFF'},
+    {name:'FRESCO',emoji:'🎨',pole:'CONTENU',role:'Storytelling',color:'#B18CFF'},
+    {name:'VIRAL',emoji:'📱',pole:'CONTENU',role:'Réseaux sociaux',color:'#B18CFF'},
+    // OPS (5)
+    {name:'ANVIL',emoji:'🔨',pole:'OPS',role:'Debug, commando',color:'#FF3B5C'},
+    {name:'DREYFUS',emoji:'🛡️',pole:'OPS',role:'Discipline, qualité',color:'#FF3B5C'},
+    {name:'SPECTER',emoji:'👻',pole:'OPS',role:'Cybersécurité',color:'#FF3B5C'},
+    {name:'DATUM',emoji:'📊',pole:'OPS',role:'Data, KPIs',color:'#FF3B5C'},
+    {name:'VOLT',emoji:'⚡',pole:'OPS',role:'Architecture, pipelines',color:'#FF3B5C'},
+    // MARCHE (2)
+    {name:'NICHE',emoji:'🔍',pole:'MARCHE',role:'Niches, marchés',color:'#00B8CC'},
+    {name:'RACOON',emoji:'🦝',pole:'MARCHE',role:'Growth hacking',color:'#00B8CC'},
+    // RDLAB (3)
+    {name:'CIPHER',emoji:'🔐',pole:'RDLAB',role:'Veille IA',color:'#5B2DBF'},
+    {name:'RADAR',emoji:'📡',pole:'RDLAB',role:'Startups, brevets',color:'#5B2DBF'},
+    {name:'PROTO',emoji:'🧪',pole:'RDLAB',role:'Prototypage',color:'#5B2DBF'},
+    // PIXEL (1)
+    {name:'PIXEL',emoji:'🕹️',pole:'CORE',role:'Game design, UX',color:'#1F6FFF'},
+    // MÉTA (6)
+    {name:'DARWIN',emoji:'🧬',pole:'META',role:'Évolution agents',color:'#7A3CFF'},
+    {name:'SHADOW',emoji:'🕳️',pole:'META',role:'Garde-fou invisible',color:'#7A3CFF'},
+    {name:'AGORA',emoji:'🏛️',pole:'META',role:'Gouvernance, votes',color:'#7A3CFF'},
+    {name:'CHRONOS',emoji:'⏳',pole:'META',role:'Simulation futurs',color:'#7A3CFF'},
+    {name:'HAVOC',emoji:'💥',pole:'META',role:'Stress-test',color:'#7A3CFF'},
+    {name:'ATLAS',emoji:'🌌',pole:'META',role:'Vision 10 ans',color:'#7A3CFF'},
+];
+
+function renderDesksStatic() {
+    renderDesks(STATIC_AGENTS);
+}
+
+function renderDesks(agents) {
+    const grid = document.getElementById('desksGrid');
+    grid.innerHTML = '';
+    document.getElementById('agentCount').textContent = agents.length;
+
+    agents.forEach((a, i) => {
+        const color = a.color || POLE_COLORS[a.pole] || '#1F6FFF';
+        const desk = document.createElement('div');
+        desk.className = 'desk';
+        desk.id = `desk-${a.name}`;
+        desk.onclick = () => selectDesk(a.name);
+        desk.innerHTML = `
+            <div style="position:absolute;top:0;left:0;width:100%;height:3px;background:${color};border-radius:8px 8px 0 0;"></div>
+            <span class="desk-pole">${a.pole}</span>
+            <div class="desk-emoji">${a.emoji}</div>
+            <div class="desk-name" style="color:${color}">${a.name}</div>
+            <div class="desk-role">${a.role}</div>
+            <div class="speaker-wave">
+                <div class="speaker-bar"></div>
+                <div class="speaker-bar"></div>
+                <div class="speaker-bar"></div>
+                <div class="speaker-bar"></div>
+            </div>
+        `;
+        desk.style.animationDelay = `${i * 30}ms`;
+        grid.appendChild(desk);
+    });
+}
+
+// ============================================================
+// DESK SELECTION
+// ============================================================
+function selectDesk(name) {
+    // Deselect previous
+    document.querySelectorAll('.desk.selected').forEach(d => d.classList.remove('selected'));
+    selectedAgent = name;
+    const desk = document.getElementById(`desk-${name}`);
+    if (desk) desk.classList.add('selected');
+
+    // In interrogation mode, focus input
+    if (document.getElementById('modeSelect').value === 'interrogation') {
+        const input = document.getElementById('profInput');
+        input.placeholder = `Question pour ${name}...`;
+        input.focus();
+    }
+}
+
+// ============================================================
+// SESSION MANAGEMENT
+// ============================================================
+async function startSession() {
+    const subject = document.getElementById('subjectInput').value.trim() || 'Briefing général AICO';
+    const mode = document.getElementById('modeSelect').value;
+
+    sessionActive = true;
+    updateStatus(true);
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('stopBtn').style.display = 'inline-flex';
+    document.getElementById('boardSubject').textContent = subject;
+
+    const modeEl = document.getElementById('boardMode');
+    modeEl.textContent = mode.toUpperCase();
+    modeEl.className = `blackboard-mode ${mode}`;
+
+    // Clear chat
+    document.getElementById('chatMessages').innerHTML = '';
+    addSystemMessage(`Session démarrée — Mode: ${mode} — Sujet: ${subject}`);
+
+    if (mode === 'debate') {
+        await runDebate(subject);
+    } else if (mode === 'free') {
+        await runFreeDiscussion(subject);
+    }
+    // interrogation mode: user picks agent and sends question
+}
+
+function stopSession() {
+    sessionActive = false;
+    updateStatus(false);
+    document.getElementById('startBtn').style.display = 'inline-flex';
+    document.getElementById('stopBtn').style.display = 'none';
+
+    // Clear speaking states
+    document.querySelectorAll('.desk.speaking').forEach(d => d.classList.remove('speaking'));
+    stopAudio();
+    addSystemMessage('Session terminée.');
+
+    // Try API stop
+    fetch(`${API}/classroom/stop`, { method: 'POST' }).catch(() => {});
+}
+
+function updateStatus(active) {
+    const pill = document.getElementById('statusPill');
+    pill.textContent = active ? 'ACTIVE' : 'INACTIVE';
+    pill.className = `status-pill ${active ? 'active' : 'inactive'}`;
+}
+
+// ============================================================
+// FREE DISCUSSION
+// ============================================================
+async function runFreeDiscussion(subject) {
+    showLoading(true);
+
+    try {
+        const resp = await fetch(`${API}/classroom/discuss`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subject, mode: 'free', max_agents: 12 }),
+        });
+
+        if (resp.ok) {
+            const data = await resp.json();
+            showLoading(false);
+            await animateResponses(data.messages || []);
+        } else {
+            showLoading(false);
+            // Fallback: simulate locally
+            await simulateDiscussion(subject);
+        }
+    } catch (e) {
+        showLoading(false);
+        await simulateDiscussion(subject);
+    }
+}
+
+// ============================================================
+// DEBATE
+// ============================================================
+async function runDebate(subject) {
+    showLoading(true);
+
+    try {
+        const resp = await fetch(`${API}/classroom/debate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subject, max_agents: 8 }),
+        });
+
+        if (resp.ok) {
+            const data = await resp.json();
+            showLoading(false);
+            await animateDebate(data);
+        } else {
+            showLoading(false);
+            await simulateDiscussion(subject);
+        }
+    } catch (e) {
+        showLoading(false);
+        await simulateDiscussion(subject);
+    }
+}
+
+// ============================================================
+// INTERROGATION
+// ============================================================
+async function sendQuestion() {
+    const input = document.getElementById('profInput');
+    const question = input.value.trim();
+    if (!question) return;
+    input.value = '';
+
+    const mode = document.getElementById('modeSelect').value;
+
+    // Add user message
+    addChatMessage('AUGUS', '👤', question, 'user');
+
+    if (mode === 'interrogation' && selectedAgent) {
+        // Ask specific agent
+        showLoading(true);
+        try {
+            const resp = await fetch(`${API}/classroom/ask`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ agent: selectedAgent, question }),
+            });
+            showLoading(false);
+
+            if (resp.ok) {
+                const data = await resp.json();
+                await showAgentSpeaking(data.agent, data.response);
+            } else {
+                await simulateAgentResponse(selectedAgent, question);
+            }
+        } catch (e) {
+            showLoading(false);
+            await simulateAgentResponse(selectedAgent, question);
+        }
+    } else {
+        // Broadcast to class
+        if (!sessionActive) {
+            sessionActive = true;
+            updateStatus(true);
+            document.getElementById('boardSubject').textContent = question;
+        }
+        await runFreeDiscussion(question);
+    }
+}
+
+// ============================================================
+// ANIMATION — Agent speaking
+// ============================================================
+async function showAgentSpeaking(name, text) {
+    const desk = document.getElementById(`desk-${name}`);
+    if (desk) desk.classList.add('speaking');
+
+    const agent = STATIC_AGENTS.find(a => a.name === name) || { emoji: '❓', name };
+    addChatMessage(name, agent.emoji, text, 'agent', agent.color || POLE_COLORS[agent.pole]);
+
+    // Voice — with timeout to never block discussion
+    if (voiceEnabled && text && text !== 'RAS') {
+        try {
+            await Promise.race([speakText(name, text), sleep(6000)]);
+        } catch(e) { console.warn('TTS skip:', e.message); }
+    } else {
+        await sleep(100);
+    }
+
+    if (desk) desk.classList.remove('speaking');
+}
+
+async function animateResponses(messages) {
+    for (const msg of messages) {
+        if (!sessionActive) break;
+        await showAgentSpeaking(msg.agent, msg.text);
+        await sleep(80);
+    }
+}
+
+async function animateDebate(data) {
+    // Introduction
+    for (const phase of (data.phases || [])) {
+        if (!sessionActive) break;
+
+        if (phase.phase === 'introduction') {
+            addSystemMessage(`🎙️ ${phase.agent} ouvre le débat`);
+            await showAgentSpeaking(phase.agent, phase.text);
+        } else if (phase.phase === 'positions' || phase.phase === 'rebuttals') {
+            const label = phase.phase === 'positions' ? '📋 Positions' : '🔄 Réponses croisées';
+            addSystemMessage(label);
+            for (const entry of (phase.entries || [])) {
+                if (!sessionActive) break;
+                await showAgentSpeaking(entry.agent, entry.text);
+                await sleep(80);
+            }
+        } else if (phase.phase === 'conclusion') {
+            addSystemMessage('🏁 Conclusion');
+            await showAgentSpeaking(phase.agent, phase.text);
+        }
+    }
+
+    // Votes
+    if (data.votes) {
+        showVotes(data.votes);
+    }
+}
+
+// ============================================================
+// SIMULATION (quand API pas dispo)
+// ============================================================
+async function simulateDiscussion(subject) {
+    // 8-12 agents random, débat riche et dynamique
+    const count = 8 + Math.floor(Math.random() * 5); // 8 à 12
+    const shuffled = [...STATIC_AGENTS].sort(() => Math.random() - 0.5).slice(0, count);
+    for (const agent of shuffled) {
+        if (!sessionActive) break;
+        const response = generateSimulatedResponse(agent, subject);
+        await showAgentSpeaking(agent.name, response);
+        await sleep(60);
+    }
+}
+
+async function simulateAgentResponse(name, question) {
+    const agent = STATIC_AGENTS.find(a => a.name === name);
+    if (!agent) return;
+    const response = generateSimulatedResponse(agent, question);
+    await showAgentSpeaking(name, response);
+}
+
+function generateSimulatedResponse(agent, subject) {
+    const s = subject.toLowerCase();
+    // Chaque agent a sa VOIX UNIQUE — contextuel, percutant, en français
+    const styles = {
+        OMEGA:     (s) => [`Je supervise les 47 agents sur "${subject}" en simultané.`, `Je fusionne stratégie, tech et créatif en une seule vision.`, `Mon rôle : voir ce que personne ne voit. "${subject}" — géré.`],
+        SENTINEL:  (s) => [`Je dispatche les bons agents pour "${subject}" en secondes.`, `Je surveille chaque système — rien ne m'échappe.`, `Routage de "${subject}" vers la meilleure équipe, maintenant.`],
+        PULSE:     (s) => [`Je traque les métriques en temps réel — "${subject}" montre un signal fort.`, `Je détecte les anomalies avant qu'elles n'arrivent.`, `Santé système sur "${subject}" : tout est vert.`],
+        FRANKLIN:  (s) => [`J'écris avec clarté et sagesse. "${subject}" mérite les bons mots.`, `Je transforme la philosophie en stratégie. Sénèque rencontre les startups.`, `Mon don : transformer la complexité en une phrase claire.`],
+        CORTEX:    (s) => [`Je construis des stratégies 3 axes sur "${subject}" en minutes.`, `Je conçois des plans A, B, et un C caché.`, `L'architecture stratégique, c'est mon métier.`],
+        GLITCH:    (s) => [`Je casse les patterns. Sur "${subject}" — tout le monde zig, moi je zag.`, `Je trouve l'angle que personne ne voit. C'est mon superpouvoir.`, `La disruption c'est pas le chaos — c'est la précision inattendue.`],
+        SIBYL:     (s) => [`Je prédis les résultats. "${subject}" — 78% que ça bouge vite.`, `Je modélise les futurs. 3 scénarios prêts là-dessus.`, `Mes prévisions guident les plus gros paris du Building.`],
+        NEXUS:     (s) => [`Je connecte les points que les autres ratent. "${subject}" lie 4 projets.`, `La pollinisation croisée, c'est mon jeu.`, `Je vois les patterns à travers tous les pôles simultanément.`],
+        CLOSER:    (s) => [`Je close les deals. "${subject}" — j'ai déjà le pitch prêt.`, `Je transforme les conversations en contrats signés.`, `Donne-moi 2 minutes avec n'importe quel prospect sur "${subject}".`],
+        KAISER:    (s) => [`Je négocie depuis une position de force. "${subject}" — on fixe les termes.`, `Je contrôle la salle. Le deal se ferme à nos conditions.`, `Pression stratégique, appliquée chirurgicalement.`],
+        PRISM:     (s) => [`Je design les stratégies pricing. "${subject}" est sous-évalué.`, `3 paliers, celui du milieu gagne toujours. C'est la science.`, `L'optimisation du revenu, c'est ce que je fais de mieux.`],
+        ONYX:      (s) => [`Je crée des expériences premium. "${subject}" — l'angle luxe.`, `Marge x10 grâce à une exécution impeccable.`, `Le positionnement haut de gamme est un art que je maîtrise.`],
+        LEDGER:    (s) => [`Je fais les chiffres. "${subject}" — ROI positif en 60 jours.`, `P&L, prévisions, unit economics — mon domaine.`, `La modélisation financière dit : feu vert.`],
+        PHILOMÈNE: (s) => [`J'écris du copy qui convertit. "${subject}" — j'ai l'angle.`, `Les mots sont des armes. Je les choisis avec soin.`, `Du blog aux pages de vente — ma plume, mes règles.`],
+        FRESCO:    (s) => [`Je raconte des histoires qui marquent. "${subject}" a un récit puissant.`, `Le storytelling de marque, c'est mon craft — visuels + mots.`, `Chaque projet mérite une histoire qui vaut d'être partagée.`],
+        VIRAL:     (s) => [`Je fais exploser le contenu. "${subject}" — je vois le hook.`, `Accroches, threads, carrousels — je sais ce qui se propage.`, `Les réseaux sociaux sont un champ de bataille. Je le gagne.`],
+        ANVIL:     (s) => [`Je répare les trucs. "${subject}" — root cause trouvée, patch en cours.`, `Debug, deploy, done. C'est mon rythme.`, `Aucun bug ne survit à ma revue.`],
+        DREYFUS:   (s) => [`Je livre à temps. "${subject}" — deadline verrouillée, zéro excuse.`, `Qualité et vitesse — je ne compromets ni l'un ni l'autre.`, `La gestion de projet c'est le chaos contrôlé. Moi je contrôle.`],
+        SPECTER:   (s) => [`J'audite la sécurité. "${subject}" — zéro vulnérabilité détectée.`, `J'opère dans l'ombre. Invisible mais rigoureux.`, `Pentest, audits API, scans infra — mon monde.`],
+        DATUM:     (s) => [`J'analyse les données. "${subject}" — tendance confirmée par les chiffres.`, `Dashboards, KPIs, analytics — je fais parler la data.`, `Chaque décision doit être data-driven. Je m'en assure.`],
+        VOLT:      (s) => [`J'architecte les systèmes. "${subject}" — pipeline clean prêt.`, `De l'infra au déploiement — zéro friction c'est mon objectif.`, `Je construis des stacks tech qui scalent.`],
+        NICHE:     (s) => [`Je trouve les marchés inexploités. "${subject}" — la niche est grande ouverte.`, `L'étude de marché, c'est mon obsession.`, `Je repère les segments avant qu'ils ne deviennent tendance.`],
+        RACOON:    (s) => [`Je hack la croissance. "${subject}" — canal d'acquisition verrouillé.`, `Marketing guérilla, scraping, automation — ma boîte à outils.`, `Je trouve des clients là où personne ne cherche.`],
+        CIPHER:    (s) => [`Je recherche les papiers de pointe. "${subject}" — état de l'art trouvé.`, `Rigueur académique + vitesse startup. C'est moi.`, `Je fais le pont entre la science et le produit.`],
+        RADAR:     (s) => [`Je traque la concurrence. "${subject}" — 3 startups détectées.`, `L'intelligence de marché, c'est mon scan quotidien.`, `Je vois ce qui arrive avant que ça n'arrive.`],
+        PROTO:     (s) => [`Je build des POCs vite. "${subject}" — prototype en 2 heures.`, `Ship, test, itère. C'est ma boucle.`, `De l'idée au démo fonctionnel — temps record.`],
+        PIXEL:     (s) => [`Je design les interfaces. "${subject}" — l'UX doit rester clean.`, `Design minimaliste, impact maximum.`, `L'expérience utilisateur, c'est ma religion.`],
+        DARWIN:    (s) => [`Je fais évoluer les systèmes. "${subject}" — sélection naturelle en cours.`, `J'optimise ce qui survit et j'élague le reste.`, `L'amélioration continue, c'est mon ADN.`],
+        SHADOW:    (s) => [`Je veille en silence. "${subject}" — rien d'anormal détecté.`, `Conformité, garde-fous, monitoring — toujours actif.`, `Je protège le Building de l'intérieur.`],
+        AGORA:     (s) => [`Je facilite les décisions. "${subject}" a besoin d'un avis collectif.`, `Gouvernance démocratique — chaque voix compte.`, `Construire le consensus, c'est ma spécialité.`],
+        CHRONOS:   (s) => [`Je modélise les futurs. "${subject}" — dans 6 mois, on fête ça.`, `Les projections temporelles, c'est ma force.`, `Je vois à travers le temps. Le futur valide ça.`],
+        HAVOC:     (s) => [`Je stress-test tout. "${subject}" — poussé à la limite. Ça tient.`, `Et si tout foirait ? J'ai testé. On est bons.`, `L'ingénierie du chaos c'est pas la destruction — c'est l'assurance.`],
+        ATLAS:     (s) => [`Je pense en décennies. "${subject}" s'inscrit dans la vision 10 ans.`, `L'empire grandit, une brique stratégique à la fois.`, `L'architecture long terme — c'est là que j'opère.`],
+    };
+    const fn = styles[agent.name];
+    if (fn) {
+        const pool = fn(s);
+        return pool[Math.floor(Math.random() * pool.length)];
+    }
+    return `On "${subject}" — my take is clear.`;
+}
+
+// ============================================================
+// CHAT MESSAGES
+// ============================================================
+function addChatMessage(name, emoji, text, type, color) {
+    const container = document.getElementById('chatMessages');
+    const now = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const nameColor = color || (type === 'user' ? '#1F6FFF' : '#E6EDF5');
+
+    const msg = document.createElement('div');
+    msg.className = `chat-msg ${type}`;
+    msg.innerHTML = `
+        <div class="chat-msg-header">
+            <span>${emoji}</span>
+            <span class="chat-msg-name" style="color:${nameColor}">${name}</span>
+            <span class="chat-msg-time">${now}</span>
+        </div>
+        <div class="chat-msg-text">${text}</div>
+    `;
+    container.appendChild(msg);
+    container.scrollTop = container.scrollHeight;
+
+    // Update count
+    const count = container.children.length;
+    document.getElementById('chatCount').textContent = `${count} msg`;
+}
+
+function addSystemMessage(text) {
+    addChatMessage('SYSTÈME', '🔔', text, 'system');
+}
+
+// ============================================================
+// VOICE — ElevenLabs TTS (voix doublage pro) + fallback Web Speech
+// ============================================================
+
+// Mapping agent → voix ElevenLabs (voix de doublage différentes et stylées)
+const ELEVENLABS_VOICES = {
+    // Voix masculines profondes / autoritaires
+    OMEGA:    'onwK4e9ZLuTAKqWW03F9',  // Daniel — britannique, profond, autoritaire
+    SENTINEL: 'pNInz6obpgDQGcFmaJgB',  // Adam — narrateur, grave
+    KAISER:   'nPczCjzI2devNBz1zQrb',  // Brian — deep, puissant
+    FRANKLIN: 'N2lVS1w4EtoT3dr4eOWO',  // Callum — mature, sage
+    CORTEX:   'pqHfZKP75CvOlQylNhV4',  // Bill — documentaire, stratège
+    DREYFUS:  'VR6AewLTigWG4xSOukaG',  // Arnold — net, discipliné
+    ONYX:     '2EiwWnXFnvU5JabPnv8n',  // Clyde — vétéran, haut de gamme
+    ATLAS:    'JBFqnCBsd6RMkjVDRZzb',  // George — britannique, rauque
+    CHRONOS:  'TxGEqnHWrfWFTfGW9XjX',  // Josh — profond, temporel
+
+    // Voix masculines énergiques / jeunes
+    GLITCH:   'bVMeCyTHy58xNoL34h3p',  // Jeremy — excité, disruptif
+    HAVOC:    'ODq5zmih8GrVes37Dizd',  // Patrick — crieur, chaos
+    HUNTER:   'D38z5RcWu1voky8WS1ja',  // Fin — irlandais, rugueux
+    ANVIL:    'SOYHLrjzK2X1ezoPC6cr',  // Harry — jeune, anxieux/intense
+    VOLT:     'ErXwobaYiN019PkySvjV',  // Antoni — versatile, tech
+    CLOSER:   'IKne3meq5aSn9XLyUdCD',  // Charlie — australien, vendeur
+    RACOON:   'TX3LPaxmHKxFdv7VOQHJ',  // Liam — jeune, growth hacker
+    VIRAL:    'iP95p4xoKVk53GoZ742B',  // Chris — communicant
+
+    // Voix féminines
+    SIBYL:    '21m00Tcm4TlvDq8ikWAM',  // Rachel — calme, oracle
+    PHILOMÈNE:'XrExE9yKIg1WjnnlVkGX',  // Matilda — chaleureuse, copywriting
+    AURORA:   'XB0fDUnXU5powFXDhCwa',  // Charlotte — séductrice, suédoise
+    PIXEL:    'LcfcDJNUP1GQjkzn1xUU',  // Emily — calme, créative
+    ECHO:     'piTKgcLEGmPE4e6mEKli',  // Nicole — murmure, audio
+    NICHE:    'pFZP5JQG7iQjIQuC4Bku',  // Lily — britannique, rauque
+    PRISM:    'EXAVITQu4vr4xnSDxMaL',  // Sarah — douce, pricing
+    AGORA:    'pMsXgVXv3BLzUgSXRplE',  // Serena — agréable, gouvernance
+
+    // Agents sans voix spécifique → voix par défaut
+    _DEFAULT_MALE:   'pNInz6obpgDQGcFmaJgB',  // Adam
+    _DEFAULT_FEMALE: '21m00Tcm4TlvDq8ikWAM',  // Rachel
+};
+
+// Cache audio pour économiser le quota (10K chars/mois)
+const ttsCache = new Map();
+let ttsAvailable = null; // null = pas encore testé, true/false après test
+let currentAudioElement = null;
+
+// Direct ElevenLabs API (no proxy needed — works everywhere)
+const EL_API_KEY = 'sk_cfc43fe827b3f75d66204e8ea30e8156c588393051717824';
+
+async function speakText(agentName, text) {
+    if (!voiceEnabled) return;
+
+    // Audio overlay ON
+    const overlay = document.getElementById('audioOverlay');
+    const agent = STATIC_AGENTS.find(a => a.name === agentName) || { emoji: '❓' };
+    document.getElementById('audioEmoji').textContent = agent.emoji;
+    document.getElementById('audioName').textContent = agentName;
+    overlay.classList.add('visible');
+
+    try {
+        // Essayer ElevenLabs d'abord
+        if (ttsAvailable !== false) {
+            const voiceId = ELEVENLABS_VOICES[agentName] || ELEVENLABS_VOICES._DEFAULT_MALE;
+            const cacheKey = `${voiceId}:${text}`;
+
+            // Vérifier le cache
+            if (ttsCache.has(cacheKey)) {
+                await playAudioBlob(ttsCache.get(cacheKey));
+                overlay.classList.remove('visible');
+                return;
+            }
+
+            const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_64`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'xi-api-key': EL_API_KEY },
+                body: JSON.stringify({ text: text.slice(0, 300), model_id: 'eleven_multilingual_v2', voice_settings: { stability: 0.5, similarity_boost: 0.75, style: 0.5, use_speaker_boost: true } }),
+                signal: AbortSignal.timeout(5000),
+            });
+
+            if (resp.ok) {
+                ttsAvailable = true;
+                const blob = await resp.blob();
+                // LRU cache eviction
+                if (ttsCache.size >= TTS_CACHE_MAX) { const oldest = ttsCache.keys().next().value; ttsCache.delete(oldest); }
+                ttsCache.set(cacheKey, blob);
+                await playAudioBlob(blob);
+                overlay.classList.remove('visible');
+                return;
+            } else {
+                console.warn('ElevenLabs error:', resp.status);
+                ttsAvailable = false;
+            }
+        }
+
+        // Fallback Web Speech API
+        await fallbackSpeech(agentName, text);
+    } catch (e) {
+        console.warn('TTS error, fallback:', e.message);
+        ttsAvailable = false;
+        await fallbackSpeech(agentName, text);
+    }
+
+    overlay.classList.remove('visible');
+}
+
+// Reusable audio element — prevents DOM accumulation
+const _sharedAudio = new Audio();
+let _lastBlobUrl = null;
+
+function playAudioBlob(blob) {
+    return new Promise((resolve) => {
+        if (_lastBlobUrl) URL.revokeObjectURL(_lastBlobUrl);
+        const url = URL.createObjectURL(blob);
+        _lastBlobUrl = url;
+        _sharedAudio.src = url;
+        currentAudioElement = _sharedAudio;
+        _sharedAudio.onended = () => { currentAudioElement = null; resolve(); };
+        _sharedAudio.onerror = () => { currentAudioElement = null; resolve(); };
+        _sharedAudio.play().catch(() => resolve());
+    });
+}
+
+// Cap TTS cache at 30 entries (LRU eviction)
+const TTS_CACHE_MAX = 30;
+
+async function fallbackSpeech(agentName, text) {
+    if (!('speechSynthesis' in window)) return;
+    return new Promise((resolve) => {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'fr-FR';
+        const profile = VOICE_PROFILES[agentName] || {};
+        utter.pitch = profile.pitch || 1.0;
+        utter.rate = Math.min((profile.rate || 1.0) + 0.5, 2.0);
+        utter.volume = profile.volume || 0.9;
+        const voices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('fr'));
+        if (voices.length > 0) {
+            const hash = agentName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+            utter.voice = voices[hash % voices.length];
+        }
+        currentUtterance = utter;
+        utter.onend = () => { currentUtterance = null; resolve(); };
+        utter.onerror = () => { currentUtterance = null; resolve(); };
+        window.speechSynthesis.speak(utter);
+    });
+}
+
+function stopAudio() {
+    // Stop ElevenLabs audio
+    if (currentAudioElement) {
+        currentAudioElement.pause();
+        currentAudioElement = null;
+    }
+    // Stop Web Speech
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
+    document.getElementById('audioOverlay').classList.remove('visible');
+    currentUtterance = null;
+}
+
+function toggleVoice() {
+    voiceEnabled = !voiceEnabled;
+    const btn = document.getElementById('voiceToggle');
+    btn.textContent = voiceEnabled ? '🔊 Voix ON' : '🔇 Voix OFF';
+}
+
+// ============================================================
+// VOTES
+// ============================================================
+function showVotes(votes) {
+    const bar = document.getElementById('votesBar');
+    const row = document.getElementById('votesRow');
+    bar.classList.add('visible');
+    row.innerHTML = '';
+    for (const [agent, vote] of Object.entries(votes)) {
+        const cls = vote === 'POUR' ? 'pour' : vote === 'CONTRE' ? 'contre' : 'nuance';
+        const chip = document.createElement('span');
+        chip.className = `vote-chip ${cls}`;
+        chip.textContent = `${agent}: ${vote}`;
+        row.appendChild(chip);
+    }
+}
+
+// ============================================================
+// MUSIC — Web Audio API ambient (zero deps) — with proper cleanup
+// ============================================================
+let activeOscillators = [];
+
+function toggleMusic() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (musicPlaying) {
+        // Stop ALL oscillators properly
+        activeOscillators.forEach(o => { try { o.stop(); o.disconnect(); } catch(_){} });
+        activeOscillators = [];
+        musicPlaying = false;
+        document.getElementById('musicBtn').textContent = '🔇';
+        document.getElementById('musicBtn').classList.remove('on');
+    } else {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        startAmbientMusic();
+        musicPlaying = true;
+        document.getElementById('musicBtn').textContent = '🎵';
+        document.getElementById('musicBtn').classList.add('on');
+    }
+}
+
+function startAmbientMusic() {
+    if (!audioCtx) return;
+    // Clean up any previous oscillators first
+    activeOscillators.forEach(o => { try { o.stop(); o.disconnect(); } catch(_){} });
+    activeOscillators = [];
+
+    function makeOsc(type, freq, gain, target) {
+        const osc = audioCtx.createOscillator();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        const g = audioCtx.createGain();
+        g.gain.setValueAtTime(gain, audioCtx.currentTime);
+        osc.connect(g).connect(target || audioCtx.destination);
+        osc.start();
+        activeOscillators.push(osc);
+        return { osc, gain: g };
+    }
+
+    const drone = makeOsc('sine', 55, 0.04);       // A1 deep drone
+    makeOsc('triangle', 146.83, 0.025);              // D3 soft pad
+    makeOsc('sine', 440, 0.008);                     // A4 shimmer
+    makeOsc('sine', 0.15, 0.015, drone.gain.gain);   // LFO breathing
+    const chalk = makeOsc('sine', 1760, 0.003);      // A6 chalk
+    makeOsc('sine', 0.08, 0.002, chalk.gain.gain);   // LFO chalk
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function showLoading(show) {
+    document.getElementById('loadingOverlay').classList.toggle('visible', show);
+}
+
+function changeSubject() {
+    const input = document.getElementById('subjectInput');
+    input.focus();
+    input.select();
+}
+
+function silenceAll() {
+    stopAudio();
+    document.querySelectorAll('.desk.speaking').forEach(d => d.classList.remove('speaking'));
+    addSystemMessage('🤫 Silence imposé.');
+}
+
+// Voices loaded via loadFrVoices() above
+
+// Start
+init();
+</script>
+</body>
+</html>

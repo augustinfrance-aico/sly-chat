@@ -1193,6 +1193,78 @@
       "titan": "Emp, voici 3 films pour te stimuler : * \"The Social Network\" pour la stratégie et l'entrepreneuriat * \"Inception\" pour la créativité et la résolution de problèmes * \"Rocky\" pour la motivation et la persévérance 💡",
       "context": "telegram",
       "timestamp": "2026-02-26T04:24:46.605449"
+    },
+    {
+      "user": "Ya plus le racoon au début",
+      "titan": "Commandant, système en ligne. 🎯",
+      "context": "telegram",
+      "timestamp": "2026-02-26T21:19:20.944845"
+    },
+    {
+      "user": "On le voit pas assez",
+      "titan": "Commandant, augmentons la visibilité de Lurie. Je vais lancer une campagne de promotion ciblée pour atteindre les objectifs de Lurie. 💡",
+      "context": "telegram",
+      "timestamp": "2026-02-26T21:19:59.919584"
+    },
+    {
+      "user": "Non",
+      "titan": "Commandant, nouvelle direction attendue. ⚡",
+      "context": "telegram",
+      "timestamp": "2026-02-26T21:20:07.491924"
+    },
+    {
+      "user": "Salut",
+      "titan": "Commandant, système en ligne. 🎯 🤝 VITO : \"Les relations long terme sont clés, gardons notre focus sur Lurie et les objectifs à atteindre.\" Prêt à exécuter les prochaines directives. ⚡",
+      "context": "telegram",
+      "timestamp": "2026-02-27T03:34:45.484395"
+    },
+    {
+      "user": "Donne des actus ia",
+      "titan": "Commandant, voici les dernières actualités en IA : * Les réseaux de neurones profonds sont de plus en plus utilisés pour améliorer la reconnaissance faciale et la détection d'objets. * Les chercheurs ont récemment développé un nouvel algorithme d'apprentissage automatique qui permet d'améliorer la précision des prédictions dans les domaines de la finance et de la santé. 📰 MURRAY : \"Je prépare un numéro spécial de notre newsletter pour couvrir ces avancées, Commandant, avec des exemples concrets d'applications dans le monde réel.\" Les progrès en IA sont constants et ouvrent de nouvelles perspectives pour l'entreprise AICO. ⚡",
+      "context": "telegram",
+      "timestamp": "2026-02-27T03:35:04.554076"
+    },
+    {
+      "user": "Tu peux faire quoi",
+      "titan": "L'Empereur, je peux t'aider à déclencher des actions concrètes pour atteindre tes objectifs, qu'il s'agisse de trouver une formation, de développer ta pratique de sport quotidiennement, ou de booster ton entreprise AICO. Je suis là pour t'offrir des conseils stratégiques, des idées pour améliorer ton business et ta vie personnelle. ⚡",
+      "context": "telegram",
+      "timestamp": "2026-02-27T04:39:50.251647"
+    },
+    {
+      "user": "/command",
+      "titan": "Commandant, voici les commandes disponibles : * **/profil** : Afficher le profil personnel * **/objectifs** : Afficher les objectifs * **/competences** : Afficher les compétences * **/projets** : Afficher les projets en cours * **/aide** : Afficher les commandes disponibles * **/news** : Afficher les actualités * **/web** : Rechercher sur le web * **/finance** : Afficher les informations financières * **/upwork** : Afficher les informations relatives à Upwork * **/n8n** : Exécuter une workflow n8n * **/email** : Envoyer un email * **/code** : Écrire du code * **/portfolio** : Afficher le portfolio Action Step : Choisissez une commande pour commencer, Commandant. ⚡",
+      "context": "telegram",
+      "timestamp": "2026-02-27T04:40:09.058171"
+    },
+    {
+      "user": "/email",
+      "titan": "Commandant, je prépare un email pour vous. 🎯 🎨 BASQUIAT : \"N'oubliez pas de personnaliser le ton et la mise en page pour un impact maximum, Commandant.\" ⚡",
+      "context": "telegram",
+      "timestamp": "2026-02-27T04:40:17.328059"
+    },
+    {
+      "user": "Oui",
+      "titan": "Commandant, prêt à exécuter. 💼 STANLEY : \"N'oubliez pas de toujours avoir un plan de négociation pour atteindre vos objectifs, Commandant.\" ⚡",
+      "context": "telegram",
+      "timestamp": "2026-02-27T04:40:30.348624"
+    },
+    {
+      "user": "Oui",
+      "titan": "Commandant, prêt à exécuter. ⚡",
+      "context": "telegram",
+      "timestamp": "2026-02-27T04:40:41.289251"
+    },
+    {
+      "user": "Fais moi un prompt",
+      "titan": "Commandant, système en ligne. Prêt à exécuter. ⚡",
+      "context": "telegram",
+      "timestamp": "2026-02-27T04:41:01.745565"
+    },
+    {
+      "user": "Comment ça",
+      "titan": "Commandant, système en ligne. 🎯 Prêt à exécuter les prochaines directives. ⚡",
+      "context": "telegram",
+      "timestamp": "2026-02-27T04:41:21.959431"
     }
   ]
 }

@@ -2,7 +2,7 @@
 ## Le Système Complet — Building IA
 
 > Document maître — créé pendant qu'Augus dormait
-> Orchestré par BAGHEERA | Protégé par FLEMMARD | Chronométré par DREYFUS
+> Orchestré par SENTINEL | Protégé par FRANKLIN | Chronométré par DREYFUS
 
 ---
 
@@ -19,7 +19,7 @@
 
 ### 💧 RUISSEAU 1 — KDP Publishing
 **Status : PRÊT À LANCER**
-**Owner : Omega + Philomène + Rick**
+**Owner : Omega + Philomène + Glitch**
 **Fichiers produits :**
 - `/src/kdp/niche_artisans/artisan_augmente.md` ✅ COMPLET
 - `/src/kdp/niche_passive_income_en/ai_passive_income_2026.md` ✅ COMPLET
@@ -37,7 +37,7 @@
 
 ### 💧 RUISSEAU 2 — Templates Gumroad
 **Status : PRÊT À LANCER**
-**Owner : Bentley + Nikola**
+**Owner : Onyx + Volt**
 **Fichiers produits :**
 - `/directives/TEMPLATES_GUMROAD.md` ✅ 5 TEMPLATES DOCUMENTÉS
 
@@ -54,14 +54,14 @@
 **Actions Augus requises :**
 - [ ] Créer compte Gumroad (10 min — une seule fois)
 - [ ] Créer compte Stripe connecté (10 min — une seule fois)
-- [ ] Uploader les templates (Stanley rédige les pages de vente)
+- [ ] Uploader les templates (Closer rédige les pages de vente)
 - [ ] Le reste : ventes automatiques
 
 ---
 
 ### 💧 RUISSEAU 3 — Agence IA Premium
 **Status : PIPELINE PRÊT**
-**Owner : Sly (prospection) + Stanley (closing)**
+**Owner : Racoon (prospection) + Closer (closing)**
 **Fichiers produits :**
 - Page de vente "Building IA Clé en Main" ✅ RÉDIGÉE
 - Séquence outreach 5 emails ✅ PRÊTE
@@ -77,18 +77,18 @@
 
 **Actions Augus requises :**
 - [ ] Créer profil LinkedIn (45 min — une seule fois)
-- [ ] Décrocher le téléphone quand Stanley a un lead chaud
+- [ ] Décrocher le téléphone quand Closer a un lead chaud
 - [ ] Signer les contrats DocuSign (2 min/contrat)
 
 ---
 
 ### 💧 RUISSEAU 4 — Trafic Mondial Multi-Plateforme
 **Status : PIPELINE AUTOMATISÉ EN CONSTRUCTION**
-**Owner : Bentley (pipeline) + Zara (contenu) + Murray (distribution)**
+**Owner : Onyx (pipeline) + Viral (contenu) + Philomène (distribution)**
 
 **Pipeline :** 1 idée → 13 contenus → 7 plateformes (n8n)
-**8 premières idées :** ✅ IDENTIFIÉES PAR ZARA
-**Templates visuels :** ✅ PRÊTS PAR BASQUIAT
+**8 premières idées :** ✅ IDENTIFIÉES PAR VIRAL
+**Templates visuels :** ✅ PRÊTS PAR FRESCO
 
 **Plateformes actives :**
 - Medium (SEO Google 2-4 ans)
@@ -104,13 +104,13 @@
 
 **Actions Augus requises :**
 - [ ] Créer comptes plateformes (2h — une seule fois)
-- [ ] Copier-coller + publier les contenus préparés (15 min/semaine)
+- [ ] Publier les contenus préparés (15 min/semaine)
 
 ---
 
 ### 💧 RUISSEAU 5 — Affiliation & Newsletter
 **Status : À LANCER SEMAINE 2**
-**Owner : Zara (newsletter) + Sly (affiliés)**
+**Owner : Viral (newsletter) + Racoon (affiliés)**
 
 **Newsletter :** 1 édition/semaine (générée par Claude, personnalisée par Augus en 10 min)
 **Plateformes :** Beehiiv (gratuit jusqu'à 2 500 abonnés)
@@ -133,13 +133,13 @@
 ---
 
 ### 💧 RUISSEAU 6 — White Label Building (Moyen terme)
-**Status : VISION VITO — Mois 12+**
-**Owner : Vito (stratégie) + Rick (architecture offre)**
+**Status : VISION KAISER — Mois 12+**
+**Owner : Kaiser (stratégie) + Glitch (architecture offre)**
 
 Vendre le système Building à d'autres agences/freelances.
 10 partenaires × revenus partagés = 40 000-170 000€/mois potentiel.
 
-**Actions requises : AUCUNE pour l'instant. Vito surveille.**
+**Actions requises : AUCUNE pour l'instant. Kaiser surveille.**
 
 ---
 
@@ -170,7 +170,7 @@ MOIS 6 (système complet) :
 
 ---
 
-## TÂCHES AUGUS — LISTE COMPLÈTE (Gardée par FLEMMARD)
+## TÂCHES AUGUS — LISTE COMPLÈTE (Gardée par FRANKLIN)
 
 **Setup une seule fois (total : ~4 heures) :**
 - [ ] Compte KDP Amazon
@@ -181,7 +181,7 @@ MOIS 6 (système complet) :
 
 **Récurrent (total : < 2h/semaine) :**
 - [ ] Publier les contenus préparés par le Building (15 min/semaine)
-- [ ] Décrocher quand Stanley a un lead (1-2 calls/semaine × 30 min)
+- [ ] Décrocher quand Closer a un lead (1-2 calls/semaine × 30 min)
 - [ ] Valider et envoyer la newsletter (10 min/semaine)
 - [ ] Signer les contrats clients (2 min/contrat)
 
@@ -189,7 +189,7 @@ MOIS 6 (système complet) :
 
 ---
 
-## ORDRE D'EXÉCUTION RECOMMANDÉ PAR BAGHEERA
+## ORDRE D'EXÉCUTION RECOMMANDÉ PAR SENTINEL
 
 **Cette semaine :**
 1. Setup Gumroad + upload templates → revenus dès J+7
@@ -206,6 +206,6 @@ MOIS 6 (système complet) :
 
 ---
 
-*Document vivant — mis à jour par BAGHEERA & ALADIN*
-*Protégé par FLEMMARD — Effort Augus maintenu < 2h/semaine*
+*Document vivant — mis à jour par SENTINEL*
+*Protégé par FRANKLIN — Effort Augus maintenu < 2h/semaine*
 *Chronométré par DREYFUS — Exécution sans délai*

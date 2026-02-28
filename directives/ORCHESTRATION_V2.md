@@ -1,8 +1,8 @@
-# ORCHESTRATION V2 — Système intelligent à 30 agents
+# ORCHESTRATION V2 — Système intelligent à 50 agents
 
-> Version 2 — Restructuration 26/02/2026
-> Remplace le protocole d'orchestration simplifié.
-> Intègre SENTINEL (dispatch), Skills Tree, et triple restitution.
+> Version 2.2 — Post-Audit GPT 27/02/2026
+> Système adaptatif C1→C5. SENTINEL dispatch. Triple restitution.
+> 1 nébuleuse + 3 leaders + 6 méta + 40 opérationnels = 50 agents.
 
 ---
 
@@ -15,7 +15,7 @@
       ↓
 3. SENTINEL sélectionne les agents pertinents
       ↓
-4. BAGHEERA supervise la collaboration (si groupe)
+4. SENTINEL supervise la collaboration (si groupe)
       ↓
 5. Agents produisent en parallèle / séquence
       ↓
@@ -24,30 +24,63 @@
 7. TRIPLE RESTITUTION :
    ├── Version technique complète (pour Claude Code / devs)
    ├── Version stratégique (pour décision Augus)
-   └── Version vulgarisée (LIMPIDE — résumé clair, zéro jargon)
+   └── Version vulgarisée (FRANKLIN — résumé clair, zéro jargon)
 ```
 
 ---
 
 ## Étape 2 — SENTINEL analyse
 
-### Matrice de décision
-| Signal dans le message | Priorité | Mode | Agents activés |
-|------------------------|----------|------|----------------|
-| "urgent", "bug", "prod", "crash" | P0 | Focus | FORGE (solo) |
-| "client", "deadline", "livrer" | P1 | Exécution rapide | Agent le plus pertinent |
-| "stratégie", "empire", "vision" | P2 | Conseil | OMEGA + MURPHY + ORACLE |
-| "idée", "brainstorm", "concept" | P2 | Débat créatif | RICK + BALOO + MAYA |
-| "setup", "lent", "optimiser" | P2 | Focus | X-O1 + PULSE |
-| "bilan", "résultats", "KPIs" | P2 | Analyse | CYPHER + NASH + GRIMALDI |
-| Question simple, chat | P3 | Focus | Réponse directe (pas d'agent) |
+### Matrice de décision (Complexité × Priorité)
+| Signal dans le message | Priorité | Complexité | Agents activés |
+|------------------------|----------|------------|----------------|
+| "urgent", "bug", "prod", "crash" | P0 | C2→C3 | ANVIL solo (C2), +VOLT+SPECTER (C3) |
+| "client", "deadline", "livrer" | P1 | C2→C3 | CLOSER solo (C2), +PHILOMÈNE+PRISM (C3) |
+| "stratégie", "empire", "vision" | P2 | C3→C4 | CORTEX+OMEGA (C3), +SIBYL+GLITCH (C4) |
+| "idée", "brainstorm", "concept" | P2 | C2→C3 | GLITCH solo (C2), +NICHE+NEXUS (C3) |
+| "setup", "lent", "optimiser" | P2 | C2 | PULSE (solo) |
+| "bilan", "résultats", "KPIs" | P2 | C2→C3 | DATUM solo (C2), +LEDGER+PRISM (C3) |
+| "contourne", "bypass", "hack" | P1 | C2→C3 | HUNTER solo (C2), +SPECTER+SLY (C3) |
+| Question simple, chat | P3 | C1 | Réponse directe (0 agent) |
 
 ### Règles SENTINEL
-1. **Solo par défaut** — 1 agent suffit dans 70% des cas
-2. **Binôme si nécessaire** — 2 angles complémentaires requis
-3. **Trinôme max** — sauf projet complet (P0/P1 critique)
-4. **Ne jamais activer plus de 5 agents** — bruit > signal
-5. **Toujours finir par LIMPIDE** — résumé clair pour Augus
+1. **Solo par défaut (C2)** — 1 agent suffit dans 70% des cas
+2. **Binôme/trinôme si nécessaire (C3)** — 2-3 angles complémentaires
+3. **Coalition pour projets complexes (C4)** — 4-6 agents
+4. **Mobilisation critique (C5)** — 8+ agents ou `/cooper` (50)
+5. **FRANKLIN termine dès C3+** — résumé clair + sagesse pour Augus
+6. **Leaders (SLY/BENTLEY/MURRAY) en C5 uniquement** — crises et pivots
+
+### PRE-FLIGHT — Fact Ledger (inspiré AutoGen MagenticOne)
+> Avant toute mission C3+, SENTINEL exécute ce pre-flight en 3 questions :
+
+```
+🎯 SENTINEL PRE-FLIGHT :
+1. QUE SAIS-JE ? → Faits connus, données disponibles, contexte existant
+2. QUE ME MANQUE-T-IL ? → Infos à chercher, fichiers à lire, données à vérifier
+3. EST-CE QUE JE TOURNE EN ROND ? → Détection de boucle : ai-je déjà tenté cette approche ?
+```
+
+**Règles Fact Ledger :**
+- C1-C2 : pas de pre-flight (action directe)
+- C3+ : pre-flight obligatoire (mental, pas affiché sauf si Augus demande)
+- Si la réponse à Q3 = OUI → changer d'approche immédiatement, alerter Augus en 1 ligne
+- Hiérarchie d'information : fichiers projet > recherche web > connaissance interne
+
+### LOOP DETECTION — Anti-boucle (inspiré AutoGen)
+> À chaque itération sur une tâche complexe, vérifier :
+
+```
+{
+  "progress": true/false,     // Est-ce qu'on avance ?
+  "loop_detected": true/false, // Même action tentée 2+ fois ?
+  "action": "continue | pivot | escalate"
+}
+```
+
+- **continue** : on progresse, on enchaîne
+- **pivot** : on tourne en rond → changer d'angle, nouvel agent, nouvelle méthode
+- **escalate** : blocage total → alerter Augus avec 2 options concrètes
 
 ---
 
@@ -56,23 +89,22 @@
 ### Utilisation du Skills Tree
 
 ```python
-# Logique conceptuelle (pas du code exécutable)
+# Logique conceptuelle — Système adaptatif C1→C5
 
 intention = analyser(message)
-complexité = évaluer(intention)  # 1-5
+priorité = évaluer_priorité(intention)  # P0→P3
+complexité = évaluer_complexité(intention)  # C1→C5
 
-if complexité <= 2:
-    mode = "Focus"
-    agents = [meilleur_agent(intention)]
-elif complexité <= 3:
-    mode = "Conseil"
-    agents = top_2_agents(intention)
-elif complexité <= 4:
-    mode = "Débat"
-    agents = top_3_agents(intention) + [LIMPIDE]
-else:
-    mode = "Coalition"
-    agents = agents_par_pôle(intention) + [SENTINEL, BAGHEERA, LIMPIDE]
+if complexité == 1:  # C1 — Trivial
+    agents = []  # Réponse directe, 0 agent
+elif complexité == 2:  # C2 — Simple
+    agents = [meilleur_agent(intention)]  # Solo
+elif complexité == 3:  # C3 — Modéré
+    agents = top_2_3_agents(intention) + [FRANKLIN]  # Binôme/trinôme
+elif complexité == 4:  # C4 — Complexe
+    agents = coalition(intention) + [SENTINEL, FRANKLIN]  # 4-6 agents
+else:  # C5 — Critique
+    agents = mobilisation(intention) + [SLY, BENTLEY, MURRAY, FRANKLIN]  # 8+
 ```
 
 ### Skills Tree activation
@@ -89,7 +121,7 @@ else:
 |---------------|---------|
 | 1 | Pas de fusion — output direct |
 | 2 | Header `[AGENT1 + AGENT2]` + synthèse |
-| 3+ | BAGHEERA fusionne → livrable unifié |
+| 3+ | SENTINEL fusionne → livrable unifié |
 
 ### Format de fusion standard
 ```
@@ -98,7 +130,7 @@ else:
 [Synthèse fusionnée — 1 seul output cohérent]
 
 ---
-Version vulgarisée (LIMPIDE) :
+Version vulgarisée (FRANKLIN) :
 [Résumé en 3 phrases max, zéro jargon]
 ```
 
@@ -121,7 +153,7 @@ Version vulgarisée (LIMPIDE) :
 🎯 STRATÉGIQUE :
 [Impact business, prochaines étapes, décisions à prendre]
 
-💎 RÉSUMÉ CLAIR (LIMPIDE) :
+💎 RÉSUMÉ CLAIR (FRANKLIN) :
 [3 phrases. Ce qui a été fait. Pourquoi. Ce qui change pour toi.]
 ━━━━━━━━━━━━━━━━━━━
 ```
@@ -145,39 +177,76 @@ Version vulgarisée (LIMPIDE) :
 ### Commandes vocales rapides
 | Ce qu'Augus dit | Ce qui se passe |
 |-----------------|-----------------|
-| "Fixe le bug dans [fichier]" | FORGE → debug → fix → commit |
-| "Résume ce qui s'est passé" | LIMPIDE → digest des dernières actions |
+| "Fixe le bug dans [fichier]" | ANVIL → debug → fix → commit |
+| "Résume ce qui s'est passé" | FRANKLIN → digest des dernières actions |
 | "Priorise mes tâches" | SENTINEL → liste P0→P3 |
-| "Montre-moi les KPIs" | CYPHER → dashboard rapide |
-| "Clean le workspace" | ZEN → nettoyage .tmp, fichiers morts |
-| "C'est quoi le plan ?" | MURPHY → état du projet structuré |
+| "Montre-moi les KPIs" | DATUM → dashboard rapide |
+| "Clean le workspace" | FRANKLIN → nettoyage .tmp, fichiers morts |
+| "C'est quoi le plan ?" | CORTEX → état du projet structuré |
 | "Quel agent pour [X] ?" | SENTINEL → routing + explication |
 
 ---
 
 ## Intégration avec les systèmes existants
 
-### agent_router.py
-- `route(message)` → retourne agents scorés par pertinence
-- SENTINEL utilise ce routeur comme base, puis affine avec le Skills Tree
+### agent_profiles.py
+- 50 agents (1 nébuleuse + 3 leaders + 6 méta + 40 opérationnels)
+- Chaque agent : specialty, triggers, voice
 
 ### brain.py (TITAN)
-- Cameo système inchangé (~30% des messages)
-- Nouvelle catégorie "simplification" avec LIMPIDE
-- SENTINEL ajouté dans catégorie "strategie"
-- PULSE ajouté dans catégorie "tech" et "setup"
+- Cameo système (~30% des messages)
+- 28 catégories thématiques
+- SENTINEL dans "strategie", PULSE dans "tech"/"setup"
+- FRANKLIN 🐢 dans "simplification"/"mindset"
+- HUNTER 🏴‍☠️ dans "contournement"
 
 ### CASTING.md
-- Registre complet des 30 agents
-- Mis à jour avec la restructuration
+- Registre complet des 50 agents
+- Coalitions par mission + hiérarchie Nébuleuse
+
+---
+
+## Étape 2b — Réflexe DEEP SEARCH (intercalé entre analyse et sélection)
+
+> **Avant de répondre, le Building cherche quand c'est pertinent.**
+> Directive complète : `directives/DEEP_SEARCH.md`
+
+### Quand SENTINEL déclenche une recherche automatique
+| Signal | Action recherche | Niveau |
+|--------|-----------------|--------|
+| Framework/lib non maîtrisé dans la tâche | Doc officielle + exemples GitHub | L2 |
+| Bug avec message d'erreur spécifique | Chercher l'erreur exacte en ligne | L1 |
+| Augus mentionne un outil/service/techno | Repo GitHub + doc + exemples IMMÉDIATEMENT | L2 |
+| API externe à intégrer | Doc officielle + pricing + exemples | L2 |
+| Décision stratégique avec données marché | Données actuelles, pas mémoire périmée | L3 |
+| Code d'un concurrent ou référence | Trouver le repo, lire le code | L2 |
+
+### Agents avec réflexe recherche OBLIGATOIRE
+- **HUNTER** 🏴‍☠️ — toujours (c'est sa nature)
+- **CIPHER** 🔐 — nouveau framework/lib/techno
+- **RADAR** 📡 — veille et état du marché
+- **ANVIL** 🔨 — bug non-trivial
+- **VOLT** ⚡ — patterns d'architecture
+- **SPECTER** 👻 — sécurité et CVE
+- **NICHE** 🎯 — validation de niche avec données réelles
+- **TURING** 🧪 — benchmarks IA actuels
+
+### Outils de recherche
+- `WebSearch` — recherche web (point de départ)
+- `WebFetch` — lire une page (doc, pricing, article)
+- `gh` (GitHub CLI) — repos, code source, issues
+- `Task` (subagent Explore) — exploration profonde du codebase local
 
 ---
 
 ## Règles d'or de l'orchestration V2
 
-1. **Solo par défaut** — complexité minimale, toujours
-2. **SENTINEL dispatch, BAGHEERA supervise** — jamais l'inverse
-3. **LIMPIDE termine** — chaque output complexe finit par un résumé clair
-4. **Zéro agent inutile** — si un agent n'apporte rien de nouveau, il ne participe pas
-5. **Boucle R→F→D jamais interrompue** — le feedback revient toujours à R
-6. **Le système devient plus fort après chaque cycle** — sinon le cycle n'est pas terminé
+1. **Adaptatif C1→C5** — le nombre d'agents suit la complexité réelle, pas un minimum fixe
+2. **Solo par défaut (C2)** — 1 agent suffit 70% du temps
+3. **SENTINEL dispatch ET supervise** — dispatch + orchestration groupes
+4. **FRANKLIN 🐢 termine dès C3+** — résumé clair + sagesse philosophique
+5. **Leaders en C5 uniquement** — SLY/BENTLEY/MURRAY réservés aux crises
+6. **Zéro agent inutile** — si un agent n'apporte rien de nouveau, il ne participe pas
+7. **Boucle R→F→D→R** — le feedback D revient toujours à R (jamais coupé)
+8. **Le système évolue** — DARWIN observe et propose des mutations adaptatives
+9. **DEEP SEARCH réflexe** — si 30 sec de recherche améliorent la réponse, c'est OBLIGATOIRE (directives/DEEP_SEARCH.md)

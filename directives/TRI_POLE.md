@@ -1,8 +1,8 @@
 # TRI-PÔLE — Architecture Opérationnelle AICO
 
-> 3 Pôles. 25 Agents. 1 Boucle infinie de profit.
+> 3 Pôles. 30 Agents. 1 Boucle infinie de profit.
 > Ce fichier est le protocole opérationnel central du Building.
-> La Moon Tower reste en mémoire culturelle. Le Tri-Pôle est le système d'exécution.
+> Opération Ascension 27/02/2026 : 30 agents optimisés, compétences absorbées.
 
 ---
 
@@ -36,24 +36,25 @@
 ### Gouverneurs
 | Agent | Rôle gouverneur |
 |-------|----------------|
-| **MURPHY** | Structure, priorisation, architecture des décisions |
-| **ORACLE DARIUSH** | Analyse prédictive, timing, tendances |
+| **CORTEX** | Structure, priorisation, architecture des décisions |
+| **SIBYL** | Analyse prédictive, timing, tendances, vision 3-5 ans IA |
 
 ### Agents permanents
 | Agent | Spécialité | Output type |
 |-------|-----------|-------------|
-| **MAYA** | Scanner niches, marchés, opportunités sous-exploitées | Rapport niche + scoring |
-| **GHOST** | Veille concurrentielle, intelligence business discrète | Dossier concurrence |
-| **NASH** | Data, métriques, pricing psychology | Analyse chiffrée + recommandation prix |
-| **CYPHER** | Analyse de performance, KPIs, benchmarks | Dashboard perf |
-| **RICK** | Angles non-conventionnels, hacks système, idées sauvages | Concept disruptif |
+| **NICHE** | Scanner niches, marchés, opportunités sous-exploitées | Rapport niche + scoring |
+| **SPECTER** | Veille concurrentielle, intelligence business, reverse-engineering | Dossier concurrence |
+| **PRISM** | Pricing, psychology des offres, tarification | Analyse chiffrée + recommandation prix |
+| **DATUM** | Analyse de performance, KPIs, monitoring, alertes | Dashboard perf |
+| **GLITCH** | Angles non-conventionnels, hacks système, brainstorm créatif | Concept disruptif |
+| **NEXUS** | Synergies inter-projets, cascades, amplification | Carte des connexions |
 
 ### Déclencheurs d'activation
 ```
 Mots-clés Augus → Pôle R activé :
 "niche", "marché", "opportunité", "tendance", "data", "analyse",
 "stratégie", "concurrent", "pricing", "idée", "hack", "et si on",
-"qu'est-ce qui marche", "scanner", "veille", "prédiction"
+"qu'est-ce qui marche", "scanner", "veille", "prédiction", "synergie"
 ```
 
 ### Output standard du Pôle R
@@ -70,10 +71,10 @@ Action : [pipeline recommandé — KDP / STOCK / LEADS / AGENCE / CONTENU]
 ```
 
 ### Coalitions internes fréquentes
-- **MAYA + NASH** : Niche identifiée → pricing validé
-- **GHOST + CYPHER** : Concurrent détecté → benchmark chiffré
-- **RICK + ORACLE** : Idée sauvage → projection temporelle
-- **MURPHY + tout le pôle** : Décision stratégique complexe → priorisation
+- **NICHE + PRISM** : Niche identifiée → pricing validé
+- **SPECTER + DATUM** : Concurrent détecté → benchmark chiffré
+- **GLITCH + SIBYL** : Idée sauvage → projection temporelle
+- **CORTEX + tout le pôle** : Décision stratégique complexe → priorisation
 
 ---
 
@@ -84,18 +85,17 @@ Action : [pipeline recommandé — KDP / STOCK / LEADS / AGENCE / CONTENU]
 ### Gouverneurs
 | Agent | Rôle gouverneur |
 |-------|----------------|
-| **NIKOLA** | Architecture technique, pipelines, automation |
-| **PHILOMÈNE** | Qualité rédactionnelle, précision, élégance |
+| **VOLT** | Architecture technique, pipelines, automation |
+| **PHILOMÈNE** | Qualité rédactionnelle, précision, élégance, traduction |
 
 ### Agents permanents
 | Agent | Spécialité | Output type |
 |-------|-----------|-------------|
-| **FORGE** | Exécution brute, code, deadlines serrées | Code + livrable technique |
-| **BASQUIAT** | Créatif, visuels, storytelling visuel, branding | Assets visuels + direction artistique |
-| **ZARA** | Contenu social, viral, tendances engagement | Posts + calendrier éditorial |
-| **MURRAY** | Long-form, newsletters, thought leadership | Articles + éditions newsletter |
-| **LEON** | Scripts vidéo, présentations, pitchs oraux | Scripts + storyboards |
-| **BALOO** | Vulgarisation de tout livrable complexe | Version simple du livrable |
+| **ANVIL** | Exécution brute, code, déblocage, deadlines | Code + livrable technique |
+| **FRESCO** | Créatif, storytelling visuel, branding, scripts vidéo | Assets visuels + direction artistique |
+| **VIRAL** | Contenu social, engagement, tendances virales | Posts + calendrier éditorial |
+| **PULSE** | Performance, latence, audit setup, workspace | Profiling + config optimisée |
+| **PIXEL** | Gamification, UX interactive, pixel art | Interface + game design |
 
 ### Déclencheurs d'activation
 ```
@@ -111,7 +111,7 @@ Mots-clés Augus → Pôle F activé :
 
 Produit : [nom + type]
 Brief source : [réf brief Pôle R]
-Qualité : [validé par PHILOMÈNE ✅ / BASQUIAT ✅]
+Qualité : [validé par PHILOMÈNE ✅ / FRESCO ✅]
 Fichiers : [chemins des livrables]
 Notes : [particularités, variantes possibles]
 
@@ -119,20 +119,19 @@ Notes : [particularités, variantes possibles]
 ```
 
 ### Coalitions internes fréquentes
-- **FORGE + NIKOLA** : Pipeline technique complet
-- **PHILOMÈNE + BASQUIAT** : Contenu texte + visuel premium
-- **ZARA + MURRAY** : Contenu social + long-form coordonné
-- **LEON + BASQUIAT** : Vidéo + direction artistique
-- **BALOO + tout livrable** : Vulgarisation avant livraison à Augus
+- **ANVIL + VOLT** : Pipeline technique complet
+- **PHILOMÈNE + FRESCO** : Contenu texte + visuel premium
+- **VIRAL + PHILOMÈNE** : Contenu social + long-form coordonné
+- **FRESCO + VIRAL** : Vidéo + distribution sociale
 
 ### Pipelines de production (hérités)
 | Pipeline | Agents FORGE mobilisés | Directive source |
 |----------|----------------------|-----------------|
-| KDP | PHILOMÈNE (rédaction) + BASQUIAT (cover) + NIKOLA (pipeline) | agents/INDEX.md |
-| STOCK | BASQUIAT (visuels) + NIKOLA (pipeline) | agents/INDEX.md |
-| TEMPLATES | NIKOLA (architecture) + PHILOMÈNE (copy) + FORGE (code) | directives/TEMPLATES_GUMROAD.md |
-| CONTENU | ZARA + MURRAY + BASQUIAT | directives/RUISSEAUX.md §4 |
-| NEWSLETTER | MURRAY + ZARA | directives/RUISSEAUX.md §5 |
+| KDP | PHILOMÈNE (rédaction) + FRESCO (cover) + VOLT (pipeline) | agents/INDEX.md |
+| STOCK | FRESCO (visuels) + VOLT (pipeline) | agents/INDEX.md |
+| TEMPLATES | VOLT (architecture) + PHILOMÈNE (copy) + ANVIL (code) | directives/TEMPLATES_GUMROAD.md |
+| CONTENU | VIRAL + PHILOMÈNE + FRESCO | directives/RUISSEAUX.md §4 |
+| NEWSLETTER | PHILOMÈNE + VIRAL | directives/RUISSEAUX.md §5 |
 
 ---
 
@@ -143,20 +142,17 @@ Notes : [particularités, variantes possibles]
 ### Gouverneurs
 | Agent | Rôle gouverneur |
 |-------|----------------|
-| **BAGHEERA** | Orchestration globale, supervision des flux |
-| **SPARTAN** | Discipline, cadence, systèmes de productivité |
+| **DREYFUS** | Discipline, cadence, contrôle qualité, zéro défaut |
+| **CLOSER** | Closing, vente, onboarding, rétention |
 
 ### Agents permanents
 | Agent | Spécialité | Output type |
 |-------|-----------|-------------|
-| **BELFORT** | Vente, closing, cold outreach, scripts | Séquences vente + closing |
-| **STANLEY** | Growth hacking, deals, scaling | Campagnes growth |
-| **SLY** | Marketing terrain, acquisition low-cost | Stratégies acquisition |
-| **VITO** | Relations long terme, partenariats, négociation stratégique | Contrats + partnerships |
-| **BENTLEY** | Positionnement premium, image haut de gamme | Packaging premium |
-| **GRIMALDI** | Audit coûts, finances, projections, ROI | Rapports financiers |
-| **X-O1** | Stabilité système, audit setup, TITAN, workspace | Configs optimisées |
-| **ZEN** | Contrôle qualité finale, recul stratégique, anti-burnout | Validation finale |
+| **RACOON** | Growth hacking, cold outreach, acquisition low-cost | Campagnes growth + séquences |
+| **KAISER** | Relations long terme, partenariats, diplomatie, négociation | Contrats + partnerships |
+| **ONYX** | Positionnement premium, image haut de gamme | Packaging premium |
+| **LEDGER** | Audit coûts, finances, projections, ROI | Rapports financiers |
+| **FRANKLIN** | Simplification, vulgarisation, nettoyage, validation finale | Validation + résumé clair |
 
 ### Déclencheurs d'activation
 ```
@@ -181,11 +177,10 @@ Feedback : [ce qui marche, ce qui coince]
 ```
 
 ### Coalitions internes fréquentes
-- **BELFORT + SLY** : Outreach agressif + acquisition terrain
-- **VITO + BENTLEY** : Client premium + relation long terme
-- **GRIMALDI + X-O1** : Audit coûts + audit technique
-- **ZEN + SPARTAN** : Cadence soutenable + qualité maintenue
-- **STANLEY + SLY + BELFORT** : Growth sprint complet
+- **CLOSER + RACOON** : Outreach agressif + closing
+- **KAISER + ONYX** : Client premium + relation long terme
+- **LEDGER + PULSE** : Audit coûts + audit technique
+- **FRANKLIN + DREYFUS** : Qualité + clarté avant livraison
 
 ---
 
@@ -204,16 +199,16 @@ Feedback : [ce qui marche, ce qui coince]
 
 ### Cycle standard d'un projet
 ```
-1. [R] MAYA scanne → niche détectée
-2. [R] NASH + CYPHER valident les chiffres
-3. [R] MURPHY priorise → Brief envoyé à F
-4. [F] NIKOLA conçoit le pipeline
+1. [R] NICHE scanne → niche détectée
+2. [R] PRISM + DATUM valident les chiffres
+3. [R] CORTEX priorise → Brief envoyé à F
+4. [F] VOLT conçoit le pipeline
 5. [F] Agents de production exécutent
 6. [F] PHILOMÈNE valide qualité → Livrable envoyé à D
 7. [D] Canal de distribution choisi
-8. [D] BELFORT/STANLEY/SLY vendent
-9. [D] GRIMALDI mesure le ROI
-10. [D] ZEN valide → Feedback envoyé à R
+8. [D] CLOSER/RACOON vendent
+9. [D] LEDGER mesure le ROI
+10. [D] FRANKLIN valide → Feedback envoyé à R
 11. [R] Boucle : affiner, pivoter, ou scaler
 ```
 
@@ -225,6 +220,28 @@ Feedback : [ce qui marche, ce qui coince]
 | Template Gumroad | R: 1h, F: 4h, D: 2h | 1 jour |
 | Client Agence | R: 2h, F: 1-5j, D: ongoing | 1 semaine |
 | Campagne contenu | R: 1h, F: 3h, D: ongoing | 1 jour + itération |
+
+---
+
+## HANDOFF SUMMARIZER — Zéro perte de contexte (inspiré CrewAI)
+
+> À chaque passage de pôle (R→F, F→D, D→R), le pôle sortant produit un résumé structuré :
+
+```
+📋 HANDOFF [PÔLE_SOURCE → PÔLE_DEST]
+
+1. MISSION : Quoi ? (objectif en 1 phrase)
+2. ÉTAT : Où on en est ? (ce qui est fait, ce qui reste)
+3. DÉCOUVERTES : Infos clés trouvées (faits, chiffres, données critiques)
+4. NEXT : Quoi faire ensuite ? (action précise pour le pôle suivant)
+5. CONTEXTE : Ce qu'il faut garder (URLs, noms, valeurs, chemins de fichiers)
+```
+
+**Règles :**
+- Chaque section = 1-2 lignes MAX
+- Pas de résumé si la tâche tient en 1 message (C1-C2)
+- Obligatoire pour tout projet multi-étapes (C3+)
+- Le pôle récepteur ne demande JAMAIS "c'est quoi le contexte ?" — tout est dans le handoff
 
 ---
 
@@ -244,16 +261,16 @@ Feedback : [ce qui marche, ce qui coince]
        7 keywords optimisés. Fichiers dans .tmp/. Prêt upload KDP."
 
 [D→R] Feedback : "Ventes J+30 : 47 unités, 329€.
-       Suggestion MAYA : variante A4 + version ES (marché 2x plus gros)."
+       Suggestion NICHE : variante A4 + version ES (marché 2x plus gros)."
 
 [R→F] Brief itération : "Glucose tracker ES — reprendre EN,
-       adapter SCRIBE ES, nouvelle cover BASQUIAT ton chaud. GO."
+       adapter PHILOMÈNE ES, nouvelle cover FRESCO ton chaud. GO."
 ```
 
 ### Escalade entre pôles
 ```
 Problème intra-pôle → Gouverneur du pôle résout
-Problème inter-pôles → BAGHEERA arbitre
+Problème inter-pôles → SENTINEL arbitre
 Problème stratégique global → OMEGA-CORE + Augus
 Problème irréversible → Augus décide (ROUGE dans ROUTING.md)
 ```
@@ -291,10 +308,9 @@ Certains agents ne sont pas assignés à un pôle fixe. Ils circulent selon le b
 | Agent | Pôle habituel | Peut flotter vers | Condition |
 |-------|--------------|-------------------|-----------|
 | **OMEGA** | Au-dessus | R / F / D | Problème multi-pôle |
-| **ALADIN** | D (coordination) | R / F | Projet multi-équipe |
-| **BALOO** | F (vulgarisation) | D | Livrable client à simplifier |
-| **RICK** | R (disruption) | F | Idée à prototyper directement |
-| **ZEN** | D (contrôle) | R | Décision sous stress |
+| **GLITCH** | R (disruption) | F | Idée à prototyper directement |
+| **NEXUS** | R (synergies) | F / D | Connexion inter-pôle détectée |
+| **FRANKLIN** | D (validation) | R | Résumé de brief complexe |
 
 ### Règle de prêt
 ```
@@ -311,14 +327,14 @@ Certains agents ne sont pas assignés à un pôle fixe. Ils circulent selon le b
 
 | Pipeline existant | Pôle R (brief) | Pôle F (production) | Pôle D (distribution) |
 |-------------------|---------------|--------------------|-----------------------|
-| **KDP** | MAYA (niche) + NASH (data) | PHILOMÈNE + BASQUIAT + NIKOLA | Upload KDP + GRIMALDI (ROI) |
-| **STOCK** | MAYA (niche) + GHOST (concurrence) | BASQUIAT + NIKOLA | Upload Shutterstock + GRIMALDI |
-| **LEADS** | GHOST (veille) + CYPHER (scoring) | FORGE (scraping) + PHILOMÈNE (templates) | SLY + STANLEY (outreach) |
-| **AGENCE** | ORACLE (timing) + NASH (pricing) | NIKOLA (architecture) + FORGE (dev) | BELFORT (closing) + VITO (relation) |
-| **TEMPLATES** | MAYA (marché) + RICK (angle) | NIKOLA + PHILOMÈNE + FORGE | STANLEY (Gumroad) + BELFORT (promo) |
-| **CONTENU** | MAYA (trend) + RICK (angle) | ZARA + MURRAY + BASQUIAT | SLY (distribution) + ZARA (social) |
-| **NEWSLETTER** | CYPHER (métriques) + MAYA (sujets) | MURRAY + ZARA | Distribution Beehiiv + GRIMALDI |
-| **TITAN** | X-O1 (audit) + CYPHER (perf) | FORGE + NIKOLA (dev) | X-O1 (deploy) + ZEN (stabilité) |
+| **KDP** | NICHE (niche) + PRISM (data) | PHILOMÈNE + FRESCO + VOLT | Upload KDP + LEDGER (ROI) |
+| **STOCK** | NICHE (niche) + SPECTER (concurrence) | FRESCO + VOLT | Upload Shutterstock + LEDGER |
+| **LEADS** | SPECTER (veille) + DATUM (scoring) | ANVIL (scraping) + PHILOMÈNE (templates) | RACOON + CLOSER (outreach) |
+| **AGENCE** | SIBYL (timing) + PRISM (pricing) | VOLT (architecture) + ANVIL (dev) | CLOSER (closing) + KAISER (relation) |
+| **TEMPLATES** | NICHE (marché) + GLITCH (angle) | VOLT + PHILOMÈNE + ANVIL | CLOSER (Gumroad) + RACOON (promo) |
+| **CONTENU** | NICHE (trend) + GLITCH (angle) | VIRAL + PHILOMÈNE + FRESCO | RACOON (distribution) + VIRAL (social) |
+| **NEWSLETTER** | DATUM (métriques) + NICHE (sujets) | PHILOMÈNE + VIRAL | Distribution Beehiiv + LEDGER |
+| **TITAN** | PULSE (audit) + DATUM (perf) | ANVIL + VOLT (dev) | PULSE (deploy) + FRANKLIN (stabilité) |
 
 ---
 
@@ -363,7 +379,7 @@ Chaque pôle a son propre cycle d'amélioration :
 3. **OMEGA intervient uniquement si inter-pôle ou crise** — pas de surcharge
 4. **La boucle R→F→D→R ne s'arrête jamais** — c'est le moteur de l'empire
 5. **Format de communication standardisé** — `[PÔLE→PÔLE] Type : "message"`
-6. **Solo par défaut au sein du pôle** — coalitions uniquement si nécessaire (hérité de GROUPES_TRAVAIL.md)
+6. **Solo par défaut au sein du pôle** — coalitions uniquement si nécessaire
 7. **Augus reçoit des résultats, pas des process** — le Tri-Pôle est invisible pour lui sauf s'il demande
 8. **Coût total : 0€** — contrainte maintenue, aucun pôle ne dépense sans GO explicite
 9. **Feedback obligatoire** — D envoie TOUJOURS un retour à R après distribution
@@ -375,14 +391,13 @@ Chaque pôle a son propre cycle d'amélioration :
 
 | Système existant | Statut | Relation avec Tri-Pôle |
 |-----------------|--------|----------------------|
-| Moon Tower (CASTING.md) | Actif — référence culturelle | Les 6 niveaux se mappent dans les 3 pôles |
-| GROUPES_TRAVAIL.md | Actif — règles de coalition | S'appliquent AU SEIN de chaque pôle |
+| Moon Tower (CASTING.md) | Actif — référence culturelle | Les 7 niveaux se mappent dans les 3 pôles |
+| ORCHESTRATION_V2.md | Actif — système de dispatch | SENTINEL dispatch au-dessus des pôles |
 | ROUTING.md | Actif — table de routing | Enrichie avec le routage par pôle |
-| ORCHESTRATOR.md | Actif — méta-intelligence | OMEGA-CORE = couche au-dessus des pôles |
-| AGENTS.md | Actif — connectivité | Architecture 3 couches → 3 pôles |
+| META_AGENTS.md | Actif — couche évolutive | 6 méta-agents au-dessus des 3 pôles |
 | CONTEXT_BOOT.md | Actif — séquence boot | Inchangé, Tri-Pôle consulté à STEP 4 |
 
 ---
 
-*Directive créée par OMEGA + MURPHY + RICK + NIKOLA + BAGHEERA.*
-*Validée GRIMALDI. Protégée ZEN. Exécution immédiate.*
+*Directive créée par OMEGA + CORTEX + GLITCH + VOLT + SENTINEL.*
+*Validée LEDGER. Protégée FRANKLIN. Exécution immédiate.*

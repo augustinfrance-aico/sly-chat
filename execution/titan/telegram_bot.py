@@ -20,6 +20,7 @@ import json
 import logging
 import time
 from datetime import datetime
+from pathlib import Path
 
 import requests
 
@@ -101,6 +102,10 @@ class TitanTelegram:
     @property
     def web(self):
         return _lazy(".modules.web", "TitanWeb")
+
+    @property
+    def perplexity(self):
+        return _lazy(".modules.perplexity", "TitanPerplexity")
 
     @property
     def upwork(self):
@@ -313,11 +318,13 @@ class TitanTelegram:
             log.warning(f"Message truncated from {len(text)} chars")
         return self._send_single(chat_id, text, parse_mode)
 
-    def _send_single(self, chat_id: str, text: str, parse_mode: str = None) -> dict:
-        """Send a single message."""
+    def _send_single(self, chat_id: str, text: str, parse_mode: str = None, reply_markup: dict = None) -> dict:
+        """Send a single message. Supports inline keyboards and WebApp buttons."""
         data = {"chat_id": chat_id, "text": text}
         if parse_mode:
             data["parse_mode"] = parse_mode
+        if reply_markup:
+            data["reply_markup"] = reply_markup
 
         try:
             resp = requests.post(f"{self.base_url}/sendMessage", json=data, timeout=10)
@@ -511,6 +518,97 @@ class TitanTelegram:
                 self.send_message(chat_id, response)
                 log.info(f"[SENT OK] {response[:80]}...")
 
+    # === NIGHTSHIFT HANDLER ===
+
+    NIGHTSHIFT_FILE = Path(__file__).parent / "memory" / "nightshift.json"
+
+    def _load_nightshift(self) -> dict:
+        try:
+            with open(self.NIGHTSHIFT_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {"enabled": False, "tasks": [], "history": []}
+
+    def _save_nightshift(self, data: dict):
+        with open(self.NIGHTSHIFT_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+
+    def _handle_nightshift(self, text: str) -> str:
+        """Handle /nightshift commands."""
+        from .scheduler import TitanScheduler
+
+        arg = text[len("/nightshift"):].strip().lower()
+        config = self._load_nightshift()
+        catalog = TitanScheduler.NIGHTSHIFT_CATALOG
+
+        # /nightshift (no arg) → show status
+        if not arg or arg == "list":
+            status = "ON" if config.get("enabled") else "OFF"
+            tasks = config.get("tasks", [])
+            lines = [f"🌙 NIGHTSHIFT — {status}\n"]
+            if tasks:
+                for t in tasks:
+                    meta = catalog.get(t, {})
+                    lines.append(f"  {meta.get('emoji', '⚙️')} {meta.get('label', t)} ({meta.get('hour', '?')}h)")
+            else:
+                lines.append("  Aucune tache configuree.")
+            lines.append(f"\n📋 CATALOGUE DISPO:")
+            for tid, meta in catalog.items():
+                marker = " ✅" if tid in tasks else ""
+                lines.append(f"  {meta['emoji']} {tid} — {meta['label']} ({meta['hour']}h){marker}")
+            lines.append(f"\n/nightshift on|off\n/nightshift add <id>\n/nightshift remove <id>\n/nightshift clear")
+            return "\n".join(lines)
+
+        # /nightshift on
+        if arg == "on":
+            config["enabled"] = True
+            self._save_nightshift(config)
+            tasks = config.get("tasks", [])
+            if not tasks:
+                return "🌙 Nightshift ACTIVE — mais aucune tache configuree.\nUtilise /nightshift add <id> pour ajouter."
+            return f"🌙 Nightshift ACTIVE — {len(tasks)} taches programmees."
+
+        # /nightshift off
+        if arg == "off":
+            config["enabled"] = False
+            self._save_nightshift(config)
+            return "🔴 Nightshift desactive."
+
+        # /nightshift clear
+        if arg == "clear":
+            config["tasks"] = []
+            config["history"] = []
+            self._save_nightshift(config)
+            return "🗑️ Toutes les taches nightshift supprimees."
+
+        # /nightshift add <task_id>
+        if arg.startswith("add "):
+            task_id = arg[4:].strip()
+            if task_id not in catalog:
+                available = ", ".join(catalog.keys())
+                return f"Tache inconnue: {task_id}\nDisponibles: {available}"
+            tasks = config.get("tasks", [])
+            if task_id in tasks:
+                return f"{task_id} deja dans le nightshift."
+            tasks.append(task_id)
+            config["tasks"] = tasks
+            self._save_nightshift(config)
+            meta = catalog[task_id]
+            return f"{meta['emoji']} {meta['label']} ajoute au nightshift ({meta['hour']}h)."
+
+        # /nightshift remove <task_id>
+        if arg.startswith("remove ") or arg.startswith("rm "):
+            task_id = arg.split(" ", 1)[1].strip()
+            tasks = config.get("tasks", [])
+            if task_id not in tasks:
+                return f"{task_id} n'est pas dans le nightshift."
+            tasks.remove(task_id)
+            config["tasks"] = tasks
+            self._save_nightshift(config)
+            return f"Tache {task_id} retiree du nightshift."
+
+        return "Commande inconnue. /nightshift pour voir les options."
+
     async def _route_command(self, text: str, chat_id: str) -> str:
         """Route message to the right module."""
 
@@ -570,6 +668,18 @@ class TitanTelegram:
         if text == "/start":
             return self._get_welcome()
 
+        if text == "/webapp":
+            # Open SLY-COMMAND dashboard as Telegram Mini App
+            webapp_url = "https://sly-command.netlify.app"
+            markup = {
+                "inline_keyboard": [[{
+                    "text": "\U0001f3ae SLY-COMMAND HQ",
+                    "web_app": {"url": webapp_url}
+                }]]
+            }
+            self._send_single(chat_id, "\U0001f3af Ouvre ton QG, Commandant.", reply_markup=markup)
+            return None  # Already sent with markup
+
         if text == "/help":
             return self._get_help()
 
@@ -605,6 +715,13 @@ class TitanTelegram:
         if text == "/heatmap":
             return self.dashboard.get_heatmap()
 
+        # ===================
+        # === NIGHTSHIFT ===
+        # ===================
+
+        if text.startswith("/nightshift"):
+            return self._handle_nightshift(text)
+
         # ================
         # === R&D LAB ===
         # ================
@@ -629,13 +746,17 @@ class TitanTelegram:
             self.gamification.track_action("search")
             return await self.news.search_news(text[12:].strip())
 
-        # ============
-        # === WEB ====
-        # ============
+        # =======================
+        # === WEB & RECHERCHE ===
+        # =======================
 
-        if text.startswith("/search "):
+        if text.startswith("/search ") or text.startswith("/perplexity "):
             self.gamification.track_action("search")
-            return await self.web.search(text[8:].strip())
+            query = text.split(" ", 1)[1].strip() if " " in text else ""
+            return await self.perplexity.search(query)
+
+        if text == "/searchhistory":
+            return self.perplexity.get_history()
 
         if text.startswith("/url "):
             self.gamification.track_action("search")
@@ -799,9 +920,21 @@ class TitanTelegram:
         # === VOICE ===
         # =============
 
+        if text == "/voice" or text == "/voice list":
+            return self.voice.list_elevenlabs_voices()
+
         if text.startswith("/voice "):
-            voice_text = text[7:].strip()
-            result = await self.voice.speak_and_send(chat_id, voice_text)
+            args = text[7:].strip()
+            parts = args.split(None, 1)
+            # Check if first word is a voice name
+            from .modules.voice import ELEVENLABS_VOICES
+            if len(parts) >= 2 and parts[0].lower() in ELEVENLABS_VOICES:
+                voice_name = parts[0].lower()
+                voice_text = parts[1]
+            else:
+                voice_name = None
+                voice_text = args
+            result = await self.voice.speak_elevenlabs(chat_id, voice_text, voice_name)
             if result and result.startswith("Erreur"):
                 return result
             return None
@@ -1362,6 +1495,36 @@ class TitanTelegram:
         if text.startswith("/library") or text == "/biblio":
             return self.library.handle_command(text)
 
+        # =======================
+        # === GRAND CONSEIL ===
+        # =======================
+
+        if text.startswith("/conseil"):
+            self.gamification.track_action("council")
+            try:
+                from .classroom.council_engine import handle_command
+                cmd_parts = text.split(" ", 1)
+                cmd = cmd_parts[0].replace("/conseil-", "").replace("/conseil", "start")
+                args = cmd_parts[1] if len(cmd_parts) > 1 else ""
+                return await handle_command(cmd, args)
+            except Exception as e:
+                return f"❌ Grand Conseil erreur : {str(e)[:200]}"
+
+        # =======================
+        # === CLASSROOM ===
+        # =======================
+
+        if text.startswith("/classroom"):
+            self.gamification.track_action("classroom")
+            try:
+                from .classroom.classroom_engine import handle_command as cr_handle
+                cmd_parts = text.split(" ", 1)
+                cmd = cmd_parts[0].replace("/classroom-", "").replace("/classroom", "start")
+                args = cmd_parts[1] if len(cmd_parts) > 1 else ""
+                return await cr_handle(cmd, args)
+            except Exception as e:
+                return f"❌ Classroom erreur : {str(e)[:200]}"
+
         # ===============================
         # === DEFAULT: BRAIN (AI) ===
         # ===============================
@@ -1471,7 +1634,8 @@ REGLE ABSOLUE: Reponds en 2-5 phrases MAX. Conversationnel, direct, presidentiel
 
         module_map = {
             "/news": "news", "/newsai": "news", "/searchnews": "news",
-            "/search": "web", "/url": "web", "/translate": "web",
+            "/search": "perplexity", "/perplexity": "perplexity", "/searchhistory": "perplexity",
+            "/url": "web", "/translate": "web",
             "/analyze": "upwork", "/proposal": "upwork", "/loom": "upwork",
             "/n8n": "n8n", "/workflow": "n8n",
             "/email": "email", "/coldemail": "email", "/followup": "email", "/rewrite": "email",
@@ -1621,8 +1785,9 @@ REGLE ABSOLUE: Reponds en 2-5 phrases MAX. Conversationnel, direct, presidentiel
             "📰 NEWS\n"
             "  /news  /newsai  /searchnews\n\n"
 
-            "🌐 WEB\n"
-            "  /search  /url  /translate\n\n"
+            "🌐 WEB & RECHERCHE\n"
+            "  /search  /perplexity  /searchhistory\n"
+            "  /url  /translate\n\n"
 
             "💼 UPWORK & CLIENTS\n"
             "  /analyze  /proposal  /loom\n"

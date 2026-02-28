@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zakeke → Production Sheet Automation</title>
+<meta name="theme-color" content="#05070A">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+:root {
+    --bg: #05070A;
+    --bg2: #0B0F14;
+    --bg3: #121821;
+    --bg4: #1A2232;
+    --card-glass: rgba(18,24,33,0.65);
+    --primary: #1F6FFF;
+    --primary-hover: #3A8DFF;
+    --primary-focus: #6FB1FF;
+    --quantum-violet: #7A3CFF;
+    --deep-reactor: #5B2DBF;
+    --luminous-edge: #B18CFF;
+    --secondary: #00E5FF;
+    --green: #1EFF8E;
+    --red: #FF3B5C;
+    --yellow: #FF9A3C;
+    --text: #E6EDF5;
+    --text-dim: #9BA7B4;
+    --text-faint: #6B7682;
+    --border-solid: #1E2A3A;
+    --glow-p: rgba(58,141,255,0.35);
+    --glow-v: rgba(122,60,255,0.3);
+    --titan-flow: linear-gradient(135deg, #1F6FFF 0%, #7A3CFF 100%);
+    --reactor-edge: linear-gradient(90deg, #7A3CFF 0%, #00E5FF 100%);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-solid); border-radius: 2px; }
+
+/* === ANIMATED GRID BG === */
+.grid-bg {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.05;
+    background-image:
+        linear-gradient(rgba(31,111,255,0.3) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(31,111,255,0.3) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridPulse 8s ease-in-out infinite;
+}
+@keyframes gridPulse {
+    0%, 100% { opacity: 0.04; }
+    50% { opacity: 0.08; }
+}
+
+/* === CONTAINER === */
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+}
+
+/* === HERO === */
+.hero {
+    padding: 80px 0 60px;
+    text-align: center;
+}
+.hero-badge {
+    display: inline-block;
+    padding: 6px 18px;
+    background: rgba(31,111,255,0.12);
+    border: 1px solid rgba(31,111,255,0.3);
+    border-radius: 20px;
+    font-size: 13px;
+    color: var(--primary-focus);
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+}
+.hero h1 {
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    background: var(--titan-flow);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.hero h1 span {
+    background: var(--reactor-edge);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.hero p {
+    font-size: 18px;
+    color: var(--text-dim);
+    max-width: 650px;
+    margin: 0 auto 32px;
+    line-height: 1.6;
+}
+.hero-tags {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.hero-tag {
+    padding: 8px 16px;
+    background: var(--bg3);
+    border: 1px solid var(--border-solid);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+}
+.hero-tag .icon { margin-right: 6px; }
+
+/* === SECTION === */
+.section {
+    padding: 60px 0;
+}
+.section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+}
+.section h2 {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 40px;
+    color: var(--text);
+}
+
+/* === PIPELINE FLOW === */
+.pipeline {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    margin-bottom: 48px;
+}
+.pipe-step {
+    flex: 1;
+    background: var(--card-glass);
+    border: 1px solid var(--border-solid);
+    padding: 28px 20px;
+    position: relative;
+    backdrop-filter: blur(12px);
+    transition: all 0.3s;
+}
+.pipe-step:first-child { border-radius: 12px 0 0 12px; }
+.pipe-step:last-child { border-radius: 0 12px 12px 0; }
+.pipe-step:hover {
+    border-color: var(--primary);
+    box-shadow: 0 0 24px var(--glow-p);
+    transform: translateY(-2px);
+}
+.pipe-step .step-num {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    text-align: center;
+    background: var(--titan-flow);
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 14px;
+    margin-bottom: 14px;
+}
+.pipe-step h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+.pipe-step p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+}
+.pipe-arrow {
+    display: flex;
+    align-items: center;
+    color: var(--primary);
+    font-size: 24px;
+    padding: 0 4px;
+    opacity: 0.6;
+}
+
+/* === FEATURES GRID === */
+.features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 48px;
+}
+.feature-card {
+    background: var(--card-glass);
+    border: 1px solid var(--border-solid);
+    border-radius: 12px;
+    padding: 28px;
+    backdrop-filter: blur(12px);
+    transition: all 0.3s;
+}
+.feature-card:hover {
+    border-color: var(--quantum-violet);
+    box-shadow: 0 0 24px var(--glow-v);
+    transform: translateY(-3px);
+}
+.feature-icon {
+    font-size: 28px;
+    margin-bottom: 14px;
+}
+.feature-card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+.feature-card p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+}
+
+/* === TECH STACK === */
+.tech-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 48px;
+}
+.tech-item {
+    background: var(--bg3);
+    border: 1px solid var(--border-solid);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s;
+}
+.tech-item:hover {
+    border-color: var(--secondary);
+    box-shadow: 0 0 16px rgba(0,229,255,0.15);
+}
+.tech-item .tech-icon {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+.tech-item h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+.tech-item p {
+    font-size: 12px;
+    color: var(--text-faint);
+}
+
+/* === ARCHITECTURE DIAGRAM === */
+.arch-box {
+    background: var(--bg2);
+    border: 1px solid var(--border-solid);
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 48px;
+    position: relative;
+    overflow: hidden;
+}
+.arch-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--titan-flow);
+}
+.arch-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.arch-node {
+    background: var(--card-glass);
+    border: 1px solid var(--border-solid);
+    border-radius: 10px;
+    padding: 16px 24px;
+    text-align: center;
+    min-width: 140px;
+    transition: all 0.3s;
+}
+.arch-node:hover {
+    border-color: var(--primary);
+    box-shadow: 0 0 20px var(--glow-p);
+}
+.arch-node.highlight {
+    border-color: var(--quantum-violet);
+    background: rgba(122,60,255,0.08);
+}
+.arch-node .node-icon { font-size: 24px; margin-bottom: 6px; }
+.arch-node h4 { font-size: 13px; font-weight: 700; }
+.arch-node p { font-size: 11px; color: var(--text-faint); margin-top: 2px; }
+.arch-arrow {
+    color: var(--primary);
+    font-size: 20px;
+    font-weight: 800;
+}
+
+/* === DELIVERABLES === */
+.deliverables {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 48px;
+}
+.deliv-card {
+    background: var(--card-glass);
+    border: 1px solid var(--border-solid);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    backdrop-filter: blur(12px);
+    transition: all 0.3s;
+}
+.deliv-card:hover {
+    border-color: var(--green);
+    box-shadow: 0 0 16px rgba(30,255,142,0.12);
+}
+.deliv-check {
+    width: 28px;
+    height: 28px;
+    background: rgba(30,255,142,0.12);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--green);
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.deliv-card h4 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+.deliv-card p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+}
+
+/* === MOCKUP SECTION === */
+.mockup-section {
+    background: var(--bg2);
+    border: 1px solid var(--border-solid);
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 48px;
+    position: relative;
+    overflow: hidden;
+}
+.mockup-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--reactor-edge);
+}
+.mockup-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 24px;
+}
+.mockup-item {
+    background: var(--bg3);
+    border: 1px solid var(--border-solid);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+.mockup-item:hover {
+    border-color: var(--primary);
+    transform: scale(1.03);
+}
+.mockup-preview {
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    background: linear-gradient(135deg, var(--bg2), var(--bg4));
+    position: relative;
+}
+.mockup-preview .overlay-text {
+    position: absolute;
+    bottom: 8px;
+    right: 10px;
+    font-size: 10px;
+    color: var(--text-faint);
+    font-family: 'JetBrains Mono', monospace;
+}
+.mockup-info {
+    padding: 12px;
+}
+.mockup-info h4 {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+.mockup-info p {
+    font-size: 11px;
+    color: var(--text-faint);
+}
+
+/* === TIMELINE === */
+.timeline {
+    position: relative;
+    padding-left: 40px;
+    margin-bottom: 48px;
+}
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border-solid);
+}
+.tl-item {
+    position: relative;
+    margin-bottom: 28px;
+}
+.tl-item::before {
+    content: '';
+    position: absolute;
+    left: -33px;
+    top: 6px;
+    width: 12px;
+    height: 12px;
+    background: var(--primary);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--glow-p);
+}
+.tl-item.done::before {
+    background: var(--green);
+    box-shadow: 0 0 12px rgba(30,255,142,0.3);
+}
+.tl-item h4 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+.tl-label {
+    font-size: 12px;
+    color: var(--primary-focus);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.tl-item p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+}
+
+/* === CTA === */
+.cta-section {
+    text-align: center;
+    padding: 60px 0 80px;
+}
+.cta-box {
+    background: linear-gradient(135deg, rgba(31,111,255,0.08), rgba(122,60,255,0.08));
+    border: 1px solid rgba(31,111,255,0.2);
+    border-radius: 16px;
+    padding: 48px;
+    position: relative;
+    overflow: hidden;
+}
+.cta-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--titan-flow);
+}
+.cta-box h2 {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 12px;
+}
+.cta-box p {
+    color: var(--text-dim);
+    font-size: 16px;
+    margin-bottom: 28px;
+}
+.cta-stats {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    margin-bottom: 28px;
+}
+.cta-stat h3 {
+    font-size: 32px;
+    font-weight: 800;
+    background: var(--titan-flow);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.cta-stat p {
+    font-size: 12px;
+    color: var(--text-faint);
+    margin-bottom: 0;
+}
+.cta-btn {
+    display: inline-block;
+    padding: 14px 36px;
+    background: var(--titan-flow);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px var(--glow-p);
+}
+.cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px var(--glow-p);
+}
+
+/* === FOOTER === */
+.footer {
+    text-align: center;
+    padding: 24px 0;
+    border-top: 1px solid var(--border-solid);
+    font-size: 12px;
+    color: var(--text-faint);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+    .hero h1 { font-size: 32px; }
+    .pipeline { flex-direction: column; }
+    .pipe-step:first-child { border-radius: 12px 12px 0 0; }
+    .pipe-step:last-child { border-radius: 0 0 12px 12px; }
+    .pipe-arrow { transform: rotate(90deg); justify-content: center; }
+    .features { grid-template-columns: 1fr; }
+    .tech-grid { grid-template-columns: repeat(2, 1fr); }
+    .deliverables { grid-template-columns: 1fr; }
+    .mockup-grid { grid-template-columns: repeat(2, 1fr); }
+    .arch-flow { flex-direction: column; }
+    .arch-arrow { transform: rotate(90deg); }
+    .cta-stats { flex-direction: column; gap: 16px; }
+}
+
+/* === ANIMATIONS === */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate { animation: fadeUp 0.6s ease forwards; }
+.delay-1 { animation-delay: 0.1s; opacity: 0; }
+.delay-2 { animation-delay: 0.2s; opacity: 0; }
+.delay-3 { animation-delay: 0.3s; opacity: 0; }
+.delay-4 { animation-delay: 0.4s; opacity: 0; }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<div class="container">
+
+<!-- HERO -->
+<section class="hero animate">
+    <div class="hero-badge">Automation Portfolio</div>
+    <h1>Zakeke Orders → <span>Production Sheets</span></h1>
+    <p>End-to-end automation that pulls customized orders from Zakeke API, places designs + metadata into Photoshop/InDesign templates, and exports batch-ready production PDFs.</p>
+    <div class="hero-tags">
+        <span class="hero-tag"><span class="icon">⚙️</span>Zakeke API</span>
+        <span class="hero-tag"><span class="icon">🎨</span>ExtendScript</span>
+        <span class="hero-tag"><span class="icon">📄</span>Photoshop / InDesign</span>
+        <span class="hero-tag"><span class="icon">📦</span>Batch PDF Export</span>
+    </div>
+</section>
+
+<!-- PIPELINE -->
+<section class="section">
+    <div class="section-title">Workflow</div>
+    <h2>4-Step Automation Pipeline</h2>
+    <div class="pipeline">
+        <div class="pipe-step animate delay-1">
+            <div class="step-num">1</div>
+            <h3>Fetch Orders</h3>
+            <p>Pull all pending orders from Zakeke REST API — designs, sizes, colors, client names, order IDs.</p>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step animate delay-2">
+            <div class="step-num">2</div>
+            <h3>Download Assets</h3>
+            <p>Download production-ready print files (PNG/PDF/SVG) from Zakeke's printingFiles endpoints.</p>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step animate delay-3">
+            <div class="step-num">3</div>
+            <h3>Populate Template</h3>
+            <p>ExtendScript places each design + text fields into your Photoshop/InDesign template layout.</p>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step animate delay-4">
+            <div class="step-num">4</div>
+            <h3>Export Batch</h3>
+            <p>Auto-export production-ready PDF/PNG sheets — one file per batch, named and organized.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ARCHITECTURE DIAGRAM -->
+<section class="section">
+    <div class="section-title">Architecture</div>
+    <h2>System Overview</h2>
+    <div class="arch-box">
+        <div class="arch-flow">
+            <div class="arch-node">
+                <div class="node-icon">🛒</div>
+                <h4>E-Commerce</h4>
+                <p>Your store</p>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-node highlight">
+                <div class="node-icon">🎨</div>
+                <h4>Zakeke API</h4>
+                <p>Orders + Designs</p>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-node">
+                <div class="node-icon">⚡</div>
+                <h4>Fetch Script</h4>
+                <p>Node.js / Python</p>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-node highlight">
+                <div class="node-icon">📐</div>
+                <h4>ExtendScript</h4>
+                <p>PSD / INDD</p>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-node">
+                <div class="node-icon">📄</div>
+                <h4>PDF Export</h4>
+                <p>Production-ready</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section">
+    <div class="section-title">Capabilities</div>
+    <h2>What This Automation Does</h2>
+    <div class="features">
+        <div class="feature-card animate delay-1">
+            <div class="feature-icon">🔗</div>
+            <h3>Zakeke API Integration</h3>
+            <p>OAuth 2.0 authentication, orders retrieval, print-ready file downloads. Handles pagination and rate limits.</p>
+        </div>
+        <div class="feature-card animate delay-2">
+            <div class="feature-icon">📐</div>
+            <h3>Template Mapping</h3>
+            <p>Your PSD/INDD template stays intact. Script maps each order to the correct layer positions, sizes, and text fields.</p>
+        </div>
+        <div class="feature-card animate delay-3">
+            <div class="feature-icon">🔤</div>
+            <h3>Dynamic Text Styling</h3>
+            <p>Applies your template's text styles — fonts, sizes, colors — to order metadata (name, size, color, order #).</p>
+        </div>
+        <div class="feature-card animate delay-1">
+            <div class="feature-icon">📦</div>
+            <h3>Batch Processing</h3>
+            <p>Process 10, 50, or 200 orders at once. Each batch generates organized production sheets automatically.</p>
+        </div>
+        <div class="feature-card animate delay-2">
+            <div class="feature-icon">🎯</div>
+            <h3>Custom Layout</h3>
+            <p>Not a simple grid — follows your specific production layout with precise placement per your template design.</p>
+        </div>
+        <div class="feature-card animate delay-3">
+            <div class="feature-icon">🔄</div>
+            <h3>Easy Template Updates</h3>
+            <p>Change the template? Just update the PSD/INDD file. The script adapts — no code changes needed.</p>
+        </div>
+    </div>
+</section>
+
+<!-- MOCKUP: Production Sheet Preview -->
+<section class="section">
+    <div class="section-title">Output Preview</div>
+    <h2>Production Sheet Example</h2>
+    <div class="mockup-section">
+        <p style="color:var(--text-dim); font-size:14px;">Each sheet contains multiple orders with their customized designs, product info, and metadata — laid out exactly as your template specifies.</p>
+        <div class="mockup-grid">
+            <div class="mockup-item">
+                <div class="mockup-preview" style="background: linear-gradient(135deg, #1a1a2e, #16213e);">
+                    👕
+                    <span class="overlay-text">ORD-1042</span>
+                </div>
+                <div class="mockup-info">
+                    <h4>Custom Hoodie — Black</h4>
+                    <p>Size: L · Client: Alex M.</p>
+                </div>
+            </div>
+            <div class="mockup-item">
+                <div class="mockup-preview" style="background: linear-gradient(135deg, #1a1a2e, #0f3460);">
+                    👕
+                    <span class="overlay-text">ORD-1043</span>
+                </div>
+                <div class="mockup-info">
+                    <h4>Custom Tee — White</h4>
+                    <p>Size: M · Client: Sarah K.</p>
+                </div>
+            </div>
+            <div class="mockup-item">
+                <div class="mockup-preview" style="background: linear-gradient(135deg, #1a1a2e, #1a1a3e);">
+                    👕
+                    <span class="overlay-text">ORD-1044</span>
+                </div>
+                <div class="mockup-info">
+                    <h4>Custom Sweatshirt — Navy</h4>
+                    <p>Size: XL · Client: Jordan L.</p>
+                </div>
+            </div>
+            <div class="mockup-item">
+                <div class="mockup-preview" style="background: linear-gradient(135deg, #1a1a2e, #1e1e3e);">
+                    👕
+                    <span class="overlay-text">ORD-1045</span>
+                </div>
+                <div class="mockup-info">
+                    <h4>Custom Pullover — Grey</h4>
+                    <p>Size: S · Client: Marie D.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TECH STACK -->
+<section class="section">
+    <div class="section-title">Stack</div>
+    <h2>Technologies Used</h2>
+    <div class="tech-grid">
+        <div class="tech-item">
+            <div class="tech-icon">🎨</div>
+            <h4>Zakeke API</h4>
+            <p>REST · OAuth 2.0</p>
+        </div>
+        <div class="tech-item">
+            <div class="tech-icon">📐</div>
+            <h4>ExtendScript</h4>
+            <p>Photoshop JSX</p>
+        </div>
+        <div class="tech-item">
+            <div class="tech-icon">📘</div>
+            <h4>InDesign</h4>
+            <p>ExtendScript / JS</p>
+        </div>
+        <div class="tech-item">
+            <div class="tech-icon">⚡</div>
+            <h4>Node.js</h4>
+            <p>Data fetch layer</p>
+        </div>
+        <div class="tech-item">
+            <div class="tech-icon">🐍</div>
+            <h4>Python</h4>
+            <p>Alt. fetch layer</p>
+        </div>
+        <div class="tech-item">
+            <div class="tech-icon">📄</div>
+            <h4>PDF Export</h4>
+            <p>Production-ready</p>
+        </div>
+        <div class="tech-item">
+            <div class="tech-icon">🔐</div>
+            <h4>OAuth 2.0</h4>
+            <p>Secure auth</p>
+        </div>
+        <div class="tech-item">
+            <div class="tech-icon">📁</div>
+            <h4>JSON/CSV</h4>
+            <p>Data mapping</p>
+        </div>
+    </div>
+</section>
+
+<!-- TIMELINE -->
+<section class="section">
+    <div class="section-title">Timeline</div>
+    <h2>Delivery Plan</h2>
+    <div class="timeline">
+        <div class="tl-item">
+            <div class="tl-label">Day 1-2</div>
+            <h4>API Integration & Data Fetch</h4>
+            <p>Set up Zakeke OAuth, build the order retrieval script, download print files and metadata. Test with sample orders.</p>
+        </div>
+        <div class="tl-item">
+            <div class="tl-label">Day 3-4</div>
+            <h4>ExtendScript Template Engine</h4>
+            <p>Build the Photoshop/InDesign script that maps order data to template layers. Handle text styling and image placement.</p>
+        </div>
+        <div class="tl-item">
+            <div class="tl-label">Day 5</div>
+            <h4>Batch Processing & Export</h4>
+            <p>Multi-order batch logic, PDF/PNG export, file naming conventions. Test with 20+ orders.</p>
+        </div>
+        <div class="tl-item">
+            <div class="tl-label">Day 6</div>
+            <h4>Testing & Documentation</h4>
+            <p>End-to-end testing, edge cases, user documentation with clear instructions for template changes.</p>
+        </div>
+    </div>
+</section>
+
+<!-- DELIVERABLES -->
+<section class="section">
+    <div class="section-title">Deliverables</div>
+    <h2>What You Receive</h2>
+    <div class="deliverables">
+        <div class="deliv-card">
+            <div class="deliv-check">✓</div>
+            <div>
+                <h4>API Fetch Script</h4>
+                <p>Node.js or Python script that connects to Zakeke, retrieves orders, and downloads all print-ready files with metadata.</p>
+            </div>
+        </div>
+        <div class="deliv-card">
+            <div class="deliv-check">✓</div>
+            <div>
+                <h4>ExtendScript Template Engine</h4>
+                <p>Photoshop JSX or InDesign script that populates your template with designs, text, and order data.</p>
+            </div>
+        </div>
+        <div class="deliv-card">
+            <div class="deliv-check">✓</div>
+            <div>
+                <h4>Batch Export Module</h4>
+                <p>Automated PDF/PNG export with proper naming — handles any number of orders per batch.</p>
+            </div>
+        </div>
+        <div class="deliv-card">
+            <div class="deliv-check">✓</div>
+            <div>
+                <h4>Documentation & Guide</h4>
+                <p>Step-by-step instructions to run the script, change templates, and update file paths. Non-technical friendly.</p>
+            </div>
+        </div>
+        <div class="deliv-card">
+            <div class="deliv-check">✓</div>
+            <div>
+                <h4>Test Run with Sample Orders</h4>
+                <p>Full end-to-end test with your real Zakeke data to verify everything works before handoff.</p>
+            </div>
+        </div>
+        <div class="deliv-card">
+            <div class="deliv-check">✓</div>
+            <div>
+                <h4>Workflow Optimization Tips</h4>
+                <p>Suggestions for scheduling, folder structure, and potential time-savers based on your order volume.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+    <div class="cta-box">
+        <h2>Ready to Automate Your Production</h2>
+        <p>From Zakeke orders to production-ready sheets — fully automated, batch-ready, and easy to maintain.</p>
+        <div class="cta-stats">
+            <div class="cta-stat">
+                <h3>95%</h3>
+                <p>Time saved per batch</p>
+            </div>
+            <div class="cta-stat">
+                <h3>6 days</h3>
+                <p>Delivery timeline</p>
+            </div>
+            <div class="cta-stat">
+                <h3>0</h3>
+                <p>Manual copy-paste</p>
+            </div>
+        </div>
+        <a href="#" class="cta-btn">Let's Build This →</a>
+    </div>
+</section>
+
+</div>
+
+<footer class="footer">
+    <p>Built with precision · Zakeke API + ExtendScript Automation</p>
+</footer>
+
+<!-- Intersection Observer for animations -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.pipe-step, .feature-card, .deliv-card, .tl-item, .tech-item, .mockup-item').forEach(el => {
+        observer.observe(el);
+    });
+});
+</script>
+
+</body>
+</html>

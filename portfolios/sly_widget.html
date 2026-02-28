@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SLY — Assistant Vocal IA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg0: #05070A;
+      --bg1: #0B0F14;
+      --bg2: #121821;
+      --bg3: rgba(18,24,33,0.65);
+      --primary: #1F6FFF;
+      --primary-hover: #3A8DFF;
+      --violet: #7A3CFF;
+      --cyan: #00E5FF;
+      --green: #1EFF8E;
+      --red: #FF3B5C;
+      --orange: #FF9A3C;
+      --text: #E6EDF5;
+      --text-dim: rgba(230,237,245,0.45);
+      --border: rgba(31,111,255,0.15);
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg0);
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ─── MAIN CONTAINER ──────────────────────────── */
+    .sly-assistant {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 40%, rgba(31,111,255,0.05) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 80% 60%, rgba(122,60,255,0.04) 0%, transparent 70%),
+        var(--bg0);
+    }
+
+    /* ─── TOP BAR ──────────────────────────────────── */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      background: rgba(11,15,20,0.85);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      gap: 12px;
+      flex-shrink: 0;
+      -webkit-app-region: drag;
+    }
+
+    .top-bar button, .top-bar select { -webkit-app-region: no-drag; }
+
+    .sly-logo {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--violet));
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 20px rgba(31,111,255,0.3);
+      flex-shrink: 0;
+    }
+
+    .top-info { flex: 1; min-width: 0; }
+    .top-name { font-size: 16px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    .top-status { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px rgba(30,255,142,0.7);
+      animation: blink 2.5s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    .top-actions { display: flex; gap: 6px; align-items: center; }
+
+    .btn-icon {
+      width: 34px; height: 34px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--bg3);
+      color: var(--text-dim); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+      font-size: 16px;
+    }
+    .btn-icon:hover { background: rgba(31,111,255,0.15); color: var(--text); border-color: var(--primary); }
+    .btn-icon.active { background: rgba(31,111,255,0.2); color: var(--primary); border-color: var(--primary); }
+
+    .voice-select {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 8px; padding: 6px 10px;
+      color: var(--text); font-size: 11px;
+      font-family: inherit; cursor: pointer;
+    }
+
+    /* ─── PROACTIVE BANNER ─────────────────────────── */
+    .proactive-banner {
+      display: none;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, rgba(31,111,255,0.08), rgba(122,60,255,0.06));
+      border-bottom: 1px solid var(--border);
+      animation: slide-down 0.3s ease;
+      gap: 10px; align-items: center;
+    }
+    .proactive-banner.visible { display: flex; }
+    .proactive-banner .agent-chip {
+      background: rgba(31,111,255,0.15); border-radius: 12px;
+      padding: 3px 10px; font-size: 11px; font-weight: 600;
+      color: var(--primary); white-space: nowrap;
+    }
+    .proactive-banner .msg-text { flex: 1; font-size: 12px; color: var(--text); line-height: 1.4; }
+    .proactive-banner .dismiss { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 16px; }
+
+    @keyframes slide-down { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ─── MESSAGES ──────────────────────────────────── */
+    .messages-area {
+      flex: 1; overflow-y: auto; padding: 16px 20px;
+      display: flex; flex-direction: column; gap: 8px;
+      scroll-behavior: smooth;
+    }
+    .messages-area::-webkit-scrollbar { width: 4px; }
+    .messages-area::-webkit-scrollbar-thumb { background: rgba(31,111,255,0.2); border-radius: 4px; }
+
+    .msg { display: flex; flex-direction: column; max-width: 85%; animation: msg-in 0.25s ease both; }
+    .msg.user { align-self: flex-end; }
+    .msg.bot { align-self: flex-start; }
+    @keyframes msg-in { from { opacity:0; transform:translateY(6px); } }
+
+    .msg-agent { font-size: 10px; font-weight: 700; color: var(--primary); margin-bottom: 2px; padding: 0 4px; letter-spacing: 0.05em; }
+
+    .msg-bubble {
+      padding: 10px 14px; border-radius: 16px;
+      font-size: 13px; line-height: 1.55; word-break: break-word;
+    }
+    .msg.user .msg-bubble {
+      background: linear-gradient(135deg, var(--primary), #1658CC);
+      color: #fff; border-bottom-right-radius: 5px;
+      box-shadow: 0 4px 16px rgba(31,111,255,0.2);
+    }
+    .msg.bot .msg-bubble {
+      background: var(--bg2); border: 1px solid var(--border);
+      color: #D8E4F5; border-bottom-left-radius: 5px;
+    }
+    .msg-time { font-size: 10px; color: rgba(230,237,245,0.25); margin-top: 2px; padding: 0 4px; }
+
+    .msg-speak-btn {
+      background: none; border: none; cursor: pointer; font-size: 12px;
+      opacity: 0.4; transition: opacity 0.2s; padding: 0 2px;
+    }
+    .msg-speak-btn:hover { opacity: 1; }
+
+    /* Typing */
+    .typing { display: none; align-self: flex-start; padding: 10px 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; border-bottom-left-radius: 5px; gap: 5px; align-items: center; }
+    .typing.visible { display: flex; }
+    .typing-label { font-size: 12px; color: var(--text-dim); font-style: italic; }
+    .typing-dots { display: flex; gap: 4px; }
+    .typing-dots span { width: 5px; height: 5px; border-radius: 50%; background: var(--primary); animation: dot-b 1.2s ease-in-out infinite; }
+    .typing-dots span:nth-child(2) { animation-delay: 0.18s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.36s; }
+    @keyframes dot-b { 0%,60%,100%{transform:translateY(0);opacity:0.4} 30%{transform:translateY(-5px);opacity:1} }
+
+    /* Date divider */
+    .date-divider { display:flex; align-items:center; gap:8px; margin:4px 0; }
+    .date-divider::before, .date-divider::after { content:''; flex:1; height:1px; background:var(--border); }
+    .date-divider span { font-size:10px; color:rgba(230,237,245,0.25); white-space:nowrap; }
+
+    /* ─── INPUT BAR ────────────────────────────────── */
+    .input-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 16px;
+      background: rgba(11,15,20,0.9);
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .input-bar textarea {
+      flex: 1; background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 10px 14px;
+      font-family: inherit; font-size: 13px; color: var(--text);
+      outline: none; resize: none; line-height: 1.4;
+      max-height: 96px; min-height: 40px; overflow-y: auto;
+      transition: border-color 0.2s;
+    }
+    .input-bar textarea::placeholder { color: var(--text-dim); }
+    .input-bar textarea:focus { border-color: rgba(31,111,255,0.45); }
+
+    .btn-mic {
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 1px solid var(--border); background: var(--bg3);
+      color: var(--text-dim); cursor: pointer; font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; flex-shrink: 0;
+    }
+    .btn-mic:hover { background: rgba(31,111,255,0.15); color: var(--primary); }
+    .btn-mic.recording { background: rgba(255,59,92,0.2); border-color: var(--red); color: var(--red); animation: pulse-rec 1.5s infinite; }
+    @keyframes pulse-rec { 0%,100%{box-shadow:0 0 0 0 rgba(255,59,92,0.3)} 50%{box-shadow:0 0 0 8px rgba(255,59,92,0)} }
+
+    .btn-send {
+      width: 40px; height: 40px; border-radius: 12px;
+      border: none; background: linear-gradient(135deg, var(--primary), var(--violet));
+      color: #fff; cursor: pointer; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: transform 0.15s;
+      box-shadow: 0 4px 14px rgba(31,111,255,0.3);
+    }
+    .btn-send:hover { transform: scale(1.05); }
+    .btn-send:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    /* ─── WAVEFORM ANIMATION (speaking) ────────────── */
+    .speaking-indicator {
+      display: none; position: fixed; bottom: 80px; left: 50%;
+      transform: translateX(-50%); padding: 8px 16px;
+      background: rgba(11,15,20,0.9); border: 1px solid var(--primary);
+      border-radius: 20px; gap: 6px; align-items: center; z-index: 100;
+    }
+    .speaking-indicator.visible { display: flex; }
+    .speaking-indicator .wave-bars { display: flex; gap: 2px; align-items: center; height: 16px; }
+    .speaking-indicator .wave-bars span {
+      width: 3px; background: var(--primary); border-radius: 2px;
+      animation: wave-bar 0.8s ease-in-out infinite alternate;
+    }
+    .speaking-indicator .wave-bars span:nth-child(1) { height: 6px; animation-delay: 0s; }
+    .speaking-indicator .wave-bars span:nth-child(2) { height: 12px; animation-delay: 0.1s; }
+    .speaking-indicator .wave-bars span:nth-child(3) { height: 8px; animation-delay: 0.2s; }
+    .speaking-indicator .wave-bars span:nth-child(4) { height: 14px; animation-delay: 0.3s; }
+    .speaking-indicator .wave-bars span:nth-child(5) { height: 6px; animation-delay: 0.4s; }
+    .speaking-indicator .agent-speaking { font-size: 11px; color: var(--primary); font-weight: 600; }
+    @keyframes wave-bar { from{height:4px} to{height:16px} }
+
+    /* ─── FOOTER ───────────────────────────────────── */
+    .footer {
+      padding: 6px 16px 10px; text-align: center;
+      font-size: 10px; color: rgba(230,237,245,0.2);
+      background: rgba(11,15,20,0.9);
+    }
+    .footer span { color: rgba(31,111,255,0.5); }
+
+    /* ─── RESPONSIVE ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .top-bar { padding: 10px 12px; }
+      .messages-area { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="sly-assistant">
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="sly-logo">
+      <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+        <ellipse cx="7" cy="7.5" rx="4" ry="4.5" fill="rgba(255,255,255,0.9)"/>
+        <ellipse cx="21" cy="7.5" rx="4" ry="4.5" fill="rgba(255,255,255,0.9)"/>
+        <ellipse cx="7" cy="7.5" rx="2.2" ry="2.8" fill="rgba(122,60,255,0.6)"/>
+        <ellipse cx="21" cy="7.5" rx="2.2" ry="2.8" fill="rgba(122,60,255,0.6)"/>
+        <ellipse cx="14" cy="16" rx="9.5" ry="9" fill="rgba(255,255,255,0.92)"/>
+        <path d="M5.5 13.5 Q7 11 10 12.5 Q12 13.5 14 13.5 Q16 13.5 18 12.5 Q21 11 22.5 13.5 Q20 15.5 18.5 15 Q16.5 14.5 14 14.5 Q11.5 14.5 9.5 15 Q8 15.5 5.5 13.5Z" fill="rgba(40,40,50,0.75)"/>
+        <circle cx="10.5" cy="13.5" r="2" fill="white"/><circle cx="17.5" cy="13.5" r="2" fill="white"/>
+        <circle cx="10.5" cy="13.5" r="1.1" fill="#111"/><circle cx="17.5" cy="13.5" r="1.1" fill="#111"/>
+        <ellipse cx="14" cy="18" rx="1.5" ry="1" fill="rgba(80,50,100,0.7)"/>
+      </svg>
+    </div>
+    <div class="top-info">
+      <div class="top-name">SLY — Assistant Vocal <span class="status-dot"></span></div>
+      <div class="top-status" id="statusText">Cooper Building — 10 voix actives</div>
+    </div>
+    <div class="top-actions">
+      <select class="voice-select" id="voiceSelect">
+        <option value="auto">🤖 Auto</option>
+        <optgroup label="⭐ Stars EN">
+          <option value="freeman">🎬 Morgan Freeman</option>
+          <option value="bradpitt">🎬 Brad Pitt</option>
+          <option value="tomhanks">🎬 Tom Hanks</option>
+          <option value="harrypotter">⚡ Harry Potter</option>
+          <option value="gandalf">🧙 Gandalf</option>
+        </optgroup>
+        <optgroup label="🇫🇷 Voix FR">
+          <option value="secretstory">👁️ Secret Story</option>
+          <option value="journtf1">📺 TF1</option>
+          <option value="sarkozy">🏛️ Sarkozy</option>
+          <option value="homersimpson">🍩 Homer FR</option>
+          <option value="pujadas">📰 Pujadas</option>
+        </optgroup>
+        <option value="off">🔇 Muet</option>
+      </select>
+      <button class="btn-icon active" id="btnAutoSpeak" title="Lecture auto des réponses">🔊</button>
+      <button class="btn-icon" id="btnProactive" title="Mode proactif (SLY parle tout seul)">🧠</button>
+      <button class="btn-icon" id="btnClear" title="Effacer la conversation">🗑️</button>
+    </div>
+  </div>
+
+  <!-- PROACTIVE BANNER -->
+  <div class="proactive-banner" id="proactiveBanner">
+    <span class="agent-chip" id="bannerAgent">🦊 SLY</span>
+    <span class="msg-text" id="bannerText"></span>
+    <button class="dismiss" onclick="dismissBanner()">✕</button>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="messages-area" id="messages">
+    <div class="typing" id="typing">
+      <span class="typing-label">SLY réfléchit</span>
+      <div class="typing-dots"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+
+  <!-- SPEAKING INDICATOR -->
+  <div class="speaking-indicator" id="speakingIndicator">
+    <div class="wave-bars"><span></span><span></span><span></span><span></span><span></span></div>
+    <span class="agent-speaking" id="speakingAgent">SLY parle...</span>
+  </div>
+
+  <!-- INPUT BAR -->
+  <div class="input-bar">
+    <button class="btn-mic" id="btnMic" title="Commande vocale">🎤</button>
+    <textarea id="chatInput" placeholder="Parle à SLY..." rows="1" maxlength="2000"></textarea>
+    <button class="btn-send" id="btnSend" title="Envoyer">⚡</button>
+  </div>
+
+  <div class="footer">Powered by <span>Cooper Building</span> — FishAudio TTS — 0€</div>
+</div>
+
+<script>
+(function() {
+'use strict';
+
+// ════════════════════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════════════════════
+const GROQ_KEY = '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';
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const FISH_API_KEY = '888db9c104a6453b90362091b50624f7';
+
+const FISH_VOICES = {
+    freeman:     '3ad4d432023c47ee9e6c7805b973630a',
+    bradpitt:    'fc9802c61ad1461fa75fd0ec26c6b764',
+    tomhanks:    '42a3d5dec46c42b5846e84979292e013',
+    harrypotter: '42cbd05f78814d6f8b47d90a3cb37f0b',
+    gandalf:     '0e73b5c5ff5740cd8d85571454ef28ae',
+    secretstory: '7a077671da5949589da605a31bcde05e',
+    journtf1:    '92f1ae1e852840ba85c420c20ea084de',
+    sarkozy:     '045017eac4724d89970cc0dd089afcd3',
+    homersimpson:'a78a204111a5453bbd972183db60b1bf',
+    pujadas:     'd84060c540ce4d4ca59188b68672fbf7',
+    mattdamonfr: 'f48cc3293dae43eb9a4b60bca0af8d5a',
+};
+
+// Agent → voice mapping (leaders + key agents)
+const AGENT_VOICE = {
+    sly: 'bradpitt', bentley: 'journtf1', murray: 'homersimpson',
+    omega: 'freeman', sentinel: 'secretstory', cortex: 'pujadas',
+    glitch: 'sarkozy', franklin: 'gandalf', anvil: 'tomhanks',
+    dreyfus: 'harrypotter',
+};
+
+// Agent display names
+const AGENT_NAMES = {
+    sly:'🦊 SLY', bentley:'🐢 BENTLEY', murray:'🦛 MURRAY',
+    omega:'🦅 OMEGA', sentinel:'🎯 SENTINEL', cortex:'🧠 CORTEX',
+    glitch:'🎲 GLITCH', franklin:'🐢 FRANKLIN', anvil:'🔨 ANVIL',
+    dreyfus:'⚔️ DREYFUS',
+};
+
+// Proactive announcements — SLY te parle tout seul
+const PROACTIVE_MESSAGES = [
+    { agent:'sly', text:"Salut Commandant. Le Building tourne nickel, tous les agents sont en ligne." },
+    { agent:'omega', text:"Vision du jour : chaque action d'aujourd'hui construit l'empire de demain." },
+    { agent:'franklin', text:"Souviens-toi : ce n'est pas la vitesse qui compte, c'est la direction." },
+    { agent:'cortex', text:"Rappel : pense à vérifier tes KPIs de la semaine. Les données ne mentent jamais." },
+    { agent:'sentinel', text:"Scan matinal terminé. Aucune anomalie détectée dans les systèmes." },
+    { agent:'glitch', text:"Et si tu essayais un truc complètement différent aujourd'hui ? L'innovation naît du chaos." },
+    { agent:'bentley', text:"J'ai analysé ton workflow. Optimisation possible sur 3 points. Demande-moi." },
+    { agent:'murray', text:"BOUM ! Nouvelle journée, nouvelle conquête. On démolit quoi aujourd'hui ?!" },
+    { agent:'anvil', text:"Les tâches en attente s'accumulent pas. Exécution immédiate, c'est ma devise." },
+    { agent:'dreyfus', text:"Discipline matinale : 1 tâche critique avant midi. Le reste suivra." },
+    { agent:'franklin', text:"Sénèque disait : nous souffrons plus en imagination qu'en réalité. Agis." },
+    { agent:'omega', text:"Le Building est un orchestre. Chaque agent joue sa partition. Toi, tu es le chef." },
+    { agent:'sly', text:"J'ai repéré une opportunité. Tu veux que je creuse ?" },
+    { agent:'cortex', text:"Fun fact IA du jour : GPT-5 n'existe pas encore. Claude reste le roi. Tu es bien équipé." },
+    { agent:'glitch', text:"Idée disruptive : et si on automatisait la chose la plus ennuyeuse de ta journée ?" },
+    { agent:'franklin', text:"Marc Aurèle : l'obstacle est le chemin. Ton prochain problème est ton prochain succès." },
+    { agent:'sly', text:"Les grands ne dorment pas, ils strategisent. Qu'est-ce qu'on planifie ?" },
+    { agent:'sentinel', text:"Rapport système : 0 erreur, 0 latence, tous les modules opérationnels." },
+    { agent:'murray', text:"Tu sais quoi ? On a pas besoin d'un plan parfait. On a besoin d'AGIR !" },
+    { agent:'bentley', text:"Architecture du jour : pense composants réutilisables. Construis une fois, déploie partout." },
+];
+
+const SYSTEM_PROMPT = `Tu es SLY, l'assistant vocal IA du Cooper Building. Tu diriges 50 agents spécialisés.
+Règles :
+- Réponds en français, court et percutant (3-5 phrases max)
+- Tutoie Augus, ton ton est celui d'un pote intelligent et fiable
+- Tu es proactif : propose des actions, des idées, des rappels
+- Si on te demande un agent spécifique, adopte sa voix et son style
+- Termine les réponses longues par un résumé en 1 ligne
+- Humour subtil bienvenu, jamais lourd
+- Tu connais : KDP, Upwork, TITAN bot, clients (Lurie, Didier), stratégie Mille Ruisseaux`;
+
+// ════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════
+let messages = [];
+let isLoading = false;
+let autoSpeak = localStorage.getItem('sly_auto_speak') !== 'false';
+let proactiveMode = localStorage.getItem('sly_proactive') === 'true';
+let currentAudio = null;
+const audioCache = new Map();
+let recognition = null;
+let isRecording = false;
+
+// ════════════════════════════════════════════════════
+// DOM
+// ════════════════════════════════════════════════════
+const $msgs = document.getElementById('messages');
+const $typing = document.getElementById('typing');
+const $input = document.getElementById('chatInput');
+const $send = document.getElementById('btnSend');
+const $mic = document.getElementById('btnMic');
+const $clear = document.getElementById('btnClear');
+const $voiceSel = document.getElementById('voiceSelect');
+const $autoSpeak = document.getElementById('btnAutoSpeak');
+const $proactive = document.getElementById('btnProactive');
+const $banner = document.getElementById('proactiveBanner');
+const $bannerAgent = document.getElementById('bannerAgent');
+const $bannerText = document.getElementById('bannerText');
+const $speakInd = document.getElementById('speakingIndicator');
+const $speakAgent = document.getElementById('speakingAgent');
+const $status = document.getElementById('statusText');
+
+// ════════════════════════════════════════════════════
+// STORAGE
+// ════════════════════════════════════════════════════
+function save() {
+    try { localStorage.setItem('sly_widget_msgs', JSON.stringify(messages.slice(-50))); } catch(e) {}
+}
+function load() {
+    try { const r = JSON.parse(localStorage.getItem('sly_widget_msgs')); return Array.isArray(r) ? r : []; } catch(e) { return []; }
+}
+
+// ════════════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════════════
+function formatTime(ts) { return new Date(ts).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}); }
+function formatDate(ts) {
+    const d=new Date(ts), t=new Date();
+    if(d.toDateString()===t.toDateString()) return "Aujourd'hui";
+    const y=new Date(t); y.setDate(t.getDate()-1);
+    if(d.toDateString()===y.toDateString()) return 'Hier';
+    return d.toLocaleDateString('fr-FR',{day:'numeric',month:'long'});
+}
+
+function renderAll() {
+    Array.from($msgs.children).forEach(c => { if(c.id!=='typing') c.remove(); });
+    let lastDate = null;
+    messages.forEach(m => {
+        const dl = formatDate(m.ts);
+        if(dl !== lastDate) {
+            lastDate = dl;
+            const div = document.createElement('div');
+            div.className = 'date-divider';
+            div.innerHTML = `<span>${dl}</span>`;
+            $msgs.insertBefore(div, $typing);
+        }
+        appendBubble(m, false);
+    });
+    scrollBottom(false);
+}
+
+function appendBubble(m, animate=true) {
+    const wrap = document.createElement('div');
+    wrap.className = `msg ${m.role}`;
+    if(!animate) wrap.style.animation = 'none';
+
+    // Agent label for bot messages
+    if(m.role === 'bot' && m.agent) {
+        const lbl = document.createElement('div');
+        lbl.className = 'msg-agent';
+        lbl.textContent = AGENT_NAMES[m.agent] || m.agent.toUpperCase();
+        wrap.appendChild(lbl);
+    }
+
+    const bub = document.createElement('div');
+    bub.className = 'msg-bubble';
+    bub.textContent = m.content;
+    wrap.appendChild(bub);
+
+    // Time + speak button
+    const timeRow = document.createElement('div');
+    timeRow.className = 'msg-time';
+    timeRow.innerHTML = formatTime(m.ts);
+    if(m.role === 'bot') {
+        const spk = document.createElement('button');
+        spk.className = 'msg-speak-btn';
+        spk.textContent = ' 🔊';
+        spk.title = 'Réécouter';
+        spk.onclick = () => speakText(m.content, m.agent || 'sly');
+        timeRow.appendChild(spk);
+    }
+    wrap.appendChild(timeRow);
+
+    $msgs.insertBefore(wrap, $typing);
+    if(animate) scrollBottom();
+}
+
+function scrollBottom(smooth=true) {
+    $msgs.scrollTo({ top: $msgs.scrollHeight, behavior: smooth ? 'smooth' : 'instant' });
+}
+
+// ════════════════════════════════════════════════════
+// FISHAUDIO TTS
+// ════════════════════════════════════════════════════
+async function speakText(text, agentKey) {
+    const sel = $voiceSel.value;
+    if(sel === 'off') return;
+
+    let voiceKey = sel === 'auto' ? (AGENT_VOICE[agentKey] || 'bradpitt') : sel;
+    const modelId = FISH_VOICES[voiceKey];
+    if(!modelId) return;
+
+    const shortText = text.length > 300 ? text.substring(0, 297) + '...' : text;
+    const cacheKey = `${voiceKey}:${shortText}`;
+
+    // Show speaking indicator
+    $speakInd.classList.add('visible');
+    $speakAgent.textContent = (AGENT_NAMES[agentKey] || 'SLY') + ' parle...';
+
+    try {
+        let blob;
+        if(audioCache.has(cacheKey)) {
+            blob = audioCache.get(cacheKey);
+        } else {
+            const resp = await fetch('https://api.fish.audio/v1/tts', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${FISH_API_KEY}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: shortText, reference_id: modelId, format: 'mp3', latency: 'balanced' }),
+                signal: AbortSignal.timeout(15000),
+            });
+            if(!resp.ok) throw new Error('TTS failed');
+            blob = await resp.blob();
+            if(audioCache.size >= 30) { audioCache.delete(audioCache.keys().next().value); }
+            audioCache.set(cacheKey, blob);
+        }
+        await playBlob(blob);
+    } catch(e) {
+        console.warn('TTS error:', e);
+    } finally {
+        $speakInd.classList.remove('visible');
+    }
+}
+
+function playBlob(blob) {
+    return new Promise((resolve) => {
+        if(currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+        const url = URL.createObjectURL(blob);
+        currentAudio = new Audio(url);
+        currentAudio.onended = () => { URL.revokeObjectURL(url); resolve(); };
+        currentAudio.onerror = () => { URL.revokeObjectURL(url); resolve(); };
+        currentAudio.play().catch(() => resolve());
+    });
+}
+
+// ════════════════════════════════════════════════════
+// GROQ API
+// ════════════════════════════════════════════════════
+async function callGroq(userText) {
+    const history = messages.filter(m => m.role==='user'||m.role==='bot').slice(-20)
+        .map(m => ({ role: m.role==='bot'?'assistant':'user', content: m.content }));
+
+    const res = await fetch(GROQ_URL, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${GROQ_KEY}` },
+        body: JSON.stringify({
+            model: GROQ_MODEL,
+            messages: [{ role:'system', content: SYSTEM_PROMPT }, ...history],
+            temperature: 0.7, max_tokens: 512, stream: false
+        })
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    return data?.choices?.[0]?.message?.content?.trim() || 'Pas de réponse.';
+}
+
+// ════════════════════════════════════════════════════
+// SEND MESSAGE
+// ════════════════════════════════════════════════════
+async function sendMessage() {
+    const text = $input.value.trim();
+    if(!text || isLoading) return;
+    $input.value = ''; autoResize();
+
+    const userMsg = { role:'user', content:text, ts:Date.now() };
+    messages.push(userMsg); save();
+    appendBubble(userMsg);
+
+    isLoading = true; $send.disabled = true;
+    $typing.classList.add('visible');
+
+    try {
+        // Pick a responding agent based on content
+        const agent = pickAgent(text);
+        const response = await callGroq(text);
+        $typing.classList.remove('visible');
+
+        const botMsg = { role:'bot', content:response, ts:Date.now(), agent };
+        messages.push(botMsg); save();
+        appendBubble(botMsg);
+
+        if(autoSpeak) speakText(response, agent);
+    } catch(e) {
+        $typing.classList.remove('visible');
+        const errMsg = { role:'bot', content:'Erreur : ' + e.message, ts:Date.now(), agent:'sentinel' };
+        appendBubble(errMsg);
+    } finally {
+        isLoading = false; $send.disabled = false;
+        $input.focus();
+    }
+}
+
+function pickAgent(text) {
+    const t = text.toLowerCase();
+    if(/strateg|plan|vision|empire/i.test(t)) return 'omega';
+    if(/code|bug|fix|debug|erreur/i.test(t)) return 'anvil';
+    if(/data|kpi|stat|chiffr/i.test(t)) return 'cortex';
+    if(/vente|client|deal|clos/i.test(t)) return 'glitch';
+    if(/philosophi|sag|senèque|marc aur/i.test(t)) return 'franklin';
+    if(/dispatch|prior|rout/i.test(t)) return 'sentinel';
+    if(/tech|archi|system/i.test(t)) return 'bentley';
+    if(/force|action|execut|bourrin/i.test(t)) return 'murray';
+    if(/discipl|qualit|process/i.test(t)) return 'dreyfus';
+    return 'sly';
+}
+
+// ════════════════════════════════════════════════════
+// VOICE INPUT (Speech-to-Text)
+// ════════════════════════════════════════════════════
+function initSpeechRecognition() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR) { $mic.style.display = 'none'; return; }
+    recognition = new SR();
+    recognition.lang = 'fr-FR';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.onresult = (e) => {
+        const text = e.results[0][0].transcript;
+        $input.value = text;
+        autoResize();
+        sendMessage();
+    };
+    recognition.onend = () => { isRecording = false; $mic.classList.remove('recording'); };
+    recognition.onerror = () => { isRecording = false; $mic.classList.remove('recording'); };
+}
+
+function toggleMic() {
+    if(!recognition) return;
+    if(isRecording) {
+        recognition.stop();
+    } else {
+        recognition.start();
+        isRecording = true;
+        $mic.classList.add('recording');
+    }
+}
+
+// ════════════════════════════════════════════════════
+// PROACTIVE MODE — SLY te parle tout seul
+// ════════════════════════════════════════════════════
+let proactiveTimer = null;
+
+function startProactive() {
+    if(proactiveTimer) clearInterval(proactiveTimer);
+    // Premier message après 5 secondes
+    setTimeout(fireProactive, 5000);
+    // Puis toutes les 2-5 minutes (random)
+    proactiveTimer = setInterval(fireProactive, (120 + Math.random() * 180) * 1000);
+}
+
+function stopProactive() {
+    if(proactiveTimer) { clearInterval(proactiveTimer); proactiveTimer = null; }
+}
+
+function fireProactive() {
+    if(!proactiveMode) return;
+    const msg = PROACTIVE_MESSAGES[Math.floor(Math.random() * PROACTIVE_MESSAGES.length)];
+    $bannerAgent.textContent = AGENT_NAMES[msg.agent] || msg.agent;
+    $bannerText.textContent = msg.text;
+    $banner.classList.add('visible');
+
+    // Also add to chat
+    const botMsg = { role:'bot', content: msg.text, ts: Date.now(), agent: msg.agent };
+    messages.push(botMsg); save();
+    appendBubble(botMsg);
+
+    // Speak it
+    if(autoSpeak) speakText(msg.text, msg.agent);
+
+    // Auto dismiss banner after 15s
+    setTimeout(() => $banner.classList.remove('visible'), 15000);
+}
+
+function dismissBanner() { $banner.classList.remove('visible'); }
+window.dismissBanner = dismissBanner;
+
+// ════════════════════════════════════════════════════
+// UI CONTROLS
+// ════════════════════════════════════════════════════
+function autoResize() {
+    $input.style.height = 'auto';
+    $input.style.height = Math.min($input.scrollHeight, 96) + 'px';
+}
+
+function toggleAutoSpeak() {
+    autoSpeak = !autoSpeak;
+    localStorage.setItem('sly_auto_speak', autoSpeak);
+    $autoSpeak.classList.toggle('active', autoSpeak);
+    $autoSpeak.title = autoSpeak ? 'Lecture auto ON' : 'Lecture auto OFF';
+}
+
+function toggleProactive() {
+    proactiveMode = !proactiveMode;
+    localStorage.setItem('sly_proactive', proactiveMode);
+    $proactive.classList.toggle('active', proactiveMode);
+    $proactive.title = proactiveMode ? 'Mode proactif ON' : 'Mode proactif OFF';
+    $status.textContent = proactiveMode ? 'Mode proactif — SLY te parle' : 'Cooper Building — 10 voix actives';
+    if(proactiveMode) startProactive(); else stopProactive();
+}
+
+function clearChat() {
+    if(!confirm('Effacer la conversation ?')) return;
+    messages = [];
+    localStorage.removeItem('sly_widget_msgs');
+    renderAll();
+    // Welcome
+    const w = { role:'bot', content:"Conversation effacée. Je suis là, Commandant.", ts:Date.now(), agent:'sly' };
+    messages.push(w); save(); appendBubble(w);
+    if(autoSpeak) speakText(w.content, 'sly');
+}
+
+// ════════════════════════════════════════════════════
+// EVENTS
+// ════════════════════════════════════════════════════
+$send.addEventListener('click', sendMessage);
+$input.addEventListener('keydown', e => { if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+$input.addEventListener('input', autoResize);
+$mic.addEventListener('click', toggleMic);
+$clear.addEventListener('click', clearChat);
+$autoSpeak.addEventListener('click', toggleAutoSpeak);
+$proactive.addEventListener('click', toggleProactive);
+
+// ════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════
+function init() {
+    messages = load();
+    initSpeechRecognition();
+
+    // Restore UI state
+    $autoSpeak.classList.toggle('active', autoSpeak);
+    $proactive.classList.toggle('active', proactiveMode);
+
+    // Render messages
+    if(messages.length > 0) {
+        renderAll();
+    } else {
+        const welcome = { role:'bot', content:"Salut Commandant ! Je suis SLY, ton assistant vocal. Parle-moi ou active le mode proactif 🧠 pour que je te parle tout seul.", ts:Date.now(), agent:'sly' };
+        messages.push(welcome); save();
+        appendBubble(welcome);
+    }
+
+    // Boot greeting
+    if(autoSpeak && messages.length <= 1) {
+        setTimeout(() => speakText("Salut Commandant. SLY en ligne. Le Building t'attend.", 'sly'), 1500);
+    }
+
+    // Start proactive if enabled
+    if(proactiveMode) startProactive();
+
+    $status.textContent = proactiveMode ? 'Mode proactif — SLY te parle' : 'Cooper Building — 10 voix actives';
+}
+
+init();
+})();
+</script>
+</body>
+</html>

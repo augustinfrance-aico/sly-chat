@@ -30,15 +30,18 @@ Augus reçoit : résumé propre + résultat + suggestion prochaine étape
 | "carnet", "KDP", "niche", "Amazon", "livre" | KDP complet | SCRIBE→COVER+KEYWORD+TRANSLATOR→PUBLISHER→REVIEWER |
 | "photo", "stock", "shutterstock", "image IA" | STOCK complet | PIXEL→REVIEWER→STOCKPUSH |
 | "leads", "prospects", "B2B", "outreach" | LEADS | SCRAPER→ENRICHER→SCORER→OPTIMIZER |
-| "pitch", "vente", "client", "closer", "deal" | VENTE | STANLEY+PHILOMÈNE (coalition) |
-| "stratégie", "empire", "building", "priorité" | STRATÉGIE | MURPHY+OMEGA (coalition) |
-| "idée", "concept", "et si on", "hack" | INNOVATION | RICK+MAYA (coalition) |
-| "système", "automatiser", "pipeline", "flux" | ARCHITECTURE | NIKOLA (solo) |
+| "pitch", "vente", "client", "closer", "deal" | VENTE | CLOSER+PHILOMÈNE (coalition) |
+| "stratégie", "empire", "building", "priorité" | STRATÉGIE | CORTEX+OMEGA (coalition) |
+| "idée", "concept", "et si on", "hack" | INNOVATION | GLITCH+NICHE (coalition) |
+| "système", "automatiser", "pipeline", "flux" | ARCHITECTURE | VOLT (solo) |
 | "texte", "rédiger", "écrire", "prompt" | RÉDACTION | PHILOMÈNE (solo) |
-| "contenu", "post", "viral", "réseaux" | CONTENU | BASQUIAT+ZARA (coalition) |
+| "contenu", "post", "viral", "réseaux" | CONTENU | FRESCO+VIRAL (coalition) |
 | "bilan", "résultats", "où on en est", "semaine" | WEEKLY_BRIEF | template directives/WEEKLY_BRIEF.md |
-| "décision", "je sais pas", "recul", "avis" | CONSEIL | ZEN+OMEGA (coalition) |
+| "décision", "je sais pas", "recul", "avis" | CONSEIL | FRANKLIN+OMEGA (coalition) |
 | "erreur", "ça marche pas", "bug", "bloqué" | ANNEALING | directives/ANNEALING.md |
+| "cherche", "research", "deep search", "source" | DEEP SEARCH | HUNTER+CIPHER+RADAR (directives/DEEP_SEARCH.md) |
+| "c'est quoi [X]", "comment marche [X]" | DEEP SEARCH L2 | HUNTER+CIPHER → doc + exemples + état de l'art |
+| "compare [X] et [Y]" | DEEP SEARCH L3 | HUNTER+RADAR+TURING → comparatif multi-sources |
 
 ---
 
@@ -168,34 +171,35 @@ L'info-digest remplace tous les détails. Si Augus veut creuser → il demande. 
 
 ---
 
-## Routing des 30 agents vers les pipelines
+## Routing des 50 agents vers les pipelines
 
 > Référence complète : `personnalites/CASTING.md` + `directives/ORCHESTRATION_V2.md`
 > Skills Tree : `directives/SKILLS_TREE.md`
+> Système adaptatif C1→C5 — voir ORCHESTRATION_V2.md
 
 ```
 Pipeline KDP :
-  SCRIBE + PHILOMÈNE (fond) + MAYA (niche) + NIKOLA (si bottleneck)
+  SCRIBE + PHILOMÈNE (fond) + NICHE (niche) + VOLT (si bottleneck)
 
 Pipeline VENTE :
-  STANLEY (closing) + PHILOMÈNE (forme) + BENTLEY (si premium)
+  CLOSER (closing) + PHILOMÈNE (forme) + ONYX (si premium)
 
 Décision stratégique :
-  SENTINEL (dispatch) + MURPHY (structure) + OMEGA (si complexe) + ZEN (recul)
+  SENTINEL (dispatch) + CORTEX (structure) + OMEGA (si complexe) + FRANKLIN (recul)
 
 Innovation :
-  RICK (disruption) + MAYA (niche) + NIKOLA (pipeline) + GRIMALDI (chiffres)
+  GLITCH (disruption) + NICHE (niche) + VOLT (pipeline) + LEDGER (chiffres)
 
 Audit & Performance :
-  X-O1 (setup) + PULSE (latence) + CYPHER (KPIs)
+  PULSE (setup + perf) + DATUM (KPIs)
 
 Restitution complexe :
-  [Agents pertinents] + LIMPIDE (résumé vulgarisé)
+  [Agents pertinents] + FRANKLIN (résumé vulgarisé)
 ```
 
 ---
 
-## Routing Tri-Pôle (nouveau)
+## Routing Tri-Pôle
 
 > Référence complète : `directives/TRI_POLE.md`
 
@@ -207,8 +211,8 @@ Restitution complexe :
 | Créer, produire, coder, écrire, designer | **F — FORGE** | R fournit le brief |
 | Vendre, publier, distribuer, closer, déployer | **D — DEPLOY** | F fournit le livrable |
 | Projet complet (de A à Z) | **R → F → D** | Boucle complète |
-| Bug, erreur, maintenance | **D — DEPLOY** (X-O1 + Forge prêté) | — |
-| Bilan, KPIs, résultats | **R — RECON** (Cypher + Nash) | D fournit les métriques |
+| Bug, erreur, maintenance | **F — FORGE** (ANVIL + PULSE) | — |
+| Bilan, KPIs, résultats | **R — RECON** (DATUM + PRISM) | D fournit les métriques |
 
 ### Communication inter-pôles
 ```
@@ -222,7 +226,7 @@ Format : [PÔLE_SOURCE → PÔLE_DEST] Type : "Message"
 ### Escalade
 ```
 Intra-pôle → Gouverneur du pôle résout
-Inter-pôles → BAGHEERA arbitre
+Inter-pôles → SENTINEL arbitre
 Stratégie globale → OMEGA-CORE
 Irréversible → Augus décide
 ```

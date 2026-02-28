@@ -1,5 +1,5 @@
 {
-  "xp": 2219,
+  "xp": 2328,
   "level": 7,
   "title": "Spécialiste",
   "achievements": [
@@ -11,31 +11,32 @@
     "streak_3",
     "chatterbox"
   ],
-  "streak": 3,
-  "last_active_date": "2026-02-26",
+  "streak": 4,
+  "last_active_date": "2026-02-27",
   "stats": {
-    "messages": 129,
-    "commands": 9,
+    "messages": 141,
+    "commands": 11,
     "tasks_completed": 0,
     "market_checks": 0,
     "workflows_created": 0,
-    "night_sessions": 35,
+    "night_sessions": 44,
     "early_sessions": 0,
     "max_daily": 60,
     "modules_used_list": [
       "brain",
       "president",
-      "code"
+      "code",
+      "email"
     ],
-    "modules_used": 3,
-    "total_days": 7,
+    "modules_used": 4,
+    "total_days": 8,
     "level": 7,
-    "streak": 3,
+    "streak": 4,
     "daily_modules": 2
   },
   "daily": {
-    "date": "2026-02-26",
-    "messages": 11,
+    "date": "2026-02-27",
+    "messages": 9,
     "tasks": 0,
     "searches": 0,
     "news": 0,
@@ -47,13 +48,13 @@
     "memories": 0,
     "modules": [
       "brain",
-      "code"
+      "email"
     ],
     "challenge": {
-      "name": "Automaticien",
-      "desc": "Crée un workflow",
-      "xp": 80,
-      "check": "daily_workflows >= 1"
+      "name": "Productif",
+      "desc": "Complète 3 tâches aujourd'hui",
+      "xp": 75,
+      "check": "daily_tasks >= 3"
     },
     "challenge_done": false
   }

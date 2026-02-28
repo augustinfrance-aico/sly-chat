@@ -1,0 +1,596 @@
+{
+  "name": "Leboncoin Automated Prospecting System",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Every 15 min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "base_url",
+              "value": "https://www.leboncoin.fr/recherche?category=2&owner_type=private&sort=time"
+            },
+            {
+              "name": "exclude_keywords",
+              "value": "accidenté,panne,pour pièces,HS,épave,non roulant,moteur HS,à réparer,crash"
+            },
+            {
+              "name": "min_price",
+              "value": "1000"
+            },
+            {
+              "name": "max_price",
+              "value": "50000"
+            }
+          ]
+        }
+      },
+      "id": "set-config",
+      "name": "Set Global Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.base_url }}&price_min={{ $json.min_price }}&price_max={{ $json.max_price }}",
+        "options": {
+          "timeout": 30000
+        },
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "fr-FR,fr;q=0.9"
+            },
+            {
+              "name": "Accept",
+              "value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            }
+          ]
+        }
+      },
+      "id": "fetch-listings",
+      "name": "Fetch Leboncoin Listings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse HTML response and extract listing data\nconst html = $input.first().json.data;\nconst listings = [];\n\n// Extract listing blocks from Leboncoin HTML\n// Note: Adapt selectors based on current Leboncoin DOM structure\nconst listingRegex = /\"list_id\":(\\d+),.*?\"subject\":\"(.*?)\",.*?\"price\":\\[(\\d+)\\],.*?\"url\":\"(.*?)\",.*?\"city\":\"(.*?)\"/g;\n\nlet match;\nwhile ((match = listingRegex.exec(html)) !== null) {\n  listings.push({\n    listing_id: match[1],\n    title: match[2],\n    price: parseInt(match[3]),\n    url: `https://www.leboncoin.fr${match[4]}`,\n    city: match[5],\n    scraped_at: new Date().toISOString()\n  });\n}\n\nreturn listings.map(l => ({ json: l }));"
+      },
+      "id": "parse-listings",
+      "name": "Parse Listings",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "split-batches",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [880, 0]
+    },
+    {
+      "parameters": {
+        "operation": "lookup",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "processed_listings"
+        },
+        "lookupColumn": "listing_id",
+        "lookupValue": "={{ $json.listing_id }}",
+        "options": {}
+      },
+      "id": "check-duplicate",
+      "name": "Check Duplicate",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1100, 0],
+      "notes": "Connect your Google Sheet ID — sheet 'processed_listings' with column 'listing_id'"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "new-listing",
+              "leftValue": "={{ $json.listing_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "is-new",
+      "name": "Is New Listing?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1320, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Qualification Engine — keyword scoring\nconst item = $input.first().json;\nconst title = (item.title || '').toLowerCase();\nconst description = (item.description || '').toLowerCase();\nconst text = title + ' ' + description;\n\n// Negative keywords — reject\nconst negatives = ['accidenté', 'panne', 'pour pièces', 'hs', 'épave',\n  'non roulant', 'moteur hs', 'à réparer', 'crash', 'ne démarre pas',\n  'ne roule pas', 'accidentee', 'sinistre', 'epave'];\n\n// Positive keywords — boost score\nconst positives = ['bon état', 'très bon état', 'excellent état', 'ct ok',\n  'contrôle technique ok', 'faible km', 'première main', 'entretien suivi',\n  'carnet entretien', 'garage', 'révision faite', 'ct vierge'];\n\nlet score = 50; // Base score\nlet rejection_reasons = [];\n\n// Check negatives\nfor (const neg of negatives) {\n  if (text.includes(neg)) {\n    score -= 30;\n    rejection_reasons.push(neg);\n  }\n}\n\n// Check positives\nfor (const pos of positives) {\n  if (text.includes(pos)) {\n    score += 15;\n  }\n}\n\n// Clamp score\nscore = Math.max(0, Math.min(100, score));\n\nconst qualified = score >= 40;\n\nreturn [{\n  json: {\n    ...item,\n    qualification_score: score,\n    qualified: qualified,\n    rejection_reasons: rejection_reasons.join(', ') || 'none',\n    qualified_at: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "qualify-listing",
+      "name": "Qualification Engine",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1540, -100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "is-qualified",
+              "leftValue": "={{ $json.qualified }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "is-qualified",
+      "name": "Qualified?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1760, -100]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate personalized first message\nconst item = $input.first().json;\nconst vehicle = item.title || 'votre véhicule';\nconst price = item.price ? `${item.price}€` : '';\nconst city = item.city || '';\n\nconst templates = [\n  `Bonjour, je suis intéressé par votre ${vehicle}${price ? ` à ${price}` : ''}. Est-il toujours disponible ? Serait-il possible d'échanger par téléphone ?`,\n  `Bonjour, votre annonce pour ${vehicle} m'intéresse beaucoup${city ? `, je suis dans la région de ${city}` : ''}. Pourriez-vous me rappeler pour en discuter ?`,\n  `Bonjour, je recherche exactement ce type de véhicule. Votre ${vehicle} est-il toujours en vente ? Je préfère échanger par téléphone si possible.`\n];\n\n// Random template selection\nconst message = templates[Math.floor(Math.random() * templates.length)];\n\nreturn [{\n  json: {\n    ...item,\n    outbound_message: message,\n    message_sent_at: null,\n    status: 'ready_to_send'\n  }\n}];"
+      },
+      "id": "generate-message",
+      "name": "Generate Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1980, -200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simulate wait for human-like behavior\nconst randomDelay = Math.floor(Math.random() * (15 - 2 + 1) + 2);\n// In production: use n8n Wait node or external queue\n\nconst item = $input.first().json;\n\nreturn [{\n  json: {\n    ...item,\n    delay_minutes: randomDelay,\n    note: 'In production: Playwright sends this message via Leboncoin messaging UI after delay'\n  }\n}];"
+      },
+      "id": "human-delay",
+      "name": "Human Delay Logic",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2200, -200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Phone number extraction from seller replies\nconst item = $input.first().json;\nconst reply = (item.seller_reply || '').replace(/\\s+/g, ' ');\n\n// French phone patterns\nconst patterns = [\n  /0[67][\\s.-]?\\d{2}[\\s.-]?\\d{2}[\\s.-]?\\d{2}[\\s.-]?\\d{2}/g,\n  /\\+33[\\s.-]?[67][\\s.-]?\\d{2}[\\s.-]?\\d{2}[\\s.-]?\\d{2}[\\s.-]?\\d{2}/g,\n  /zero\\s*six[\\s.-]?\\d{2}[\\s.-]?\\d{2}[\\s.-]?\\d{2}[\\s.-]?\\d{2}/gi,\n  /zero\\s*sept[\\s.-]?\\d{2}[\\s.-]?\\d{2}[\\s.-]?\\d{2}[\\s.-]?\\d{2}/gi\n];\n\nlet phone = null;\nfor (const pattern of patterns) {\n  const match = reply.match(pattern);\n  if (match) {\n    // Clean the number\n    phone = match[0].replace(/[\\s.-]/g, '');\n    if (phone.startsWith('+33')) {\n      phone = '0' + phone.slice(3);\n    }\n    break;\n  }\n}\n\nconst phone_found = phone !== null;\n\nreturn [{\n  json: {\n    ...item,\n    phone_number: phone,\n    phone_found: phone_found,\n    extraction_method: phone_found ? 'regex' : 'none',\n    extracted_at: phone_found ? new Date().toISOString() : null\n  }\n}];"
+      },
+      "id": "extract-phone",
+      "name": "Extract Phone Number",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2420, -200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "phone-found",
+              "leftValue": "={{ $json.phone_found }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "phone-found",
+      "name": "Phone Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [2640, -200]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "leads"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "seller_username": "={{ $json.seller_username }}",
+            "phone_number": "={{ $json.phone_number }}",
+            "listing_url": "={{ $json.url }}",
+            "vehicle": "={{ $json.title }}",
+            "price": "={{ $json.price }}",
+            "city": "={{ $json.city }}",
+            "conversation_summary": "={{ $json.ai_summary }}",
+            "status": "New Lead",
+            "created_at": "={{ $now.toISO() }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "create-lead",
+      "name": "Create Lead in Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [2860, -300],
+      "notes": "Connect your Google Sheet ID — sheet 'leads'"
+    },
+    {
+      "parameters": {
+        "url": "https://api.pushover.net/1/messages.json",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "={{ $env.PUSHOVER_TOKEN }}"
+            },
+            {
+              "name": "user",
+              "value": "={{ $env.PUSHOVER_USER }}"
+            },
+            {
+              "name": "title",
+              "value": "🚗 New Leboncoin Lead"
+            },
+            {
+              "name": "message",
+              "value": "{{ $json.title }} — {{ $json.price }}€\n📞 {{ $json.phone_number }}\n📍 {{ $json.city }}"
+            },
+            {
+              "name": "url",
+              "value": "={{ $json.url }}"
+            },
+            {
+              "name": "url_title",
+              "value": "Voir l'annonce"
+            },
+            {
+              "name": "priority",
+              "value": "1"
+            },
+            {
+              "name": "sound",
+              "value": "cashregister"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "send-notification",
+      "name": "iPhone Push Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [3080, -300]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "processed_listings"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "listing_id": "={{ $json.listing_id }}",
+            "title": "={{ $json.title }}",
+            "url": "={{ $json.url }}",
+            "status": "={{ $json.qualified ? 'qualified' : 'rejected' }}",
+            "score": "={{ $json.qualification_score }}",
+            "processed_at": "={{ $now.toISO() }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "log-processed",
+      "name": "Log Processed Listing",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1540, 100],
+      "notes": "Connect your Google Sheet ID — sheet 'processed_listings'"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "rejected_listings"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "listing_id": "={{ $json.listing_id }}",
+            "title": "={{ $json.title }}",
+            "url": "={{ $json.url }}",
+            "rejection_reasons": "={{ $json.rejection_reasons }}",
+            "score": "={{ $json.qualification_score }}",
+            "rejected_at": "={{ $now.toISO() }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "log-rejected",
+      "name": "Log Rejected",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1980, 0],
+      "notes": "Connect your Google Sheet ID — sheet 'rejected_listings'"
+    }
+  ],
+  "connections": {
+    "Every 15 min": {
+      "main": [
+        [
+          {
+            "node": "Set Global Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Global Config": {
+      "main": [
+        [
+          {
+            "node": "Fetch Leboncoin Listings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Leboncoin Listings": {
+      "main": [
+        [
+          {
+            "node": "Parse Listings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Listings": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "Check Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Duplicate": {
+      "main": [
+        [
+          {
+            "node": "Is New Listing?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is New Listing?": {
+      "main": [
+        [
+          {
+            "node": "Qualification Engine",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Processed Listing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qualification Engine": {
+      "main": [
+        [
+          {
+            "node": "Qualified?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qualified?": {
+      "main": [
+        [
+          {
+            "node": "Generate Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Message": {
+      "main": [
+        [
+          {
+            "node": "Human Delay Logic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Human Delay Logic": {
+      "main": [
+        [
+          {
+            "node": "Extract Phone Number",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Phone Number": {
+      "main": [
+        [
+          {
+            "node": "Phone Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Phone Found?": {
+      "main": [
+        [
+          {
+            "node": "Create Lead in Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Processed Listing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Lead in Sheets": {
+      "main": [
+        [
+          {
+            "node": "iPhone Push Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "leboncoin"
+    },
+    {
+      "name": "prospecting"
+    },
+    {
+      "name": "automation"
+    }
+  ]
+}

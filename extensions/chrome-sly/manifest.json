@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "SLY - AI Assistant",
+  "description": "Your AI copilot powered by 50 specialist agents. Right-click any text to ask SLY.",
+  "version": "1.0.0",
+  "minimum_chrome_version": "116",
+  "permissions": [
+    "sidePanel",
+    "contextMenus",
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://api.groq.com/*"
+  ],
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "action": {
+    "default_title": "Open SLY"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

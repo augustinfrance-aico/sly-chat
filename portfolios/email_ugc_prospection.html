@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaCast — Templates Email Prospection</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #05070A;
+            --surface: #0B0F14;
+            --surface2: #121821;
+            --border: rgba(31,111,255,0.15);
+            --text: #e5e5e5;
+            --text2: #8899aa;
+            --accent: #1F6FFF;
+            --accent2: #3A8DFF;
+            --violet: #7A3CFF;
+            --green: #1EFF8E;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #1F6FFF, #7A3CFF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle { color: var(--text2); margin-bottom: 40px; font-size: 15px; }
+        .email-template {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            margin-bottom: 32px;
+            overflow: hidden;
+        }
+        .email-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .email-header .tag {
+            background: rgba(31,111,255,0.15);
+            color: var(--accent2);
+            padding: 4px 14px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .email-header h2 { font-size: 18px; font-weight: 700; }
+        .email-meta {
+            padding: 16px 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 13px;
+            color: var(--text2);
+        }
+        .email-meta strong { color: var(--text); }
+        .email-body {
+            padding: 24px;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #ccc;
+        }
+        .email-body .variable {
+            background: rgba(122,60,255,0.2);
+            color: #B18CFF;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .email-body .cta-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #1F6FFF, #7A3CFF);
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            margin: 12px 0;
+        }
+        .copy-btn {
+            display: inline-block;
+            padding: 8px 20px;
+            background: rgba(31,111,255,0.1);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--accent2);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin: 16px 24px 20px;
+        }
+        .copy-btn:hover { background: rgba(31,111,255,0.2); }
+        .tips {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            margin-top: 40px;
+        }
+        .tips h3 { font-size: 18px; margin-bottom: 16px; }
+        .tips ul { list-style: none; }
+        .tips ul li {
+            padding: 8px 0;
+            font-size: 14px;
+            color: var(--text2);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .tips ul li::before { content: '→ '; color: var(--accent); font-weight: 700; }
+        .scraper-section {
+            background: var(--surface);
+            border: 1px solid rgba(122,60,255,0.2);
+            border-radius: 16px;
+            padding: 28px;
+            margin-top: 32px;
+        }
+        .scraper-section h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #B18CFF;
+        }
+        .scraper-section ol {
+            padding-left: 20px;
+            font-size: 14px;
+            color: var(--text2);
+            line-height: 2;
+        }
+        .scraper-section code {
+            background: rgba(31,111,255,0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: var(--accent2);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Templates Email — Prospection UGC IA</h1>
+    <p class="subtitle">3 emails séquentiels + guide de scraping marques + personnalisation automatique</p>
+
+    <!-- ============= EMAIL 1 — PREMIER CONTACT ============= -->
+    <div class="email-template">
+        <div class="email-header">
+            <h2>Email 1 — Premier Contact</h2>
+            <span class="tag">COLD OUTREACH</span>
+        </div>
+        <div class="email-meta">
+            <strong>Objet :</strong> <span class="variable">{PRENOM}</span>, du contenu UGC pour <span class="variable">{MARQUE}</span> — livré demain
+        </div>
+        <div class="email-body">
+            <p>Salut <span class="variable">{PRENOM}</span>,</p>
+            <br>
+            <p>Je suis tombé sur <span class="variable">{MARQUE}</span> en scrollant <span class="variable">{PLATEFORME}</span> — votre <span class="variable">{PRODUIT_STAR}</span> a un potentiel énorme en UGC.</p>
+            <br>
+            <p>Je bosse avec des marques <span class="variable">{SECTEUR}</span> pour créer du contenu UGC ultra-réaliste avec des avatars IA. Pensez : vidéos try-on, unboxings, reviews — indiscernables d'un vrai créateur.</p>
+            <br>
+            <p><strong>Le truc :</strong></p>
+            <p>• Livré en 24h (pas 2 semaines d'attente)</p>
+            <p>• 10x moins cher qu'un créateur UGC</p>
+            <p>• Variations illimitées pour A/B tester</p>
+            <p>• Droits commerciaux inclus — Meta Ads, TikTok, tout</p>
+            <br>
+            <p>Je vous ai préparé un exemple gratuit basé sur votre feed — cliquez ici pour le voir :</p>
+            <br>
+            <a href="#" class="cta-link">Voir l'exemple pour <span class="variable">{MARQUE}</span> →</a>
+            <br><br>
+            <p>Si ça vous parle, on cale un call de 10 min cette semaine ?</p>
+            <br>
+            <p>— Augus<br>
+            <span style="color:var(--text2); font-size:13px;">NovaCast — UGC IA pour marques ambitieuses</span></p>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(1)">Copier ce template</button>
+    </div>
+
+    <!-- ============= EMAIL 2 — FOLLOW-UP (J+3) ============= -->
+    <div class="email-template">
+        <div class="email-header">
+            <h2>Email 2 — Follow-up (J+3)</h2>
+            <span class="tag">RELANCE</span>
+        </div>
+        <div class="email-meta">
+            <strong>Objet :</strong> Re: du contenu UGC pour <span class="variable">{MARQUE}</span> (+ résultat client)
+        </div>
+        <div class="email-body">
+            <p>Hey <span class="variable">{PRENOM}</span>,</p>
+            <br>
+            <p>Quick follow-up sur mon message de lundi.</p>
+            <br>
+            <p>Un chiffre qui va vous parler : une marque <span class="variable">{SECTEUR}</span> comme la vôtre a vu <strong>+340% d'engagement</strong> sur ses Reels après avoir switché au UGC IA. Coût : 247€ au lieu de 2 000€ avec des créateurs classiques.</p>
+            <br>
+            <p>Je sais que le UGC IA peut sembler "trop beau pour être vrai" — c'est pour ça que je propose un <strong>test gratuit</strong> : 1 vidéo + 3 photos de votre <span class="variable">{PRODUIT_STAR}</span>, sans engagement.</p>
+            <br>
+            <p>On tente ?</p>
+            <br>
+            <a href="#" class="cta-link">Recevoir mon test gratuit →</a>
+            <br><br>
+            <p>— Augus</p>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(2)">Copier ce template</button>
+    </div>
+
+    <!-- ============= EMAIL 3 — DERNIER (J+7) ============= -->
+    <div class="email-template">
+        <div class="email-header">
+            <h2>Email 3 — Dernier message (J+7)</h2>
+            <span class="tag">BREAK-UP</span>
+        </div>
+        <div class="email-meta">
+            <strong>Objet :</strong> Dernière chose pour <span class="variable">{MARQUE}</span>
+        </div>
+        <div class="email-body">
+            <p><span class="variable">{PRENOM}</span>,</p>
+            <br>
+            <p>Pas de réponse = pas d'intérêt, et c'est OK.</p>
+            <br>
+            <p>Juste une dernière chose avant de fermer le dossier : j'ai quand même créé un <strong>mini-pack démo</strong> pour <span class="variable">{MARQUE}</span>. 2 visuels de votre <span class="variable">{PRODUIT_STAR}</span> avec un avatar IA.</p>
+            <br>
+            <p>C'est gratuit, sans engagement, et ça prend 30 secondes à regarder :</p>
+            <br>
+            <a href="#" class="cta-link">Voir les 2 visuels →</a>
+            <br><br>
+            <p>Si un jour vous voulez scaler votre contenu sans scaler vos coûts — vous savez où me trouver.</p>
+            <br>
+            <p>Bonne continuation,<br>Augus</p>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(3)">Copier ce template</button>
+    </div>
+
+    <!-- ============= GUIDE SCRAPING MARQUES ============= -->
+    <div class="scraper-section">
+        <h3>Guide — Scraper des marques cibles</h3>
+        <ol>
+            <li><strong>Instagram</strong> — Chercher hashtags niche (<code>#streetwearfrance</code>, <code>#skincareroutine</code>, <code>#newbrand</code>). Noter les comptes avec 1K-50K followers (sweet spot = pas d'agence, besoin de contenu).</li>
+            <li><strong>Shopify Store List</strong> — Utiliser <code>myip.ms</code> ou <code>store.leads</code> pour trouver des boutiques Shopify par catégorie. Export CSV.</li>
+            <li><strong>TikTok Shop</strong> — Explorer les marques émergentes sur TikTok Shop. Cibles = celles avec produits mais peu de UGC.</li>
+            <li><strong>Apollo.io / Hunter.io</strong> — Trouver les emails des fondateurs / marketing managers. Gratuit jusqu'à 50 contacts/mois.</li>
+            <li><strong>Enrichir le questionnaire</strong> — Avant l'email, visiter le site de la marque et pré-remplir : <code>{PRODUIT_STAR}</code>, <code>{SECTEUR}</code>, <code>{PLATEFORME}</code>.</li>
+        </ol>
+    </div>
+
+    <!-- ============= VARIABLES DU QUESTIONNAIRE ============= -->
+    <div class="scraper-section" style="border-color: rgba(31,111,255,0.2);">
+        <h3 style="color: var(--accent2);">Variables à personnaliser</h3>
+        <ol>
+            <li><span class="variable">{PRENOM}</span> — Prénom du fondateur / marketing manager</li>
+            <li><span class="variable">{MARQUE}</span> — Nom de la marque</li>
+            <li><span class="variable">{PRODUIT_STAR}</span> — Le produit phare (trouvé sur leur site/IG)</li>
+            <li><span class="variable">{SECTEUR}</span> — Mode, beauté, tech, food, fitness...</li>
+            <li><span class="variable">{PLATEFORME}</span> — Où vous les avez trouvés (Instagram, TikTok...)</li>
+        </ol>
+    </div>
+
+    <!-- ============= TIPS ============= -->
+    <div class="tips">
+        <h3>Tips Prospection</h3>
+        <ul>
+            <li><strong>Sujet email court</strong> — max 6 mots, le prénom + la marque = personnalisation immédiate</li>
+            <li><strong>CTA = lien vers un exemple</strong> — générer 1 visuel gratuit avec leur produit AVANT d'envoyer = taux de réponse x3</li>
+            <li><strong>Envoyer mardi-jeudi 9h-11h</strong> — meilleur taux d'ouverture pour les e-commerçants</li>
+            <li><strong>Volume</strong> — 30-50 emails/jour max pour éviter le spam. Utiliser un domaine secondaire</li>
+            <li><strong>Follow-up automatique</strong> — Utiliser Instantly.ai ou Lemlist (plan gratuit dispo) pour automatiser la séquence 3 emails</li>
+            <li><strong>Landing page = portfolio</strong> — Le lien dans l'email pointe vers <code>portfolio_ugc_ia.html</code> avec le questionnaire</li>
+            <li><strong>Scraper → Questionnaire → Avatar → Email avec démo</strong> — le pipeline complet tient en 30 min par marque</li>
+        </ul>
+    </div>
+
+</div>
+
+<script>
+    function copyEmail(num) {
+        const emails = {
+            1: `Salut {PRENOM},
+
+Je suis tombé sur {MARQUE} en scrollant {PLATEFORME} — votre {PRODUIT_STAR} a un potentiel énorme en UGC.
+
+Je bosse avec des marques {SECTEUR} pour créer du contenu UGC ultra-réaliste avec des avatars IA. Pensez : vidéos try-on, unboxings, reviews — indiscernables d'un vrai créateur.
+
+Le truc :
+• Livré en 24h (pas 2 semaines d'attente)
+• 10x moins cher qu'un créateur UGC
+• Variations illimitées pour A/B tester
+• Droits commerciaux inclus — Meta Ads, TikTok, tout
+
+Je vous ai préparé un exemple gratuit basé sur votre feed — cliquez ici pour le voir :
+[LIEN LANDING PAGE]
+
+Si ça vous parle, on cale un call de 10 min cette semaine ?
+
+— Augus
+NovaCast — UGC IA pour marques ambitieuses`,
+
+            2: `Hey {PRENOM},
+
+Quick follow-up sur mon message de lundi.
+
+Un chiffre qui va vous parler : une marque {SECTEUR} comme la vôtre a vu +340% d'engagement sur ses Reels après avoir switché au UGC IA. Coût : 247€ au lieu de 2 000€ avec des créateurs classiques.
+
+Je sais que le UGC IA peut sembler "trop beau pour être vrai" — c'est pour ça que je propose un test gratuit : 1 vidéo + 3 photos de votre {PRODUIT_STAR}, sans engagement.
+
+On tente ?
+[LIEN LANDING PAGE]
+
+— Augus`,
+
+            3: `{PRENOM},
+
+Pas de réponse = pas d'intérêt, et c'est OK.
+
+Juste une dernière chose avant de fermer le dossier : j'ai quand même créé un mini-pack démo pour {MARQUE}. 2 visuels de votre {PRODUIT_STAR} avec un avatar IA.
+
+C'est gratuit, sans engagement, et ça prend 30 secondes à regarder :
+[LIEN VISUELS]
+
+Si un jour vous voulez scaler votre contenu sans scaler vos coûts — vous savez où me trouver.
+
+Bonne continuation,
+Augus`
+        };
+
+        navigator.clipboard.writeText(emails[num]).then(() => {
+            const btn = event.target;
+            btn.textContent = '✓ Copié !';
+            btn.style.color = '#1EFF8E';
+            setTimeout(() => {
+                btn.textContent = 'Copier ce template';
+                btn.style.color = '';
+            }, 2000);
+        });
+    }
+</script>
+
+</body>
+</html>

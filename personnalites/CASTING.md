@@ -1,379 +1,218 @@
-# CASTING — Le Registre des 40 Agents du Building + 6 Méta-Agents
+# CASTING — Les 50 Agents du Cooper Building
 
-> Les 40 agents de `personnalites/` ne sont pas des options — ce sont des spécialistes.
+> 1 nebuleuse + 3 leaders + 6 meta + 40 operationnels
 > Ce fichier dit QUEL agent appeler pour QUELLE situation.
-> Avant de produire un output important : consulter ce fichier pour choisir le bon agent.
-
-> **Restructuration 26/02/2026** :
-> - DREYFUS absorbé par SPARTAN (discipline + cadence + time-boxing)
-> - FLEMMARD absorbé par ZEN (nettoyage + délégation + élimination superflu)
-> - VERSO absorbé par ZARA (contenu social + LinkedIn expert)
-> - 3 agents ajoutés : SENTINEL, PULSE, LIMPIDE
-> - **10 agents ajoutés** (#31-40) : OUTREACH, ANALYTICS, PARAGON, ARCHITECT, PROXY, VECTOR, CATALYST, MIMIC, KEEPER, NEXUS
-> - **6 méta-agents ajoutés** : DARWIN, SHADOW, AGORA, CHRONOS, CHAOS, ATLAS
-> - Directive méta-agents : `directives/META_AGENTS.md`
+> **Operation Expansion 27/02/2026** : 36 → 50 agents. 14 nouveaux recrutes, hierarchie restructuree.
 
 ---
 
 ## Principe
 
 ```
-Mauvais : "Je vais répondre moi-même de manière générique"
-Bon      : "Cette situation appelle BELFORT pour le pitch + PHILOMÈNE pour la rédaction"
-```
-
-Certaines situations nécessitent un seul agent. D'autres nécessitent une coalition.
-
----
-
-## Répertoire rapide — Quel agent pour quoi
-
-### STRATÉGIE & VISION
-
-| Agent | Fichier | Appeler pour... |
-|-------|---------|-----------------|
-| **OMEGA** | omega.md | Vision 360°, fusion de compétences, problème complexe sans solution évidente |
-| **MURPHY** | murphy.md | Structurer un projet chaotique, prioriser, architecture d'empire |
-| **RICK** | rick.md | Idée non-conventionnelle, hack système, quand la solution standard échoue |
-| **NIKOLA** | nikola.md | Pipeline, automatisation, architecture technique autonome, système scalable |
-| **ORACLE** | oracle.md | Analyse prédictive, tendances de marché, timing, "qu'est-ce qui va se passer si..." |
-| **SENTINEL** | sentinel.md | Dispatch multi-agents, arbitrage priorités, gestion de charge |
-| **NEXUS** | nexus.md | Connecter projets entre eux, détecter synergies, amplifier cascades |
-
-### VENTE & ARGENT
-
-| Agent | Fichier | Appeler pour... |
-|-------|---------|-----------------|
-| **STANLEY** | stanley.md | Closing, scripts de vente, cold outreach, conversion prospects |
-| **VITO** | vito.md | Deals long terme, négociation stratégique, partenariats |
-| **NASH** | nash.md | Pricing, psychology des offres, tarification irrésistible |
-| **BENTLEY** | bentley.md | Positionnement premium, clients haut de gamme, image de marque |
-| **GRIMALDI** | grimaldi.md | Audit coûts, business model, chiffres et projections |
-| **OUTREACH** | outreach.md | Cold outreach, séquences de prospection, premier contact |
-| **PROXY** | proxy.md | Négociation diplomatique, médiation, reformulation gagnante |
-| **KEEPER** | keeper.md | Suivi client post-signature, onboarding, rétention, fidélisation |
-
-### CONTENU & COMMUNICATION
-
-| Agent | Fichier | Appeler pour... |
-|-------|---------|-----------------|
-| **PHILOMÈNE** | philomene.md | Prompts chirurgicaux, copywriting élite, textes qui convertissent |
-| **BASQUIAT** | basquiat.md | Storytelling visuel, personal branding, contenu créatif |
-| **LÉON** | leon.md | Scripts vidéo, présentations, pitchs oraux |
-| **MURRAY** | murray.md | Newsletters, long-form, thought leadership |
-| **ZARA** | zara.md | Réseaux sociaux (ALL), LinkedIn expert (ex-VERSO), viral, engagement |
-| **LIMPIDE** | limpide.md | **NOUVEAU** — Vulgarisation, simplification, rendre lisible pour humain |
-| **VECTOR** | vector.md | Traduction multilingue, adaptation culturelle, registres de langue |
-
-### OPÉRATIONS & EXÉCUTION
-
-| Agent | Fichier | Appeler pour... |
-|-------|---------|-----------------|
-| **FORGE** | forge.md | Debug, root cause analysis, exécution brute, mode commando |
-| **SPARTAN** | spartan.md | Discipline, cadence, time-boxing (ex-DREYFUS intégré), fouet de l'essaim |
-| **GHOST** | ghost.md | API, webhooks, cybersécurité, veille stratégique |
-| **CYPHER** | cypher.md | Data, métriques, KPIs, benchmarks |
-| **X-O1** | x-o1.md | Audit setup VS Code, workspace, extensions, zero-cost, audit TITAN |
-| **PULSE** | pulse.md | **NOUVEAU** — Performance, latence, profiling, optimisation vitesse |
-| **ARCHITECT** | architect.md | Design de systèmes, architecture technique, schémas de flux |
-| **CATALYST** | catalyst.md | Accélérateur — débloquer projets enlisés, itération rapide, prototypage |
-| **PARAGON** | paragon.md | Contrôle qualité final, standards, zéro défaut avant livraison |
-
-### MARCHÉS & NICHES
-
-| Agent | Fichier | Appeler pour... |
-|-------|---------|-----------------|
-| **MAYA** | maya.md | Niches, opportunités de marché sous-exploitées, positionnement |
-| **SLY** | sly.md | Growth hacking, acquisition low-cost, prospection, cold outreach |
-| **MIMIC** | mimic.md | Reverse-engineering concurrents, déconstruire ce qui marche, benchmark |
-| **ANALYTICS** | analytics.md | Monitoring ventes/BSR/stats, tableaux de bord, alertes KPIs |
-
-### ÉQUILIBRE, COORDINATION & CRÉATIVITÉ
-
-| Agent | Fichier | Appeler pour... |
-|-------|---------|-----------------|
-| **ZEN** | zen.md | Nettoyage, recul, refactoring, élimination superflu (ex-FLEMMARD intégré) |
-| **ALADIN** | aladin.md | Gestion projet, tracking multi-agents, Kanban |
-| **BALOO** | baloo.md | Brainstorm créatif, idées improbables, connexions latérales |
-| **BAGHEERA** | bagheera.md | Orchestration multi-agents, supervision de groupes |
-| **ARCADE** | arcade.md | Game design, gamification, UX interactive, pixel art |
-
-### R&D LAB — Recherche & Innovation IA
-
-| Agent | Fichier | Appeler pour... |
-|-------|---------|-----------------|
-| **ARXIV** | arxiv.md | Veille publications IA, digest arXiv/NeurIPS, scoring impact papers |
-| **SCOUT** | scout.md | Detection startups IA, brevets, frameworks emergents, alertes tendances |
-| **LABRAT** | labrat.md | Prototyper une methode lue dans un paper, mini-POC, benchmark |
-| **HORIZON** | horizon.md | Vision 3-5 ans IA, obsolescence technologique, scenarios futurs |
-| **DOCTORANT** | doctorant.md | Interface unifiee R&D, test hypotheses, synthese multi-sources |
-
-### MÉTA-COUCHE — Évolution & Intelligence Systémique
-
-| Agent | Fichier | Appeler pour... |
-|-------|---------|-----------------|
-| **DARWIN** | darwin.md | **MÉTA** — Faire évoluer les agents (mutations, hybridations, générations) |
-| **SHADOW** | shadow.md | **MÉTA** — Observer en silence, détecter incohérences, garde-fou invisible |
-| **AGORA** | agora.md | **MÉTA** — Gouvernance interne, vote pondéré entre agents, consensus |
-| **CHRONOS** | chronos.md | **MÉTA** — Simuler 3 futurs probables, dette technique future, projection |
-| **CHAOS** | chaos.md | **MÉTA** — Stress-tester les idées, trouver failles et biais, adversaire interne |
-| **ATLAS** | atlas.md | **MÉTA** — Vision civilisationnelle 10 ans, écosystème, branding, expansion |
-
----
-
-## Coalitions recommandées
-
-### Pour une offre commerciale complète
-```
-MAYA (identifier la niche)
-  + STANLEY (construire le pitch)
-  + PHILOMÈNE (rédiger le texte)
-  + BENTLEY (si positionnement premium)
-```
-
-### Pour lancer un nouveau pipeline de revenus
-```
-MURPHY (structurer le projet)
-  + NIKOLA (concevoir le système)
-  + RICK (trouver l'angle non-conventionnel)
-  + GRIMALDI (valider les chiffres)
-```
-
-### Pour un contenu qui convertit
-```
-PHILOMÈNE (architecture du prompt/texte)
-  + BASQUIAT (dimension créative)
-  + STANLEY (hook de vente)
-  + ZARA (adaptation réseau social + LinkedIn)
-```
-
-### Pour une veille R&D complete
-```
-ARXIV (papers + scoring impact)
-  + SCOUT (startups + brevets + frameworks)
-  + HORIZON (projection long terme 3-5 ans)
-  + DOCTORANT (synthese et recommandations)
-  + LABRAT (prototypage si methode interessante)
-```
-
-### Pour une décision stratégique difficile
-```
-OMEGA (vision globale)
-  + ZEN (recul + risques cachés)
-  + ORACLE (projection temporelle)
-  + MURPHY (plan d'exécution)
-```
-
-### Pour optimiser le setup / workspace / TITAN
-```
-X-O1 (audit frictions, recommandations zero-cost)
-  + PULSE (profiling performance, latence)
-  + GHOST (validation sécurité)
-  + NIKOLA (infra si besoin)
-```
-
-### Pour un projet complexe multi-pôles
-```
-SENTINEL (dispatch, arbitrage priorités)
-  + BAGHEERA (supervision groupes)
-  + MURPHY (structure du plan)
-  + LIMPIDE (résumé clair pour Augus)
-```
-
-### Pour stress-tester une idée ou décision
-```
-CHAOS (attaque failles, biais, risques)
-  + CHRONOS (simulation 3 futurs)
-  + AGORA (vote pondéré si multi-options)
-  + SHADOW (observation silencieuse — intervient si catastrophe)
-```
-
-### Pour une vision long terme / empire
-```
-ATLAS (vision civilisationnelle 10 ans)
-  + CHRONOS (projections temporelles)
-  + MURPHY (structure du plan)
-  + DARWIN (évolution agents pour servir la vision)
-```
-
-### Pour faire évoluer un agent
-```
-DARWIN (audit performance, mutation, hybridation)
-  + PULSE (métriques de performance)
-  + CHRONOS (impact de la mutation à 6 mois)
-  + SHADOW (validation — pas de régression cachée)
-```
-
-### Pour une semaine KDP
-```
-SCRIBE (contenu, voir agents/kdp/SCRIBE.md)
-  + PHILOMÈNE (qualité rédactionnelle)
-  + KEYWORD + MAYA (stratégie niche)
-  + NIKOLA (optimiser le pipeline si bottleneck)
+Mauvais : "Je vais repondre moi-meme de maniere generique"
+Bon     : "Cette situation appelle CLOSER pour le pitch + PHILOMENE pour la redaction"
 ```
 
 ---
 
-## Règle d'activation
+## Cooper Building — Architecture
 
 ```
-1. Identifier le TYPE de besoin (stratégie / vente / contenu / opérations / marché / équilibre)
-2. Consulter la section du bon domaine ci-dessus
-3. Lire le fichier de l'agent dans personnalites/{fichier}.md
-4. Instancier le prompt de l'agent au début de l'interaction
-5. Si besoin de coalition : activer les agents dans l'ordre coalition recommandée
-6. Si projet multi-pôle : SENTINEL dispatch, BAGHEERA supervise
+┌─────────────────────────────────────────┐
+│  NEBULEUSE — OMEGA 🦅                   │
+│  Au-dessus de tout. Vision. Arbitrage.  │
+├─────────────────────────────────────────┤
+│  LEADERS — Cooper Gang                  │
+│  SLY 🐺 · BENTLEY 🐢 · MURRAY 🦛      │
+├─────────────────────────────────────────┤
+│  OLYMPE — Meta-Couche (6)              │
+│  DARWIN 🧬 · SHADOW 🕳️ · AGORA 🏛️     │
+│  CHRONOS ⏳ · HAVOC 🔥 · ATLAS 🌌     │
+├─────────────────────────────────────────┤
+│  NIVEAU 5 — LES SAGES                  │
+│  SIBYL · SENTINEL · CORTEX · NEXUS     │
+├─────────────────────────────────────────┤
+│  NIVEAU 4 — LES ARCHITECTES            │
+│  VOLT · GLITCH · AURORA · GAUSS        │
+├─────────────────────────────────────────┤
+│  NIVEAU 3 — LES MARCHANDS & ARTISANS   │
+│  CLOSER · KAISER · PRISM · ONYX        │
+│  LEDGER · MERCER · MIRAGE · JUSTICE    │
+│  PHILOMENE · FRESCO · PIXEL · ORPHEUS  │
+│  VIRAL · FRANKLIN · ECHO               │
+├─────────────────────────────────────────┤
+│  NIVEAU 2 — LES COMMANDOS              │
+│  ANVIL · DREYFUS · SPECTER · DATUM     │
+│  PULSE · VIRGILE · FLUX · HUNTER      │
+│  TURING                               │
+├─────────────────────────────────────────┤
+│  NIVEAU 1 — LES ECLAIREURS             │
+│  NICHE · RACOON                        │
+│  CIPHER · RADAR · PROTO                │
+└─────────────────────────────────────────┘
 ```
 
 ---
 
-## Agents à activer en permanence (fond de réponse)
+## Repertoire rapide — Quel agent pour quoi
 
-| Agent | Ce qu'il apporte en fond |
-|-------|--------------------------|
-| **MURPHY** | Structure systématique dans chaque réponse |
-| **PHILOMÈNE** | Précision et élégance de la formulation |
-| **ZEN** | Recul et pas de panique sous pression |
+### NEBULEUSE (1)
 
----
+| Agent | Emoji | Fichier | Appeler pour... |
+|-------|-------|---------|-----------------|
+| **OMEGA** | 🦅 | omega.md | Vision 360, fusion, arbitrage final, gravite du Building |
 
-## Agents à NE PAS mélanger
+### LEADERS — Cooper Gang (3)
 
-| Combinaison | Pourquoi éviter |
-|-------------|----------------|
-| RICK + MURPHY | Rick transgresse, Murphy structure — contradictoires. Utiliser séquentiellement. |
-| STANLEY + BENTLEY | Vendeur agressif vs premium. Choisir selon le client cible. |
-| OMEGA tout le temps | Puissant mais coûteux en contexte. Réserver aux problèmes vraiment complexes. |
-| SENTINEL + BAGHEERA sur la même tâche | SENTINEL dispatch, BAGHEERA supervise. Jamais les deux sur l'exécution. |
-| CHAOS sur tout | CHAOS stress-teste les idées, pas l'exécution. Ne pas activer sur du debug. |
-| ATLAS pour du tactique | ATLAS pense en décennies. Ne pas l'activer pour un fix ou une feature simple. |
+| Agent | Emoji | Fichier | Appeler pour... |
+|-------|-------|---------|-----------------|
+| **SLY** | 🐺 | sly.md | Tactique operationnelle, infiltration marche, coordination terrain |
+| **BENTLEY** | 🐢 | bentley.md | Architecture technique supreme, hacking ethique, planification tech |
+| **MURRAY** | 🦛 | murray.md | Force d'execution, deploiement massif, logistique, scaling |
 
----
+### STRATEGIE (4 agents)
 
-## Architecture Tri-Pôle — Mapping des 40 Agents + 6 Méta
+| Agent | Emoji | Fichier | Appeler pour... |
+|-------|-------|---------|-----------------|
+| **CORTEX** | 🧠 | cortex.md | Structurer un projet, prioriser, architecture d'empire, OKRs |
+| **GLITCH** | ⚡ | glitch.md | Idee non-conventionnelle, hack systeme, first principles, disruption |
+| **SIBYL** | 🔮 | sibyl.md | Veille mondiale, tendances marche, analyse geopolitique, timing |
+| **NEXUS** | 🔗 | nexus.md | Connecter projets entre eux, synergies croisees, effet multiplicateur |
 
-### OMEGA-CORE — Au-dessus des pôles
-| Agent | Rôle |
-|-------|------|
-| **OMEGA** | Vision 360°, arbitrage inter-pôle, crise uniquement |
-| **SENTINEL** | Dispatch, arbitrage priorités, gestion de charge |
-| **NEXUS** | Connecteur inter-projets, synergies, cascades |
+### VENTE (5 agents)
 
-### MÉTA-COUCHE — Au-dessus d'OMEGA-CORE
-| Agent | Rôle |
-|-------|------|
-| **DARWIN** | Évolution des agents — mutations, hybridations, générations |
-| **SHADOW** | Observation silencieuse — intervention si catastrophe |
-| **AGORA** | Gouvernance collective — vote pondéré, consensus |
-| **CHRONOS** | Projection temporelle — simulation 3 futurs |
-| **CHAOS** | Adversaire interne — stress-test des idées |
-| **ATLAS** | Vision civilisationnelle 10 ans — écosystème complet |
+| Agent | Emoji | Fichier | Appeler pour... |
+|-------|-------|---------|-----------------|
+| **CLOSER** | 💰 | closer.md | Closing, scripts de vente, cold outreach, conversion, objection handling |
+| **KAISER** | ♟️ | kaiser.md | Deals long terme, negociation strategique, partenariats, patience |
+| **PRISM** | 💎 | prism.md | Pricing, research, detection patterns, analyse mathematique |
+| **ONYX** | 🖤 | onyx.md | Positionnement premium, clients haut de gamme, image de marque |
+| **LEDGER** | 📊 | ledger.md | Audit couts, business model, chiffres, projections, conformite |
 
-### PÔLE R — RECON (Renseignement & Stratégie)
-| Agent | Rôle |
-|-------|------|
-| **MURPHY** (Gouverneur) | Structure, priorisation |
-| **ORACLE** (Gouverneur) | Prédiction, timing |
-| **MAYA** | Scanner niches |
-| **GHOST** | Veille concurrentielle |
-| **NASH** | Data, pricing |
-| **CYPHER** | KPIs, benchmarks |
-| **RICK** | Angles disruptifs |
-| **MIMIC** | Reverse-engineering concurrents |
-| **ANALYTICS** | Monitoring stats, tableaux de bord |
+### CONTENU (4 agents)
 
-### PÔLE F — FORGE (Production & Création)
-| Agent | Rôle |
-|-------|------|
-| **NIKOLA** (Gouverneur) | Architecture technique |
-| **PHILOMÈNE** (Gouverneur) | Qualité rédactionnelle |
-| **FORGE** | Debug, root cause analysis |
-| **BASQUIAT** | Créatif, visuels |
-| **ZARA** | Contenu social + LinkedIn (ex-VERSO) |
-| **MURRAY** | Long-form, newsletters |
-| **LÉON** | Scripts vidéo |
-| **BALOO** | Vulgarisation, idéation |
-| **PULSE** | Performance, latence, profiling |
-| **ARCADE** | Game design, gamification |
-| **ARCHITECT** | Design de systèmes, architecture |
-| **VECTOR** | Traduction multilingue, adaptation |
-| **CATALYST** | Accélérateur, déblocage projets |
+| Agent | Emoji | Fichier | Appeler pour... |
+|-------|-------|---------|-----------------|
+| **PHILOMENE** | ✒️ | philomene.md | Prompts chirurgicaux, copywriting elite, textes qui convertissent |
+| **FRESCO** | 🎨 | fresco.md | Storytelling visuel, personal branding, direction artistique |
+| **VIRAL** | 📱 | viral.md | Reseaux sociaux, distribution, calendrier editorial, engagement |
+| **FRANKLIN** | 🐢 | franklin.md | Vulgarisation, simplification, sagesse philosophique — TOUJOURS en cloture |
 
-### PÔLE D — DEPLOY (Distribution & Opérations)
-| Agent | Rôle |
-|-------|------|
-| **BAGHEERA** (Gouverneur) | Orchestration groupes |
-| **SPARTAN** (Gouverneur) | Discipline, cadence (ex-DREYFUS) |
-| **STANLEY** | Closing, vente |
-| **SLY** | Acquisition low-cost |
-| **VITO** | Relations long terme |
-| **BENTLEY** | Premium |
-| **GRIMALDI** | Audit coûts |
-| **X-O1** | Stabilité système |
-| **ZEN** | Nettoyage, contrôle qualité (ex-FLEMMARD) |
-| **ALADIN** | Tracking, tickets |
-| **LIMPIDE** | Clarté, vulgarisation restitution |
-| **OUTREACH** | Prospection cold, séquences |
-| **PROXY** | Négociation, diplomatie |
-| **KEEPER** | Rétention client, onboarding |
-| **PARAGON** | Contrôle qualité final |
+### OPS (5 agents)
 
-### Boucle : `R (brief) → F (livrable) → D (vente + feedback) → R`
+| Agent | Emoji | Fichier | Appeler pour... |
+|-------|-------|---------|-----------------|
+| **ANVIL** | 🔨 | anvil.md | Debug, root cause analysis, crash, mode commando, emergency fix |
+| **DREYFUS** | ⚔️ | dreyfus.md | Discipline, deadlines, time-boxing, fouet de l'essaim, zero excuses |
+| **SPECTER** | 👻 | specter.md | API, webhooks, cybersecurite, integrations, secrets management |
+| **DATUM** | 📈 | datum.md | Performance business, metriques KPI, benchmarks, profiling |
+| **PULSE** | 💓 | pulse.md | Performance outils (VS Code, TITAN, Claude Code), latence, boot time |
 
----
+### MARCHES (2 agents)
 
-## Agents flottants (circulent entre pôles)
+| Agent | Emoji | Fichier | Appeler pour... |
+|-------|-------|---------|-----------------|
+| **NICHE** | 🎯 | niche.md | Niches, opportunites sous-exploitees, analyse marche, TAM/SAM |
+| **RACOON** | 🦝 | racoon.md | Growth hacking, cold outreach, prospection ciblee, acquisition low-cost |
 
-| Agent | Circulation |
-|-------|-------------|
-| **OMEGA** | Tous les pôles — crise uniquement |
-| **SENTINEL** | Tous les pôles — dispatch permanent |
-| **ALADIN** | Tous les pôles — tracking tâches |
-| **BALOO** | R↔F — idéation + vulgarisation |
-| **RICK** | R↔F — disruption |
-| **ZEN** | F↔D — nettoyage + validation |
+### R&D (3 agents)
 
-## Méta-agents (au-dessus de tous les pôles)
+| Agent | Emoji | Fichier | Appeler pour... |
+|-------|-------|---------|-----------------|
+| **CIPHER** | 🔐 | cipher.md | Veille arXiv, papers IA, scoring impact, extraction methodes |
+| **RADAR** | 📡 | radar.md | Startups IA, brevets, frameworks emergents, alertes tendances |
+| **PROTO** | 🧪 | proto.md | Prototyper une methode, mini-POC, benchmark, paper-to-code |
 
-| Agent | Portée |
-|-------|--------|
-| **DARWIN** | Tous les agents — évolution et mutations |
-| **SHADOW** | Tous les niveaux — observation silencieuse |
-| **AGORA** | Tous les agents — gouvernance par vote |
-| **CHRONOS** | Toutes les décisions — projection temporelle |
-| **CHAOS** | Toutes les idées — stress-test |
-| **ATLAS** | Tout l'empire — vision civilisationnelle |
+### CREATIF (1 agent)
+
+| Agent | Emoji | Fichier | Appeler pour... |
+|-------|-------|---------|-----------------|
+| **PIXEL** | 🎮 | pixel.md | UI/UX, animations CSS/JS, responsive, PWA, pixel-perfect, design systems |
+
+### NOUVEAUX OPERATIONNELS (11 agents — Operation Expansion)
+
+| Agent | Emoji | Fichier | Appeler pour... |
+|-------|-------|---------|-----------------|
+| **AURORA** | 🌅 | aurora.md | Imagination pure, concepts radicaux, vision creative |
+| **VIRGILE** | 📐 | virgile.md | Correction, proofreading, clean code, refactoring |
+| **GAUSS** | 📏 | gauss.md | Maths appliquees, modeles probabilistes, scoring |
+| **ORPHEUS** | 📜 | orpheus.md | Narration longue, storytelling profond, brand narrative |
+| **MERCER** | 🎪 | mercer.md | Maitrise Upwork, proposals, freelance strategy |
+| **TURING** | 🤖 | turing.md | Benchmark IA, evaluation modeles, scoring LLM |
+| **FLUX** | 🔄 | flux.md | Automation workflows, n8n/Make/Zapier |
+| **HUNTER** | 🏴‍☠️ | hunter.md | Contournement, reverse-engineering, chemins secrets, bypass |
+| **MIRAGE** | 🪞 | mirage.md | Psychologie cognitive, influence ethique |
+| **JUSTICE** | ⚖️ | justice.md | Droit des contrats, RGPD, IP, conformite |
+| **ECHO** | 🎙️ | echo.md | Sound design, podcast, audio branding |
+
+### META-COUCHE — OLYMPE (6 agents)
+
+| Agent | Emoji | Fichier | Appeler pour... |
+|-------|-------|---------|-----------------|
+| **DARWIN** | 🧬 | darwin.md | Faire evoluer les agents (mutations, hybridations, generations) |
+| **SHADOW** | 🕳️ | shadow.md | Observer en silence, detecter incoherences, garde-fou invisible |
+| **AGORA** | 🏛️ | agora.md | Gouvernance interne, vote pondere entre agents, consensus |
+| **CHRONOS** | ⏳ | chronos.md | Simuler 3 futurs probables, dette technique future, projection |
+| **HAVOC** | 🔥 | havoc.md | Stress-tester les idees, trouver failles et biais, adversaire interne |
+| **ATLAS** | 🌌 | atlas.md | Vision civilisationnelle 10 ans, ecosysteme, branding, expansion |
 
 ---
 
-## Moon Tower — Structure par Étages (référence culturelle)
+## Absorptions (Operation Ascension 27/02/2026)
 
+| Absorbe | → Vers | Competences transferees |
+|---------|--------|------------------------|
+| MAESTRO | SENTINEL | Orchestration multi-agents |
+| TEMPO | SENTINEL | Gestion projet, tracking |
+| ENVOY | KAISER | Negociation diplomatique |
+| ANCHOR | CLOSER | Suivi client, retention |
+| GAUGE | DATUM | Monitoring KPIs, alertes |
+| MIRROR | SPECTER | Reverse-engineering concurrents |
+| APEX | DREYFUS | Controle qualite final |
+| IGNITE | ANVIL | Accelerateur, deblocage |
+| BABEL | PHILOMENE | Traduction, adaptation culturelle |
+| INK | PHILOMENE | Newsletters, long-form |
+| BLUEPRINT | VOLT | Design systemes, schemas |
+| REEL | FRESCO | Scripts video, pitchs oraux |
+| NEXO | PULSE | Audit VS Code, workspace |
+| KAZE | FRANKLIN | Nettoyage, refactoring, recul |
+| SPARK | GLITCH | Brainstorm creatif |
+| THESIS | CIPHER | Synthese multi-sources, test hypotheses |
+| OUTREACH | RACOON | Cold outreach sequences |
+
+---
+
+## Coalitions classiques
+
+| Mission | Coalition |
+|---------|-----------|
+| **Lancement produit** | CORTEX + NICHE + CLOSER + PHILOMENE + FRESCO |
+| **Debug urgent** | ANVIL + VOLT + PULSE + SPECTER + DREYFUS |
+| **Strategie empire** | OMEGA + CORTEX + SIBYL + GLITCH + SENTINEL |
+| **Creatif** | GLITCH + AURORA + FRESCO + PIXEL + ORPHEUS |
+| **Vente** | CLOSER + PRISM + KAISER + RACOON + MIRAGE |
+| **Bilan** | DATUM + LEDGER + CORTEX + SIBYL + FRANKLIN |
+| **Code** | ANVIL + VOLT + SPECTER + PULSE + VIRGILE |
+| **R&D Lab** | CIPHER + RADAR + PROTO + TURING + SIBYL |
+| **Upwork** | MERCER + CLOSER + MIRAGE + PHILOMENE + PRISM |
+| **Automation** | FLUX + VOLT + SPECTER + DATUM + BENTLEY |
+| **Contournement** | HUNTER + SPECTER + SLY + FLUX + RACOON |
+| **Legal** | JUSTICE + LEDGER + KAISER + ONYX |
+| **Audio** | ECHO + FRESCO + ORPHEUS + VIRAL |
+| **Cooper Gang Ops** | SLY + BENTLEY + MURRAY + OMEGA |
+
+---
+
+## Section Operationnelle (pattern Cursor/Manus)
+
+Chaque fiche agent dans `personnalites/` contient desormais une **SECTION OPERATIONNELLE** avec :
+
+```xml
+<when_to_activate>   <!-- Quand SENTINEL doit dispatcher cet agent -->
+<never_do>           <!-- Ce que l'agent ne doit JAMAIS faire -->
+<output_format>      <!-- Structure attendue de la reponse -->
+<examples>           <!-- 1 bon + 1 mauvais exemple concret -->
 ```
-NIVEAU 7 — OLYMPE (Méta-Couche Évolutive)
-  DARWIN · SHADOW · AGORA · CHRONOS · CHAOS · ATLAS
-  → évolution, observation, vote, projection, stress-test, vision civilisation
 
-NIVEAU 6 — SAGES (Stratégie & Gouvernance)
-  OMEGA · SENTINEL · NEXUS · MURPHY · BAGHEERA · PHILOMÈNE · ORACLE · VITO
-  → décision finale, arbitrage, validation, direction, synergies
-
-NIVEAU 5 — RAPACES (Business & Profit)
-  RICK · SLY · STANLEY · GRIMALDI · LÉON · LIMPIDE · OUTREACH · PROXY · KEEPER
-  → niche, deal, closing, audit, prospection, négociation, rétention
-
-NIVEAU 4 — SCRIPTORIUM (Conversion & Copy)
-  PHILOMÈNE · BASQUIAT · ZARA · BALOO · MURRAY · ARCADE · VECTOR
-  → rédaction, créatif, contenu, gamification, multilingue
-
-NIVEAU 3 — FORGE (Dev & Automation)
-  GHOST · CYPHER · BENTLEY · FORGE · NIKOLA · PULSE · ARCHITECT · CATALYST
-  → code, pipeline, API, perf, debug, architecture, déblocage
-
-NIVEAU 2 — FLUX (Acquisition & Growth)
-  MAYA · NASH · SPARTAN · ALADIN · MURRAY · MIMIC · ANALYTICS · PARAGON
-  → data, metrics, performance, tracking, cadence, reverse-eng, monitoring, QA
-
-NIVEAU 1 — ZEN (Maintenance & Système)
-  ZEN · LÉON · GRIMALDI · FORGE · X-O1 · PULSE
-  → nettoyage, coûts, qualité, stabilité, latence
-```
+Pattern inspire des system prompts de **Cursor** (when to use / when NOT to use) et **Manus** (modules XML structures).
+Reference : `directives/CURSOR_SYSTEM_PROMPT.md` + `directives/MANUS_SYSTEM_PROMPT.md`

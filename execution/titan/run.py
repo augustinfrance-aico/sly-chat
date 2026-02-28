@@ -38,11 +38,13 @@ log = logging.getLogger("titan")
 
 
 BANNER = """
-=======================================
-  TITAN v2.0 - L'Empereur des Agents
-  49 modules | 250+ commandes
-  Owner: Augustin - AICO
-=======================================
+╔══════════════════════════════════════╗
+║  T.I.T.A.N. v4.0 — NEURAL ENGINE   ║
+║  53 modules | 250+ commandes        ║
+║  Module Registry + Smart Context    ║
+║  Cache TTL + Latency Tracking       ║
+║  Owner: Augustin — AICO Empire      ║
+╚══════════════════════════════════════╝
 """
 
 
@@ -80,6 +82,14 @@ async def main():
         sys.exit(1)
 
     log.info(f"Démarrage de Titan — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
+    # Initialize Module Registry (auto-catalog all modules)
+    try:
+        from .module_registry import registry
+        registry.auto_register_from_catalog()
+        log.info(f"Module Registry: {len(registry.MODULE_CATALOG)} modules catalogués")
+    except Exception as e:
+        log.warning(f"Module Registry init failed: {e}")
 
     # Start command_server in background thread (serves dashboard HTML)
     try:

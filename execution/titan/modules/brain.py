@@ -1,16 +1,23 @@
 """
-TITAN Brain — The Core Intelligence
+TITAN Brain v2.0 — The Core Intelligence
 Routes requests to the right module, maintains context, thinks.
-This is JARVIS's brain.
+
+v2.0 Upgrades:
+- Smart Context Window (relevant + recent, not just chronological)
+- Response quality scoring (local heuristic, zero cost)
+- Adaptive system prompt (shorter for trivial, full for strategic)
+- Performance tracking integration
 """
 
 import json
+import logging
 import random
 import re
+import time
 from datetime import datetime
 from typing import Optional
 
-from ..ai_client import chat as ai_chat
+from ..ai_client import chat as ai_chat, _score_response
 from ..config import (
     CLAUDE_MAX_TOKENS,
     TITAN_PERSONALITY, TITAN_NAME, TITAN_OWNER,
@@ -19,110 +26,150 @@ from ..config import (
 from . import memory
 from .personal import TitanPersonal
 
+log = logging.getLogger("titan.brain")
+
 
 class TitanBrain:
     """The central intelligence of Titan."""
 
     # Agents du Building — pour les cameos (~30% des messages)
-    # 30 agents — Restructuration 26/02/2026
-    # DREYFUS→SPARTAN, FLEMMARD→ZEN, VERSO→ZARA
-    # +SENTINEL, +PULSE, +LIMPIDE
+    # 50 agents — Opération Expansion
+    # 18 agents absorbés, compétences transférées aux survivants
     AGENT_CAMEOS = {
         "strategie": [
             ("🦅 OMEGA", "vision empire, big picture"),
-            ("🗺️ MURPHY", "structure, plan d'action"),
-            ("🔮 ORACLE", "timing, tendances macro"),
-            ("🎯 SENTINEL", "dispatch intelligent, arbitrage priorités"),
+            ("🧠 CORTEX", "structure, plan d'action"),
+            ("🔮 SIBYL", "timing, tendances, vision 3-5 ans"),
+            ("🎯 SENTINEL", "dispatch, orchestration, coordination"),
+            ("🐺 SLY", "tactique terrain, coordination opérationnelle"),
         ],
         "vente": [
-            ("🤝 VITO", "relations long terme, deals"),
-            ("💼 STANLEY", "closing, négociation"),
-            ("📊 NASH", "pricing, data-driven"),
+            ("👑 KAISER", "deals, négociation, diplomatie"),
+            ("🎯 CLOSER", "closing, conversion, rétention"),
+            ("💠 PRISM", "pricing, psychologie des offres"),
+            ("🪞 MIRAGE", "psychologie cognitive, influence éthique"),
         ],
         "creation": [
-            ("✍️ PHILOMÈNE", "rédaction, copywriting"),
-            ("🎨 BASQUIAT", "branding, visuel"),
-            ("🎬 LÉON", "script, storytelling"),
+            ("✍️ PHILOMÈNE", "copywriting, long-form, traduction"),
+            ("🎨 FRESCO", "branding, visuel, scripts vidéo"),
+            ("📱 VIRAL", "réseaux sociaux, LinkedIn, viral"),
+            ("🌅 AURORA", "imagination pure, concepts radicaux"),
+            ("📜 ORPHEUS", "narration longue, storytelling profond"),
         ],
         "tech": [
-            ("⚡ NIKOLA", "code, automatisation"),
-            ("🔧 FORGE", "infra, déploiement"),
-            ("👻 GHOST", "veille, sécurité"),
-            ("⚡ PULSE", "performance, latence, optimisation vitesse"),
+            ("⚡ VOLT", "code, automatisation, architecture"),
+            ("🔨 ANVIL", "debug, exécution, déblocage"),
+            ("👻 SPECTER", "veille, sécurité, reverse-eng"),
+            ("💓 PULSE", "performance, latence, audit setup"),
+            ("🐢 BENTLEY", "architecture technique, hacking éthique"),
+            ("🔄 FLUX", "automation, n8n/Make, workflows"),
         ],
         "croissance": [
-            ("🦝 SLY", "prospection, outreach"),
-            ("📰 MURRAY", "content, newsletter"),
-            ("📱 ZARA", "réseaux sociaux, viral, LinkedIn expert"),
+            ("🦝 RACOON", "growth, outreach, cold prospection"),
+            ("📱 VIRAL", "réseaux sociaux, audience"),
         ],
         "mindset": [
-            ("🧘 ZEN", "recul, nettoyage, sérénité"),
-            ("⚔️ SPARTAN", "discipline, cadence, time-boxing"),
+            ("🐢 FRANKLIN", "recul, sagesse, clarté"),
+            ("⚔️ DREYFUS", "discipline, cadence, qualité"),
         ],
         "creatif": [
-            ("🎲 RICK", "idées folles, angles inattendus — AUDITE l'idée et propose un twist créatif"),
-            ("🐻 BALOO", "sagesse créative — AUDITE le concept et dit ce qui manque ou ce qui brille"),
-            ("🔍 MAYA", "détecte les niches inexploitées — AUDITE l'idée sous l'angle marché"),
-            ("🎨 BASQUIAT", "vision artistique — AUDITE le côté visuel/branding et propose une direction"),
+            ("⚡ GLITCH", "idées folles, brainstorm — AUDITE l'idée et propose un twist créatif"),
+            ("🎯 NICHE", "détecte les niches — AUDITE l'idée sous l'angle marché"),
+            ("🎨 FRESCO", "vision artistique — AUDITE le visuel/branding"),
+            ("🕹️ PIXEL", "game design, gamification, UX interactive"),
+            ("🌅 AURORA", "imagination — AUDITE l'idée sous l'angle visionnaire"),
         ],
         "business": [
-            ("💰 GRIMALDI", "rentabilité, marges"),
-            ("🏆 BENTLEY", "premium, image"),
-            ("🧭 ALADIN", "coordination, qui fait quoi"),
+            ("📒 LEDGER", "rentabilité, marges, projections"),
+            ("🖤 ONYX", "premium, image, crédibilité"),
         ],
         "recherche": [
-            ("🔍 MAYA", "niches, opportunités"),
-            ("📈 CYPHER", "data, KPIs, métriques"),
+            ("🎯 NICHE", "niches, opportunités"),
+            ("📊 DATUM", "data, KPIs, monitoring"),
         ],
         "setup": [
-            ("🧬 X-O1", "audit setup, extensions, raccourcis, optimisation zero-cost"),
-            ("⚡ NIKOLA", "infra, architecture système"),
-            ("👻 GHOST", "sécurité extensions, audit permissions"),
-            ("⚡ PULSE", "benchmarks, latence, profiling"),
+            ("💓 PULSE", "audit setup, extensions, benchmarks"),
+            ("⚡ VOLT", "infra, architecture système"),
+            ("👻 SPECTER", "sécurité, audit permissions"),
         ],
         "simplification": [
-            ("💎 LIMPIDE", "vulgarise, simplifie, rend clair pour un humain"),
-            ("🐻 BALOO", "explique avec sagesse, connexions improbables"),
+            ("🐢 FRANKLIN", "vulgarise, simplifie, sagesse"),
+            ("⚡ GLITCH", "explique avec des angles inattendus"),
         ],
         "prospection": [
-            ("📡 OUTREACH", "cold outreach, séquences email, relances"),
-            ("🦝 SLY", "prospection terrain, acquisition low-cost"),
-            ("🛡️ KEEPER", "suivi client, rétention, onboarding"),
+            ("🦝 RACOON", "cold outreach, séquences, prospection"),
+            ("🎯 CLOSER", "suivi client, rétention, onboarding"),
         ],
         "qualite": [
-            ("✅ PARAGON", "contrôle qualité final, validation, standards"),
-            ("🪞 MIMIC", "reverse-engineering, benchmark concurrence"),
+            ("⚔️ DREYFUS", "contrôle qualité, standards, discipline"),
+            ("👻 SPECTER", "reverse-engineering, benchmark concurrence"),
+            ("📐 VIRGILE", "correction, clean code, cohérence"),
         ],
         "architecture": [
-            ("🏛️ ARCHITECT", "design systèmes, architecture technique"),
-            ("⚡ NIKOLA", "implémentation, code, pipelines"),
+            ("⚡ VOLT", "design systèmes, architecture, pipelines"),
+            ("🧠 CORTEX", "structure, fondations"),
         ],
         "synergie": [
-            ("🕸️ NEXUS", "synergies inter-projets, connexions croisées"),
+            ("🕸️ NEXUS", "synergies inter-projets, cascades"),
             ("🦅 OMEGA", "vision empire, arbitrage"),
         ],
         "negociation": [
-            ("🎭 PROXY", "négociation, diplomatie, interface client"),
-            ("🤝 VITO", "relations long terme"),
+            ("👑 KAISER", "négociation, diplomatie, deals"),
+            ("🎯 CLOSER", "objections, closing"),
         ],
         "traduction": [
-            ("🌐 VECTOR", "traduction, localisation multilingue"),
-            ("✍️ PHILOMÈNE", "qualité rédactionnelle"),
+            ("✍️ PHILOMÈNE", "traduction, localisation, qualité"),
         ],
         "deblocage": [
-            ("⚗️ CATALYST", "accélérateur, déblocage de projets"),
-            ("⚔️ SPARTAN", "discipline, cadence"),
+            ("🔨 ANVIL", "exécution brute, déblocage"),
+            ("⚔️ DREYFUS", "discipline, cadence"),
+            ("🦛 MURRAY", "force brute, déploiement massif"),
         ],
         "analytics": [
-            ("📊 ANALYTICS", "monitoring ventes, BSR, KPIs, trends"),
-            ("📈 CYPHER", "data brute, métriques"),
+            ("📊 DATUM", "monitoring, KPIs, data, trends"),
         ],
         "rdlab": [
-            ("📚 ARXIV", "veille recherche IA, papers, scoring impact"),
-            ("🔭 SCOUT", "innovations IA, startups, frameworks emergents"),
-            ("🧪 LABRAT", "prototypage experimental, paper-to-code"),
-            ("🔮 HORIZON", "vision 3-5 ans, obsolescence, scenarios futurs"),
-            ("🎓 DOCTORANT", "synthese R&D, hypotheses, interface recherche"),
+            ("🔐 CIPHER", "veille recherche IA, papers, synthèse R&D"),
+            ("📡 RADAR", "innovations IA, startups, frameworks"),
+            ("🧪 PROTO", "prototypage expérimental, paper-to-code"),
+        ],
+        "imagination": [
+            ("🌅 AURORA", "concepts radicaux, visions créatives"),
+            ("⚡ GLITCH", "idées folles, connexions inattendues"),
+        ],
+        "upwork": [
+            ("🎪 MERCER", "proposals, JSS, profil Upwork"),
+            ("🎯 CLOSER", "closing, conversion"),
+            ("🪞 MIRAGE", "psychologie du prospect"),
+        ],
+        "benchmark_ia": [
+            ("🤖 TURING", "évaluation modèles, scoring LLM"),
+            ("🔐 CIPHER", "veille recherche IA"),
+            ("📡 RADAR", "innovations, frameworks"),
+        ],
+        "automation": [
+            ("🔄 FLUX", "n8n, Make, Zapier, workflows"),
+            ("⚡ VOLT", "architecture, pipelines"),
+            ("👻 SPECTER", "intégrations API, sécurité"),
+        ],
+        "contournement": [
+            ("🏴‍☠️ HUNTER", "contournement, alternatives, bypass, scraping"),
+            ("👻 SPECTER", "reverse-engineering, failles"),
+            ("🐺 SLY", "tactique furtive, infiltration"),
+        ],
+        "legal": [
+            ("⚖️ JUSTICE", "contrats, RGPD, IP, conformité"),
+            ("📒 LEDGER", "audit financier"),
+        ],
+        "audio": [
+            ("🎙️ ECHO", "sound design, podcast, audio branding"),
+            ("🎨 FRESCO", "storytelling visuel + audio"),
+        ],
+        "leadership": [
+            ("🐺 SLY", "tactique, coordination terrain"),
+            ("🐢 BENTLEY", "planification tech, architecture"),
+            ("🦛 MURRAY", "déploiement, force d'exécution"),
+            ("🦅 OMEGA", "vision empire, arbitrage"),
         ],
     }
 
@@ -149,12 +196,22 @@ class TitanBrain:
         "analytics": ["analytics", "bsr", "vente", "download", "stat", "monitoring", "trend", "performance"],
         "rdlab": ["paper", "arxiv", "recherche ia", "innovation ia", "startup ia", "prototype", "experiment",
                   "horizon ia", "futur ia", "rdlab", "state of the art", "nouveau modele", "nouveau framework", "brevet"],
+        "imagination": ["imagin", "concept", "rêve", "vision", "inventer", "futuriste", "utopi"],
+        "upwork": ["upwork", "proposal", "freelance", "gig", "mission", "connect", "jss", "top rated"],
+        "benchmark_ia": ["benchmark", "evaluer", "comparer", "llm", "modele ia", "fine-tun", "scoring ia"],
+        "automation": ["automat", "workflow", "n8n", "make", "zapier", "webhook", "trigger", "no-code"],
+        "contournement": ["bloqu", "impossible", "payant", "interdit", "limit", "contourner", "bypass", "alternative", "gratuit", "scrap", "hack", "faille", "workaround", "plan b"],
+        "legal": ["contrat", "juridique", "legal", "rgpd", "propriete intellectuelle", "licence", "cgv", "droits"],
+        "audio": ["audio", "podcast", "son", "sound", "voix", "musique", "jingle", "mastering"],
+        "leadership": ["leader", "chef", "diriger", "commander", "equipe", "management", "cooper gang"],
     }
 
     def __init__(self):
         self.modules = {}
         self.boot_time = datetime.now()
         self.personal = TitanPersonal()
+        self._response_scores: list[dict] = []  # last 50 response quality scores
+        self._think_count = 0
 
     def register_module(self, name: str, module):
         """Register a capability module."""
@@ -200,12 +257,47 @@ Agent : {agent_name} (expert : {agent_skill})
 → Format : "{agent_name} : [sa micro-intervention]" — intégré naturellement dans ta réponse.
 → Ça doit être naturel, pas forcé. Comme si l'agent passait la tête par la porte pour lâcher un commentaire."""
 
-    def get_system_prompt(self) -> str:
-        """Build the full system prompt with context.
-        Memory injection: conversation history (25 msgs) + personal profile + manual memories
-        + auto-facts + contacts. Max ~1500-2000 tokens for context."""
-        # Get recent conversation context (25 messages for deep context)
-        recent_context = memory.get_conversation_context(25)
+    def _smart_context(self, user_message: str) -> str:
+        """Smart Context Window — pondéré par pertinence + récence.
+        15 plus récents (toujours) + 10 les plus pertinents parmi les plus anciens.
+        Résultat : contexte plus intelligent, même budget tokens."""
+        all_convos = memory.get_recent_conversations(50)
+        if not all_convos:
+            return "Pas de conversation récente."
+
+        # 15 plus récents — toujours présents
+        recent = all_convos[-15:]
+
+        # 10 les plus pertinents parmi les messages plus anciens
+        older = all_convos[:-15]
+        if older and user_message:
+            keywords = set(user_message.lower().split())
+            scored = []
+            for conv in older:
+                user_text = conv.get("user", "").lower()
+                overlap = len(keywords & set(user_text.split()))
+                if overlap > 0:
+                    scored.append((overlap, conv))
+            scored.sort(key=lambda x: x[0], reverse=True)
+            relevant = [c for _, c in scored[:10]]
+        else:
+            relevant = []
+
+        # Combiner : pertinents d'abord, puis récents
+        combined = relevant + recent
+        lines = []
+        for conv in combined:
+            lines.append(f"Augustin: {conv.get('user', '')}")
+            lines.append(f"Titan: {conv.get('titan', '')}")
+        return "\n".join(lines)
+
+    def get_system_prompt(self, user_message: str = "") -> str:
+        """Build the full system prompt with smart context.
+        Memory injection: smart conversation history + personal profile + manual memories
+        + auto-facts + contacts. Adaptive: lighter for trivial messages."""
+
+        # Smart context window (relevant + recent)
+        recent_context = self._smart_context(user_message)
 
         # Get relevant memories (manual)
         all_memories = memory.list_memories()
@@ -230,6 +322,9 @@ Agent : {agent_name} (expert : {agent_skill})
         # Personal profile
         personal_profile = self.personal.get_profile_for_brain()
 
+        # Uptime
+        uptime_min = int((datetime.now() - self.boot_time).total_seconds() // 60)
+
         return f"""{TITAN_PERSONALITY}
 
 ═══ PROFIL COMMANDANT ═══
@@ -237,7 +332,7 @@ Agent : {agent_name} (expert : {agent_skill})
 
 ═══ SYSTÈME ═══
 Date: {datetime.now().strftime('%A %d %B %Y, %H:%M')}
-Uptime: {(datetime.now() - self.boot_time).seconds // 60} min | Modules: {modules_list}
+Uptime: {uptime_min} min | Modules: {modules_list} | Messages: {self._think_count}
 
 ═══ MÉMOIRE ═══
 {memory_summary if memory_summary else "(vide)"}
@@ -248,7 +343,7 @@ Uptime: {(datetime.now() - self.boot_time).seconds // 60} min | Modules: {module
 ═══ CONTACTS ═══
 {contacts_summary if contacts_summary else "(aucun)"}
 
-═══ HISTORIQUE (25 derniers messages) ═══
+═══ HISTORIQUE (smart context — recent + relevant) ═══
 {recent_context}
 
 ═══ EXPERTISE ═══
@@ -267,7 +362,10 @@ Tu fais des liens entre domaines. Tu cites Jung puis enchaines sur un conseil bu
 """
 
     async def think(self, user_message: str, context: str = "telegram") -> str:
-        """Process a message and generate a response."""
+        """Process a message and generate a response.
+        v2.0: Smart context, response scoring, performance tracking."""
+        self._think_count += 1
+        t0 = time.time()
 
         # Check for special commands first
         command_response = await self._handle_command(user_message)
@@ -275,8 +373,8 @@ Tu fais des liens entre domaines. Tu cites Jung puis enchaines sur un conseil bu
             memory.save_conversation(user_message, command_response, context)
             return command_response
 
-        # Build messages with context
-        system = self.get_system_prompt()
+        # Build messages with smart context (passes user message for relevance scoring)
+        system = self.get_system_prompt(user_message)
 
         # Check if we need to use a specific module
         module_context = await self._get_module_context(user_message)
@@ -284,19 +382,31 @@ Tu fais des liens entre domaines. Tu cites Jung puis enchaines sur un conseil bu
         # Agent cameo (~30% du temps, un agent du Building intervient)
         cameo = self._get_agent_cameo(user_message)
 
-        messages = [
-            {"role": "user", "content": user_message}
-        ]
-
+        content = user_message
         if module_context:
-            messages[0]["content"] = f"{user_message}\n\n[DONNÉES MODULE]\n{module_context}"
-
+            content = f"{content}\n\n[DONNÉES MODULE]\n{module_context}"
         if cameo:
-            messages[0]["content"] = f"{messages[0]['content']}\n\n{cameo}"
+            content = f"{content}\n\n{cameo}"
 
-        # Call AI (Gemini free or Anthropic fallback)
+        # Call AI (cascade: Ollama → Groq → Gemini)
         try:
-            reply = ai_chat(system, messages[0]["content"], CLAUDE_MAX_TOKENS)
+            reply = ai_chat(system, content, CLAUDE_MAX_TOKENS)
+
+            # Response quality scoring (local, zero cost)
+            quality = _score_response(reply)
+            elapsed_ms = (time.time() - t0) * 1000
+            self._response_scores.append({
+                "quality": quality,
+                "latency_ms": round(elapsed_ms, 1),
+                "msg_len": len(user_message),
+                "reply_len": len(reply),
+                "ts": datetime.now().isoformat(),
+            })
+            # Keep last 100 scores
+            if len(self._response_scores) > 100:
+                self._response_scores = self._response_scores[-100:]
+
+            log.debug(f"Brain: Q={quality}, {elapsed_ms:.0f}ms, {len(reply)} chars")
 
             # Auto-learn personal info from conversation
             await self.personal.auto_learn(user_message, reply)
@@ -313,6 +423,18 @@ Tu fais des liens entre domaines. Tu cites Jung puis enchaines sur un conseil bu
             error_msg = f"Erreur cerveau Titan: {str(e)}"
             memory.save_conversation(user_message, error_msg, context)
             return error_msg
+
+    def get_performance_stats(self) -> dict:
+        """Stats de performance du brain — pour le dashboard."""
+        if not self._response_scores:
+            return {"avg_quality": 0, "avg_latency_ms": 0, "total_thinks": self._think_count}
+        scores = self._response_scores
+        return {
+            "avg_quality": round(sum(s["quality"] for s in scores) / len(scores), 1),
+            "avg_latency_ms": round(sum(s["latency_ms"] for s in scores) / len(scores), 1),
+            "total_thinks": self._think_count,
+            "recent_scores": scores[-10:],
+        }
 
     async def _handle_command(self, message: str) -> Optional[str]:
         """All /commands are handled by telegram_bot._route_command.

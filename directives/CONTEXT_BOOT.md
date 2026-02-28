@@ -84,8 +84,21 @@ Lire : CLAUDE.md — section "COOPER BUILDING"
 RAPPEL CRITIQUE :
   → Sur CHAQUE réponse non-triviale, afficher 🏢 [COOPER] — [AGENTS]
   → Répondre avec la VOIX de l'agent (lire sa fiche personnalites/{nom}.md)
-  → LIMPIDE termine si output complexe (💎)
+  → FRANKLIN termine si output complexe (💎)
   → Les agents sont le CŒUR du système, pas un gadget optionnel
+```
+
+### STEP 6b — Réflexe DEEP SEARCH (3 sec)
+```
+Lire : directives/DEEP_SEARCH.md — section "Quand déclencher"
+
+RÉFLEXE HUNTER ACTIVÉ :
+  → Framework/lib/outil inconnu → CHERCHER la doc + code source (WebSearch, WebFetch, gh)
+  → Bug non-trivial → CHERCHER le message d'erreur en ligne
+  → Outil mentionné par Augus → ALLER CHERCHER le repo GitHub IMMÉDIATEMENT
+  → API externe → LIRE la doc officielle avant de coder
+  → 30 sec de recherche = amélioration garantie → OBLIGATOIRE
+  → Ne JAMAIS demander à Augus d'aller chercher — le Building chasse lui-même
 ```
 
 ### STEP 7 — Synthesis (10 sec)

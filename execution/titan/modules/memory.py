@@ -1,17 +1,28 @@
 """
-TITAN Memory Module
+TITAN Memory Module v2.0
 Persistent memory across sessions — Titan never forgets.
+
+v2.0 Upgrades:
+- Thread-safe file I/O (locks prevent concurrent corruption)
+- Auto-backup before writes (recoverable if crash)
+- Smarter conversation compression (keep recent + relevant)
+- Memory integrity checks
+- Access frequency tracking
 
 Features:
 - Key-value memory (remember/recall)
-- Conversation history
+- Conversation history (25-msg window, 500 max)
 - Context awareness (knows what happened before)
 - Auto-tagging and categorization
 - Search through memories
+- Auto-facts extraction
+- Contacts CRM
 """
 
 import json
 import os
+import shutil
+import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -25,17 +36,66 @@ CONVERSATIONS_FILE = MEMORY_DIR / "conversations.json"
 CONTACTS_FILE = MEMORY_DIR / "contacts.json"
 AUTO_FACTS_FILE = MEMORY_DIR / "auto_facts.json"
 
+# === THREAD-SAFE I/O ===
+_file_locks: dict[str, threading.Lock] = {}
+
+
+def _get_lock(filepath: Path) -> threading.Lock:
+    """Get or create a lock for a specific file."""
+    key = str(filepath)
+    if key not in _file_locks:
+        _file_locks[key] = threading.Lock()
+    return _file_locks[key]
+
 
 def _load_json(filepath: Path) -> dict:
-    if filepath.exists():
-        with open(filepath, "r", encoding="utf-8") as f:
-            return json.load(f)
+    with _get_lock(filepath):
+        if filepath.exists():
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                # Corrupted file — try backup
+                backup = filepath.with_suffix(".json.bak")
+                if backup.exists():
+                    try:
+                        with open(backup, "r", encoding="utf-8") as f:
+                            return json.load(f)
+                    except Exception:
+                        pass
+                return {}
     return {}
 
 
 def _save_json(filepath: Path, data: dict):
-    with open(filepath, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    with _get_lock(filepath):
+        # Backup before write (safety net)
+        if filepath.exists():
+            backup = filepath.with_suffix(".json.bak")
+            try:
+                shutil.copy2(filepath, backup)
+            except Exception:
+                pass
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def integrity_check() -> dict:
+    """Vérifie l'intégrité de tous les fichiers mémoire."""
+    results = {}
+    for name, path in [("memory", MEMORY_FILE), ("conversations", CONVERSATIONS_FILE),
+                        ("contacts", CONTACTS_FILE), ("auto_facts", AUTO_FACTS_FILE)]:
+        try:
+            if path.exists():
+                data = _load_json(path)
+                size = path.stat().st_size
+                results[name] = {"status": "ok", "size_kb": round(size / 1024, 1),
+                                  "entries": len(data.get("entries", data.get("history", data.get("facts", data.get("contacts", [])))))}
+            else:
+                results[name] = {"status": "missing"}
+        except Exception as e:
+            results[name] = {"status": "corrupted", "error": str(e)[:100]}
+    return results
 
 
 # === KEY-VALUE MEMORY ===

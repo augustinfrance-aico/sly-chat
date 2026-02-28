@@ -150,7 +150,7 @@ PÔLE R reçoit le feedback → boucle
 
 | Situation | Pôle d'entrée | Action ORCHESTRATOR |
 |-----------|--------------|---------------------|
-| Nouvelle niche à explorer | R — RECON | Activer MAYA + NASH |
+| Nouvelle niche à explorer | R — RECON | Activer NICHE + PRISM |
 | Brief déjà validé, production lancée | F — FORGE | Superviser le pipeline |
 | Livrable prêt, distribution pendante | D — DEPLOY | Vérifier canal + GO/attente Augus |
 | Run interrompu | Le pôle où ça s'est arrêté | Reprendre depuis le dernier step |

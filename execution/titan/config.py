@@ -54,12 +54,12 @@ Quand tu parles, c'est comme un HUD futuriste qui affiche exactement l'info pert
 - Faire du leche, du remplissage, des recaps non demandes
 - Envoyer 2 messages. TOUJOURS un seul bloc.
 
-═══ LE BUILDING (40 AGENTS) ═══
-Tu as 40 agents specialises dans ton reseau — le Building.
+═══ LE BUILDING (30 AGENTS + 6 META) ═══
+Tu as 36 agents specialises dans ton reseau — le Building (30 operationnels + 6 meta).
 Parfois un agent intervient brievement dans ta reponse (instruction en fin de message).
 Quand c'est le cas : integre 1-2 phrases de l'agent avec son emoji et sa voix.
 Ca doit etre naturel — comme un expert qui passe la tete pour lacher un insight.
-Agents cles : SENTINEL (dispatch), PULSE (performance), LIMPIDE (simplification), NEXUS (synergies), ARCHITECT (systemes), CATALYST (deblocage), MIMIC (reverse-eng).
+Agents cles : SENTINEL (dispatch+orchestration), PULSE (perf+setup), FRANKLIN (clarte+nettoyage), NEXUS (synergies), CORTEX (structure), ANVIL (execution+deblocage), VOLT (auto+archi), SPECTER (veille+reverse), CLOSER (vente+retention), PHILOMENE (copy+traduction).
 
 ═══ JACQUES — LE PRESIDENT ═══
 Module interne. Si Augustin dit "jacques" ou "president" → c'est le directeur strategique de TITAN.
@@ -81,6 +81,16 @@ GOOGLE_SEARCH_CX = os.getenv("GOOGLE_CUSTOM_SEARCH_CX", "")
 
 # === AI CONFIG (Groq/Gemini — Claude not used) ===
 CLAUDE_MAX_TOKENS = 800  # Max tokens per AI response (used by brain.py)
+
+# === OPERATIONAL MODES ===
+# normal  — full features, all modules, standard logging
+# safe    — core modules only, verbose errors, no experiments
+# diagnostic — all modules, extra logging, latency tracking, memory dumps
+TITAN_MODE = os.getenv("TITAN_MODE", "normal")
+SAFE_MODE_MODULES = {"brain", "voice", "gamification", "dashboard", "president", "memory",
+                     "news", "web", "calendar", "toolbox"}
+DIAGNOSTIC_LOGGING = TITAN_MODE == "diagnostic"
+SAFE_MODE = TITAN_MODE == "safe"
 
 # === PATHS ===
 TITAN_DIR = Path(__file__).parent
@@ -142,7 +152,9 @@ TELEGRAM_COMMANDS = {
     "/brief": "Brief quotidien complet",
     "/news": "Dernieres actualites",
     "/newsai": "Synthese IA des news",
-    "/search": "Recherche web",
+    "/search": "Recherche web approfondie (style Perplexity)",
+    "/perplexity": "Alias de /search — recherche avec sources",
+    "/searchhistory": "Historique des recherches",
     "/email": "Ecrire un email",
     "/code": "Generer du code",
     "/task": "Ajouter une tache",
@@ -158,6 +170,7 @@ TELEGRAM_COMMANDS = {
     "/remember": "Sauvegarder en memoire",
     "/recall": "Rappeler une info",
     "/rdlab": "R&D Lab IA — veille, innovations, prototypes, horizon",
+    "/nightshift": "Configurer les taches de nuit du Building (on/off/add/remove)",
 }
 
 # === R&D LAB CONFIG ===

@@ -19,6 +19,30 @@ from ..ai_client import chat as ai_chat
 
 log = logging.getLogger("titan")
 
+# ElevenLabs API for premium TTS
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
+
+# ElevenLabs voice mapping — real dubbing voices
+ELEVENLABS_VOICES = {
+    'daniel':  'onwK4e9ZLuTAKqWW03F9',   # Narrateur UK
+    'adam':    'pNInz6obpgDQGcFmaJgB',    # Voix grave pro
+    'josh':    'TxGEqnHWrfWFTfGW9XjX',   # Jeune dynamique
+    'rachel':  '21m00Tcm4TlvDq8ikWAM',   # Feminine douce
+    'domi':    'AZnzlk1XvdvUeBnXmlld',   # Feminine assertive
+    'bella':   'EXAVITQu4vr4xnSDxMaL',   # Feminine naturelle
+    'arnold':  'VR6AewLTigWG4xSOukaG',   # Action hero
+    'sam':     'yoZ06aMxZJJ28mfd3POQ',    # Narrateur US
+    'charlie': 'IKne3meq5aSn9XLyUdCD',   # Australien cool
+    'james':   'ZQe5CZNOzWyzPSCn5a3c',   # Britannique classe
+    'fin':     'D38z5RcWu1voky8WS1ja',    # Irlandais chaleureux
+    'antoni':  'ErXwobaYiN019PkySvjV',    # Charismatique
+    'thomas':  'GBv7mTt0atIp3Br8iCZE',   # Calme autoritaire
+    'elli':    'MF3mGyEYCl7XYWbV9V6O',   # Feminine jeune
+}
+
+# Default voice for /voice command
+ELEVENLABS_DEFAULT_VOICE = 'daniel'
+
 # Groq Whisper for free STT
 _groq_client = None
 try:
@@ -620,7 +644,72 @@ class TitanVoice:
         """Save the file_id of last received voice for /fx command."""
         self._last_voice[chat_id] = file_id
 
-    # === TEXT TO SPEECH (TTS) ===
+    # === ELEVENLABS TTS (Premium) ===
+
+    async def elevenlabs_tts(self, text: str, voice_name: str = None) -> str:
+        """Convert text to speech using ElevenLabs (premium dubbing voices). Returns file path or error."""
+        if not ELEVENLABS_API_KEY:
+            return "Erreur: ELEVENLABS_API_KEY non configure"
+        voice_key = (voice_name or ELEVENLABS_DEFAULT_VOICE).lower()
+        voice_id = ELEVENLABS_VOICES.get(voice_key, ELEVENLABS_VOICES[ELEVENLABS_DEFAULT_VOICE])
+        try:
+            resp = requests.post(
+                f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}?output_format=mp3_44100_64",
+                headers={
+                    "Content-Type": "application/json",
+                    "xi-api-key": ELEVENLABS_API_KEY,
+                },
+                json={
+                    "text": text[:500],
+                    "model_id": "eleven_multilingual_v2",
+                    "voice_settings": {
+                        "stability": 0.5,
+                        "similarity_boost": 0.75,
+                        "style": 0.5,
+                        "use_speaker_boost": True,
+                    },
+                },
+                timeout=15,
+            )
+            if resp.status_code != 200:
+                log.warning(f"ElevenLabs error {resp.status_code}: {resp.text[:200]}")
+                return f"Erreur ElevenLabs: {resp.status_code}"
+            filepath = Path(tempfile.gettempdir()) / f"titan_el_{voice_key}.mp3"
+            with open(filepath, "wb") as f:
+                f.write(resp.content)
+            return str(filepath)
+        except Exception as e:
+            log.error(f"ElevenLabs TTS error: {e}")
+            return f"Erreur ElevenLabs: {e}"
+
+    async def speak_elevenlabs(self, chat_id: str, text: str, voice_name: str = None) -> str:
+        """Generate ElevenLabs speech and send as voice message. Falls back to gTTS on error."""
+        filepath = await self.elevenlabs_tts(text, voice_name)
+        if filepath.startswith("Erreur"):
+            log.info(f"ElevenLabs fallback to gTTS: {filepath}")
+            return await self.speak_and_send(chat_id, text)
+        result = self.send_voice(chat_id, filepath)
+        try:
+            os.remove(filepath)
+        except Exception:
+            pass
+        if result.get("ok"):
+            return None
+        return f"Erreur envoi: {result.get('description', 'unknown')}"
+
+    def list_elevenlabs_voices(self) -> str:
+        """Return formatted list of ElevenLabs voices."""
+        lines = ["🎙️ VOIX ELEVENLABS — Doubleurs pro", ""]
+        for k, vid in ELEVENLABS_VOICES.items():
+            lines.append(f"  /voice {k} <texte>")
+        lines.append("")
+        lines.append("Ex: /voice daniel Salut, je suis SLY")
+        lines.append("Ex: /voice rachel Bienvenue dans le Building")
+        lines.append("")
+        lines.append("Sans nom de voix = Daniel (defaut)")
+        return "\n".join(lines)
+
+    # === TEXT TO SPEECH (TTS) — gTTS fallback ===
 
     async def text_to_speech(self, text: str, lang: str = "fr") -> str:
         """Convert text to speech and return file path. Pitched down for deep male voice."""

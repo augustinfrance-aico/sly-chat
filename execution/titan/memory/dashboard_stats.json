@@ -48,90 +48,27 @@
       }
     },
     "2026-02-26": {
-      "total": 11,
+      "total": 14,
       "hours": {
-        "04": 11
+        "04": 11,
+        "21": 3
+      }
+    },
+    "2026-02-27": {
+      "total": 9,
+      "hours": {
+        "03": 2,
+        "04": 7
       }
     }
   },
   "module_usage": {
-    "brain": 116,
+    "brain": 127,
     "president": 12,
-    "code": 1
+    "code": 1,
+    "email": 1
   },
   "command_history": [
-    {
-      "cmd": "Là il y a 3 message",
-      "module": "brain",
-      "time": "22:57",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "L",
-      "module": "brain",
-      "time": "22:59",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Ça va ?",
-      "module": "brain",
-      "time": "22:59",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Bonjour test",
-      "module": "brain",
-      "time": "23:01",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Yo",
-      "module": "brain",
-      "time": "23:04",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Non mais tu n’envoies plus 3 message bravo",
-      "module": "brain",
-      "time": "23:05",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Non rappelle moi demain d’avancer sur mes projets ",
-      "module": "brain",
-      "time": "23:05",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "10h",
-      "module": "brain",
-      "time": "23:05",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "J’ai une agence dans l’IA appelé notomai pour les ",
-      "module": "brain",
-      "time": "23:06",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Rédaction d’acte, support client, récolte pièce ju",
-      "module": "brain",
-      "time": "23:07",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "Non je fais 40% upwork et 60% notomai. On est 3 do",
-      "module": "brain",
-      "time": "23:08",
-      "date": "2026-02-17"
-    },
-    {
-      "cmd": "On travaille tous avec Claude pour faire le travai",
-      "module": "brain",
-      "time": "23:09",
-      "date": "2026-02-17"
-    },
     {
       "cmd": "Non gratuit mais après on va faire du bouche à ore",
       "module": "brain",
@@ -659,21 +596,81 @@
       "module": "brain",
       "time": "04:24",
       "date": "2026-02-26"
+    },
+    {
+      "cmd": "Ya plus le racoon au début",
+      "module": "brain",
+      "time": "21:19",
+      "date": "2026-02-26"
+    },
+    {
+      "cmd": "On le voit pas assez",
+      "module": "brain",
+      "time": "21:20",
+      "date": "2026-02-26"
+    },
+    {
+      "cmd": "Non",
+      "module": "brain",
+      "time": "21:20",
+      "date": "2026-02-26"
+    },
+    {
+      "cmd": "Salut",
+      "module": "brain",
+      "time": "03:34",
+      "date": "2026-02-27"
+    },
+    {
+      "cmd": "Donne des actus ia",
+      "module": "brain",
+      "time": "03:35",
+      "date": "2026-02-27"
+    },
+    {
+      "cmd": "Tu peux faire quoi",
+      "module": "brain",
+      "time": "04:39",
+      "date": "2026-02-27"
+    },
+    {
+      "cmd": "/command",
+      "module": "brain",
+      "time": "04:40",
+      "date": "2026-02-27"
+    },
+    {
+      "cmd": "/email",
+      "module": "email",
+      "time": "04:40",
+      "date": "2026-02-27"
+    },
+    {
+      "cmd": "Oui",
+      "module": "brain",
+      "time": "04:40",
+      "date": "2026-02-27"
+    },
+    {
+      "cmd": "Oui",
+      "module": "brain",
+      "time": "04:40",
+      "date": "2026-02-27"
+    },
+    {
+      "cmd": "Fais moi un prompt",
+      "module": "brain",
+      "time": "04:41",
+      "date": "2026-02-27"
+    },
+    {
+      "cmd": "Comment ça",
+      "module": "brain",
+      "time": "04:41",
+      "date": "2026-02-27"
     }
   ],
   "response_times": [
-    0.8088493347167969,
-    0.7041375637054443,
-    0.5679311752319336,
-    1.2211284637451172,
-    0.6518888473510742,
-    0.8079040050506592,
-    1.353398323059082,
-    0.3374009132385254,
-    0.2179868221282959,
-    0.3167083263397217,
-    0.33972644805908203,
-    0.5971982479095459,
     0.6927759647369385,
     0.7722163200378418,
     3.032651662826538,
@@ -711,7 +708,19 @@
     1.0421044826507568,
     0.660768985748291,
     0.5549542903900146,
-    0.5253410339355469
+    0.5253410339355469,
+    0.8048698902130127,
+    0.7007997035980225,
+    0.4029808044433594,
+    1.0702078342437744,
+    1.1246116161346436,
+    1.0447666645050049,
+    0.8521883487701416,
+    1.0543396472930908,
+    0.8641891479492188,
+    2.785504102706909,
+    7.602816104888916,
+    11.684720516204834
   ],
   "daily_logs": {}
 }

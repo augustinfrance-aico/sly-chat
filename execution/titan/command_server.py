@@ -33,6 +33,14 @@ import logging
 import os
 import re
 import shutil
+import sys
+if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 import subprocess
 import time
 import urllib.request
@@ -98,51 +106,48 @@ def _cache_invalidate(key: str):
 # AGENTS DU BUILDING — données pour /api/agents
 # ============================================================
 _AGENTS_LIST = [
-    # OMEGA-CORE
-    {"name": "OMEGA",     "pole": "CORE",  "role": "Vision 360°, arbitrage",          "emoji": "🌀", "gov": True},
-    # PÔLE R — RECON
-    {"name": "MURPHY",    "pole": "RECON", "role": "Structure, priorisation",          "emoji": "🏗️", "gov": True},
-    {"name": "ORACLE",    "pole": "RECON", "role": "Prédiction, timing",               "emoji": "🔮", "gov": True},
-    {"name": "MAYA",      "pole": "RECON", "role": "Scanner niches",                   "emoji": "🗺️", "gov": False},
-    {"name": "GHOST",     "pole": "RECON", "role": "Veille concurrentielle",           "emoji": "👻", "gov": False},
-    {"name": "NASH",      "pole": "RECON", "role": "Data, pricing",                    "emoji": "📊", "gov": False},
-    {"name": "CYPHER",    "pole": "RECON", "role": "KPIs, benchmarks",                 "emoji": "🔢", "gov": False},
-    {"name": "RICK",      "pole": "RECON", "role": "Angles disruptifs",                "emoji": "⚡", "gov": False},
-    # PÔLE F — FORGE
-    {"name": "NIKOLA",    "pole": "FORGE", "role": "Architecture technique",           "emoji": "⚙️", "gov": True},
-    {"name": "PHILOMÈNE", "pole": "FORGE", "role": "Qualité rédactionnelle",           "emoji": "✒️", "gov": True},
-    {"name": "FORGE",     "pole": "FORGE", "role": "Exécution brute",                  "emoji": "🔨", "gov": False},
-    {"name": "BASQUIAT",  "pole": "FORGE", "role": "Créatif, visuels",                 "emoji": "🎨", "gov": False},
-    {"name": "ZARA",      "pole": "FORGE", "role": "Contenu social",                   "emoji": "📱", "gov": False},
-    {"name": "MURRAY",    "pole": "FORGE", "role": "Long-form, newsletters",           "emoji": "📝", "gov": False},
-    {"name": "LEON",      "pole": "FORGE", "role": "Scripts vidéo",                    "emoji": "🎬", "gov": False},
-    {"name": "BALOO",     "pole": "FORGE", "role": "Vulgarisation",                    "emoji": "🐻", "gov": False},
-    # PÔLE D — DEPLOY
-    {"name": "BAGHEERA",  "pole": "DEPLOY","role": "Orchestration",                    "emoji": "🐆", "gov": True},
-    {"name": "SPARTAN",   "pole": "DEPLOY","role": "Discipline, cadence",              "emoji": "🛡️", "gov": True},
-    {"name": "BELFORT",   "pole": "DEPLOY","role": "Vente, closing",                   "emoji": "💼", "gov": False},
-    {"name": "STANLEY",   "pole": "DEPLOY","role": "Growth, deals",                    "emoji": "📈", "gov": False},
-    {"name": "SLY",       "pole": "DEPLOY","role": "Acquisition low-cost",             "emoji": "🦊", "gov": False},
-    {"name": "VITO",      "pole": "DEPLOY","role": "Relations long terme",             "emoji": "🤝", "gov": False},
-    {"name": "BENTLEY",   "pole": "DEPLOY","role": "Premium, positionnement",          "emoji": "💎", "gov": False},
-    {"name": "GRIMALDI",  "pole": "DEPLOY","role": "Audit coûts, financement",         "emoji": "💰", "gov": False},
-    {"name": "X-O1",      "pole": "DEPLOY","role": "Stabilité système, audit setup",   "emoji": "🤖", "gov": False},
-    {"name": "ZEN",       "pole": "DEPLOY","role": "Contrôle qualité, recul",          "emoji": "🧘", "gov": False},
-    {"name": "SENTINEL", "pole": "CORE",  "role": "Dispatch, routing intelligent",    "emoji": "🎯", "gov": False},
-    {"name": "PULSE",    "pole": "CORE",  "role": "Performance, latence",             "emoji": "⚡", "gov": False},
-    {"name": "LIMPIDE",  "pole": "CORE",  "role": "Simplification, clarté",           "emoji": "💎", "gov": False},
-    {"name": "ARCADE",   "pole": "FORGE", "role": "Game design, UX interactive",      "emoji": "🕹️", "gov": False},
-    # — 10 NOUVEAUX AGENTS (30→40) —
-    {"name": "OUTREACH", "pole": "DEPLOY","role": "Cold outreach, prospection",       "emoji": "📡", "gov": False},
-    {"name": "ANALYTICS","pole": "RECON", "role": "Monitoring ventes, BSR, stats",    "emoji": "📊", "gov": False},
-    {"name": "PARAGON",  "pole": "DEPLOY","role": "Contrôle qualité final",           "emoji": "✅", "gov": False},
-    {"name": "ARCHITECT","pole": "FORGE", "role": "Design systèmes, architecture",    "emoji": "🏛️", "gov": False},
-    {"name": "PROXY",    "pole": "DEPLOY","role": "Négociation, diplomatie",          "emoji": "🎭", "gov": False},
-    {"name": "VECTOR",   "pole": "FORGE", "role": "Traduction, localisation",         "emoji": "🌐", "gov": False},
-    {"name": "CATALYST", "pole": "FORGE", "role": "Accélérateur, déblocage",          "emoji": "⚗️", "gov": False},
-    {"name": "MIMIC",    "pole": "RECON", "role": "Reverse-engineering marché",       "emoji": "🪞", "gov": False},
-    {"name": "KEEPER",   "pole": "DEPLOY","role": "Suivi client, rétention",          "emoji": "🛡️", "gov": False},
-    {"name": "NEXUS",    "pole": "CORE",  "role": "Synergies inter-projets",          "emoji": "🕸️", "gov": False},
+    # CORE (4)
+    {"name": "OMEGA",     "pole": "CORE",    "role": "Vision 360°, arbitrage final",       "emoji": "🌀", "gov": True},
+    {"name": "SENTINEL",  "pole": "CORE",    "role": "Dispatch, routing, orchestration",   "emoji": "🎯", "gov": True},
+    {"name": "PULSE",     "pole": "CORE",    "role": "Performance, latence, profiling",    "emoji": "💓", "gov": False},
+    {"name": "FRANKLIN",   "pole": "CORE",    "role": "Simplification, clarté absolue",     "emoji": "💎", "gov": False},
+    # STRAT (4)
+    {"name": "CORTEX",    "pole": "STRAT",   "role": "Structure, plans, priorisation",     "emoji": "🧠", "gov": True},
+    {"name": "GLITCH",    "pole": "STRAT",   "role": "Hacks, idées non-conventionnelles",  "emoji": "⚡", "gov": False},
+    {"name": "SIBYL",     "pole": "STRAT",   "role": "Prédiction, tendances, timing",      "emoji": "🔮", "gov": True},
+    {"name": "NEXUS",     "pole": "STRAT",   "role": "Synergies inter-projets",            "emoji": "🕸️", "gov": False},
+    # VENTE (5)
+    {"name": "CLOSER",    "pole": "VENTE",   "role": "Closing, vente, conversion",         "emoji": "🤝", "gov": False},
+    {"name": "KAISER",    "pole": "VENTE",   "role": "Deals long terme, négociation",      "emoji": "👑", "gov": False},
+    {"name": "PRISM",     "pole": "VENTE",   "role": "Pricing, psychologie des offres",    "emoji": "💠", "gov": False},
+    {"name": "ONYX",      "pole": "VENTE",   "role": "Premium, haut de gamme",             "emoji": "🖤", "gov": False},
+    {"name": "LEDGER",    "pole": "VENTE",   "role": "Business model, chiffres",           "emoji": "📒", "gov": False},
+    # CONTENU (3)
+    {"name": "PHILOMÈNE", "pole": "CONTENU", "role": "Copywriting, prompts chirurgicaux",  "emoji": "✒️", "gov": True},
+    {"name": "FRESCO",    "pole": "CONTENU", "role": "Storytelling visuel, branding",      "emoji": "🎨", "gov": False},
+    {"name": "VIRAL",     "pole": "CONTENU", "role": "Réseaux sociaux, LinkedIn",          "emoji": "📱", "gov": False},
+    # OPS (5)
+    {"name": "ANVIL",     "pole": "OPS",     "role": "Debug, exécution brute, commando",   "emoji": "🔨", "gov": False},
+    {"name": "DREYFUS",   "pole": "OPS",     "role": "Discipline, cadence, qualité",       "emoji": "🛡️", "gov": True},
+    {"name": "SPECTER",   "pole": "OPS",     "role": "Veille, cybersécurité, APIs",        "emoji": "👻", "gov": False},
+    {"name": "DATUM",     "pole": "OPS",     "role": "Data, métriques, KPIs",              "emoji": "📊", "gov": False},
+    {"name": "VOLT",      "pole": "OPS",     "role": "Architecture technique, pipelines",  "emoji": "⚡", "gov": True},
+    # MARCHE (2)
+    {"name": "NICHE",     "pole": "MARCHE",  "role": "Niches, opportunités de marché",     "emoji": "🔍", "gov": False},
+    {"name": "RACOON",    "pole": "MARCHE",  "role": "Growth hacking, acquisition",        "emoji": "🦝", "gov": False},
+    # RDLAB (3)
+    {"name": "CIPHER",    "pole": "RDLAB",   "role": "Veille IA, digest arXiv/NeurIPS",    "emoji": "🔐", "gov": False},
+    {"name": "RADAR",     "pole": "RDLAB",   "role": "Détection startups, brevets",        "emoji": "📡", "gov": False},
+    {"name": "PROTO",     "pole": "RDLAB",   "role": "Prototypage, mini-POC, benchmark",   "emoji": "🧪", "gov": False},
+    # PIXEL (1)
+    {"name": "PIXEL",     "pole": "CORE",    "role": "Game design, gamification, UX",      "emoji": "🕹️", "gov": False},
+    # MÉTA-COUCHE (6)
+    {"name": "DARWIN",    "pole": "META",    "role": "Évolution agents, mutations",        "emoji": "🧬", "gov": False},
+    {"name": "SHADOW",    "pole": "META",    "role": "Observation silencieuse, garde-fou", "emoji": "🕳️", "gov": False},
+    {"name": "AGORA",     "pole": "META",    "role": "Gouvernance, vote pondéré",          "emoji": "🏛️", "gov": False},
+    {"name": "CHRONOS",   "pole": "META",    "role": "Simulation 3 futurs, projection",    "emoji": "⏳", "gov": False},
+    {"name": "HAVOC",     "pole": "META",    "role": "Stress-test, adversaire interne",    "emoji": "💥", "gov": False},
+    {"name": "ATLAS",     "pole": "META",    "role": "Vision civilisationnelle 10 ans",    "emoji": "🌌", "gov": False},
 ]
 
 
@@ -371,6 +376,16 @@ class CommandHandler(SimpleHTTPRequestHandler):
             self._json_response(self._read_directive(name))
         elif path == "/api/modules":
             self._json_response(self._get_modules())
+        elif path == "/api/search/history":
+            try:
+                history_file = MEMORY_DIR / "search_history.json"
+                if history_file.exists():
+                    with open(history_file, "r", encoding="utf-8") as f:
+                        self._json_response(json.load(f))
+                else:
+                    self._json_response([])
+            except Exception:
+                self._json_response([])
         elif path == "/api/extensions":
             self._json_response(_get_extensions())
         elif path == "/api/agents":
@@ -447,6 +462,86 @@ class CommandHandler(SimpleHTTPRequestHandler):
             self._json_response(self._read_json("rdlab_horizon.json"))
         elif path == "/api/rdlab/dashboard":
             self._json_response(self._read_json("rdlab_dashboard.json"))
+        # === CLASSROOM ENDPOINTS ===
+        elif path == "/api/classroom/agents":
+            try:
+                from execution.titan.classroom.classroom_registry import get_all_agents
+                from execution.titan.classroom.classroom_voice import get_voice_config_for_ui
+                self._json_response({"agents": get_all_agents(), "voices": get_voice_config_for_ui()})
+            except Exception as e:
+                log.error(f"classroom/agents error: {e}")
+                self._json_response({"agents": [], "voices": [], "error": str(e)})
+        elif path == "/api/classroom/status":
+            try:
+                from execution.titan.classroom.classroom_state import state as cr_state
+                self._json_response(cr_state.to_dict())
+            except Exception as e:
+                self._json_response({"active": False, "error": str(e)})
+        elif path == "/api/classroom/transcripts":
+            try:
+                from execution.titan.classroom.classroom_state import TRANSCRIPT_FILE
+                if TRANSCRIPT_FILE.exists():
+                    self._json_response(json.loads(TRANSCRIPT_FILE.read_text(encoding="utf-8")))
+                else:
+                    self._json_response([])
+            except Exception as e:
+                self._json_response({"error": str(e)})
+        # === GRAND CONSEIL GET ENDPOINTS ===
+        elif path == "/api/council/status":
+            try:
+                from execution.titan.classroom.council_state import council_state as cs
+                self._json_response(cs.to_dict())
+            except Exception as e:
+                self._json_response({"active": False, "error": str(e)})
+        elif path == "/api/council/transcripts":
+            try:
+                from execution.titan.classroom.council_state import TRANSCRIPT_FILE as CT_FILE
+                if CT_FILE.exists():
+                    self._json_response(json.loads(CT_FILE.read_text(encoding="utf-8")))
+                else:
+                    self._json_response([])
+            except Exception as e:
+                self._json_response({"error": str(e)})
+        # === v2.0 MONITORING ENDPOINTS ===
+        elif path == "/api/latency":
+            try:
+                from execution.titan.ai_client import get_latency_stats
+                self._json_response(get_latency_stats())
+            except Exception as e:
+                self._json_response({"error": str(e)})
+        elif path == "/api/cache":
+            try:
+                from execution.titan.ai_client import get_cache_stats
+                self._json_response(get_cache_stats())
+            except Exception as e:
+                self._json_response({"error": str(e)})
+        elif path == "/api/registry":
+            try:
+                from execution.titan.module_registry import registry
+                self._json_response(registry.to_api())
+            except Exception as e:
+                self._json_response({"error": str(e)})
+        elif path == "/api/registry/health":
+            try:
+                from execution.titan.module_registry import registry
+                self._json_response({"report": registry.health_report()})
+            except Exception as e:
+                self._json_response({"error": str(e)})
+        elif path == "/api/memory/integrity":
+            try:
+                from execution.titan.modules.memory import integrity_check
+                self._json_response(integrity_check())
+            except Exception as e:
+                self._json_response({"error": str(e)})
+        elif path == "/api/brain":
+            # Brain performance stats — requires active bot instance
+            self._json_response({"info": "Brain stats available via /api/all when bot is running"})
+        elif path == "/api/mode":
+            try:
+                from execution.titan.config import TITAN_MODE, SAFE_MODE, DIAGNOSTIC_LOGGING
+                self._json_response({"mode": TITAN_MODE, "safe": SAFE_MODE, "diagnostic": DIAGNOSTIC_LOGGING})
+            except Exception as e:
+                self._json_response({"error": str(e)})
         elif path == "/api/all":
             self._json_response({
                 "stats":         self._read_json_cached("dashboard_stats.json"),
@@ -459,6 +554,8 @@ class CommandHandler(SimpleHTTPRequestHandler):
                 "rdlab":         self._get_rdlab_data(),
                 "timestamp":     datetime.now().isoformat(),
             })
+        elif path == "/classroom" or path == "/classroom.html":
+            self._serve_file(PORTFOLIOS_DIR / "classroom.html")
         elif path == "/" or path == "/index.html":
             self._serve_file(PORTFOLIOS_DIR / "titan_command.html")
         elif path.startswith("/api/"):
@@ -537,6 +634,188 @@ class CommandHandler(SimpleHTTPRequestHandler):
                 log.error(f"Memory save error: {e}")
                 self._json_response({"error": str(e)}, 500)
 
+        elif path == "/api/search":
+            body = _read_body(self)
+            query = body.get("query", "")
+            if not query:
+                self._json_response({"error": "query required"}, 400)
+                self._log_request(path, _t0)
+                return
+            if len(query) > 500:
+                self._json_response({"error": "query trop longue (max 500 chars)"}, 400)
+                self._log_request(path, _t0)
+                return
+            log.info(f"Search: {query[:80]}")
+            try:
+                import asyncio
+                from execution.titan.modules.perplexity import TitanPerplexity
+                perp = TitanPerplexity()
+                loop = asyncio.new_event_loop()
+                result = loop.run_until_complete(perp.search(query))
+                loop.close()
+                self._json_response({"response": result, "query": query})
+            except Exception as e:
+                log.error(f"Search error: {e}")
+                self._json_response({"error": str(e)}, 500)
+
+        elif path == "/api/classroom/discuss":
+            body = _read_body(self)
+            subject = body.get("subject", "Briefing AICO")
+            max_agents = min(body.get("max_agents", 12), 12)
+            try:
+                import asyncio
+                from execution.titan.classroom.classroom_engine import run_free_discussion
+                from execution.titan.classroom.classroom_registry import CLASSROOM_AGENTS
+                agents = [a["name"] for a in CLASSROOM_AGENTS[:max_agents]]
+                loop = asyncio.new_event_loop()
+                results = loop.run_until_complete(run_free_discussion(subject, agents, rounds=1))
+                loop.close()
+                self._json_response({"messages": results, "subject": subject})
+            except Exception as e:
+                log.error(f"classroom/discuss error: {e}")
+                self._json_response({"error": str(e), "messages": []}, 500)
+
+        elif path == "/api/classroom/debate":
+            body = _read_body(self)
+            subject = body.get("subject", "Stratégie AICO 2026")
+            max_agents = min(body.get("max_agents", 8), 12)
+            try:
+                import asyncio
+                from execution.titan.classroom.classroom_engine import run_debate
+                from execution.titan.classroom.classroom_registry import CLASSROOM_AGENTS
+                agents = [a["name"] for a in CLASSROOM_AGENTS[:max_agents]]
+                loop = asyncio.new_event_loop()
+                results = loop.run_until_complete(run_debate(subject, agents))
+                loop.close()
+                self._json_response(results)
+            except Exception as e:
+                log.error(f"classroom/debate error: {e}")
+                self._json_response({"error": str(e)}, 500)
+
+        elif path == "/api/classroom/ask":
+            body = _read_body(self)
+            agent = body.get("agent", "")
+            question = body.get("question", "")
+            if not agent or not question:
+                self._json_response({"error": "agent and question required"}, 400)
+                self._log_request(path, _t0)
+                return
+            try:
+                import asyncio
+                from execution.titan.classroom.classroom_engine import interrogate_agent
+                loop = asyncio.new_event_loop()
+                result = loop.run_until_complete(interrogate_agent(agent, question))
+                loop.close()
+                self._json_response(result)
+            except Exception as e:
+                log.error(f"classroom/ask error: {e}")
+                self._json_response({"error": str(e)}, 500)
+
+        elif path == "/api/classroom/stop":
+            try:
+                from execution.titan.classroom.classroom_state import state as cr_state
+                cr_state.stop()
+                self._json_response({"ok": True, "status": "stopped"})
+            except Exception as e:
+                self._json_response({"error": str(e)})
+
+        # === GRAND CONSEIL ENDPOINTS ===
+        elif path == "/api/council/start":
+            body = _read_body(self)
+            subject = body.get("subject", "Stratégie AICO — prochaine étape")
+            agents = body.get("agents", None)  # optional list of agent names
+            try:
+                import asyncio
+                from execution.titan.classroom.council_engine import run_full_council
+                loop = asyncio.new_event_loop()
+                result = loop.run_until_complete(run_full_council(subject, agents))
+                loop.close()
+                self._json_response(result)
+            except Exception as e:
+                log.error(f"council/start error: {e}")
+                self._json_response({"error": str(e)}, 500)
+
+        elif path == "/api/council/duel":
+            body = _read_body(self)
+            agent1 = body.get("agent1", "").upper()
+            agent2 = body.get("agent2", "").upper()
+            subject = body.get("subject", "")
+            if not agent1 or not agent2:
+                self._json_response({"error": "agent1 and agent2 required"}, 400)
+                self._log_request(path, _t0)
+                return
+            try:
+                import asyncio
+                from execution.titan.classroom.council_engine import run_duel
+                from execution.titan.classroom.council_state import council_state as cs
+                subj = subject or cs.subject or "Débat libre"
+                loop = asyncio.new_event_loop()
+                result = loop.run_until_complete(run_duel(agent1, agent2, subj))
+                loop.close()
+                self._json_response(result)
+            except Exception as e:
+                log.error(f"council/duel error: {e}")
+                self._json_response({"error": str(e)}, 500)
+
+        elif path == "/api/council/reverse":
+            body = _read_body(self)
+            agent = body.get("agent", "").upper()
+            if not agent:
+                self._json_response({"error": "agent required"}, 400)
+                self._log_request(path, _t0)
+                return
+            try:
+                import asyncio
+                from execution.titan.classroom.council_engine import force_reverse
+                from execution.titan.classroom.council_state import council_state as cs
+                subj = body.get("subject", "") or cs.subject or "Sujet du Conseil"
+                loop = asyncio.new_event_loop()
+                result = loop.run_until_complete(force_reverse(agent, subj))
+                loop.close()
+                self._json_response(result)
+            except Exception as e:
+                log.error(f"council/reverse error: {e}")
+                self._json_response({"error": str(e)}, 500)
+
+        elif path == "/api/council/vote":
+            body = _read_body(self)
+            try:
+                import asyncio
+                from execution.titan.classroom.council_engine import run_weighted_vote
+                from execution.titan.classroom.council_state import council_state as cs
+                subj = body.get("subject", "") or cs.subject or "Vote"
+                options = body.get("options", None)
+                loop = asyncio.new_event_loop()
+                result = loop.run_until_complete(run_weighted_vote(subj, options))
+                loop.close()
+                self._json_response(result)
+            except Exception as e:
+                log.error(f"council/vote error: {e}")
+                self._json_response({"error": str(e)}, 500)
+
+        elif path == "/api/council/report":
+            body = _read_body(self)
+            try:
+                import asyncio
+                from execution.titan.classroom.council_engine import generate_report
+                from execution.titan.classroom.council_state import council_state as cs
+                subj = body.get("subject", "") or cs.subject or "Stratégie AICO"
+                loop = asyncio.new_event_loop()
+                result = loop.run_until_complete(generate_report(subj))
+                loop.close()
+                self._json_response(result)
+            except Exception as e:
+                log.error(f"council/report error: {e}")
+                self._json_response({"error": str(e)}, 500)
+
+        elif path == "/api/council/stop":
+            try:
+                from execution.titan.classroom.council_state import council_state as cs
+                cs.stop()
+                self._json_response({"ok": True, "status": "stopped"})
+            except Exception as e:
+                self._json_response({"error": str(e)})
+
         elif path == "/api/anneal":
             body = _read_body(self)
             log.info("Self-annealing triggered from TITAN-COMMAND")
@@ -588,6 +867,7 @@ class CommandHandler(SimpleHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Max-Age", "86400")
         self.end_headers()
 
     # ----------------------------------------------------------
