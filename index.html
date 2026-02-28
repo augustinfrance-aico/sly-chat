@@ -268,6 +268,180 @@ input{font-family:inherit;border:none;outline:none}
 #particles{position:fixed;inset:0;z-index:0;pointer-events:none}
 #app{z-index:1}
 
+/* ═══════ DREAM MODE (23h-7h) ═══════ */
+body.dream-mode{
+    --bg-deep:#020305; --bg-primary:#060910; --bg-card:#0A0E16;
+    --bg-glass:rgba(10,14,22,0.82);
+    --blue:#1555CC; --violet:#5B2DBF; --text:rgba(230,237,245,0.7);
+    --text-dim:rgba(230,237,245,0.25);
+}
+body.dream-mode .bubble{animation-duration:.6s!important}
+body.dream-mode .dock{opacity:.85}
+body.dream-mode .splash-logo{animation-duration:4s!important}
+body.dream-mode #particles{opacity:.3}
+.dream-badge{
+    position:fixed;top:calc(var(--safe-top) + 4px);right:8px;z-index:20;
+    font-size:10px;padding:4px 10px;border-radius:12px;
+    background:rgba(122,60,255,0.15);color:var(--violet-glow);
+    border:1px solid rgba(122,60,255,0.2);
+    animation:dreamPulse 3s ease-in-out infinite;
+    pointer-events:none;
+}
+@keyframes dreamPulse{0%,100%{opacity:.5}50%{opacity:1}}
+
+/* ═══════ MOOD SKIN ═══════ */
+body.mood-dawn{--blue:#FF9A3C;--violet:#FF6B35;--glass-border:rgba(255,154,60,0.15)}
+body.mood-day{/* default palette */}
+body.mood-dusk{--blue:#9B59B6;--violet:#8E44AD;--glass-border:rgba(155,89,182,0.15)}
+body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.15)}
+
+/* ═══════ WAVEFORM VISUALIZER ═══════ */
+.waveform-vis{
+    display:flex;align-items:center;gap:2px;height:28px;padding:4px 12px;
+    margin:0 auto 8px;max-width:200px;justify-content:center;
+}
+.waveform-vis .bar{
+    width:3px;border-radius:2px;
+    background:linear-gradient(to top,var(--blue),var(--violet));
+    transition:height .08s ease;min-height:3px;
+}
+.waveform-vis.playing .bar{animation:none}
+
+/* ═══════ HAPTIC PULSE EFFECT ═══════ */
+.haptic-pulse{animation:hapticPulse .15s ease}
+@keyframes hapticPulse{0%{transform:scale(1)}50%{transform:scale(0.95)}100%{transform:scale(1)}}
+
+/* ═══════ MARKDOWN IN BUBBLES ═══════ */
+.bubble-text strong{font-weight:700;color:var(--blue)}
+.bubble-text em{font-style:italic;color:var(--violet-glow)}
+.bubble-text code{
+    background:rgba(31,111,255,0.1);padding:1px 6px;border-radius:4px;
+    font-family:'Courier New',monospace;font-size:13px;
+}
+.bubble-text pre{
+    background:rgba(0,0,0,0.3);padding:10px;border-radius:8px;
+    overflow-x:auto;margin:8px 0;font-size:12px;
+    font-family:'Courier New',monospace;
+}
+.bubble-text ul,.bubble-text ol{margin:6px 0;padding-left:20px}
+.bubble-text li{margin-bottom:3px}
+.bubble-text a{color:var(--blue);text-decoration:underline}
+
+/* ═══════ REACTIONS ═══════ */
+.reactions-bar{
+    display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;
+}
+.reaction{
+    display:flex;align-items:center;gap:3px;
+    padding:3px 8px;border-radius:12px;
+    background:rgba(255,255,255,0.06);font-size:14px;
+    cursor:pointer;transition:all .2s;border:1px solid transparent;
+}
+.reaction.active{border-color:var(--blue);background:rgba(31,111,255,0.1)}
+.reaction:active{transform:scale(0.9)}
+.reaction-count{font-size:10px;color:var(--text-dim)}
+.reaction-picker{
+    position:absolute;bottom:100%;left:0;
+    display:none;gap:4px;padding:8px;
+    background:var(--bg-card);border-radius:12px;
+    border:1px solid var(--glass-border);
+    box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:30;
+}
+.reaction-picker.visible{display:flex}
+.reaction-pick{font-size:22px;padding:4px;cursor:pointer;transition:transform .15s}
+.reaction-pick:active{transform:scale(1.3)}
+
+/* ═══════ DAILY CHALLENGE ═══════ */
+.daily-challenge{
+    margin:8px 12px 4px;padding:10px 14px;
+    border-radius:var(--radius-sm);
+    background:linear-gradient(135deg,rgba(31,111,255,0.08),rgba(122,60,255,0.08));
+    border:1px solid rgba(31,111,255,0.15);
+    display:flex;align-items:center;gap:10px;
+    animation:dailySlide .5s ease;
+}
+@keyframes dailySlide{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.daily-icon{font-size:24px}
+.daily-info{flex:1}
+.daily-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue)}
+.daily-desc{font-size:13px;margin-top:2px;color:var(--text)}
+.daily-progress{
+    width:40px;height:40px;position:relative;
+}
+.daily-progress svg{transform:rotate(-90deg)}
+.daily-progress-text{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;color:var(--text);
+}
+
+/* ═══════ AGENT INTRO BANNER ═══════ */
+.agent-intro{
+    text-align:center;padding:12px;margin:8px 0;
+    border-radius:var(--radius-sm);
+    background:linear-gradient(135deg,rgba(31,111,255,0.06),rgba(122,60,255,0.06));
+    border:1px solid var(--glass-border);
+    animation:introSlide .4s ease;
+}
+@keyframes introSlide{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+.agent-intro-emoji{font-size:36px}
+.agent-intro-name{font-size:14px;font-weight:900;font-family:'Orbitron',monospace;letter-spacing:2px;margin-top:4px}
+.agent-intro-role{font-size:12px;color:var(--text-dim);margin-top:2px}
+
+/* ═══════ NOTIFICATION SOUNDS TOGGLE ═══════ */
+.sound-indicator{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--green);display:inline-block;
+    animation:soundBlink 2s ease-in-out infinite;
+}
+@keyframes soundBlink{0%,100%{opacity:.4}50%{opacity:1}}
+
+/* ═══════ THINKING CONTEXTUAL ═══════ */
+.thinking-text{
+    font-size:12px;color:var(--text-dim);font-style:italic;
+    margin-top:4px;animation:thinkFade 2s ease-in-out infinite;
+}
+@keyframes thinkFade{0%,100%{opacity:.3}50%{opacity:.8}}
+
+/* ═══════ STREAK COLORS ═══════ */
+.streak-bronze{color:#CD7F32!important}
+.streak-silver{color:#C0C0C0!important}
+.streak-gold{color:#FFD700!important}
+.streak-diamond{color:#00E5FF!important}
+
+/* ═══════ CONVERSATION REWIND ═══════ */
+.rewind-panel{
+    position:fixed;top:0;left:-100%;width:85%;max-width:320px;height:100dvh;
+    z-index:60;background:var(--bg-card);border-right:1px solid var(--glass-border);
+    display:flex;flex-direction:column;
+    transition:left .3s cubic-bezier(0.4,0,0.2,1);
+    padding:calc(var(--safe-top) + 12px) 16px 16px;
+}
+.rewind-panel.open{left:0}
+.rewind-backdrop{
+    position:fixed;inset:0;z-index:59;
+    background:rgba(5,7,10,0.7);backdrop-filter:blur(4px);
+    opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.rewind-backdrop.open{opacity:1;pointer-events:auto}
+.rewind-title{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--blue);letter-spacing:2px;margin-bottom:16px}
+.rewind-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.rewind-item{
+    padding:12px;border-radius:var(--radius-sm);margin-bottom:8px;
+    background:rgba(255,255,255,0.04);cursor:pointer;transition:all .2s;
+}
+.rewind-item:active{background:rgba(31,111,255,0.15);transform:scale(0.98)}
+.rewind-item-date{font-size:11px;color:var(--text-dim);font-weight:600}
+.rewind-item-preview{font-size:13px;margin-top:4px;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rewind-item-agent{font-size:10px;color:var(--blue);margin-top:4px;font-weight:600}
+.rewind-new{
+    margin-top:12px;padding:12px;border-radius:var(--radius-sm);
+    background:linear-gradient(135deg,rgba(31,111,255,0.1),rgba(122,60,255,0.1));
+    border:1px solid rgba(31,111,255,0.2);
+    text-align:center;font-weight:700;font-size:14px;color:var(--blue);
+    cursor:pointer;transition:all .2s;
+}
+.rewind-new:active{transform:scale(0.97)}
+
 /* ═══════ REDUCED MOTION ═══════ */
 @media(prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}
@@ -323,6 +497,14 @@ input{font-family:inherit;border:none;outline:none}
 <!-- SETTINGS MODAL -->
 <div class="modal-overlay" id="settingsOverlay"></div>
 <div class="modal" id="settingsModal"></div>
+
+<!-- CONVERSATION REWIND PANEL -->
+<div class="rewind-backdrop" id="rewindBackdrop"></div>
+<div class="rewind-panel" id="rewindPanel">
+    <div class="rewind-title">📂 SESSIONS</div>
+    <div class="rewind-list" id="rewindList"></div>
+    <button class="rewind-new" id="rewindNew">+ Nouvelle conversation</button>
+</div>
 
 <script>
 /* ═══════════════════════════════════════════
@@ -1164,8 +1346,846 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 
+// ═══════════════════════════════════════════
+//   PHASE 2 — PREMIUM FEATURES
+// ═══════════════════════════════════════════
+
+// ═══════ DREAM MODE (23h-7h) ═══════
+let dreamMode = false;
+let dreamGain = 1;
+
+function checkDreamMode() {
+    const h = new Date().getHours();
+    const shouldDream = h >= 23 || h < 7;
+    if (shouldDream && !dreamMode) {
+        dreamMode = true;
+        document.body.classList.add('dream-mode');
+        dreamGain = 0.6; // Volume -40%
+        if (masterGain) masterGain.gain.setValueAtTime(dreamGain, audioCtx.currentTime);
+        // Badge
+        if (!document.querySelector('.dream-badge')) {
+            const badge = document.createElement('div');
+            badge.className = 'dream-badge';
+            badge.textContent = '🌙 Dream Mode';
+            document.body.appendChild(badge);
+        }
+    } else if (!shouldDream && dreamMode) {
+        dreamMode = false;
+        document.body.classList.remove('dream-mode');
+        dreamGain = 1;
+        if (masterGain) masterGain.gain.setValueAtTime(1, audioCtx.currentTime);
+        document.querySelector('.dream-badge')?.remove();
+    }
+}
+// Check every minute
+setInterval(checkDreamMode, 60000);
+
+// ═══════ MOOD SKIN (heure → ambiance) ═══════
+let currentMood = '';
+
+function updateMoodSkin() {
+    const h = new Date().getHours();
+    let mood;
+    if (h >= 6 && h < 10) mood = 'dawn';      // Matin doré
+    else if (h >= 10 && h < 18) mood = 'day';  // Jour standard
+    else if (h >= 18 && h < 22) mood = 'dusk'; // Crépuscule violet
+    else mood = 'night';                         // Nuit profonde
+
+    if (mood !== currentMood) {
+        document.body.classList.remove('mood-dawn','mood-day','mood-dusk','mood-night');
+        document.body.classList.add(`mood-${mood}`);
+        currentMood = mood;
+    }
+}
+setInterval(updateMoodSkin, 60000);
+
+// ═══════ WAVEFORM AUDIO VISUALIZER ═══════
+let analyser = null;
+let waveformEl = null;
+const WAVE_BARS = 24;
+
+function initWaveform() {
+    if (!audioCtx || analyser) return;
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 64;
+    // Insert between masterGain and destination
+    masterGain.disconnect();
+    masterGain.connect(analyser);
+    analyser.connect(audioCtx.destination);
+}
+
+function showWaveform() {
+    if (waveformEl) return;
+    const area = document.getElementById('chatArea');
+    waveformEl = document.createElement('div');
+    waveformEl.className = 'waveform-vis playing';
+    waveformEl.id = 'waveformVis';
+    for (let i = 0; i < WAVE_BARS; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.height = '3px';
+        waveformEl.appendChild(bar);
+    }
+    area.appendChild(waveformEl);
+    area.scrollTop = area.scrollHeight;
+    animateWaveform();
+}
+
+function animateWaveform() {
+    if (!waveformEl || !analyser) return;
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(data);
+    const bars = waveformEl.querySelectorAll('.bar');
+    bars.forEach((bar, i) => {
+        const val = data[i] || 0;
+        bar.style.height = Math.max(3, (val / 255) * 28) + 'px';
+    });
+    if (isPlaying) requestAnimationFrame(animateWaveform);
+    else hideWaveform();
+}
+
+function hideWaveform() {
+    waveformEl?.remove();
+    waveformEl = null;
+}
+
+// Patch playNext to show waveform
+const _origPlayNext = playNext;
+playNext = async function() {
+    if (audioQueue.length === 0) { isPlaying = false; currentSource = null; hideWaveform(); return; }
+    isPlaying = true;
+    initWaveform();
+    showWaveform();
+    const buf = audioQueue.shift();
+    try {
+        const audioBuf = await audioCtx.decodeAudioData(buf.slice(0));
+        const source = audioCtx.createBufferSource();
+        source.buffer = audioBuf;
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(dreamGain, audioCtx.currentTime + 0.05);
+        gain.gain.setValueAtTime(dreamGain, audioCtx.currentTime + audioBuf.duration - 0.05);
+        gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + audioBuf.duration);
+        source.connect(gain).connect(masterGain);
+        currentSource = source;
+        source.onended = () => playNext();
+        source.start();
+    } catch { playNext(); }
+};
+
+// ═══════ VOICE MORPH ═══════
+const VOICE_MORPH_PATTERNS = {
+    'parle comme sly|voix de sly|imite sly': 'bradpitt',
+    'parle comme bentley|voix de bentley': 'journtf1',
+    'parle comme murray|voix de murray|voix murray': 'homersimpson',
+    'parle comme omega|voix d.omega': 'freeman',
+    'parle comme franklin|voix de franklin': 'gandalf',
+    'parle comme sarko|voix de sarko|imite sarkozy': 'sarkozy',
+    'voix de harry|harry potter': 'harrypotter',
+    'voix de homer|homer simpson': 'homersimpson',
+    'voix grave|voix profonde|voix de morgan': 'freeman',
+    'voix de tom hanks|voix douce': 'tomhanks',
+    'secret story|voix secret story': 'secretstory',
+    'voix pujadas|voix de pujadas': 'pujadas',
+    'voix du journal|voix tf1': 'journtf1',
+};
+
+let morphedVoice = null;
+
+function detectVoiceMorph(text) {
+    const t = text.toLowerCase();
+    for (const [pattern, voice] of Object.entries(VOICE_MORPH_PATTERNS)) {
+        if (new RegExp(pattern, 'i').test(t)) {
+            morphedVoice = voice;
+            return voice;
+        }
+    }
+    // Reset morph after one use? No, keep it until changed
+    return null;
+}
+
+// Patch speakText to use morphed voice
+const _origSpeakText = speakText;
+speakText = async function(agentKey, fullText) {
+    if (!autoSpeak || !fullText.trim()) return;
+    initAudio();
+    const voiceKey = morphedVoice || AGENTS[agentKey]?.voice || 'bradpitt';
+    const modelId = VOICES[voiceKey];
+    if (!modelId) return;
+
+    const sentences = fullText.match(/[^.!?]+[.!?]+/g) || [fullText];
+    const chunks = [];
+    let current = '';
+    for (const s of sentences) {
+        if ((current + s).length > 290) {
+            if (current) chunks.push(current.trim());
+            current = s;
+        } else { current += s; }
+    }
+    if (current.trim()) chunks.push(current.trim());
+
+    const promises = chunks.map(chunk =>
+        fetch('https://api.fish.audio/v1/tts', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${FISH_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: chunk, reference_id: modelId, format: 'mp3', latency: 'balanced' })
+        }).then(r => r.ok ? r.arrayBuffer() : null).catch(() => null)
+    );
+
+    const buffers = await Promise.all(promises);
+    for (const buf of buffers) {
+        if (buf) audioQueue.push(buf);
+    }
+    if (!isPlaying) playNext();
+};
+
+// ═══════ NOTIFICATION SOUNDS (Web Audio Synth) ═══════
+let soundEnabled = true;
+
+function playTone(freq, duration = 0.1, type = 'sine', vol = 0.15) {
+    if (!soundEnabled || !audioCtx) return;
+    initAudio();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(vol * dreamGain, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+}
+
+function soundClick() { playTone(800, 0.06, 'sine', 0.08); }
+function soundSend() { playTone(600, 0.08, 'sine', 0.1); playTone(900, 0.08, 'sine', 0.1); }
+function soundReceive() { playTone(500, 0.12, 'triangle', 0.1); }
+function soundXP() { playTone(1200, 0.15, 'sine', 0.08); }
+function soundLevelUp() {
+    playTone(523, 0.15, 'sine', 0.15);
+    setTimeout(() => playTone(659, 0.15, 'sine', 0.15), 100);
+    setTimeout(() => playTone(784, 0.2, 'sine', 0.15), 200);
+    setTimeout(() => playTone(1047, 0.3, 'sine', 0.2), 300);
+}
+function soundWhisper() { playTone(300, 0.3, 'sine', 0.03); }
+
+// ═══════ HAPTIC FEEDBACK ═══════
+function haptic(style = 'light') {
+    if (!navigator.vibrate) return;
+    switch (style) {
+        case 'light': navigator.vibrate(10); break;
+        case 'medium': navigator.vibrate(25); break;
+        case 'heavy': navigator.vibrate([30, 20, 50]); break;
+        case 'success': navigator.vibrate([15, 50, 15, 50, 30]); break;
+    }
+}
+
+// ═══════ MARKDOWN RENDERING ═══════
+function renderMarkdown(text) {
+    let html = escapeHTML(text);
+    // Code blocks
+    html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+    // Inline code
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // Bold
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // Italic
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    // Unordered lists
+    html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+    // Links
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+    // Line breaks
+    html = html.replace(/\n/g, '<br>');
+    return html;
+}
+
+// Patch addBubble and updateBubbleText for markdown
+const _origAddBubble = addBubble;
+addBubble = function(type, agentKey, text, streaming = false) {
+    const area = document.getElementById('chatArea');
+    const div = document.createElement('div');
+    div.className = `bubble ${type}`;
+
+    if (type === 'agent' && agentKey) {
+        const agent = AGENTS[agentKey] || AGENTS.sly;
+        div.innerHTML = `
+            <div class="bubble-header">
+                <span class="bubble-emoji">${agent.emoji}</span>
+                <span class="bubble-name" style="color:${agent.color}">${agent.name}</span>
+            </div>
+            <div class="bubble-text">${streaming ? '' : renderMarkdown(text)}</div>
+            <div class="bubble-meta">
+                <button class="bubble-replay" onclick="speakText('${agentKey}',this.closest('.bubble').querySelector('.bubble-text').textContent)">▶</button>
+                <span>${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>
+            </div>
+            <div class="reactions-bar"></div>`;
+        soundReceive();
+        haptic('light');
+    } else {
+        div.innerHTML = `<div class="bubble-text">${renderMarkdown(text)}</div>
+            <div class="bubble-meta"><span>${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span></div>`;
+        soundSend();
+        haptic('light');
+    }
+
+    // Long press for reactions
+    let pressTimer;
+    div.addEventListener('touchstart', () => {
+        pressTimer = setTimeout(() => showReactionPicker(div), 500);
+    });
+    div.addEventListener('touchend', () => clearTimeout(pressTimer));
+    div.addEventListener('touchmove', () => clearTimeout(pressTimer));
+
+    area.appendChild(div);
+    area.scrollTop = area.scrollHeight;
+    return div;
+};
+
+updateBubbleText = function(el, text) {
+    const textEl = el.querySelector('.bubble-text');
+    if (textEl) textEl.innerHTML = renderMarkdown(text);
+    document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
+};
+
+// ═══════ MESSAGE REACTIONS ═══════
+const REACTION_EMOJIS = ['🔥', '👏', '💡', '😂', '❤️', '🦝'];
+
+function showReactionPicker(bubbleEl) {
+    // Remove existing pickers
+    document.querySelectorAll('.reaction-picker.visible').forEach(p => p.classList.remove('visible'));
+
+    let picker = bubbleEl.querySelector('.reaction-picker');
+    if (!picker) {
+        picker = document.createElement('div');
+        picker.className = 'reaction-picker';
+        REACTION_EMOJIS.forEach(emoji => {
+            const btn = document.createElement('button');
+            btn.className = 'reaction-pick';
+            btn.textContent = emoji;
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                addReaction(bubbleEl, emoji);
+                picker.classList.remove('visible');
+                haptic('medium');
+            };
+            picker.appendChild(btn);
+        });
+        bubbleEl.appendChild(picker);
+    }
+    picker.classList.add('visible');
+    haptic('light');
+
+    // Auto-hide after 3s
+    setTimeout(() => picker.classList.remove('visible'), 3000);
+}
+
+function addReaction(bubbleEl, emoji) {
+    const bar = bubbleEl.querySelector('.reactions-bar');
+    if (!bar) return;
+    // Check if reaction exists
+    const existing = bar.querySelector(`[data-emoji="${emoji}"]`);
+    if (existing) {
+        const countEl = existing.querySelector('.reaction-count');
+        const c = parseInt(countEl.textContent || '1') + 1;
+        countEl.textContent = c;
+        existing.classList.add('active');
+    } else {
+        const el = document.createElement('button');
+        el.className = 'reaction active';
+        el.dataset.emoji = emoji;
+        el.innerHTML = `${emoji}<span class="reaction-count">1</span>`;
+        el.onclick = () => {
+            el.classList.toggle('active');
+            haptic('light');
+        };
+        bar.appendChild(el);
+    }
+    soundClick();
+}
+
+// ═══════ AGENT PERSONALITY INTROS ═══════
+const agentIntroShown = new Set(JSON.parse(localStorage.getItem('sly_intros') || '[]'));
+
+function showAgentIntro(agentKey) {
+    if (agentIntroShown.has(agentKey)) return;
+    agentIntroShown.add(agentKey);
+    localStorage.setItem('sly_intros', JSON.stringify([...agentIntroShown]));
+
+    const a = AGENTS[agentKey];
+    if (!a) return;
+
+    const intros = {
+        sly: "Le renard entre en scène. Prêt à voler la victoire.",
+        bentley: "Systèmes en ligne. Plan d'attaque calculé.",
+        murray: "MURRAY EST LÀ ! On casse tout !",
+        omega: "La nébuleuse observe. Tout est connecté.",
+        sentinel: "Dispatch activé. Priorités en cours de calcul.",
+        cortex: "Données chargées. Analyse en cours...",
+        franklin: "La sagesse n'a pas d'heure. Parlons.",
+        anvil: "L'enclume est chaude. Montre-moi le bug.",
+        glitch: "Et si on faisait... l'inverse de ce qu'il faut ?",
+        dreyfus: "Discipline. Rigueur. Excellence. Procédons.",
+        volt: "Systèmes sous tension. Pipeline prêt.",
+        specter: "Je regardais déjà avant que tu me cherches.",
+        closer: "J'ai flairé un deal. On signe ?",
+        niche: "J'ai trouvé un angle que personne ne voit.",
+        philomene: "Les mots justes, au moment juste.",
+        pixel: "Level 1. Let's game.",
+        fresco: "Chaque pixel raconte une histoire.",
+        hunter: "Pas de porte ? Je passe par la fenêtre.",
+        datum: "Les chiffres ne mentent jamais.",
+        sibyl: "Je vois... des opportunités.",
+    };
+
+    const area = document.getElementById('chatArea');
+    const div = document.createElement('div');
+    div.className = 'agent-intro';
+    div.innerHTML = `
+        <div class="agent-intro-emoji">${a.emoji}</div>
+        <div class="agent-intro-name" style="color:${a.color}">${a.name}</div>
+        <div class="agent-intro-role">${intros[agentKey] || a.role}</div>`;
+    area.appendChild(div);
+    area.scrollTop = area.scrollHeight;
+    soundLevelUp();
+    haptic('success');
+    setTimeout(() => div.style.opacity = '0.3', 5000);
+}
+
+// ═══════ DAILY CHALLENGE SYSTEM ═══════
+const DAILY_CHALLENGES = [
+    { id:'chat3', title:'Bavard', desc:'Envoie 3 messages', target:3, xp:20, track:'messages_sent' },
+    { id:'chat10', title:'Moulin à paroles', desc:'Envoie 10 messages', target:10, xp:50, track:'messages_sent' },
+    { id:'agents3', title:'Réseau', desc:'Parle à 3 agents différents', target:3, xp:30, track:'agents_used' },
+    { id:'voice2', title:'Vocal', desc:'Utilise le PTT 2 fois', target:2, xp:25, track:'ptt_used' },
+    { id:'xp100', title:'XP Hunter', desc:'Gagne 100 XP', target:100, xp:40, track:'xp_gained' },
+    { id:'streak', title:'Fidélité', desc:'Reviens demain aussi', target:1, xp:15, track:'streak_kept' },
+    { id:'react5', title:'Expressif', desc:'Ajoute 5 réactions', target:5, xp:20, track:'reactions_added' },
+    { id:'long', title:'Philosophe', desc:'Envoie un message de 50+ caractères', target:1, xp:15, track:'long_messages' },
+    { id:'agents5', title:'Explorateur', desc:'Parle à 5 agents différents', target:5, xp:60, track:'agents_used' },
+    { id:'morph', title:'Imitateur', desc:'Utilise le Voice Morph', target:1, xp:25, track:'morph_used' },
+];
+
+let dailyProgress = {};
+let dailyAgentsUsed = new Set();
+
+function getTodayChallenge() {
+    const today = new Date().toDateString();
+    // Hash the date to get a consistent challenge index
+    let hash = 0;
+    for (let i = 0; i < today.length; i++) { hash = ((hash << 5) - hash) + today.charCodeAt(i); hash |= 0; }
+    return DAILY_CHALLENGES[Math.abs(hash) % DAILY_CHALLENGES.length];
+}
+
+function loadDailyProgress() {
+    const saved = JSON.parse(localStorage.getItem('sly_daily') || '{}');
+    if (saved.date === new Date().toDateString()) {
+        dailyProgress = saved;
+        dailyAgentsUsed = new Set(saved.agentsUsed || []);
+    } else {
+        dailyProgress = { date: new Date().toDateString(), completed: false };
+        dailyAgentsUsed = new Set();
+    }
+}
+
+function saveDailyProgress() {
+    dailyProgress.date = new Date().toDateString();
+    dailyProgress.agentsUsed = [...dailyAgentsUsed];
+    localStorage.setItem('sly_daily', JSON.stringify(dailyProgress));
+}
+
+function trackDaily(type, value = 1) {
+    if (dailyProgress.completed) return;
+    const challenge = getTodayChallenge();
+    if (type === 'agents_used') {
+        dailyAgentsUsed.add(value);
+        dailyProgress[type] = dailyAgentsUsed.size;
+    } else {
+        dailyProgress[type] = (dailyProgress[type] || 0) + value;
+    }
+
+    if ((dailyProgress[challenge.track] || 0) >= challenge.target && !dailyProgress.completed) {
+        dailyProgress.completed = true;
+        addBubble('agent', 'pixel', `🏆 CHALLENGE COMPLÉTÉ ! "${challenge.title}" — +${challenge.xp} XP bonus !`);
+        gainXP(challenge.xp);
+        soundLevelUp();
+        haptic('heavy');
+    }
+    saveDailyProgress();
+    renderDailyChallenge();
+}
+
+function renderDailyChallenge() {
+    let el = document.getElementById('dailyChallenge');
+    const challenge = getTodayChallenge();
+    const progress = Math.min(dailyProgress[challenge.track] || 0, challenge.target);
+    const pct = Math.round((progress / challenge.target) * 100);
+    const circumference = 2 * Math.PI * 16;
+    const dashOffset = circumference - (pct / 100) * circumference;
+
+    if (!el) {
+        el = document.createElement('div');
+        el.className = 'daily-challenge';
+        el.id = 'dailyChallenge';
+        const chatArea = document.getElementById('chatArea');
+        chatArea.parentElement.insertBefore(el, chatArea);
+    }
+
+    el.innerHTML = `
+        <div class="daily-icon">${dailyProgress.completed ? '✅' : '🎯'}</div>
+        <div class="daily-info">
+            <div class="daily-title">${dailyProgress.completed ? 'COMPLÉTÉ' : 'DÉFI DU JOUR'}</div>
+            <div class="daily-desc">${challenge.desc} (+${challenge.xp} XP)</div>
+        </div>
+        <div class="daily-progress">
+            <svg width="40" height="40"><circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+            <circle cx="20" cy="20" r="16" fill="none" stroke="${dailyProgress.completed ? 'var(--green)' : 'var(--blue)'}" stroke-width="3" stroke-dasharray="${circumference}" stroke-dashoffset="${dashOffset}" stroke-linecap="round"/></svg>
+            <div class="daily-progress-text">${progress}/${challenge.target}</div>
+        </div>`;
+}
+
+// ═══════ CONTEXTUAL THINKING INDICATOR ═══════
+const THINKING_PHRASES = {
+    sly: ["Calcul du plan en cours...", "Je flaire un truc...", "Tactique en préparation..."],
+    bentley: ["Analyse des données...", "Compilation en cours...", "Optimisation du plan..."],
+    murray: ["Je charge l'attaque...", "BOUM en préparation...", "Force de frappe activée..."],
+    omega: ["Vision globale en calcul...", "Connexion des points...", "Observation profonde..."],
+    cortex: ["Traitement neuronal...", "Analyse multi-couches...", "Données en cours d'intégration..."],
+    franklin: ["Réflexion philosophique...", "Sénèque aurait dit...", "Méditation en cours..."],
+    glitch: ["Chaos créatif en cours...", "Idée folle en fabrication...", "Disruption loading..."],
+    default: ["Réflexion en cours...", "Traitement...", "Un instant..."],
+};
+
+const _origAddThinking = addThinking;
+addThinking = function(agentKey) {
+    const area = document.getElementById('chatArea');
+    const agent = AGENTS[agentKey] || AGENTS.sly;
+    const phrases = THINKING_PHRASES[agentKey] || THINKING_PHRASES.default;
+    const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+
+    const div = document.createElement('div');
+    div.className = 'bubble agent thinking';
+    div.innerHTML = `
+        <div class="bubble-header">
+            <span class="bubble-emoji">${agent.emoji}</span>
+            <span class="bubble-name" style="color:${agent.color}">${agent.name}</span>
+        </div>
+        <div class="thinking-dots"><span></span><span></span><span></span></div>
+        <div class="thinking-text">${phrase}</div>`;
+    area.appendChild(div);
+    area.scrollTop = area.scrollHeight;
+    return div;
+};
+
+// ═══════ STREAK COLORS ═══════
+function updateStreakDisplay() {
+    const el = document.getElementById('streakDisplay');
+    if (!el) return;
+    el.textContent = `${streak}j`;
+    el.classList.remove('streak-bronze','streak-silver','streak-gold','streak-diamond');
+    if (streak >= 14) el.classList.add('streak-diamond');
+    else if (streak >= 7) el.classList.add('streak-gold');
+    else if (streak >= 4) el.classList.add('streak-silver');
+    else if (streak >= 1) el.classList.add('streak-bronze');
+}
+
+// ═══════ PATCH SEND MESSAGE (Phase 2 tracking) ═══════
+const _origSendMessage = sendMessage;
+sendMessage = async function(text) {
+    // Voice morph detection
+    detectVoiceMorph(text);
+    if (morphedVoice && /parle comme|voix de|imite/i.test(text.toLowerCase())) {
+        const voiceName = Object.entries(VOICES).find(([k,v]) => v === VOICES[morphedVoice])?.[0] || morphedVoice;
+        addBubble('agent', 'sly', `🎭 Voice Morph activé : ${voiceName.toUpperCase()} !`);
+        trackDaily('morph_used');
+    }
+
+    // Track daily
+    trackDaily('messages_sent');
+    if (text.length >= 50) trackDaily('long_messages');
+
+    // Detect and track agent
+    const detected = detectAgent(text);
+    trackDaily('agents_used', detected);
+
+    // Show agent intro on first use
+    showAgentIntro(detected);
+
+    // Call original
+    await _origSendMessage(text);
+
+    // Update streak display
+    updateStreakDisplay();
+};
+
+// ═══════ PATCH GAIN XP (Phase 2 sounds) ═══════
+const _origGainXP = gainXP;
+gainXP = function(amount) {
+    const prevLevel = level;
+    xp += amount;
+    updateXPDisplay();
+    showXPToast(amount);
+    soundXP();
+
+    // Track daily
+    trackDaily('xp_gained', amount);
+
+    // Check level up
+    const newLevel = LEVELS.filter(l => xp >= l.xp).length;
+    if (newLevel > level) {
+        level = newLevel;
+        addBubble('agent', 'pixel', `🎮 LEVEL UP ! Tu es maintenant ${LEVELS[level-1].name} (Niv.${level}) !`);
+        soundLevelUp();
+        haptic('heavy');
+        gainXP(25);
+    }
+    saveState();
+};
+
+// ═══════ PATCH WHISPER (Phase 2 sounds) ═══════
+const _origAddWhisper = addWhisper;
+addWhisper = function(text) {
+    const area = document.getElementById('chatArea');
+    const div = document.createElement('div');
+    div.className = 'whisper';
+    div.textContent = text;
+    area.appendChild(div);
+    area.scrollTop = area.scrollHeight;
+    soundWhisper();
+    setTimeout(() => div.remove(), 30000);
+};
+
+// ═══════ PATCH PTT (Phase 2 tracking) ═══════
+const _origPttTouch = pttBtn.ontouchstart;
+pttBtn.addEventListener('touchstart', () => trackDaily('ptt_used'), { capture: true });
+
+// ═══════ PATCH REACTION TRACKING ═══════
+const _origAddReaction = addReaction;
+const patchedAddReaction = addReaction;
+addReaction = function(bubbleEl, emoji) {
+    patchedAddReaction(bubbleEl, emoji);
+    trackDaily('reactions_added');
+};
+
+// ═══════ SETTINGS UPGRADE (Phase 2) ═══════
+const _origOpenSettings = openSettings;
+openSettings = function() {
+    const modal = document.getElementById('settingsModal');
+    const overlay = document.getElementById('settingsOverlay');
+    const challenge = getTodayChallenge();
+    const streakClass = streak >= 14 ? 'diamond' : streak >= 7 ? 'gold' : streak >= 4 ? 'silver' : streak >= 1 ? 'bronze' : '';
+
+    modal.innerHTML = `
+        <div class="modal-title">PARAMÈTRES</div>
+        <div class="settings-row">
+            <span class="settings-label">🔊 Auto-speak</span>
+            <button class="toggle ${autoSpeak?'on':''}" id="toggleSpeak" onclick="toggleAutoSpeak()">
+                <div class="toggle-knob"></div>
+            </button>
+        </div>
+        <div class="settings-row">
+            <span class="settings-label">🔔 Sons UI</span>
+            <button class="toggle ${soundEnabled?'on':''}" id="toggleSounds" onclick="toggleSounds()">
+                <div class="toggle-knob"></div>
+            </button>
+        </div>
+        <div class="settings-row">
+            <span class="settings-label">🎤 Agent actif</span>
+            <span style="color:${AGENTS[currentAgent]?.color || '#fff'};font-weight:700">${AGENTS[currentAgent]?.emoji} ${AGENTS[currentAgent]?.name}</span>
+        </div>
+        ${morphedVoice ? `<div class="settings-row">
+            <span class="settings-label">🎭 Voice Morph</span>
+            <span style="color:var(--violet);font-weight:700">${morphedVoice.toUpperCase()}</span>
+            <button onclick="morphedVoice=null;openSettings()" style="color:var(--red);background:none;font-size:12px">Reset</button>
+        </div>` : ''}
+        <div class="settings-row">
+            <span class="settings-label">⭐ XP Total</span>
+            <span style="font-weight:700;color:var(--orange)">${xp} XP — ${LEVELS[level-1]?.name || 'Recrue'}</span>
+        </div>
+        <div class="settings-row">
+            <span class="settings-label">🔥 Streak</span>
+            <span style="font-weight:700" class="streak-${streakClass}">${streak} jours ${streak >= 14 ? '💎' : streak >= 7 ? '🥇' : streak >= 4 ? '🥈' : streak >= 1 ? '🥉' : ''}</span>
+        </div>
+        <div class="settings-row">
+            <span class="settings-label">🎯 Défi du jour</span>
+            <span style="font-weight:600;color:${dailyProgress.completed ? 'var(--green)' : 'var(--text)'}">${challenge.desc} ${dailyProgress.completed ? '✅' : ''}</span>
+        </div>
+        <div class="settings-row">
+            <span class="settings-label">🌙 Dream Mode</span>
+            <span style="color:var(--text-dim)">${dreamMode ? 'Actif (23h-7h)' : 'Inactif'}</span>
+        </div>
+        <div class="settings-row">
+            <span class="settings-label">🎨 Mood</span>
+            <span style="font-weight:600;text-transform:capitalize;color:var(--blue)">${currentMood || 'day'}</span>
+        </div>
+        <div class="settings-row" style="border:none">
+            <span class="settings-label">📡 SLY-COMMAND</span>
+            <a href="https://augustinfrance-aico.github.io/sly-command/" target="_blank" style="color:var(--blue);font-weight:600;text-decoration:none">Ouvrir →</a>
+        </div>`;
+    modal.classList.add('visible');
+    overlay.classList.add('visible');
+    overlay.onclick = closeSettings;
+};
+
+function toggleSounds() {
+    soundEnabled = !soundEnabled;
+    document.getElementById('toggleSounds')?.classList.toggle('on');
+    localStorage.setItem('sly_sounds', soundEnabled);
+}
+
+// ═══════ CONVERSATION REWIND ═══════
+let sessions = JSON.parse(localStorage.getItem('sly_sessions') || '[]');
+let currentSessionId = null;
+
+function generateSessionId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+function startNewSession() {
+    // Save current session before starting new
+    if (currentSessionId && conversationHistory.length > 0) {
+        saveSession();
+    }
+    currentSessionId = generateSessionId();
+    conversationHistory = [];
+    document.getElementById('chatArea').innerHTML = '';
+    saveState();
+    closeRewind();
+}
+
+function saveSession() {
+    if (!currentSessionId || conversationHistory.length === 0) return;
+    const existing = sessions.findIndex(s => s.id === currentSessionId);
+    const sessionData = {
+        id: currentSessionId,
+        date: new Date().toISOString(),
+        preview: conversationHistory[0]?.content?.slice(0, 100) || '',
+        lastAgent: currentAgent,
+        messageCount: conversationHistory.length,
+        history: conversationHistory.slice(-40) // Keep last 40 messages per session
+    };
+    if (existing >= 0) sessions[existing] = sessionData;
+    else sessions.unshift(sessionData);
+    // Keep max 20 sessions
+    if (sessions.length > 20) sessions = sessions.slice(0, 20);
+    try { localStorage.setItem('sly_sessions', JSON.stringify(sessions)); } catch {}
+}
+
+function loadSession(sessionId) {
+    const session = sessions.find(s => s.id === sessionId);
+    if (!session) return;
+
+    // Save current first
+    if (currentSessionId && conversationHistory.length > 0) saveSession();
+
+    currentSessionId = session.id;
+    conversationHistory = session.history || [];
+
+    // Rebuild chat
+    const area = document.getElementById('chatArea');
+    area.innerHTML = '';
+    for (const msg of conversationHistory) {
+        if (msg.role === 'user') {
+            addBubble('user', null, msg.content);
+        } else {
+            addBubble('agent', currentAgent, msg.content);
+        }
+    }
+    closeRewind();
+    haptic('medium');
+}
+
+function openRewind() {
+    // Save current session before showing list
+    if (conversationHistory.length > 0) saveSession();
+
+    const panel = document.getElementById('rewindPanel');
+    const backdrop = document.getElementById('rewindBackdrop');
+    const list = document.getElementById('rewindList');
+
+    list.innerHTML = '';
+    if (sessions.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px">Aucune session sauvegardée.<br>Commence à discuter !</div>';
+    } else {
+        sessions.forEach(s => {
+            const date = new Date(s.date);
+            const timeStr = date.toLocaleDateString('fr-FR', { day:'numeric', month:'short' }) + ' ' + date.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+            const agent = AGENTS[s.lastAgent] || AGENTS.sly;
+            const isCurrent = s.id === currentSessionId;
+            const el = document.createElement('div');
+            el.className = 'rewind-item';
+            if (isCurrent) el.style.borderLeft = '3px solid var(--blue)';
+            el.innerHTML = `
+                <div class="rewind-item-date">${timeStr} ${isCurrent ? '(en cours)' : ''} · ${s.messageCount || 0} msgs</div>
+                <div class="rewind-item-preview">${s.preview || 'Session vide'}</div>
+                <div class="rewind-item-agent">${agent.emoji} ${agent.name}</div>`;
+            el.onclick = () => loadSession(s.id);
+            list.appendChild(el);
+        });
+    }
+
+    panel.classList.add('open');
+    backdrop.classList.add('open');
+    backdrop.onclick = closeRewind;
+    soundClick();
+}
+
+function closeRewind() {
+    document.getElementById('rewindPanel').classList.remove('open');
+    document.getElementById('rewindBackdrop').classList.remove('open');
+}
+
+// Wire menu button to rewind (was agent modal, now rewind panel)
+document.getElementById('btnMenu').removeEventListener('click', openAgentModal);
+document.getElementById('btnMenu').addEventListener('click', openRewind);
+document.getElementById('rewindNew').addEventListener('click', () => {
+    startNewSession();
+    haptic('medium');
+    soundSend();
+    // Add welcome message
+    const greetings = [
+        "Nouvelle session, nouvelle aventure. Go !",
+        "Clean slate. Qu'est-ce qu'on construit ?",
+        "Session fraîche. Les 50 agents sont prêts.",
+    ];
+    addBubble('agent', 'sly', greetings[Math.floor(Math.random() * greetings.length)]);
+});
+
+// Auto-save session periodically
+setInterval(() => { if (conversationHistory.length > 0) saveSession(); }, 30000);
+
+// Init session on boot
+function initSessions() {
+    sessions = JSON.parse(localStorage.getItem('sly_sessions') || '[]');
+    if (!currentSessionId) currentSessionId = generateSessionId();
+}
+
+// ═══════ BOOT PHASE 2 ═══════
+function bootPhase2() {
+    checkDreamMode();
+    updateMoodSkin();
+    loadDailyProgress();
+    renderDailyChallenge();
+    updateStreakDisplay();
+    initSessions();
+    soundEnabled = localStorage.getItem('sly_sounds') !== 'false';
+
+    // Load morphed voice
+    const savedMorph = localStorage.getItem('sly_morph');
+    if (savedMorph) morphedVoice = savedMorph;
+}
+
+// Patch saveState to include Phase 2 data
+const _origSaveState = saveState;
+saveState = function() {
+    const state = { xp, level, streak, currentAgent, autoSpeak, conversationHistory: conversationHistory.slice(-20) };
+    try { localStorage.setItem('sly_state', JSON.stringify(state)); } catch {}
+    if (morphedVoice) localStorage.setItem('sly_morph', morphedVoice);
+    else localStorage.removeItem('sly_morph');
+};
+
 // ═══════ LAUNCH ═══════
 runSplash();
+// Phase 2 boot after splash
+setTimeout(bootPhase2, 200);
 </script>
 </body>
 </html>
