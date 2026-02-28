@@ -110,3 +110,7 @@
 ### 2026-02-28 — PWA unifiÃ© â€” 1 lien = Dashboard + Tower + RPG
 - **Commit** : 47402fe
 - **Impact** : portfolios/manifest.json, portfolios/titan_command.html, portfolios/titan_icon.svg, start_dashboard.bat
+
+### 2026-02-28 — Cooper Building 10/10 â€” 49 agents tracked + nettoyage total + .env.example
+- **Commit** : 41d4495
+- **Impact** : .env.example, CLAUDE.md, SLY-Assistant.bat, agents/agent_profiles.py, directives/AGENTS.md (+154 fichiers)
