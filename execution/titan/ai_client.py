@@ -1,6 +1,6 @@
 """
 TITAN AI Client — Unified AI interface v2.0
-Cascade: Ollama (local, free) > Groq models (free, separate quotas) > Gemini (free)
+Cascade: Ollama (local, free) > Groq models (free) > Cerebras (free, 1M tok/day) > Gemini 2.5 Flash (free)
 Each model has its own rate limit — if one is exhausted, next one kicks in.
 Ollama is auto-detected: if running locally, TITAN uses it first (zero latency, zero API).
 
@@ -30,6 +30,7 @@ if _env_file.exists():
     load_dotenv(_env_file, override=True)
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+CEREBRAS_API_KEY = os.getenv("CEREBRAS_API_KEY", "")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
@@ -170,6 +171,16 @@ if GROQ_API_KEY:
         log.info(f"AI Client: Groq OK ({len(GROQ_MODELS)} models cascade)")
     except Exception as e:
         log.warning(f"Groq init failed: {e}")
+
+_cerebras_available = False
+if CEREBRAS_API_KEY:
+    try:
+        from openai import OpenAI as _CerebrasOpenAI
+        _cerebras_client = _CerebrasOpenAI(api_key=CEREBRAS_API_KEY, base_url="https://api.cerebras.ai/v1")
+        _cerebras_available = True
+        log.info("AI Client: Cerebras OK (1M tokens/day, 3000 t/s)")
+    except Exception as e:
+        log.warning(f"Cerebras init failed: {e}")
 
 if GEMINI_API_KEY:
     try:
@@ -332,12 +343,35 @@ def chat(system: str, user_message: str, max_tokens: int = 2048) -> str:
                 log.warning(f"AI {model}: {e}")
                 continue
 
+    # === CEREBRAS (FREE — 1M tokens/day, 3000 t/s, OpenAI-compatible) ===
+    if _cerebras_available:
+        try:
+            t0 = time.time()
+            cerebras_resp = _cerebras_client.chat.completions.create(
+                model="llama-3.3-70b",
+                messages=[{"role": "system", "content": system}, {"role": "user", "content": user_message}],
+                max_tokens=max_tokens,
+                temperature=0.7,
+            )
+            latency = (time.time() - t0) * 1000
+            result = cerebras_resp.choices[0].message.content or ""
+            if result:
+                _track_latency("cerebras-llama-3.3-70b", latency, len(result), True)
+                log.info(f"AI: cerebras-llama-3.3-70b OK ({len(result)} chars, {latency:.0f}ms)")
+                result = _strip_questions(_dedup_sentences(result))
+                _cache_put(ck, result)
+                return result
+            _track_latency("cerebras-llama-3.3-70b", latency, 0, False)
+        except Exception as e:
+            _track_latency("cerebras-llama-3.3-70b", 0, 0, False)
+            log.warning(f"AI Cerebras: {e}")
+
     # === GEMINI (FREE FALLBACK) ===
     if _gemini_client:
         try:
             t0 = time.time()
             response = _gemini_client.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-2.5-flash",
                 contents=user_message,
                 config={
                     "system_instruction": system,
@@ -346,13 +380,13 @@ def chat(system: str, user_message: str, max_tokens: int = 2048) -> str:
                 },
             )
             latency = (time.time() - t0) * 1000
-            _track_latency("gemini-2.0-flash", latency, len(response.text), True)
-            log.info(f"AI: gemini-2.0-flash OK ({len(response.text)} chars, {latency:.0f}ms)")
+            _track_latency("gemini-2.5-flash", latency, len(response.text), True)
+            log.info(f"AI: gemini-2.5-flash OK ({len(response.text)} chars, {latency:.0f}ms)")
             result = _strip_questions(_dedup_sentences(response.text))
             _cache_put(ck, result)
             return result
         except Exception as e:
-            _track_latency("gemini-2.0-flash", 0, 0, False)
+            _track_latency("gemini-2.5-flash", 0, 0, False)
             log.warning(f"AI Gemini: {e}")
 
     return "Tous les providers IA sont temporairement satures. Reessaie dans quelques minutes."

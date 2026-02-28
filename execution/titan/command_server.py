@@ -326,7 +326,7 @@ def _chat_llm(message: str, system: str = "") -> str:
         if api_key:
             import google.generativeai as genai
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel("gemini-2.0-flash")
+            model = genai.GenerativeModel("gemini-2.5-flash")
             r = model.generate_content(f"System: {system}\n\nUser: {message}")
             return f"[💎 Gemini] {r.text}"
     except Exception as e:
