@@ -638,6 +638,71 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
     position:absolute;bottom:2px;right:2px;
 }
 
+/* ═══════ REPLY THREAD ═══════ */
+.reply-ref{
+    padding:4px 10px;margin-bottom:6px;
+    border-left:3px solid var(--blue);
+    background:rgba(31,111,255,0.05);border-radius:0 8px 8px 0;
+    font-size:12px;color:var(--text-dim);
+    max-height:40px;overflow:hidden;cursor:pointer;
+}
+.reply-ref:active{background:rgba(31,111,255,0.1)}
+.reply-ref-name{font-weight:700;color:var(--blue)}
+.reply-btn{
+    font-size:11px;color:var(--text-dim);background:none;
+    padding:2px 6px;border-radius:6px;transition:all .15s;
+}
+.reply-btn:active{color:var(--blue);background:rgba(31,111,255,0.1)}
+.reply-preview{
+    padding:8px 12px;margin:0 12px 4px;
+    background:rgba(31,111,255,0.05);border-radius:8px;
+    border-left:3px solid var(--blue);
+    display:flex;align-items:center;justify-content:space-between;
+    animation:replySlide .2s ease;
+}
+@keyframes replySlide{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.reply-preview-text{font-size:12px;color:var(--text-dim);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.reply-preview-close{font-size:16px;color:var(--text-dim);background:none;padding:4px;cursor:pointer}
+
+/* ═══════ LEADERBOARD ═══════ */
+.leaderboard-item{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.leaderboard-rank{
+    width:28px;height:28px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:14px;font-weight:900;
+    background:rgba(255,255,255,0.06);
+}
+.leaderboard-rank.top1{background:rgba(255,215,0,0.15);color:#FFD700}
+.leaderboard-rank.top2{background:rgba(192,192,192,0.15);color:#C0C0C0}
+.leaderboard-rank.top3{background:rgba(205,127,50,0.15);color:#CD7F32}
+.leaderboard-info{flex:1}
+.leaderboard-name{font-size:14px;font-weight:700}
+.leaderboard-count{font-size:11px;color:var(--text-dim)}
+.leaderboard-bar{
+    height:4px;border-radius:2px;background:rgba(255,255,255,0.06);
+    margin-top:4px;overflow:hidden;
+}
+.leaderboard-bar-fill{height:100%;border-radius:2px;transition:width .5s ease}
+
+/* ═══════ CUSTOM PROMPT ═══════ */
+.prompt-editor{
+    width:100%;min-height:100px;max-height:200px;
+    padding:12px;background:rgba(0,0,0,0.2);
+    border-radius:8px;border:1px solid var(--glass-border);
+    color:var(--text);font-size:13px;font-family:inherit;
+    resize:vertical;
+}
+.prompt-editor:focus{border-color:var(--blue);outline:none}
+.prompt-preset{
+    padding:8px 12px;border-radius:8px;
+    background:rgba(255,255,255,0.04);font-size:12px;
+    cursor:pointer;transition:all .2s;margin-bottom:4px;
+}
+.prompt-preset:active{background:rgba(31,111,255,0.1)}
+
 /* ═══════ REDUCED MOTION ═══════ */
 @media(prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}
@@ -3357,11 +3422,315 @@ function bootPhase3Plus() {
     }
 }
 
+// ═══════════════════════════════════════════
+//   PHASE 4 — PRO FEATURES
+// ═══════════════════════════════════════════
+
+// ═══════ REPLY TO MESSAGE ═══════
+let replyingTo = null;
+
+function setReplyTo(bubbleEl) {
+    const text = bubbleEl.querySelector('.bubble-text')?.textContent || '';
+    const name = bubbleEl.querySelector('.bubble-name')?.textContent || 'Agent';
+    replyingTo = { text: text.slice(0, 100), name, element: bubbleEl };
+
+    // Show reply preview above input
+    let preview = document.querySelector('.reply-preview');
+    if (!preview) {
+        preview = document.createElement('div');
+        preview.className = 'reply-preview';
+        const inputArea = document.querySelector('.input-area');
+        inputArea.parentElement.insertBefore(preview, inputArea);
+    }
+    preview.innerHTML = `
+        <span class="reply-preview-text">↩ <strong>${name}</strong>: ${escapeHTML(replyingTo.text)}</span>
+        <button class="reply-preview-close" onclick="cancelReply()">×</button>`;
+    document.getElementById('chatInput').focus();
+    haptic('light');
+}
+
+function cancelReply() {
+    replyingTo = null;
+    document.querySelector('.reply-preview')?.remove();
+}
+
+// Patch addBubble to include reply button and show reply refs
+const _p4AddBubble = addBubble;
+addBubble = function(type, agentKey, text, streaming = false) {
+    const el = _p4AddBubble(type, agentKey, text, streaming);
+
+    // Add reply button to agent bubbles
+    if (type === 'agent' && agentKey) {
+        const meta = el.querySelector('.bubble-meta');
+        if (meta) {
+            const replyBtn = document.createElement('button');
+            replyBtn.className = 'reply-btn';
+            replyBtn.textContent = '↩ Répondre';
+            replyBtn.onclick = (e) => { e.stopPropagation(); setReplyTo(el); };
+            meta.appendChild(replyBtn);
+        }
+    }
+
+    // If replying, add reply reference to new bubble
+    if (replyingTo && type === 'user') {
+        const ref = document.createElement('div');
+        ref.className = 'reply-ref';
+        ref.innerHTML = `<span class="reply-ref-name">${replyingTo.name}</span> ${escapeHTML(replyingTo.text.slice(0, 60))}...`;
+        ref.onclick = () => replyingTo?.element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.insertBefore(ref, el.firstChild);
+        cancelReply();
+    }
+
+    return el;
+};
+
+// ═══════ AGENT LEADERBOARD ═══════
+function getAgentLeaderboard() {
+    const interactions = JSON.parse(localStorage.getItem('sly_agent_interactions') || '{}');
+    const counts = {};
+    // Count from conversation history across all sessions
+    const allHistory = [...conversationHistory];
+    for (const session of sessions) {
+        if (session.history) allHistory.push(...session.history);
+    }
+    for (const msg of allHistory) {
+        if (msg.role === 'assistant') {
+            const match = msg.content.match(/^\[(\w+)\]/);
+            if (match) {
+                const name = match[1].toLowerCase();
+                counts[name] = (counts[name] || 0) + 1;
+            }
+        }
+    }
+    // Also count from agent interactions timestamps
+    for (const key of AGENT_KEYS) {
+        if (interactions[key] && !counts[key]) counts[key] = 1;
+    }
+    // Sort by count
+    return Object.entries(counts)
+        .map(([key, count]) => ({ key, count, agent: AGENTS[key] }))
+        .filter(e => e.agent)
+        .sort((a, b) => b.count - a.count);
+}
+
+// Add leaderboard to commands
+COMMANDS.push({
+    icon: '📈', label: 'Agent Leaderboard', hint: '/leaderboard',
+    action: function() {
+        closeCmdPalette();
+        const modal = document.getElementById('settingsModal');
+        const overlay = document.getElementById('settingsOverlay');
+        const leaderboard = getAgentLeaderboard();
+        const maxCount = leaderboard[0]?.count || 1;
+
+        modal.innerHTML = `
+            <div class="modal-title">📈 AGENT LEADERBOARD</div>
+            ${leaderboard.length === 0 ? '<div style="text-align:center;padding:20px;color:var(--text-dim)">Pas encore de données. Parle aux agents !</div>' :
+            leaderboard.slice(0, 10).map((e, i) => `
+                <div class="leaderboard-item">
+                    <div class="leaderboard-rank ${i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : ''}">${i < 3 ? ['🥇','🥈','🥉'][i] : i + 1}</div>
+                    <span style="font-size:22px">${e.agent.emoji}</span>
+                    <div class="leaderboard-info">
+                        <div class="leaderboard-name" style="color:${e.agent.color}">${e.agent.name}</div>
+                        <div class="leaderboard-count">${e.count} interactions</div>
+                        <div class="leaderboard-bar"><div class="leaderboard-bar-fill" style="width:${(e.count/maxCount)*100}%;background:${e.agent.color}"></div></div>
+                    </div>
+                </div>`).join('')}`;
+        modal.classList.add('visible');
+        overlay.classList.add('visible');
+        overlay.onclick = closeSettings;
+    }
+});
+
+// ═══════ KEYBOARD SHORTCUTS ═══════
+document.addEventListener('keydown', (e) => {
+    // Ctrl/Cmd + K = command palette
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        if (cmdPaletteVisible) closeCmdPalette();
+        else openCmdPalette();
+    }
+    // Escape = close everything
+    if (e.key === 'Escape') {
+        closeCmdPalette();
+        closeAgentModal();
+        closeSettings();
+        closeRewind();
+        cancelReply();
+        document.querySelector('.ambient-menu')?.classList.remove('visible');
+    }
+    // Ctrl + Shift + A = agent modal
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        openAgentModal();
+    }
+    // Ctrl + Shift + E = export
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'E') {
+        e.preventDefault();
+        cmdExport();
+    }
+    // Ctrl + Shift + S = search
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'S') {
+        e.preventDefault();
+        cmdSearch();
+    }
+});
+
+// ═══════ SYSTEM PROMPT CUSTOMIZATION ═══════
+let customSystemPrompt = localStorage.getItem('sly_custom_prompt') || '';
+
+const PROMPT_PRESETS = [
+    { label: '🎓 Mode Expert', prompt: 'Réponds avec un niveau technique élevé, détails et nuances.' },
+    { label: '🧒 Mode Simple', prompt: 'Explique comme si j\'avais 10 ans, très simple et imagé.' },
+    { label: '😂 Mode Humour', prompt: 'Sois drôle et fais des blagues à chaque réponse. Humour subtil de Sly Cooper.' },
+    { label: '⚡ Mode Concis', prompt: 'Réponds en maximum 2 phrases. Ultra-concis.' },
+    { label: '📝 Mode Détaillé', prompt: 'Donne des réponses longues et complètes avec des exemples concrets.' },
+    { label: '🏴‍☠️ Mode Pirate', prompt: 'Réponds comme un pirate, avec le vocabulaire et l\'attitude d\'un corsaire.' },
+];
+
+// Add to commands
+COMMANDS.push({
+    icon: '⚙️', label: 'Personnaliser le prompt', hint: '/prompt',
+    action: function() {
+        closeCmdPalette();
+        const modal = document.getElementById('settingsModal');
+        const overlay = document.getElementById('settingsOverlay');
+
+        modal.innerHTML = `
+            <div class="modal-title">⚙️ SYSTEM PROMPT</div>
+            <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px">Ajoute des instructions personnalisées pour tous les agents.</div>
+            <textarea class="prompt-editor" id="promptEditor" placeholder="Ex: Réponds toujours en anglais...">${escapeHTML(customSystemPrompt)}</textarea>
+            <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+                ${PROMPT_PRESETS.map(p => `<button class="prompt-preset" onclick="document.getElementById('promptEditor').value='${p.prompt}'">${p.label}</button>`).join('')}
+            </div>
+            <div style="display:flex;gap:8px;margin-top:16px">
+                <button onclick="saveCustomPrompt()" style="flex:1;padding:12px;border-radius:8px;background:var(--blue);color:white;font-weight:700">Sauvegarder</button>
+                <button onclick="clearCustomPrompt()" style="padding:12px;border-radius:8px;background:rgba(255,59,92,0.1);color:var(--red);font-weight:700">Reset</button>
+            </div>`;
+        modal.classList.add('visible');
+        overlay.classList.add('visible');
+        overlay.onclick = closeSettings;
+    }
+});
+
+function saveCustomPrompt() {
+    customSystemPrompt = document.getElementById('promptEditor')?.value || '';
+    localStorage.setItem('sly_custom_prompt', customSystemPrompt);
+    closeSettings();
+    addBubble('agent', 'sly', customSystemPrompt ? `⚙️ Prompt custom activé : "${customSystemPrompt.slice(0, 50)}..."` : "⚙️ Prompt custom désactivé.");
+    haptic('success');
+}
+
+function clearCustomPrompt() {
+    customSystemPrompt = '';
+    localStorage.removeItem('sly_custom_prompt');
+    document.getElementById('promptEditor').value = '';
+    haptic('light');
+}
+
+// Patch buildSystemPrompt to include custom prompt
+const _p4BuildSystemPrompt = buildSystemPrompt;
+buildSystemPrompt = function(agentKey) {
+    let prompt = _p4BuildSystemPrompt(agentKey);
+    if (customSystemPrompt) prompt += '\n\nINSTRUCTIONS UTILISATEUR :\n' + customSystemPrompt;
+    return prompt;
+};
+
+// ═══════ IMAGE/FILE SHARING (base64) ═══════
+function addFileInput() {
+    const inputRow = document.querySelector('.input-row');
+    if (!inputRow || document.getElementById('fileBtn')) return;
+
+    const fileBtn = document.createElement('button');
+    fileBtn.id = 'fileBtn';
+    fileBtn.className = 'btn-icon';
+    fileBtn.style.cssText = 'width:40px;height:40px;font-size:18px;flex-shrink:0';
+    fileBtn.textContent = '📎';
+    fileBtn.onclick = () => document.getElementById('fileInput')?.click();
+
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.id = 'fileInput';
+    fileInput.accept = 'image/*';
+    fileInput.style.display = 'none';
+    fileInput.onchange = handleFileSelect;
+
+    inputRow.insertBefore(fileBtn, inputRow.firstChild);
+    inputRow.appendChild(fileInput);
+}
+
+function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+        addBubble('agent', 'sly', "Je ne peux lire que des images pour l'instant.");
+        return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+        addBubble('agent', 'sly', "Image trop lourde (max 2MB). Compresse-la d'abord.");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        const dataUrl = ev.target.result;
+        // Show image in chat
+        const area = document.getElementById('chatArea');
+        const div = document.createElement('div');
+        div.className = 'bubble user';
+        div.innerHTML = `
+            <img src="${dataUrl}" style="max-width:100%;border-radius:12px;max-height:300px;object-fit:contain" alt="Image partagée">
+            <div class="bubble-meta"><span>${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span></div>`;
+        area.appendChild(div);
+        area.scrollTop = area.scrollHeight;
+
+        // Send description request to LLM
+        sendMessage(`[Image partagée : ${file.name}, ${(file.size/1024).toFixed(0)}KB] Décris ce que tu vois et donne ton avis.`);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = ''; // Reset
+}
+
+// ═══════ BOOKMARKS IN COMMANDS ═══════
+COMMANDS.push({
+    icon: '⭐', label: 'Mes signets', hint: '/bookmarks',
+    action: function() {
+        closeCmdPalette();
+        const modal = document.getElementById('settingsModal');
+        const overlay = document.getElementById('settingsOverlay');
+
+        modal.innerHTML = `
+            <div class="modal-title">⭐ SIGNETS</div>
+            ${bookmarks.length === 0 ?
+                '<div style="text-align:center;padding:20px;color:var(--text-dim)">Aucun signet. Tape sur 🔖 dans une bulle pour en ajouter.</div>' :
+                bookmarks.map((b, i) => `
+                    <div class="settings-row" style="align-items:flex-start">
+                        <div style="flex:1">
+                            <div style="font-size:11px;color:var(--text-dim)">${new Date(b.date).toLocaleDateString('fr-FR')}</div>
+                            <div style="font-size:13px;margin-top:2px">${escapeHTML(b.text)}</div>
+                        </div>
+                        <button onclick="bookmarks.splice(${i},1);localStorage.setItem('sly_bookmarks',JSON.stringify(bookmarks));COMMANDS.find(c=>c.hint==='/bookmarks').action()" style="color:var(--red);background:none;font-size:14px">✕</button>
+                    </div>`).join('')}`;
+        modal.classList.add('visible');
+        overlay.classList.add('visible');
+        overlay.onclick = closeSettings;
+    }
+});
+
+// ═══════ BOOT PHASE 4 ═══════
+function bootPhase4() {
+    addFileInput();
+    customSystemPrompt = localStorage.getItem('sly_custom_prompt') || '';
+}
+
 // ═══════ LAUNCH ═══════
 runSplash();
 setTimeout(bootPhase2, 200);
 setTimeout(bootPhase3, 400);
 setTimeout(bootPhase3Plus, 600);
+setTimeout(bootPhase4, 800);
 </script>
 </body>
 </html>
