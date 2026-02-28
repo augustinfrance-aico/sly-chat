@@ -556,6 +556,88 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 .memory-dot.thinking{animation:memPulse 1s ease-in-out infinite}
 @keyframes memPulse{0%,100%{opacity:.3}50%{opacity:1}}
 
+/* ═══════ QUICK REPLIES ═══════ */
+.quick-replies{
+    display:flex;gap:6px;flex-wrap:wrap;
+    padding:4px 12px 8px;
+}
+.quick-reply{
+    padding:6px 14px;border-radius:16px;
+    background:rgba(31,111,255,0.08);border:1px solid rgba(31,111,255,0.15);
+    color:var(--blue);font-size:13px;font-weight:500;
+    white-space:nowrap;transition:all .2s;
+}
+.quick-reply:active{background:rgba(31,111,255,0.2);transform:scale(0.95)}
+
+/* ═══════ AMBIENT CONTROL ═══════ */
+.ambient-btn{
+    position:fixed;bottom:calc(var(--safe-bottom) + 140px);right:12px;
+    width:40px;height:40px;border-radius:50%;z-index:20;
+    background:var(--bg-glass);backdrop-filter:blur(12px);
+    border:1px solid var(--glass-border);
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;transition:all .2s;opacity:.7;
+}
+.ambient-btn:active{transform:scale(0.9);opacity:1}
+.ambient-btn.active{border-color:var(--blue);opacity:1}
+.ambient-menu{
+    position:fixed;bottom:calc(var(--safe-bottom) + 190px);right:12px;
+    z-index:20;padding:8px;
+    background:var(--bg-card);border-radius:12px;
+    border:1px solid var(--glass-border);
+    box-shadow:0 8px 32px rgba(0,0,0,0.4);
+    display:none;
+}
+.ambient-menu.visible{display:block}
+.ambient-option{
+    padding:8px 16px;border-radius:8px;
+    font-size:13px;display:flex;align-items:center;gap:8px;
+    transition:background .15s;cursor:pointer;white-space:nowrap;
+}
+.ambient-option:active{background:rgba(31,111,255,0.1)}
+.ambient-option.active{color:var(--blue);font-weight:700}
+
+/* ═══════ BOOKMARK ═══════ */
+.bookmark-marker{
+    position:absolute;top:8px;right:8px;
+    width:20px;height:20px;font-size:14px;
+    display:flex;align-items:center;justify-content:center;
+    opacity:.3;transition:opacity .2s;cursor:pointer;
+}
+.bookmark-marker.bookmarked{opacity:1;color:var(--orange)}
+
+/* ═══════ PROACTIVE SUMMARY ═══════ */
+.summary-card{
+    margin:8px 12px;padding:14px;
+    border-radius:var(--radius);
+    background:linear-gradient(135deg,rgba(31,111,255,0.06),rgba(122,60,255,0.06));
+    border:1px solid rgba(31,111,255,0.12);
+    animation:summarySlide .5s ease;
+}
+@keyframes summarySlide{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.summary-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.summary-emoji{font-size:20px}
+.summary-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue)}
+.summary-text{font-size:13px;line-height:1.5;color:var(--text)}
+.summary-dismiss{
+    margin-top:8px;text-align:right;
+    font-size:11px;color:var(--text-dim);cursor:pointer;
+}
+
+/* ═══════ SWIPE HINT ═══════ */
+.swipe-hint{
+    position:absolute;top:50%;right:-40px;
+    transform:translateY(-50%);
+    font-size:12px;color:var(--text-dim);
+    opacity:0;transition:opacity .2s;pointer-events:none;
+}
+
+/* ═══════ AGENT MOOD DOTS ═══════ */
+.dock-mood{
+    width:6px;height:6px;border-radius:50%;
+    position:absolute;bottom:2px;right:2px;
+}
+
 /* ═══════ REDUCED MOTION ═══════ */
 @media(prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}
@@ -2928,10 +3010,358 @@ function bootPhase3() {
     checkBadges();
 }
 
+// ═══════════════════════════════════════════
+//   PHASE 3+ — ADVANCED JARVIS FEATURES
+// ═══════════════════════════════════════════
+
+// ═══════ QUICK REPLIES ═══════
+const QUICK_REPLY_SETS = {
+    default: ["Quoi de neuf ?", "Donne-moi un résumé", "Une idée folle ?", "Stratégie du jour"],
+    sly: ["Plan d'action ?", "On vole quoi ?", "Tactique secrète", "Cooper Gang !"],
+    cortex: ["Analyse ça", "Les chiffres ?", "Data du jour", "Compare"],
+    franklin: ["Citation du jour", "Sagesse", "Sénèque dirait quoi ?", "Philosophe"],
+    glitch: ["Idée folle", "Disruption !", "Et si on faisait l'inverse ?", "Random go"],
+    anvil: ["Debug ça", "Fix rapide", "Crash report", "Force brute"],
+    closer: ["Pitch moi", "Deal en cours ?", "Stratégie vente", "Closing tips"],
+};
+
+function showQuickReplies(agentKey) {
+    // Remove existing
+    document.querySelectorAll('.quick-replies').forEach(e => e.remove());
+
+    const replies = QUICK_REPLY_SETS[agentKey] || QUICK_REPLY_SETS.default;
+    const container = document.createElement('div');
+    container.className = 'quick-replies';
+    replies.forEach(r => {
+        const btn = document.createElement('button');
+        btn.className = 'quick-reply';
+        btn.textContent = r;
+        btn.onclick = () => {
+            container.remove();
+            document.getElementById('chatInput').value = r;
+            sendMessage(r);
+            document.getElementById('chatInput').value = '';
+        };
+        container.appendChild(btn);
+    });
+
+    const area = document.getElementById('chatArea');
+    area.appendChild(container);
+    area.scrollTop = area.scrollHeight;
+
+    // Auto-remove after 30s
+    setTimeout(() => container.remove(), 30000);
+}
+
+// Patch sendMessage to show quick replies after response
+const _p3SendMessage = sendMessage;
+sendMessage = async function(text) {
+    await _p3SendMessage(text);
+    // Show quick replies after a short delay
+    if (!isStreaming) {
+        setTimeout(() => showQuickReplies(currentAgent), 500);
+    }
+};
+
+// ═══════ AMBIENT SOUNDSCAPE ═══════
+let ambientOsc = null;
+let ambientGain = null;
+let ambientNoiseNode = null;
+let currentAmbient = null;
+
+const AMBIENT_PRESETS = {
+    rain: { label: '🌧️ Pluie', freq: 200, type: 'noise', vol: 0.03, filter: 800 },
+    space: { label: '🌌 Space', freq: 80, type: 'sine', vol: 0.02, lfo: 0.1 },
+    focus: { label: '🎯 Focus', freq: 432, type: 'sine', vol: 0.015, lfo: 0.05 },
+    night: { label: '🌙 Night', freq: 120, type: 'triangle', vol: 0.02, lfo: 0.08 },
+};
+
+function createNoiseNode() {
+    if (!audioCtx) return null;
+    const bufSize = 2 * audioCtx.sampleRate;
+    const noiseBuffer = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) output[i] = Math.random() * 2 - 1;
+    const node = audioCtx.createBufferSource();
+    node.buffer = noiseBuffer;
+    node.loop = true;
+    return node;
+}
+
+function startAmbient(presetKey) {
+    stopAmbient();
+    initAudio();
+    const preset = AMBIENT_PRESETS[presetKey];
+    if (!preset) return;
+
+    currentAmbient = presetKey;
+    ambientGain = audioCtx.createGain();
+    ambientGain.gain.setValueAtTime(0, audioCtx.currentTime);
+    ambientGain.gain.linearRampToValueAtTime(preset.vol * dreamGain, audioCtx.currentTime + 2);
+
+    if (preset.type === 'noise') {
+        ambientNoiseNode = createNoiseNode();
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = preset.filter || 1000;
+        ambientNoiseNode.connect(filter).connect(ambientGain).connect(audioCtx.destination);
+        ambientNoiseNode.start();
+    } else {
+        ambientOsc = audioCtx.createOscillator();
+        ambientOsc.type = preset.type;
+        ambientOsc.frequency.setValueAtTime(preset.freq, audioCtx.currentTime);
+        if (preset.lfo) {
+            const lfo = audioCtx.createOscillator();
+            const lfoGain = audioCtx.createGain();
+            lfo.frequency.value = preset.lfo;
+            lfoGain.gain.value = preset.freq * 0.02;
+            lfo.connect(lfoGain).connect(ambientOsc.frequency);
+            lfo.start();
+        }
+        ambientOsc.connect(ambientGain).connect(audioCtx.destination);
+        ambientOsc.start();
+    }
+
+    document.querySelector('.ambient-btn')?.classList.add('active');
+    localStorage.setItem('sly_ambient', presetKey);
+}
+
+function stopAmbient() {
+    if (ambientOsc) { try { ambientOsc.stop(); } catch {} ambientOsc = null; }
+    if (ambientNoiseNode) { try { ambientNoiseNode.stop(); } catch {} ambientNoiseNode = null; }
+    if (ambientGain) { ambientGain.disconnect(); ambientGain = null; }
+    currentAmbient = null;
+    document.querySelector('.ambient-btn')?.classList.remove('active');
+    localStorage.removeItem('sly_ambient');
+}
+
+function toggleAmbientMenu() {
+    let menu = document.querySelector('.ambient-menu');
+    if (!menu) {
+        menu = document.createElement('div');
+        menu.className = 'ambient-menu';
+        let html = '';
+        for (const [key, preset] of Object.entries(AMBIENT_PRESETS)) {
+            html += `<div class="ambient-option ${currentAmbient === key ? 'active' : ''}" onclick="toggleAmbient('${key}')">${preset.label}</div>`;
+        }
+        html += `<div class="ambient-option" onclick="stopAmbient();this.closest('.ambient-menu').classList.remove('visible')">❌ Off</div>`;
+        menu.innerHTML = html;
+        document.body.appendChild(menu);
+    }
+    menu.classList.toggle('visible');
+    // Update active states
+    menu.querySelectorAll('.ambient-option').forEach(opt => {
+        const key = opt.getAttribute('onclick')?.match(/'(\w+)'/)?.[1];
+        if (key) opt.classList.toggle('active', currentAmbient === key);
+    });
+}
+
+function toggleAmbient(key) {
+    if (currentAmbient === key) stopAmbient();
+    else startAmbient(key);
+    document.querySelector('.ambient-menu')?.classList.remove('visible');
+}
+
+// Add ambient button to DOM
+function addAmbientButton() {
+    const btn = document.createElement('button');
+    btn.className = 'ambient-btn';
+    btn.textContent = '🎵';
+    btn.onclick = toggleAmbientMenu;
+    document.body.appendChild(btn);
+}
+
+// ═══════ CONVERSATION BOOKMARKS ═══════
+let bookmarks = JSON.parse(localStorage.getItem('sly_bookmarks') || '[]');
+
+function toggleBookmark(bubbleEl, msgIndex) {
+    const marker = bubbleEl.querySelector('.bookmark-marker');
+    const isBookmarked = marker?.classList.contains('bookmarked');
+
+    if (isBookmarked) {
+        bookmarks = bookmarks.filter(b => b.index !== msgIndex);
+        marker?.classList.remove('bookmarked');
+        marker.textContent = '🔖';
+    } else {
+        const text = bubbleEl.querySelector('.bubble-text')?.textContent || '';
+        bookmarks.push({ index: msgIndex, text: text.slice(0, 100), date: new Date().toISOString() });
+        marker?.classList.add('bookmarked');
+        marker.textContent = '⭐';
+        haptic('light');
+    }
+    localStorage.setItem('sly_bookmarks', JSON.stringify(bookmarks));
+}
+
+// Patch addBubble to include bookmark marker
+const _p3AddBubble = addBubble;
+let msgCounter = 0;
+addBubble = function(type, agentKey, text, streaming = false) {
+    const el = _p3AddBubble(type, agentKey, text, streaming);
+    if (type === 'agent' && agentKey) {
+        const idx = msgCounter++;
+        const marker = document.createElement('div');
+        marker.className = 'bookmark-marker';
+        marker.textContent = '🔖';
+        marker.onclick = (e) => { e.stopPropagation(); toggleBookmark(el, idx); };
+        el.style.position = 'relative';
+        el.appendChild(marker);
+    }
+    return el;
+};
+
+// ═══════ PROACTIVE MORNING SUMMARY ═══════
+function checkMorningSummary() {
+    const today = new Date().toDateString();
+    const lastSummary = localStorage.getItem('sly_last_summary');
+    const h = new Date().getHours();
+
+    if (lastSummary === today || h < 6 || h > 10) return;
+    if (memory.summaries.length === 0 && memory.facts.length === 0) return;
+
+    localStorage.setItem('sly_last_summary', today);
+
+    const area = document.getElementById('chatArea');
+    const card = document.createElement('div');
+    card.className = 'summary-card';
+
+    let summaryText = '☀️ ';
+    if (streak > 0) summaryText += `Streak : ${streak} jours ! `;
+    if (memory.summaries.length > 0) {
+        const last = memory.summaries[memory.summaries.length - 1];
+        summaryText += `Hier on a discuté de : ${last.topics?.join(', ') || 'divers sujets'}. `;
+    }
+    summaryText += `XP : ${xp} (${LEVELS[level-1]?.name || 'Recrue'}). `;
+    summaryText += `${unlockedBadges.size}/${BADGES.length} badges débloqués. `;
+    summaryText += 'Prêt pour une nouvelle journée, Commandant ?';
+
+    card.innerHTML = `
+        <div class="summary-header">
+            <span class="summary-emoji">🦊</span>
+            <span class="summary-title">BRIEF MATINAL — SLY</span>
+        </div>
+        <div class="summary-text">${summaryText}</div>
+        <div class="summary-dismiss" onclick="this.closest('.summary-card').remove()">Fermer ×</div>`;
+
+    // Insert after daily challenge
+    const dailyEl = document.getElementById('dailyChallenge');
+    if (dailyEl) dailyEl.after(card);
+    else area.parentElement.insertBefore(card, area);
+}
+
+// ═══════ SWIPE GESTURES ON BUBBLES ═══════
+function initSwipeGestures() {
+    const area = document.getElementById('chatArea');
+    let startX = 0, startY = 0, swiping = false, swipeBubble = null;
+
+    area.addEventListener('touchstart', (e) => {
+        const bubble = e.target.closest('.bubble.agent');
+        if (!bubble) return;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        swiping = true;
+        swipeBubble = bubble;
+    }, { passive: true });
+
+    area.addEventListener('touchmove', (e) => {
+        if (!swiping || !swipeBubble) return;
+        const dx = e.touches[0].clientX - startX;
+        const dy = e.touches[0].clientY - startY;
+        if (Math.abs(dy) > Math.abs(dx)) { swiping = false; return; } // Vertical scroll
+        if (Math.abs(dx) > 30) {
+            swipeBubble.style.transform = `translateX(${dx * 0.3}px)`;
+            swipeBubble.style.opacity = 1 - Math.abs(dx) / 500;
+        }
+    }, { passive: true });
+
+    area.addEventListener('touchend', (e) => {
+        if (!swiping || !swipeBubble) return;
+        const dx = e.changedTouches[0].clientX - startX;
+        swipeBubble.style.transform = '';
+        swipeBubble.style.opacity = '';
+
+        if (dx > 80) {
+            // Swipe right = like/reaction
+            addReaction(swipeBubble, '🔥');
+            haptic('light');
+        } else if (dx < -80) {
+            // Swipe left = replay audio
+            const text = swipeBubble.querySelector('.bubble-text')?.textContent;
+            const name = swipeBubble.querySelector('.bubble-name')?.textContent?.toLowerCase();
+            const agentKey = AGENT_KEYS.find(k => AGENTS[k].name === name?.toUpperCase()) || currentAgent;
+            if (text) speakText(agentKey, text);
+            haptic('medium');
+        }
+
+        swiping = false;
+        swipeBubble = null;
+    }, { passive: true });
+}
+
+// ═══════ AGENT MOOD INDICATOR ═══════
+function getAgentMood(agentKey) {
+    const interactions = JSON.parse(localStorage.getItem('sly_agent_interactions') || '{}');
+    const lastUse = interactions[agentKey];
+    if (!lastUse) return 'idle';
+    const daysSince = (Date.now() - lastUse) / 86400000;
+    if (daysSince < 1) return 'active';
+    if (daysSince < 3) return 'neutral';
+    if (daysSince < 7) return 'bored';
+    return 'idle';
+}
+
+function trackAgentInteraction(agentKey) {
+    const interactions = JSON.parse(localStorage.getItem('sly_agent_interactions') || '{}');
+    interactions[agentKey] = Date.now();
+    localStorage.setItem('sly_agent_interactions', JSON.stringify(interactions));
+}
+
+// Patch renderDock to show mood dots
+const _origRenderDock = renderDock;
+renderDock = function() {
+    _origRenderDock();
+    // Add mood dots
+    const agents = document.querySelectorAll('.dock-agent');
+    DOCK_DEFAULT.forEach((key, i) => {
+        if (!agents[i]) return;
+        agents[i].style.position = 'relative';
+        const mood = getAgentMood(key);
+        const colors = { active: 'var(--green)', neutral: 'var(--orange)', bored: 'var(--text-dim)', idle: 'transparent' };
+        const dot = document.createElement('div');
+        dot.className = 'dock-mood';
+        dot.style.background = colors[mood] || 'transparent';
+        agents[i].appendChild(dot);
+    });
+};
+
+// Patch detectAgent to track interactions
+const _p3DetectAgent = detectAgent;
+detectAgent = function(text) {
+    const result = _p3DetectAgent(text);
+    trackAgentInteraction(result);
+    return result;
+};
+
+// ═══════ BOOT PHASE 3+ ═══════
+function bootPhase3Plus() {
+    addAmbientButton();
+    initSwipeGestures();
+    checkMorningSummary();
+    renderDock(); // Re-render with mood dots
+
+    // Restore ambient if was active
+    const savedAmbient = localStorage.getItem('sly_ambient');
+    if (savedAmbient) {
+        // Delay to allow AudioContext to be created by user gesture
+        document.addEventListener('touchstart', () => startAmbient(savedAmbient), { once: true });
+        document.addEventListener('click', () => startAmbient(savedAmbient), { once: true });
+    }
+}
+
 // ═══════ LAUNCH ═══════
 runSplash();
 setTimeout(bootPhase2, 200);
 setTimeout(bootPhase3, 400);
+setTimeout(bootPhase3Plus, 600);
 </script>
 </body>
 </html>
