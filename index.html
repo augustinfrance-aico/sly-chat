@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no,maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#05070A">
+<title>SLY-CHAT</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   NEURAL SOVEREIGN PALETTE — SLY-CHAT v1.0
+   ═══════════════════════════════════════════ */
+:root {
+    --bg-deep:#05070A; --bg-primary:#0B0F14; --bg-card:#121821;
+    --bg-glass:rgba(18,24,33,0.72);
+    --blue:#1F6FFF; --blue-hover:#3A8DFF; --blue-focus:#6FB1FF;
+    --violet:#7A3CFF; --violet-deep:#5B2DBF; --violet-glow:#B18CFF;
+    --cyan:#00E5FF; --green:#1EFF8E; --red:#FF3B5C; --orange:#FF9A3C;
+    --text:#E6EDF5; --text-dim:rgba(230,237,245,0.45);
+    --glass-border:rgba(31,111,255,0.15);
+    --radius:16px; --radius-sm:12px;
+    --safe-top:env(safe-area-inset-top,20px);
+    --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--bg-deep);color:var(--text);
+    height:100dvh;overflow:hidden;
+    padding-top:var(--safe-top);padding-bottom:var(--safe-bottom);
+    overscroll-behavior:none;
+}
+button{font-family:inherit;border:none;cursor:pointer;-webkit-user-select:none;user-select:none}
+input{font-family:inherit;border:none;outline:none}
+
+/* ═══════ SPLASH ═══════ */
+#splash{
+    position:fixed;inset:0;z-index:9999;
+    background:var(--bg-deep);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    transition:opacity .6s ease,visibility .6s;
+}
+#splash.hidden{opacity:0;visibility:hidden;pointer-events:none}
+#splash canvas{position:absolute;inset:0;z-index:0}
+.splash-logo{
+    z-index:1;width:120px;height:120px;
+    border-radius:50%;
+    background:radial-gradient(circle,var(--blue) 0%,var(--violet-deep) 100%);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 60px rgba(31,111,255,0.4),0 0 120px rgba(122,60,255,0.2);
+    animation:logoPulse 2s ease-in-out infinite;
+}
+.splash-logo span{font-size:56px;filter:drop-shadow(0 0 8px rgba(0,0,0,0.5))}
+@keyframes logoPulse{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(31,111,255,0.4)}50%{transform:scale(1.06);box-shadow:0 0 80px rgba(31,111,255,0.6),0 0 120px rgba(122,60,255,0.3)}}
+.splash-title{z-index:1;margin-top:24px;font-family:'Orbitron',monospace;font-size:28px;font-weight:900;letter-spacing:6px;background:linear-gradient(135deg,var(--blue),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.splash-sub{z-index:1;margin-top:8px;font-size:13px;color:var(--text-dim);letter-spacing:2px}
+.splash-bar{z-index:1;margin-top:32px;width:200px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.splash-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:2px;transition:width 1.2s cubic-bezier(0.4,0,0.2,1)}
+
+/* ═══════ APP LAYOUT ═══════ */
+#app{display:none;flex-direction:column;height:100dvh;position:relative}
+#app.visible{display:flex}
+
+/* Header */
+.header{
+    display:flex;align-items:center;padding:8px 16px;
+    background:var(--bg-glass);backdrop-filter:blur(20px) saturate(180%);
+    border-bottom:1px solid var(--glass-border);
+    min-height:56px;gap:12px;position:relative;z-index:10;
+}
+.header-title{font-family:'Orbitron',monospace;font-size:16px;font-weight:700;flex:1;background:linear-gradient(135deg,var(--blue),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-stat{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--text-dim)}
+.header-stat .val{color:var(--text)}
+.xp-bar{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:2px;transition:width .5s cubic-bezier(0.34,1.56,0.64,1)}
+.btn-icon{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,0.06);color:var(--text);display:flex;align-items:center;justify-content:center;font-size:18px;transition:background .2s}
+.btn-icon:active{background:rgba(31,111,255,0.2)}
+
+/* ═══════ CHAT AREA ═══════ */
+.chat-area{
+    flex:1;overflow-y:auto;overflow-x:hidden;
+    padding:16px 12px 8px;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+    scroll-behavior:smooth;
+}
+.chat-area::-webkit-scrollbar{display:none}
+
+/* Bubbles */
+.bubble{
+    max-width:85%;margin-bottom:12px;
+    padding:14px 16px;border-radius:var(--radius);
+    background:var(--bg-glass);backdrop-filter:blur(16px) saturate(160%);
+    border:1px solid var(--glass-border);
+    animation:bubbleIn .35s cubic-bezier(0.34,1.56,0.64,1);
+    position:relative;
+    will-change:transform,opacity;
+}
+.bubble.agent{margin-right:auto}
+.bubble.user{margin-left:auto;background:rgba(31,111,255,0.15);border-color:rgba(31,111,255,0.25)}
+@keyframes bubbleIn{from{opacity:0;transform:translateY(16px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.bubble-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bubble-emoji{font-size:20px}
+.bubble-name{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.bubble-text{font-size:15px;line-height:1.55;word-break:break-word}
+.bubble-meta{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:11px;color:var(--text-dim)}
+.bubble-replay{
+    width:28px;height:28px;border-radius:50%;
+    background:rgba(31,111,255,0.15);color:var(--blue);
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;transition:all .2s;
+}
+.bubble-replay:active{background:rgba(31,111,255,0.35);transform:scale(0.9)}
+
+/* Thinking indicator */
+.thinking{display:flex;align-items:center;gap:8px;padding:14px 16px;margin-bottom:12px;max-width:200px}
+.thinking-dots{display:flex;gap:4px}
+.thinking-dots span{width:8px;height:8px;border-radius:50%;background:var(--blue);animation:dotPulse 1.4s ease-in-out infinite}
+.thinking-dots span:nth-child(2){animation-delay:.2s}
+.thinking-dots span:nth-child(3){animation-delay:.4s}
+@keyframes dotPulse{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+
+/* Whisper */
+.whisper{
+    max-width:70%;margin:8px auto;padding:10px 16px;
+    border-radius:20px;text-align:center;
+    background:rgba(122,60,255,0.08);border:1px solid rgba(122,60,255,0.15);
+    font-size:13px;color:var(--violet-glow);font-style:italic;
+    animation:whisperIn .5s ease,whisperOut .5s ease 25s forwards;
+    pointer-events:none;
+}
+@keyframes whisperIn{from{opacity:0;transform:translateY(10px)}to{opacity:0.7;transform:translateY(0)}}
+@keyframes whisperOut{to{opacity:0;transform:translateY(-10px)}}
+
+/* XP Toast */
+.xp-toast{
+    position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+    font-family:'Orbitron',monospace;font-size:24px;font-weight:900;
+    color:var(--orange);text-shadow:0 0 20px rgba(255,154,60,0.5);
+    z-index:100;pointer-events:none;
+    animation:xpFloat 1.5s ease forwards;
+}
+@keyframes xpFloat{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-120%) scale(1.3)}}
+
+/* ═══════ AGENT DOCK ═══════ */
+.dock{
+    display:flex;align-items:center;gap:8px;
+    padding:8px 12px;overflow-x:auto;
+    background:var(--bg-glass);backdrop-filter:blur(20px);
+    border-top:1px solid var(--glass-border);
+    border-bottom:1px solid var(--glass-border);
+    -webkit-overflow-scrolling:touch;
+}
+.dock::-webkit-scrollbar{display:none}
+.dock-agent{
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    padding:6px 10px;border-radius:var(--radius-sm);
+    transition:all .2s;min-width:56px;flex-shrink:0;
+}
+.dock-agent.active{background:rgba(31,111,255,0.15)}
+.dock-agent:active{transform:scale(0.92)}
+.dock-emoji{font-size:24px}
+.dock-name{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim)}
+.dock-agent.active .dock-name{color:var(--blue)}
+.dock-more{
+    width:44px;height:44px;border-radius:50%;
+    background:rgba(255,255,255,0.06);color:var(--text-dim);
+    display:flex;align-items:center;justify-content:center;font-size:20px;
+    flex-shrink:0;
+}
+.dock-more:active{background:rgba(31,111,255,0.15)}
+
+/* ═══════ INPUT AREA ═══════ */
+.input-area{
+    padding:8px 12px;padding-bottom:calc(8px + var(--safe-bottom));
+    background:var(--bg-glass);backdrop-filter:blur(20px) saturate(180%);
+    border-top:1px solid var(--glass-border);
+}
+.ptt-btn{
+    width:100%;height:64px;border-radius:var(--radius);
+    background:linear-gradient(135deg,var(--blue),var(--violet));
+    color:white;font-size:16px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    margin-bottom:8px;
+    transition:all .2s;
+    box-shadow:0 4px 24px rgba(31,111,255,0.3);
+}
+.ptt-btn:active{transform:scale(0.97);box-shadow:0 2px 12px rgba(31,111,255,0.4)}
+.ptt-btn.recording{background:linear-gradient(135deg,var(--red),var(--orange));animation:pttPulse 1s ease-in-out infinite}
+@keyframes pttPulse{0%,100%{box-shadow:0 4px 24px rgba(255,59,92,0.3)}50%{box-shadow:0 4px 40px rgba(255,59,92,0.6)}}
+.input-row{display:flex;align-items:center;gap:8px}
+.input-field{
+    flex:1;height:48px;padding:0 16px;
+    border-radius:24px;background:rgba(255,255,255,0.06);
+    color:var(--text);font-size:15px;
+    border:1px solid transparent;
+    transition:border .2s;
+}
+.input-field:focus{border-color:var(--blue)}
+.input-field::placeholder{color:var(--text-dim)}
+.send-btn{
+    width:48px;height:48px;border-radius:50%;
+    background:var(--blue);color:white;font-size:20px;
+    display:flex;align-items:center;justify-content:center;
+    transition:all .2s;
+}
+.send-btn:active{transform:scale(0.9);background:var(--blue-hover)}
+.send-btn:disabled{opacity:.3;pointer-events:none}
+
+/* ═══════ AGENT GRID MODAL ═══════ */
+.modal-overlay{
+    position:fixed;inset:0;z-index:50;
+    background:rgba(5,7,10,0.85);backdrop-filter:blur(8px);
+    display:none;opacity:0;transition:opacity .3s;
+}
+.modal-overlay.visible{display:block;opacity:1}
+.modal{
+    position:fixed;bottom:0;left:0;right:0;z-index:51;
+    max-height:70dvh;padding:24px 16px;padding-bottom:calc(24px + var(--safe-bottom));
+    background:var(--bg-card);border-radius:20px 20px 0 0;
+    border-top:1px solid var(--glass-border);
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
+    display:none;
+    animation:modalSlide .35s cubic-bezier(0.34,1.56,0.64,1);
+}
+.modal.visible{display:block}
+@keyframes modalSlide{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-title{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--blue);letter-spacing:2px;margin-bottom:16px}
+.modal-section{margin-bottom:16px}
+.modal-section-label{font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+.modal-grid{display:flex;flex-wrap:wrap;gap:8px}
+.modal-agent{
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    width:64px;padding:10px 4px;border-radius:var(--radius-sm);
+    background:rgba(255,255,255,0.04);transition:all .2s;
+}
+.modal-agent:active{background:rgba(31,111,255,0.15);transform:scale(0.94)}
+.modal-agent-emoji{font-size:28px}
+.modal-agent-name{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);text-align:center}
+
+/* ═══════ SETTINGS MODAL ═══════ */
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+.settings-label{font-size:14px;font-weight:500}
+.toggle{
+    width:48px;height:28px;border-radius:14px;
+    background:rgba(255,255,255,0.1);position:relative;
+    transition:background .3s;
+}
+.toggle.on{background:var(--blue)}
+.toggle-knob{
+    width:22px;height:22px;border-radius:50%;background:white;
+    position:absolute;top:3px;left:3px;
+    transition:transform .3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.toggle.on .toggle-knob{transform:translateX(20px)}
+
+/* ═══════ WAVEFORM ═══════ */
+.waveform{display:flex;align-items:center;gap:2px;height:32px;padding:0 4px}
+.waveform-bar{width:3px;border-radius:2px;background:var(--blue);animation:wave 1s ease-in-out infinite}
+@keyframes wave{0%,100%{height:8px;opacity:.4}50%{height:24px;opacity:1}}
+
+/* ═══════ PARTICLES BG ═══════ */
+#particles{position:fixed;inset:0;z-index:0;pointer-events:none}
+#app{z-index:1}
+
+/* ═══════ REDUCED MOTION ═══════ */
+@media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<!-- PARTICLES BG -->
+<canvas id="particles"></canvas>
+
+<!-- SPLASH -->
+<div id="splash">
+    <canvas id="splashCanvas"></canvas>
+    <div class="splash-logo"><span>🦝</span></div>
+    <div class="splash-title">SLY</div>
+    <div class="splash-sub">COOPER BUILDING</div>
+    <div class="splash-bar"><div class="splash-bar-fill" id="splashBar"></div></div>
+</div>
+
+<!-- APP -->
+<div id="app">
+    <!-- Header -->
+    <div class="header">
+        <button class="btn-icon" id="btnMenu">☰</button>
+        <div class="header-title">SLY-CHAT</div>
+        <div class="header-stat">⭐<span class="val" id="levelDisplay">Niv.1</span></div>
+        <div class="header-stat">🔥<span class="val" id="streakDisplay">0j</span></div>
+        <button class="btn-icon" id="btnSettings">⚙</button>
+    </div>
+    <div class="xp-bar"><div class="xp-bar-fill" id="xpBar" style="width:0%"></div></div>
+
+    <!-- Chat -->
+    <div class="chat-area" id="chatArea"></div>
+
+    <!-- Agent Dock -->
+    <div class="dock" id="dock"></div>
+
+    <!-- Input -->
+    <div class="input-area">
+        <button class="ptt-btn" id="pttBtn">🎤 MAINTENIR POUR PARLER</button>
+        <div class="input-row">
+            <input class="input-field" id="chatInput" placeholder="Tape un message..." autocomplete="off">
+            <button class="send-btn" id="sendBtn" disabled>⚡</button>
+        </div>
+    </div>
+</div>
+
+<!-- AGENT GRID MODAL -->
+<div class="modal-overlay" id="modalOverlay"></div>
+<div class="modal" id="agentModal"></div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsOverlay"></div>
+<div class="modal" id="settingsModal"></div>
+
+<script>
+/* ═══════════════════════════════════════════
+   SLY-CHAT v1.0 — Phase 1 MVP
+   Cooper Building × JARVIS × Sly Cooper
+   ═══════════════════════════════════════════ */
+
+// ═══════ CONFIG ═══════
+const GROQ_API_KEY = atob('Z3NrX2NodmNWVzVEc0NBQ1VRV3Mybk9XR2R5YjNGWXp1cVdXRWpuSHNMS3ZRckdzdHZGQ3Vn');
+const GEMINI_API_KEY = atob('QUl6YVN5QjRIM1phdnRVMkJUb1d2ZjJGYTN2a0xkb1l4VHBCMmxj');
+const FISH_API_KEY = atob('ODg4ZGI5YzEwNGE2NDUzYjkwMzYyMDkxYjUwNjI0Zjc=');
+
+// ═══════ VOICES ═══════
+const VOICES = {
+    freeman:'3ad4d432023c47ee9e6c7805b973630a',
+    bradpitt:'fc9802c61ad1461fa75fd0ec26c6b764',
+    tomhanks:'42a3d5dec46c42b5846e84979292e013',
+    harrypotter:'42cbd05f78814d6f8b47d90a3cb37f0b',
+    gandalf:'0e73b5c5ff5740cd8d85571454ef28ae',
+    secretstory:'7a077671da5949589da605a31bcde05e',
+    journtf1:'92f1ae1e852840ba85c420c20ea084de',
+    sarkozy:'045017eac4724d89970cc0dd089afcd3',
+    homersimpson:'a78a204111a5453bbd972183db60b1bf',
+    pujadas:'d84060c540ce4d4ca59188b68672fbf7',
+};
+
+// ═══════ AGENTS ═══════
+const AGENTS = {
+    sly:      {name:'SLY',emoji:'🦊',voice:'bradpitt',color:'#3A8DFF',role:'Leader tactique'},
+    bentley:  {name:'BENTLEY',emoji:'🐢',voice:'journtf1',color:'#1EFF8E',role:'Architecte technique'},
+    murray:   {name:'MURRAY',emoji:'🦛',voice:'homersimpson',color:'#FF9A3C',role:'Force brute'},
+    omega:    {name:'OMEGA',emoji:'🦅',voice:'freeman',color:'#B18CFF',role:'Vision stratégique'},
+    sentinel: {name:'SENTINEL',emoji:'🎯',voice:'secretstory',color:'#FF3B5C',role:'Dispatch & routing'},
+    cortex:   {name:'CORTEX',emoji:'🧠',voice:'pujadas',color:'#00E5FF',role:'Analyse & data'},
+    franklin: {name:'FRANKLIN',emoji:'🐢',voice:'gandalf',color:'#2E7D32',role:'Philosophe & sagesse'},
+    anvil:    {name:'ANVIL',emoji:'🔨',voice:'tomhanks',color:'#FF6B35',role:'Debug & exécution'},
+    glitch:   {name:'GLITCH',emoji:'🎲',voice:'sarkozy',color:'#E040FB',role:'Disruption & idées folles'},
+    dreyfus:  {name:'DREYFUS',emoji:'⚔️',voice:'harrypotter',color:'#FFD740',role:'Discipline & qualité'},
+    volt:     {name:'VOLT',emoji:'⚡',voice:'bradpitt',color:'#1F6FFF',role:'Systèmes & pipelines'},
+    specter:  {name:'SPECTER',emoji:'👻',voice:'secretstory',color:'#7A3CFF',role:'Veille & cybersécurité'},
+    closer:   {name:'CLOSER',emoji:'💼',voice:'pujadas',color:'#FFD740',role:'Vente & closing'},
+    niche:    {name:'NICHE',emoji:'🔍',voice:'journtf1',color:'#00E5FF',role:'Opportunités marché'},
+    philomene:{name:'PHILOMÈNE',emoji:'✍️',voice:'gandalf',color:'#B18CFF',role:'Copywriting & contenu'},
+    pixel:    {name:'PIXEL',emoji:'🕹️',voice:'homersimpson',color:'#E040FB',role:'Gamification & UX'},
+    fresco:   {name:'FRESCO',emoji:'🎨',voice:'bradpitt',color:'#FF6B35',role:'Branding & visuel'},
+    hunter:   {name:'HUNTER',emoji:'🏴‍☠️',voice:'sarkozy',color:'#FF3B5C',role:'Contournement'},
+    datum:    {name:'DATUM',emoji:'📊',voice:'pujadas',color:'#00E5FF',role:'Data & KPIs'},
+    sibyl:    {name:'SIBYL',emoji:'🔮',voice:'gandalf',color:'#B18CFF',role:'Prédiction & timing'},
+};
+
+const DOCK_DEFAULT = ['sly','bentley','murray','omega','cortex','sentinel','franklin','anvil','glitch','dreyfus'];
+const AGENT_KEYS = Object.keys(AGENTS);
+
+// ═══════ STATE ═══════
+let currentAgent = 'sly';
+let conversationHistory = [];
+let xp = 0, level = 1, streak = 0;
+let autoSpeak = true;
+let isStreaming = false;
+let isRecording = false;
+let lastWhisperTime = 0;
+
+// ═══════ AUDIO ENGINE (iOS-safe) ═══════
+let audioCtx = null;
+let masterGain = null;
+const audioQueue = [];
+let isPlaying = false;
+let currentSource = null;
+
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        masterGain = audioCtx.createGain();
+        masterGain.connect(audioCtx.destination);
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+// First touch = init audio (iOS MANDATORY)
+document.addEventListener('touchstart', initAudio, { once: true });
+document.addEventListener('click', initAudio, { once: true });
+
+async function speakText(agentKey, fullText) {
+    if (!autoSpeak || !fullText.trim()) return;
+    initAudio();
+    const voiceKey = AGENTS[agentKey]?.voice || 'bradpitt';
+    const modelId = VOICES[voiceKey];
+    if (!modelId) return;
+
+    // Split into sentences (max 290 chars each)
+    const sentences = fullText.match(/[^.!?]+[.!?]+/g) || [fullText];
+    const chunks = [];
+    let current = '';
+    for (const s of sentences) {
+        if ((current + s).length > 290) {
+            if (current) chunks.push(current.trim());
+            current = s;
+        } else { current += s; }
+    }
+    if (current.trim()) chunks.push(current.trim());
+
+    // Pipeline: fetch all in parallel
+    const promises = chunks.map(chunk =>
+        fetch('https://api.fish.audio/v1/tts', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${FISH_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: chunk, reference_id: modelId, format: 'mp3', latency: 'balanced' })
+        }).then(r => r.ok ? r.arrayBuffer() : null).catch(() => null)
+    );
+
+    const buffers = await Promise.all(promises);
+    for (const buf of buffers) {
+        if (buf) audioQueue.push(buf);
+    }
+    if (!isPlaying) playNext();
+}
+
+async function playNext() {
+    if (audioQueue.length === 0) { isPlaying = false; currentSource = null; return; }
+    isPlaying = true;
+    const buf = audioQueue.shift();
+    try {
+        const audioBuf = await audioCtx.decodeAudioData(buf.slice(0)); // slice for re-use safety
+        const source = audioCtx.createBufferSource();
+        source.buffer = audioBuf;
+        const gain = audioCtx.createGain();
+        // Crossfade 50ms
+        gain.gain.setValueAtTime(0, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(1, audioCtx.currentTime + 0.05);
+        gain.gain.setValueAtTime(1, audioCtx.currentTime + audioBuf.duration - 0.05);
+        gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + audioBuf.duration);
+        source.connect(gain).connect(masterGain);
+        currentSource = source;
+        source.onended = () => playNext();
+        source.start();
+    } catch { playNext(); }
+}
+
+function stopSpeaking() {
+    audioQueue.length = 0;
+    if (currentSource) { try { currentSource.stop(); } catch {} }
+    isPlaying = false;
+    currentSource = null;
+}
+
+// ═══════ LLM CASCADE ═══════
+async function callGroq(messages, model = 'llama-3.3-70b-versatile', maxTokens = 300) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+    try {
+        const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model, messages, max_tokens: maxTokens, stream: true }),
+            signal: controller.signal
+        });
+        clearTimeout(timeout);
+        return resp;
+    } catch { clearTimeout(timeout); return null; }
+}
+
+async function callGemini(messages, maxTokens = 500) {
+    const contents = messages.filter(m => m.role !== 'system').map(m => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }]
+    }));
+    const systemInstruction = messages.find(m => m.role === 'system');
+    const body = {
+        contents,
+        generationConfig: { maxOutputTokens: maxTokens }
+    };
+    if (systemInstruction) body.systemInstruction = { parts: [{ text: systemInstruction.content }] };
+
+    const resp = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+    );
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+}
+
+function buildSystemPrompt(agentKey) {
+    const a = AGENTS[agentKey] || AGENTS.sly;
+    return `Tu es ${a.name} (${a.emoji}), agent du Cooper Building — l'écosystème de 50 agents IA d'Augus.
+Ton rôle : ${a.role}.
+RÈGLES :
+- Réponds en français, court et percutant (3-5 phrases max)
+- Tutoie Augus, ton = pote intelligent, loyal, proactif
+- Tu es comme JARVIS pour Tony Stark : tu adores ton boss
+- Humour subtil bienvenu (refs Sly Cooper, culture)
+- Propose des actions, sois proactif
+- TOUJOURS terminer par un résumé en 1 ligne si réponse longue
+- Tu parles avec la personnalité de ${a.name} : ${a.role}`;
+}
+
+function selectTier(message) {
+    const words = message.split(/\s+/).length;
+    if (words <= 5 && /^(ok|merci|oui|non|salut|bonjour|hey|top|nice|cool)/i.test(message)) return 'fast';
+    if (/analyse|résumé|bilan|compare|explique|planifie|détail|audit/i.test(message)) return 'deep';
+    return 'standard';
+}
+
+// ═══════ AGENT ROUTING ═══════
+function detectAgent(text) {
+    const t = text.toLowerCase();
+    if (/clan cooper|cooper gang|les trois|le gang/i.test(t)) return 'sly';
+    if (/code|bug|debug|crash|erreur|fix/i.test(t)) return 'anvil';
+    if (/stratégie|plan|vision|empire|futur/i.test(t)) return 'omega';
+    if (/philosophie|sagesse|sénèque|stoïc|marc aurèle/i.test(t)) return 'franklin';
+    if (/analyse|data|kpi|chiffre|stat/i.test(t)) return 'cortex';
+    if (/vente|client|deal|closing|prospect/i.test(t)) return 'closer';
+    if (/idée folle|disrupt|chaos|random|wtf/i.test(t)) return 'glitch';
+    if (/sécurité|hack|veille|risque|espion/i.test(t)) return 'specter';
+    if (/discipline|qualité|rigueur|cadence/i.test(t)) return 'dreyfus';
+    if (/architecture|technique|système|pipeline/i.test(t)) return 'bentley';
+    if (/force|action|fonce|boum|casse/i.test(t)) return 'murray';
+    if (/niche|marché|opportunité|tendance/i.test(t)) return 'niche';
+    if (/timing|prédiction|quand|moment/i.test(t)) return 'sibyl';
+    if (/copy|texte|rédaction|contenu/i.test(t)) return 'philomene';
+    if (/design|visuel|brand|logo|art/i.test(t)) return 'fresco';
+    if (/game|xp|gamif|pixel|ux/i.test(t)) return 'pixel';
+    if (/contour|bypass|hack|chemin/i.test(t)) return 'hunter';
+    return currentAgent;
+}
+
+// ═══════ PRE-SERIALIZATION ═══════
+let prebuiltAgent = 'sly';
+function onTyping(text) {
+    if (!text.trim()) return;
+    const detected = detectAgent(text);
+    if (detected !== prebuiltAgent) {
+        prebuiltAgent = detected;
+        highlightDockAgent(detected);
+    }
+}
+
+// ═══════ SEND MESSAGE ═══════
+async function sendMessage(text) {
+    if (!text.trim() || isStreaming) return;
+    isStreaming = true;
+
+    const agentKey = detectAgent(text);
+    currentAgent = agentKey;
+    highlightDockAgent(agentKey);
+
+    // User bubble
+    addBubble('user', null, text);
+    gainXP(5);
+
+    // Thinking indicator
+    const thinkingEl = addThinking(agentKey);
+
+    // Build messages
+    const sysPrompt = buildSystemPrompt(agentKey);
+    const msgs = [
+        { role: 'system', content: sysPrompt },
+        ...conversationHistory.slice(-10),
+        { role: 'user', content: text }
+    ];
+
+    // Select tier
+    const tier = selectTier(text);
+    let fullResponse = '';
+
+    try {
+        if (tier === 'fast') {
+            // Groq 8b instant
+            const resp = await callGroq(msgs, 'llama-3.1-8b-instant', 80);
+            if (resp && resp.ok) {
+                fullResponse = await streamResponse(resp, thinkingEl, agentKey);
+            } else { throw new Error('groq-fast-fail'); }
+        } else if (tier === 'standard') {
+            // Groq 70b
+            const resp = await callGroq(msgs, 'llama-3.3-70b-versatile', 300);
+            if (resp && resp.ok) {
+                fullResponse = await streamResponse(resp, thinkingEl, agentKey);
+            } else { throw new Error('groq-standard-fail'); }
+        } else {
+            // Deep → try Groq 70b first, fallback Gemini
+            const resp = await callGroq(msgs, 'llama-3.3-70b-versatile', 500);
+            if (resp && resp.ok) {
+                fullResponse = await streamResponse(resp, thinkingEl, agentKey);
+            } else { throw new Error('groq-deep-fail'); }
+        }
+    } catch {
+        // Fallback: Gemini
+        try {
+            thinkingEl?.remove();
+            const geminiText = await callGemini(msgs, 500);
+            if (geminiText) {
+                fullResponse = geminiText;
+                addBubble('agent', agentKey, geminiText);
+            } else {
+                addBubble('agent', 'sly', "Connexion instable. Réessaie dans un instant, Commandant.");
+            }
+        } catch {
+            thinkingEl?.remove();
+            addBubble('agent', 'sly', "Les serveurs font la sieste. Je reviens vite !");
+        }
+    }
+
+    // Save to history
+    if (fullResponse) {
+        conversationHistory.push({ role: 'user', content: text });
+        conversationHistory.push({ role: 'assistant', content: fullResponse });
+        if (conversationHistory.length > 30) conversationHistory = conversationHistory.slice(-20);
+    }
+
+    // TTS
+    if (fullResponse && autoSpeak) {
+        speakText(agentKey, fullResponse);
+    }
+
+    gainXP(tier === 'deep' ? 15 : 10);
+    isStreaming = false;
+    saveState();
+}
+
+async function streamResponse(resp, thinkingEl, agentKey) {
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let full = '';
+    let bubbleEl = null;
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+        for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            const data = line.slice(6);
+            if (data === '[DONE]') continue;
+            try {
+                const json = JSON.parse(data);
+                const token = json.choices?.[0]?.delta?.content;
+                if (token) {
+                    full += token;
+                    if (!bubbleEl) {
+                        thinkingEl?.remove();
+                        bubbleEl = addBubble('agent', agentKey, '', true);
+                    }
+                    updateBubbleText(bubbleEl, full);
+                }
+            } catch {}
+        }
+    }
+    return full;
+}
+
+// ═══════ UI HELPERS ═══════
+function addBubble(type, agentKey, text, streaming = false) {
+    const area = document.getElementById('chatArea');
+    const div = document.createElement('div');
+    div.className = `bubble ${type}`;
+
+    if (type === 'agent' && agentKey) {
+        const agent = AGENTS[agentKey] || AGENTS.sly;
+        div.innerHTML = `
+            <div class="bubble-header">
+                <span class="bubble-emoji">${agent.emoji}</span>
+                <span class="bubble-name" style="color:${agent.color}">${agent.name}</span>
+            </div>
+            <div class="bubble-text">${escapeHTML(text)}</div>
+            <div class="bubble-meta">
+                <button class="bubble-replay" onclick="speakText('${agentKey}',this.closest('.bubble').querySelector('.bubble-text').textContent)">▶</button>
+                <span>${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>
+            </div>`;
+    } else {
+        div.innerHTML = `<div class="bubble-text">${escapeHTML(text)}</div>
+            <div class="bubble-meta"><span>${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span></div>`;
+    }
+
+    area.appendChild(div);
+    area.scrollTop = area.scrollHeight;
+    return div;
+}
+
+function updateBubbleText(el, text) {
+    const textEl = el.querySelector('.bubble-text');
+    if (textEl) textEl.textContent = text;
+    document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
+}
+
+function addThinking(agentKey) {
+    const area = document.getElementById('chatArea');
+    const agent = AGENTS[agentKey] || AGENTS.sly;
+    const div = document.createElement('div');
+    div.className = 'bubble agent thinking';
+    div.innerHTML = `
+        <div class="bubble-header">
+            <span class="bubble-emoji">${agent.emoji}</span>
+            <span class="bubble-name" style="color:${agent.color}">${agent.name}</span>
+        </div>
+        <div class="thinking-dots"><span></span><span></span><span></span></div>`;
+    area.appendChild(div);
+    area.scrollTop = area.scrollHeight;
+    return div;
+}
+
+function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// ═══════ XP & GAMIFICATION ═══════
+const LEVELS = [
+    {name:'Recrue',xp:0},{name:'Agent',xp:100},{name:'Opérateur',xp:500},
+    {name:'Commandant',xp:2000},{name:'Directeur',xp:5000},{name:'Omega',xp:10000}
+];
+
+function gainXP(amount) {
+    xp += amount;
+    updateXPDisplay();
+    showXPToast(amount);
+    // Check level up
+    const newLevel = LEVELS.filter(l => xp >= l.xp).length;
+    if (newLevel > level) {
+        level = newLevel;
+        addBubble('agent', 'pixel', `🎮 LEVEL UP ! Tu es maintenant ${LEVELS[level-1].name} (Niv.${level}) !`);
+        gainXP(25); // Bonus level up
+    }
+    saveState();
+}
+
+function updateXPDisplay() {
+    const currentLvl = LEVELS[level - 1] || LEVELS[0];
+    const nextLvl = LEVELS[level] || { xp: currentLvl.xp + 1000 };
+    const progress = ((xp - currentLvl.xp) / (nextLvl.xp - currentLvl.xp)) * 100;
+    document.getElementById('xpBar').style.width = Math.min(100, Math.max(0, progress)) + '%';
+    document.getElementById('levelDisplay').textContent = `Niv.${level}`;
+}
+
+function showXPToast(amount) {
+    const toast = document.createElement('div');
+    toast.className = 'xp-toast';
+    toast.textContent = `+${amount} XP`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 1600);
+}
+
+// ═══════ STREAK ═══════
+function updateStreak() {
+    const today = new Date().toDateString();
+    const lastVisit = localStorage.getItem('sly_lastVisit');
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    if (lastVisit === today) return;
+    if (lastVisit === yesterday) { streak++; }
+    else if (lastVisit !== today) { streak = lastVisit ? 0 : 1; }
+    localStorage.setItem('sly_lastVisit', today);
+    document.getElementById('streakDisplay').textContent = `${streak}j`;
+    saveState();
+}
+
+// ═══════ DOCK ═══════
+function renderDock() {
+    const dock = document.getElementById('dock');
+    dock.innerHTML = '';
+    DOCK_DEFAULT.forEach(key => {
+        const a = AGENTS[key];
+        if (!a) return;
+        const el = document.createElement('button');
+        el.className = `dock-agent${key === currentAgent ? ' active' : ''}`;
+        el.innerHTML = `<span class="dock-emoji">${a.emoji}</span><span class="dock-name">${a.name}</span>`;
+        el.onclick = () => { currentAgent = key; highlightDockAgent(key); };
+        dock.appendChild(el);
+    });
+    // More button
+    const more = document.createElement('button');
+    more.className = 'dock-more';
+    more.textContent = '+';
+    more.onclick = openAgentModal;
+    dock.appendChild(more);
+}
+
+function highlightDockAgent(key) {
+    document.querySelectorAll('.dock-agent').forEach(el => el.classList.remove('active'));
+    const agents = document.querySelectorAll('.dock-agent');
+    const idx = DOCK_DEFAULT.indexOf(key);
+    if (idx >= 0 && agents[idx]) agents[idx].classList.add('active');
+}
+
+// ═══════ AGENT MODAL ═══════
+function openAgentModal() {
+    const modal = document.getElementById('agentModal');
+    const overlay = document.getElementById('modalOverlay');
+    const sections = {
+        '🦊 LEADERS': ['sly','bentley','murray'],
+        '🎯 CORE': ['omega','sentinel'],
+        '🧠 STRATÉGIE': ['cortex','glitch','sibyl','niche','nexus'],
+        '🔨 FORGE': ['anvil','volt','philomene','fresco','pixel','hunter'],
+        '⚔️ DEPLOY': ['dreyfus','closer','datum','specter'],
+        '🐢 SAGESSE': ['franklin']
+    };
+
+    let html = '<div class="modal-title">COOPER BUILDING — 50 AGENTS</div>';
+    for (const [label, keys] of Object.entries(sections)) {
+        html += `<div class="modal-section"><div class="modal-section-label">${label}</div><div class="modal-grid">`;
+        keys.forEach(key => {
+            const a = AGENTS[key];
+            if (!a) return;
+            html += `<button class="modal-agent" onclick="selectAgent('${key}')">
+                <span class="modal-agent-emoji">${a.emoji}</span>
+                <span class="modal-agent-name">${a.name}</span>
+            </button>`;
+        });
+        html += '</div></div>';
+    }
+    modal.innerHTML = html;
+    modal.classList.add('visible');
+    overlay.classList.add('visible');
+    overlay.onclick = closeAgentModal;
+}
+
+function closeAgentModal() {
+    document.getElementById('agentModal').classList.remove('visible');
+    document.getElementById('modalOverlay').classList.remove('visible');
+}
+
+function selectAgent(key) {
+    currentAgent = key;
+    highlightDockAgent(key);
+    closeAgentModal();
+    const a = AGENTS[key];
+    addBubble('agent', key, `${a.name} en ligne. Qu'est-ce qu'on fait, Commandant ?`);
+}
+
+// ═══════ SETTINGS MODAL ═══════
+function openSettings() {
+    const modal = document.getElementById('settingsModal');
+    const overlay = document.getElementById('settingsOverlay');
+    modal.innerHTML = `
+        <div class="modal-title">PARAMÈTRES</div>
+        <div class="settings-row">
+            <span class="settings-label">🔊 Auto-speak</span>
+            <button class="toggle ${autoSpeak?'on':''}" id="toggleSpeak" onclick="toggleAutoSpeak()">
+                <div class="toggle-knob"></div>
+            </button>
+        </div>
+        <div class="settings-row">
+            <span class="settings-label">🎤 Agent actif</span>
+            <span style="color:${AGENTS[currentAgent]?.color || '#fff'};font-weight:700">${AGENTS[currentAgent]?.emoji} ${AGENTS[currentAgent]?.name}</span>
+        </div>
+        <div class="settings-row">
+            <span class="settings-label">⭐ XP Total</span>
+            <span style="font-weight:700;color:var(--orange)">${xp} XP</span>
+        </div>
+        <div class="settings-row">
+            <span class="settings-label">🔥 Streak</span>
+            <span style="font-weight:700">${streak} jours</span>
+        </div>
+        <div class="settings-row" style="border:none">
+            <span class="settings-label">📡 SLY-COMMAND</span>
+            <a href="https://augustinfrance-aico.github.io/sly-command/" target="_blank" style="color:var(--blue);font-weight:600;text-decoration:none">Ouvrir →</a>
+        </div>`;
+    modal.classList.add('visible');
+    overlay.classList.add('visible');
+    overlay.onclick = closeSettings;
+}
+
+function closeSettings() {
+    document.getElementById('settingsModal').classList.remove('visible');
+    document.getElementById('settingsOverlay').classList.remove('visible');
+}
+
+function toggleAutoSpeak() {
+    autoSpeak = !autoSpeak;
+    document.getElementById('toggleSpeak')?.classList.toggle('on');
+    saveState();
+}
+
+// ═══════ AGENT WHISPERS ═══════
+const WHISPERS = [
+    { agent: 'specter', text: '👻 SPECTER scanne les réseaux...' },
+    { agent: 'niche', text: '🔍 NICHE a repéré une tendance intéressante...' },
+    { agent: 'sentinel', text: '🎯 SENTINEL surveille les opérations.' },
+    { agent: 'cortex', text: '🧠 CORTEX analyse les données du jour...' },
+    { agent: 'glitch', text: '🎲 GLITCH prépare une idée folle...' },
+    { agent: 'dreyfus', text: '⚔️ DREYFUS vérifie la qualité du code...' },
+    { agent: 'franklin', text: '🐢 FRANKLIN médite sur une citation de Sénèque...' },
+    { agent: 'sibyl', text: '🔮 SIBYL calcule les probabilités...' },
+    { agent: 'hunter', text: '🏴‍☠️ HUNTER cherche un chemin secret...' },
+    { agent: 'datum', text: '📊 DATUM compile les KPIs...' },
+    { agent: 'volt', text: '⚡ VOLT optimise les pipelines...' },
+    { agent: 'closer', text: '💼 CLOSER prépare un pitch...' },
+    { agent: 'pixel', text: '🕹️ PIXEL design une nouvelle feature...' },
+    { agent: 'fresco', text: '🎨 FRESCO travaille sur un visuel...' },
+    { agent: 'omega', text: '🦅 OMEGA observe le Building depuis la nébuleuse...' },
+];
+
+function scheduleWhisper() {
+    const delay = 120000 + Math.random() * 180000; // 2-5 min
+    setTimeout(() => {
+        if (!isStreaming && Date.now() - lastWhisperTime > 120000) {
+            const w = WHISPERS[Math.floor(Math.random() * WHISPERS.length)];
+            addWhisper(w.text);
+            lastWhisperTime = Date.now();
+        }
+        scheduleWhisper();
+    }, delay);
+}
+
+function addWhisper(text) {
+    const area = document.getElementById('chatArea');
+    const div = document.createElement('div');
+    div.className = 'whisper';
+    div.textContent = text;
+    area.appendChild(div);
+    area.scrollTop = area.scrollHeight;
+    setTimeout(() => div.remove(), 30000);
+}
+
+// ═══════ STT (Speech-to-Text) ═══════
+let recognition = null;
+function initSTT() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+    recognition = new SpeechRecognition();
+    recognition.lang = 'fr-FR';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.onresult = (e) => {
+        const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+        document.getElementById('chatInput').value = transcript;
+        updateSendBtn();
+    };
+    recognition.onend = () => {
+        isRecording = false;
+        document.getElementById('pttBtn').classList.remove('recording');
+        document.getElementById('pttBtn').textContent = '🎤 MAINTENIR POUR PARLER';
+        const text = document.getElementById('chatInput').value.trim();
+        if (text) { sendMessage(text); document.getElementById('chatInput').value = ''; updateSendBtn(); }
+    };
+}
+
+// ═══════ PARTICLES ═══════
+function initParticles() {
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    const count = window.innerWidth < 500 ? 15 : 30;
+
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+
+    for (let i = 0; i < count; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: Math.random() * 2 + 0.5,
+            vx: (Math.random() - 0.5) * 0.3,
+            vy: (Math.random() - 0.5) * 0.3,
+            color: Math.random() > 0.7 ? '#7A3CFF' : '#1F6FFF',
+            alpha: Math.random() * 0.4 + 0.1
+        });
+    }
+
+    let lastFrame = 0;
+    function animate(ts) {
+        if (ts - lastFrame < 33) { requestAnimationFrame(animate); return; } // 30fps cap
+        lastFrame = ts;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0;
+            if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = p.alpha;
+            ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+}
+
+// ═══════ SPLASH ═══════
+function runSplash() {
+    // Skip if visited < 2h ago
+    const lastVisit = localStorage.getItem('sly_splashTime');
+    if (lastVisit && Date.now() - parseInt(lastVisit) < 7200000) {
+        document.getElementById('splash').classList.add('hidden');
+        document.getElementById('app').classList.add('visible');
+        return bootApp();
+    }
+
+    // Splash particles
+    const c = document.getElementById('splashCanvas');
+    const ctx = c.getContext('2d');
+    c.width = window.innerWidth; c.height = window.innerHeight;
+    const dots = [];
+    for (let i = 0; i < 40; i++) {
+        dots.push({
+            x: Math.random() * c.width, y: Math.random() * c.height,
+            r: Math.random() * 2 + 0.5, vx: (Math.random() - 0.5) * 1.5, vy: (Math.random() - 0.5) * 1.5,
+            alpha: Math.random() * 0.5 + 0.2
+        });
+    }
+    function drawSplash() {
+        ctx.clearRect(0, 0, c.width, c.height);
+        dots.forEach(d => {
+            d.x += d.vx; d.y += d.vy;
+            if (d.x < 0 || d.x > c.width) d.vx *= -1;
+            if (d.y < 0 || d.y > c.height) d.vy *= -1;
+            ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(31,111,255,${d.alpha})`; ctx.fill();
+        });
+        if (!document.getElementById('splash').classList.contains('hidden')) requestAnimationFrame(drawSplash);
+    }
+    drawSplash();
+
+    // Progress bar
+    const bar = document.getElementById('splashBar');
+    setTimeout(() => bar.style.width = '60%', 100);
+    setTimeout(() => bar.style.width = '100%', 800);
+    setTimeout(() => {
+        document.getElementById('splash').classList.add('hidden');
+        document.getElementById('app').classList.add('visible');
+        localStorage.setItem('sly_splashTime', Date.now().toString());
+        bootApp();
+    }, 1500);
+}
+
+// ═══════ BOOT ═══════
+function bootApp() {
+    loadState();
+    renderDock();
+    updateXPDisplay();
+    updateStreak();
+    initParticles();
+    initSTT();
+    scheduleWhisper();
+
+    // Welcome message
+    const greetings = [
+        "Salut Commandant ! Le Building t'attendait.",
+        "Augus ! Content de te voir. Qu'est-ce qu'on attaque ?",
+        "Commandant sur le pont. 50 agents en ligne, zéro anomalie.",
+        "Hey boss. Le Cooper Building tourne comme une horloge.",
+        "Bienvenue. Tous les systèmes sont opérationnels.",
+    ];
+    const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+    setTimeout(() => {
+        addBubble('agent', 'sly', greeting);
+        if (autoSpeak) speakText('sly', greeting);
+    }, 300);
+}
+
+// ═══════ PERSISTENCE ═══════
+function saveState() {
+    const state = { xp, level, streak, currentAgent, autoSpeak, conversationHistory: conversationHistory.slice(-20) };
+    try { localStorage.setItem('sly_state', JSON.stringify(state)); } catch {}
+}
+
+function loadState() {
+    try {
+        const state = JSON.parse(localStorage.getItem('sly_state') || '{}');
+        xp = state.xp || 0;
+        level = state.level || 1;
+        streak = state.streak || 0;
+        currentAgent = state.currentAgent || 'sly';
+        autoSpeak = state.autoSpeak !== undefined ? state.autoSpeak : true;
+        conversationHistory = state.conversationHistory || [];
+    } catch {}
+}
+
+// ═══════ EVENT LISTENERS ═══════
+function updateSendBtn() {
+    document.getElementById('sendBtn').disabled = !document.getElementById('chatInput').value.trim();
+}
+
+document.getElementById('chatInput').addEventListener('input', (e) => {
+    updateSendBtn();
+    onTyping(e.target.value);
+});
+
+document.getElementById('chatInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        const text = e.target.value.trim();
+        if (text) { sendMessage(text); e.target.value = ''; updateSendBtn(); }
+    }
+});
+
+document.getElementById('sendBtn').addEventListener('click', () => {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (text) { sendMessage(text); input.value = ''; updateSendBtn(); }
+});
+
+// PTT Button
+const pttBtn = document.getElementById('pttBtn');
+let pttTimer = null;
+pttBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    initAudio();
+    stopSpeaking(); // Cut TTS when user speaks
+    if (recognition) {
+        isRecording = true;
+        pttBtn.classList.add('recording');
+        pttBtn.textContent = '🔴 ENREGISTREMENT...';
+        recognition.start();
+    }
+});
+pttBtn.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    if (recognition && isRecording) {
+        recognition.stop();
+    }
+});
+// Mouse fallback
+pttBtn.addEventListener('mousedown', () => {
+    initAudio();
+    stopSpeaking();
+    if (recognition) {
+        isRecording = true;
+        pttBtn.classList.add('recording');
+        pttBtn.textContent = '🔴 ENREGISTREMENT...';
+        recognition.start();
+    }
+});
+pttBtn.addEventListener('mouseup', () => { if (recognition && isRecording) recognition.stop(); });
+
+document.getElementById('btnSettings').addEventListener('click', openSettings);
+document.getElementById('btnMenu').addEventListener('click', openAgentModal);
+
+// Visibility change — resume audio
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && audioCtx?.state === 'suspended') audioCtx.resume();
+});
+
+// ═══════ SERVICE WORKER ═══════
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// ═══════ LAUNCH ═══════
+runSplash();
+</script>
+</body>
+</html>
