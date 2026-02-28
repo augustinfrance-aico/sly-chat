@@ -703,6 +703,61 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 }
 .prompt-preset:active{background:rgba(31,111,255,0.1)}
 
+/* ═══════ TEMPLATE CARDS ═══════ */
+.template-grid{display:flex;flex-wrap:wrap;gap:10px;padding:16px 12px;justify-content:center}
+.template-card{
+    width:calc(50% - 5px);padding:16px;
+    border-radius:var(--radius);
+    background:linear-gradient(135deg,rgba(31,111,255,0.06),rgba(122,60,255,0.06));
+    border:1px solid rgba(31,111,255,0.12);
+    text-align:center;transition:all .2s;cursor:pointer;
+}
+.template-card:active{transform:scale(0.96);border-color:var(--blue)}
+.template-icon{font-size:28px;margin-bottom:6px}
+.template-title{font-size:13px;font-weight:700;color:var(--text)}
+.template-desc{font-size:11px;color:var(--text-dim);margin-top:3px}
+
+/* ═══════ CONTEXT INDICATOR ═══════ */
+.context-bar{
+    display:flex;align-items:center;gap:6px;
+    padding:2px 12px;font-size:10px;color:var(--text-dim);
+}
+.context-meter{
+    flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.06);
+    overflow:hidden;
+}
+.context-meter-fill{
+    height:100%;border-radius:2px;
+    transition:width .5s ease,background .5s;
+}
+
+/* ═══════ FAVORITE PIN ═══════ */
+.dock-pin{
+    position:absolute;top:-2px;left:-2px;font-size:8px;
+    width:14px;height:14px;border-radius:50%;
+    background:var(--orange);display:flex;
+    align-items:center;justify-content:center;
+    opacity:0;transition:opacity .2s;pointer-events:none;
+}
+.dock-agent.favorite .dock-pin{opacity:1}
+
+/* ═══════ LANGUAGE INDICATOR ═══════ */
+.lang-badge{
+    font-size:9px;padding:1px 5px;border-radius:6px;
+    background:rgba(31,111,255,0.1);color:var(--blue);
+    font-weight:700;margin-left:6px;
+}
+
+/* ═══════ SCHEDULED MSG ═══════ */
+.scheduled-badge{
+    display:flex;align-items:center;gap:4px;
+    padding:4px 10px;margin:4px 12px;
+    border-radius:8px;background:rgba(255,154,60,0.08);
+    border:1px solid rgba(255,154,60,0.15);
+    font-size:12px;color:var(--orange);
+}
+.scheduled-badge .cancel{color:var(--red);background:none;font-size:11px;margin-left:auto;cursor:pointer}
+
 /* ═══════ REDUCED MOTION ═══════ */
 @media(prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}
@@ -3725,12 +3780,229 @@ function bootPhase4() {
     customSystemPrompt = localStorage.getItem('sly_custom_prompt') || '';
 }
 
+// ═══════════════════════════════════════════
+//   PHASE 5 — UX POLISH
+// ═══════════════════════════════════════════
+
+// ═══════ MULTI-LANGUAGE AUTO-DETECT ═══════
+function detectLanguage(text) {
+    const enWords = /\b(the|is|are|was|were|have|has|do|does|will|would|can|could|should|this|that|it|for|with|from|what|how|why|when|where|who|which|there|here|not|but|and|or|about|just|some|any|all|more|other)\b/gi;
+    const matches = text.match(enWords) || [];
+    const ratio = matches.length / text.split(/\s+/).length;
+    return ratio > 0.2 ? 'en' : 'fr';
+}
+
+// Patch buildSystemPrompt for language
+const _p5BuildSystemPrompt = buildSystemPrompt;
+buildSystemPrompt = function(agentKey) {
+    let prompt = _p5BuildSystemPrompt(agentKey);
+    // Language injection happens at send time
+    return prompt;
+};
+
+let detectedLang = 'fr';
+
+// ═══════ CONVERSATION TEMPLATES ═══════
+const TEMPLATES = [
+    { icon: '💡', title: 'Brainstorm', desc: 'Idées et créativité', prompt: 'Lance un brainstorm sur' },
+    { icon: '🔍', title: 'Audit', desc: 'Analyse et diagnostic', prompt: 'Fais un audit complet de' },
+    { icon: '📋', title: 'Planification', desc: 'Plan d\'action', prompt: 'Crée un plan d\'action pour' },
+    { icon: '💬', title: 'Chat libre', desc: 'Discussion ouverte', prompt: '' },
+];
+
+function showTemplates() {
+    const area = document.getElementById('chatArea');
+    const grid = document.createElement('div');
+    grid.className = 'template-grid';
+    grid.id = 'templateGrid';
+
+    TEMPLATES.forEach(t => {
+        const card = document.createElement('div');
+        card.className = 'template-card';
+        card.innerHTML = `
+            <div class="template-icon">${t.icon}</div>
+            <div class="template-title">${t.title}</div>
+            <div class="template-desc">${t.desc}</div>`;
+        card.onclick = () => {
+            grid.remove();
+            if (t.prompt) {
+                document.getElementById('chatInput').value = t.prompt + ' ';
+                document.getElementById('chatInput').focus();
+            }
+            haptic('light');
+            soundClick();
+        };
+        grid.appendChild(card);
+    });
+
+    area.appendChild(grid);
+    area.scrollTop = area.scrollHeight;
+}
+
+// ═══════ AGENT FAVORITES / PINNED ═══════
+let favoriteAgents = new Set(JSON.parse(localStorage.getItem('sly_favorites') || '[]'));
+
+function toggleFavorite(agentKey) {
+    if (favoriteAgents.has(agentKey)) favoriteAgents.delete(agentKey);
+    else favoriteAgents.add(agentKey);
+    localStorage.setItem('sly_favorites', JSON.stringify([...favoriteAgents]));
+    renderDock();
+    haptic('light');
+}
+
+// Patch renderDock to prioritize favorites
+const _p5RenderDock = renderDock;
+renderDock = function() {
+    const dock = document.getElementById('dock');
+    dock.innerHTML = '';
+
+    // Favorites first, then defaults
+    const favs = [...favoriteAgents].filter(k => AGENTS[k]);
+    const nonFavs = DOCK_DEFAULT.filter(k => !favoriteAgents.has(k));
+    const ordered = [...favs, ...nonFavs].slice(0, 10);
+
+    ordered.forEach(key => {
+        const a = AGENTS[key];
+        if (!a) return;
+        const el = document.createElement('button');
+        el.className = `dock-agent${key === currentAgent ? ' active' : ''}${favoriteAgents.has(key) ? ' favorite' : ''}`;
+        el.style.position = 'relative';
+        el.innerHTML = `
+            <div class="dock-pin">📌</div>
+            <span class="dock-emoji">${a.emoji}</span>
+            <span class="dock-name">${a.name}</span>`;
+        el.onclick = () => { currentAgent = key; highlightDockAgent(key); };
+        // Long press to toggle favorite
+        let lt;
+        el.addEventListener('touchstart', () => { lt = setTimeout(() => { toggleFavorite(key); }, 600); });
+        el.addEventListener('touchend', () => clearTimeout(lt));
+        el.addEventListener('touchmove', () => clearTimeout(lt));
+
+        // Mood dot
+        const mood = getAgentMood(key);
+        const colors = { active: 'var(--green)', neutral: 'var(--orange)', bored: 'var(--text-dim)', idle: 'transparent' };
+        const dot = document.createElement('div');
+        dot.className = 'dock-mood';
+        dot.style.background = colors[mood] || 'transparent';
+        el.appendChild(dot);
+
+        dock.appendChild(el);
+    });
+
+    // More button
+    const more = document.createElement('button');
+    more.className = 'dock-more';
+    more.textContent = '+';
+    more.onclick = openAgentModal;
+    dock.appendChild(more);
+};
+
+// ═══════ CONTEXT WINDOW INDICATOR ═══════
+function updateContextIndicator() {
+    let bar = document.getElementById('contextBar');
+    if (!bar) {
+        bar = document.createElement('div');
+        bar.className = 'context-bar';
+        bar.id = 'contextBar';
+        bar.innerHTML = `
+            <span>CTX</span>
+            <div class="context-meter"><div class="context-meter-fill" id="contextFill"></div></div>
+            <span id="contextLabel">0%</span>`;
+        const xpBar = document.querySelector('.xp-bar');
+        if (xpBar) xpBar.after(bar);
+    }
+
+    // Estimate: each message ~50 tokens, max ~4000 tokens context
+    const maxTokens = 4000;
+    const usedTokens = conversationHistory.reduce((sum, m) => sum + Math.ceil(m.content.length / 4), 0);
+    const pct = Math.min(100, Math.round((usedTokens / maxTokens) * 100));
+
+    const fill = document.getElementById('contextFill');
+    const label = document.getElementById('contextLabel');
+    if (fill) {
+        fill.style.width = pct + '%';
+        fill.style.background = pct > 80 ? 'var(--red)' : pct > 50 ? 'var(--orange)' : 'var(--blue)';
+    }
+    if (label) label.textContent = pct + '%';
+}
+
+// ═══════ MESSAGE SCHEDULING ═══════
+let scheduledMessages = [];
+
+function scheduleMessage(text, delayMinutes) {
+    const id = Date.now();
+    const sendAt = Date.now() + delayMinutes * 60000;
+    scheduledMessages.push({ id, text, sendAt });
+
+    // Show badge
+    const area = document.getElementById('chatArea');
+    const badge = document.createElement('div');
+    badge.className = 'scheduled-badge';
+    badge.id = `scheduled-${id}`;
+    badge.innerHTML = `⏰ "${text.slice(0, 40)}..." dans ${delayMinutes}min <button class="cancel" onclick="cancelScheduled(${id})">Annuler</button>`;
+    area.appendChild(badge);
+    area.scrollTop = area.scrollHeight;
+
+    setTimeout(() => {
+        const msg = scheduledMessages.find(m => m.id === id);
+        if (msg) {
+            scheduledMessages = scheduledMessages.filter(m => m.id !== id);
+            document.getElementById(`scheduled-${id}`)?.remove();
+            sendMessage(msg.text);
+        }
+    }, delayMinutes * 60000);
+
+    haptic('success');
+}
+
+function cancelScheduled(id) {
+    scheduledMessages = scheduledMessages.filter(m => m.id !== id);
+    document.getElementById(`scheduled-${id}`)?.remove();
+    haptic('light');
+}
+
+// Add schedule to commands
+COMMANDS.push({
+    icon: '⏰', label: 'Message programmé', hint: '/schedule',
+    action: function() {
+        closeCmdPalette();
+        addBubble('agent', 'sly', '⏰ Tape ton message puis ajoute "dans Xmin" à la fin.\nEx: "Rappelle-moi de checker les stats dans 5min"');
+    }
+});
+
+// Detect scheduled messages in input
+const _p5SendMessage = sendMessage;
+sendMessage = async function(text) {
+    // Auto-detect language
+    detectedLang = detectLanguage(text);
+
+    // Check for schedule pattern
+    const schedMatch = text.match(/(.+?)\s+dans\s+(\d+)\s*min/i);
+    if (schedMatch && parseInt(schedMatch[2]) > 0) {
+        scheduleMessage(schedMatch[1].trim(), parseInt(schedMatch[2]));
+        return;
+    }
+
+    await _p5SendMessage(text);
+    updateContextIndicator();
+};
+
+// ═══════ BOOT PHASE 5 ═══════
+function bootPhase5() {
+    updateContextIndicator();
+    // Show templates if first ever session (no history)
+    if (conversationHistory.length === 0 && sessions.length <= 1) {
+        setTimeout(showTemplates, 1000);
+    }
+}
+
 // ═══════ LAUNCH ═══════
 runSplash();
 setTimeout(bootPhase2, 200);
 setTimeout(bootPhase3, 400);
 setTimeout(bootPhase3Plus, 600);
 setTimeout(bootPhase4, 800);
+setTimeout(bootPhase5, 1000);
 </script>
 </body>
 </html>
