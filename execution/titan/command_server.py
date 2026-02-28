@@ -816,6 +816,78 @@ class CommandHandler(SimpleHTTPRequestHandler):
             except Exception as e:
                 self._json_response({"error": str(e)})
 
+        elif path == "/api/tts":
+            # Proxy TTS FishAudio — clé API côté serveur, jamais exposée au frontend
+            body = _read_body(self)
+            text = body.get("text", "")
+            voice_id = body.get("voice_id", "")
+            if not text or not voice_id:
+                self._json_response({"error": "text and voice_id required"}, 400)
+                self._log_request(path, _t0)
+                return
+            if len(text) > 2000:
+                self._json_response({"error": "text trop long (max 2000 chars)"}, 400)
+                self._log_request(path, _t0)
+                return
+            fish_key = os.environ.get("FISHAUDIO_API_KEY", "")
+            if not fish_key:
+                self._json_response({"error": "FISHAUDIO_API_KEY not configured"}, 503)
+                self._log_request(path, _t0)
+                return
+            try:
+                import urllib.request as urlreq
+                payload = json.dumps({"text": text, "reference_id": voice_id, "format": "mp3", "latency": "balanced"}).encode("utf-8")
+                req = urlreq.Request(
+                    "https://api.fish.audio/v1/tts",
+                    data=payload,
+                    headers={"Authorization": f"Bearer {fish_key}", "Content-Type": "application/json"},
+                    method="POST",
+                )
+                with urlreq.urlopen(req, timeout=30) as resp:
+                    audio_data = resp.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "audio/mpeg")
+                self.send_header("Content-Length", str(len(audio_data)))
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(audio_data)
+                log.info(f"TTS proxy: {len(text)} chars → {len(audio_data)} bytes audio")
+            except Exception as e:
+                log.error(f"TTS proxy error: {e}")
+                self._json_response({"error": str(e)}, 502)
+
+        elif path == "/api/groq":
+            # Proxy Groq LLM — clé API côté serveur
+            body = _read_body(self)
+            messages = body.get("messages", [])
+            model = body.get("model", "llama-3.3-70b-versatile")
+            max_tokens = min(body.get("max_tokens", 300), 2000)
+            if not messages:
+                self._json_response({"error": "messages required"}, 400)
+                self._log_request(path, _t0)
+                return
+            groq_key = os.environ.get("GROQ_API_KEY", "")
+            if not groq_key:
+                self._json_response({"error": "GROQ_API_KEY not configured"}, 503)
+                self._log_request(path, _t0)
+                return
+            try:
+                import urllib.request as urlreq
+                payload = json.dumps({"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": 0.7}).encode("utf-8")
+                req = urlreq.Request(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    data=payload,
+                    headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
+                    method="POST",
+                )
+                with urlreq.urlopen(req, timeout=30) as resp:
+                    result = json.loads(resp.read().decode("utf-8"))
+                self._json_response(result)
+                log.info(f"Groq proxy: model={model}, {len(messages)} msgs")
+            except Exception as e:
+                log.error(f"Groq proxy error: {e}")
+                self._json_response({"error": str(e)}, 502)
+
         elif path == "/api/anneal":
             body = _read_body(self)
             log.info("Self-annealing triggered from TITAN-COMMAND")

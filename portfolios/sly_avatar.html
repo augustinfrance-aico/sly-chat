@@ -486,7 +486,8 @@ let speakingTime = 0;
 // =============================
 // VOICE & SPEECH
 // =============================
-const FISH_API_KEY = '888db9c104a6453b90362091b50624f7';
+// API keys via backend proxy — never exposed in frontend
+const SLY_BACKEND = window.location.hostname === 'localhost' ? 'http://localhost:7777' : '';
 let selectedVoice = '2b09b784775945ba94a63b993eb8d924'; // DiCaprio FR default
 let currentAudio = null;
 
@@ -524,19 +525,11 @@ async function handleSpeak() {
     input.value = '';
 
     try {
-        // Call FishAudio TTS API
-        const response = await fetch('https://api.fish.audio/v1/tts', {
+        // Call TTS via backend proxy (keys stay server-side)
+        const response = await fetch(`${SLY_BACKEND}/api/tts`, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${FISH_API_KEY}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                text: text,
-                reference_id: selectedVoice,
-                format: 'mp3',
-                latency: 'balanced',
-            }),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text, voice_id: selectedVoice }),
         });
 
         if (!response.ok) {

@@ -4928,20 +4928,17 @@ async function sendChat() {
             if (!_d.response) throw new Error('no response from local');
             data = _d;
         } catch(_proxyErr) {
-            // Direct Groq API fallback (no proxy needed)
-            const groqModels = ['llama-3.3-70b-versatile','llama-3.1-8b-instant','gemma2-9b-it'];
-            const sysPrompt = system || "Tu es SLY, assistant IA du Cooper Building. Reponds en francais, direct et concis. Furtif, malin, tactique. 47 agents a ton service.";
-            for (const model of groqModels) {
-                try {
-                    const gr = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {'Content-Type':'application/json','Authorization':'Bearer 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'},
-                        body: JSON.stringify({model, messages:[{role:'system',content:sysPrompt},{role:'user',content:msg}], max_tokens:500, temperature:0.7}),
-                        signal: AbortSignal.timeout(12000),
-                    });
-                    if (gr.ok) { const gd = await gr.json(); data = {response: gd.choices?.[0]?.message?.content || 'Pas de reponse.', model}; break; }
-                } catch(_) { continue; }
-            }
+            // Groq via backend proxy (keys stay server-side)
+            const sysPrompt = system || "Tu es SLY, assistant IA du Cooper Building. Reponds en francais, direct et concis. Furtif, malin, tactique. 50 agents a ton service.";
+            try {
+                const gr = await fetch(`${API_BASE}/api/groq`, {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({model:'llama-3.3-70b-versatile', messages:[{role:'system',content:sysPrompt},{role:'user',content:msg}], max_tokens:500}),
+                    signal: AbortSignal.timeout(15000),
+                });
+                if (gr.ok) { const gd = await gr.json(); data = {response: gd.choices?.[0]?.message?.content || 'Pas de reponse.', model:'llama-3.3-70b-versatile'}; }
+            } catch(_) {}
             if (!data) data = {response: 'Serveur IA temporairement indisponible.', model: 'fallback'};
         }
         document.getElementById('chatTyping')?.remove();
@@ -5998,7 +5995,7 @@ let currentElAudio = null;
 // ============================
 // FISHAUDIO TTS — Voix clonées de doubleurs français
 // ============================
-const FISH_API_KEY = '888db9c104a6453b90362091b50624f7';
+// API key via backend proxy — never exposed in frontend
 const FISH_VOICES = {
     // === LES 10 VOIX FINALES D'AUGUS ===
     // Stars EN (publiques communautaires — haute fidélité)
@@ -6138,10 +6135,10 @@ async function speakFishAudio(text, voiceKey) {
         return true;
     }
     try {
-        const resp = await fetch('https://api.fish.audio/v1/tts', {
+        const resp = await fetch(`${API_BASE}/api/tts`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${FISH_API_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: shortText, reference_id: modelId, format: 'mp3', latency: 'balanced' }),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: shortText, voice_id: modelId }),
             signal: AbortSignal.timeout(15000),
         });
         if (resp.ok) {

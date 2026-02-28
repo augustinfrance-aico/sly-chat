@@ -1,0 +1,12 @@
+# Normalize line endings across platforms
+* text=auto eol=lf
+
+# Force binary for media files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.mp3 binary
+*.zip binary
+
+# Keep Windows line endings for batch files
+*.bat text eol=crlf

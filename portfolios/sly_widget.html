@@ -340,10 +340,9 @@
 // ════════════════════════════════════════════════════
 // CONFIG
 // ════════════════════════════════════════════════════
-const GROQ_KEY = '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';
+// API keys loaded via backend proxy — never exposed in frontend
+const SLY_BACKEND = window.location.hostname === 'localhost' ? 'http://localhost:7777' : '';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
-const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const FISH_API_KEY = '888db9c104a6453b90362091b50624f7';
 
 const FISH_VOICES = {
     freeman:     '3ad4d432023c47ee9e6c7805b973630a',
@@ -542,10 +541,10 @@ async function speakText(text, agentKey) {
         if(audioCache.has(cacheKey)) {
             blob = audioCache.get(cacheKey);
         } else {
-            const resp = await fetch('https://api.fish.audio/v1/tts', {
+            const resp = await fetch(`${SLY_BACKEND}/api/tts`, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${FISH_API_KEY}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: shortText, reference_id: modelId, format: 'mp3', latency: 'balanced' }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: shortText, voice_id: modelId }),
                 signal: AbortSignal.timeout(15000),
             });
             if(!resp.ok) throw new Error('TTS failed');
@@ -579,13 +578,13 @@ async function callGroq(userText) {
     const history = messages.filter(m => m.role==='user'||m.role==='bot').slice(-20)
         .map(m => ({ role: m.role==='bot'?'assistant':'user', content: m.content }));
 
-    const res = await fetch(GROQ_URL, {
+    const res = await fetch(`${SLY_BACKEND}/api/groq`, {
         method: 'POST',
-        headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${GROQ_KEY}` },
+        headers: { 'Content-Type':'application/json' },
         body: JSON.stringify({
             model: GROQ_MODEL,
             messages: [{ role:'system', content: SYSTEM_PROMPT }, ...history],
-            temperature: 0.7, max_tokens: 512, stream: false
+            max_tokens: 512
         })
     });
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
