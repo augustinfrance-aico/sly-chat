@@ -50,22 +50,36 @@ input{font-family:inherit;border:none;outline:none}
     background:var(--bg-deep);
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     transition:opacity .6s ease,visibility .6s;
+    overflow:hidden;
 }
 #splash.hidden{opacity:0;visibility:hidden;pointer-events:none}
 #splash canvas{position:absolute;inset:0;z-index:0}
+.splash-bg{
+    position:absolute;inset:0;z-index:0;
+    background:url('sly_splash.jpg') center/cover no-repeat;
+    filter:brightness(0.35) blur(2px);
+}
 .splash-logo{
-    z-index:1;width:120px;height:120px;
+    z-index:2;width:140px;height:140px;
     border-radius:50%;
-    background:radial-gradient(circle,var(--blue) 0%,var(--violet-deep) 100%);
+    background:rgba(11,15,20,0.5);
+    backdrop-filter:blur(12px);
     display:flex;align-items:center;justify-content:center;
     box-shadow:0 0 60px rgba(31,111,255,0.4),0 0 120px rgba(122,60,255,0.2);
     animation:logoPulse 2s ease-in-out infinite;
+    overflow:hidden;border:2px solid rgba(31,111,255,0.3);
 }
-.splash-logo span{font-size:56px;filter:drop-shadow(0 0 8px rgba(0,0,0,0.5))}
+.splash-logo img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.splash-gang{
+    z-index:2;margin-top:16px;height:80px;
+    opacity:0;animation:gangFadeIn 1s ease 0.8s forwards;
+}
+.splash-gang img{height:100%;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.6))}
+@keyframes gangFadeIn{to{opacity:1}}
 @keyframes logoPulse{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(31,111,255,0.4)}50%{transform:scale(1.06);box-shadow:0 0 80px rgba(31,111,255,0.6),0 0 120px rgba(122,60,255,0.3)}}
-.splash-title{z-index:1;margin-top:24px;font-family:'Orbitron',monospace;font-size:28px;font-weight:900;letter-spacing:6px;background:linear-gradient(135deg,var(--blue),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.splash-sub{z-index:1;margin-top:8px;font-size:13px;color:var(--text-dim);letter-spacing:2px}
-.splash-bar{z-index:1;margin-top:32px;width:200px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.splash-title{z-index:2;margin-top:20px;font-family:'Orbitron',monospace;font-size:32px;font-weight:900;letter-spacing:8px;background:linear-gradient(135deg,var(--blue),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 40px rgba(31,111,255,0.3)}
+.splash-sub{z-index:2;margin-top:6px;font-size:13px;color:var(--text-dim);letter-spacing:3px}
+.splash-bar{z-index:2;margin-top:24px;width:200px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
 .splash-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:2px;transition:width 1.2s cubic-bezier(0.4,0,0.2,1)}
 
 /* ═══════ APP LAYOUT ═══════ */
@@ -111,6 +125,7 @@ input{font-family:inherit;border:none;outline:none}
 .bubble.user{margin-left:auto;background:rgba(31,111,255,0.15);border-color:rgba(31,111,255,0.25)}
 @keyframes bubbleIn{from{opacity:0;transform:translateY(16px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
 .bubble-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bubble-avatar-img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(31,111,255,0.3);flex-shrink:0}
 .bubble-emoji{font-size:20px}
 .bubble-name{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
 .bubble-text{font-size:15px;line-height:1.55;word-break:break-word}
@@ -476,21 +491,54 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 }
 .badge-toast.visible{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ═══════ 3D AVATAR ═══════ */
-#avatarCanvas{
+/* ═══════ 3D AVATAR CANVAS (legacy) ═══════ */
+#avatarCanvas{display:none!important}
+
+/* ═══════ 2D AVATAR FLOATING ═══════ */
+#avatarFloat{
     position:fixed;bottom:120px;right:12px;
-    width:130px;height:160px;
+    width:80px;height:80px;
     z-index:50;pointer-events:none;
-    opacity:0;transition:opacity 0.6s ease;
-    border-radius:16px;
-    filter:drop-shadow(0 0 12px rgba(31,111,255,0.25));
+    opacity:0;transition:opacity 0.6s ease, filter 0.4s ease;
+    border-radius:50%;overflow:hidden;
+    border:2px solid rgba(31,111,255,0.4);
+    box-shadow:0 0 20px rgba(31,111,255,0.3),0 0 40px rgba(31,111,255,0.1);
+    animation:avatarFloat 3s ease-in-out infinite;
+    cursor:pointer;
 }
-#avatarCanvas.visible{opacity:1;pointer-events:auto}
-#avatarCanvas.talking{filter:drop-shadow(0 0 16px var(--blue)) drop-shadow(0 0 32px rgba(31,111,255,0.15))}
-#avatarCanvas.listening{filter:drop-shadow(0 0 16px var(--green)) drop-shadow(0 0 32px rgba(30,255,142,0.15))}
-.perf-low #avatarCanvas{display:none}
-@media(max-width:360px){#avatarCanvas{width:100px;height:130px;bottom:110px;right:8px}}
-@media(min-width:500px){#avatarCanvas{width:160px;height:200px}}
+#avatarFloat.visible{opacity:1;pointer-events:auto}
+#avatarFloat img{width:100%;height:100%;object-fit:cover;transition:transform 0.3s ease}
+#avatarFloat:hover img,#avatarFloat:active img{transform:scale(1.1)}
+#avatarFloat.talking{
+    border-color:var(--blue);
+    box-shadow:0 0 24px rgba(31,111,255,0.5),0 0 48px rgba(31,111,255,0.2);
+    animation:avatarFloat 3s ease-in-out infinite, avatarTalk 0.3s ease-in-out infinite;
+}
+#avatarFloat.listening{
+    border-color:var(--green);
+    box-shadow:0 0 24px rgba(30,255,142,0.5),0 0 48px rgba(30,255,142,0.2);
+}
+#avatarFloat.thinking{
+    border-color:var(--violet);
+    box-shadow:0 0 24px rgba(122,60,255,0.5),0 0 48px rgba(122,60,255,0.2);
+    animation:avatarFloat 3s ease-in-out infinite, avatarThink 2s ease-in-out infinite;
+}
+@keyframes avatarFloat{
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-6px)}
+}
+@keyframes avatarTalk{
+    0%,100%{transform:translateY(0) scale(1)}
+    50%{transform:translateY(-2px) scale(1.04)}
+}
+@keyframes avatarThink{
+    0%,100%{transform:translateY(0) rotate(0deg)}
+    25%{transform:translateY(-4px) rotate(-3deg)}
+    75%{transform:translateY(-4px) rotate(3deg)}
+}
+.perf-low #avatarFloat{display:none}
+@media(max-width:360px){#avatarFloat{width:60px;height:60px;bottom:110px;right:8px}}
+@media(min-width:500px){#avatarFloat{width:96px;height:96px}}
 
 /* ═══════ SCROLL-TO-BOTTOM BUTTON ═══════ */
 .scroll-bottom{
@@ -533,15 +581,22 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 
 <!-- SPLASH -->
 <div id="splash">
+    <div class="splash-bg"></div>
     <canvas id="splashCanvas"></canvas>
-    <div class="splash-logo"><span style="font-size:0;line-height:0"><svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="32" cy="36" rx="18" ry="20" fill="#4A4E6A"/><ellipse cx="32" cy="28" rx="15" ry="14" fill="#5A5E7A"/><rect x="17" y="25" width="30" height="7" rx="3.5" fill="#1a1a2e"/><circle cx="24" cy="28" r="4" fill="#1F6FFF"/><circle cx="40" cy="28" r="4" fill="#1F6FFF"/><circle cx="25" cy="27" r="1.5" fill="white"/><circle cx="41" cy="27" r="1.5" fill="white"/><polygon points="20,17 24,8 28,17" fill="#5A5E7A"/><polygon points="36,17 40,8 44,17" fill="#5A5E7A"/><ellipse cx="32" cy="34" rx="4" ry="2.5" fill="#3a3e5a"/><circle cx="32" cy="33" r="1.5" fill="#2a2e4a"/><path d="M48 20 Q55 12 50 6" stroke="#B8860B" stroke-width="3" stroke-linecap="round" fill="none"/><circle cx="50" cy="5" r="3" stroke="#B8860B" stroke-width="2" fill="none"/><rect x="47" y="20" width="3" height="30" rx="1.5" fill="#B8860B" transform="rotate(-10 48 20)"/></svg></span></div>
+    <div class="splash-logo"><img src="sly_bust.png" alt="Sly Cooper" loading="eager"></div>
     <div class="splash-title">SLY</div>
     <div class="splash-sub">COOPER BUILDING</div>
+    <div class="splash-gang"><img src="cooper_gang_sly3.png" alt="Cooper Gang"></div>
     <div class="splash-bar"><div class="splash-bar-fill" id="splashBar"></div></div>
 </div>
 
-<!-- 3D AVATAR CANVAS -->
+<!-- 3D AVATAR CANVAS (legacy — hidden) -->
 <canvas id="avatarCanvas"></canvas>
+
+<!-- 2D AVATAR FLOATING -->
+<div id="avatarFloat">
+    <img src="sly_bust.png" alt="Sly" id="avatarImg">
+</div>
 
 <!-- APP -->
 <div id="app">
@@ -1296,6 +1351,18 @@ async function streamResponse(resp, thinkingEl, agentKey, sendStartTime) {
 }
 
 // ═══════ UI HELPERS ═══════
+// Agent avatar image mapping — real Sly Cooper artwork
+const AGENT_AVATARS = {
+    sly: 'sly_bust.webp',
+    murray: 'cooper_gang.png',    // Murray from gang shot
+    bentley: 'cooper_gang.png',   // Bentley from gang shot
+    franklin: 'cooper_gang.png',
+};
+
+function getAgentAvatar(key) {
+    return AGENT_AVATARS[key] || 'sly_bust_small.png';
+}
+
 function addBubble(type, agentKey, text, streaming = false) {
     const area = document.getElementById('chatArea');
     const div = document.createElement('div');
@@ -1303,9 +1370,11 @@ function addBubble(type, agentKey, text, streaming = false) {
 
     if (type === 'agent' && agentKey) {
         const agent = AGENTS[agentKey] || AGENTS.sly;
+        const avatarSrc = getAgentAvatar(agentKey);
         div.innerHTML = `
             <div class="bubble-header">
-                <span class="bubble-emoji">${agent.emoji}</span>
+                <img class="bubble-avatar-img" src="${avatarSrc}" alt="${agent.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+                <span class="bubble-emoji" style="display:none">${agent.emoji}</span>
                 <span class="bubble-name" style="color:${agent.color}">${agent.name}</span>
             </div>
             <div class="bubble-text">${escapeHTML(text)}</div>
@@ -4062,9 +4131,62 @@ const SlyAvatar = (() => {
         setTimeout(() => init(), 1500);
     }
 
-    // Expose to global scope
-    window.SlyAvatar = { init, dispose, setState, lazyBoot, switchModel };
-    lazyBoot();
+    // Expose 3D to global scope (legacy — hidden by CSS)
+    window.SlyAvatar3D = { init, dispose, setState, lazyBoot, switchModel };
+})();
+
+// ═══════ 2D AVATAR SYSTEM (replaces 3D) ═══════
+(() => {
+    const avatarEl = document.getElementById('avatarFloat');
+    const avatarImg = document.getElementById('avatarImg');
+    if (!avatarEl) return;
+
+    const AVATAR_IMAGES = {
+        sly: 'sly_bust.png',
+        murray: 'sly_sly2.png',     // Will use Sly image for now (Murray bust TBD)
+        bentley: 'sly_sly2.png',    // Same
+        franklin: 'sly_sly2.png',
+    };
+
+    let currentState = 'idle';
+    let currentAgent = 'sly';
+
+    function setState(newState) {
+        if (newState === currentState) return;
+        currentState = newState;
+        avatarEl.classList.remove('talking', 'listening', 'thinking');
+        if (newState === 'talk') avatarEl.classList.add('talking');
+        else if (newState === 'listen') avatarEl.classList.add('listening');
+        else if (newState === 'think') avatarEl.classList.add('thinking');
+    }
+
+    function switchModel(agentKey) {
+        let char = 'sly';
+        if (agentKey === 'murray') char = 'murray';
+        else if (agentKey === 'bentley' || agentKey === 'franklin') char = 'bentley';
+        if (char === currentAgent) return;
+        currentAgent = char;
+        const newSrc = AVATAR_IMAGES[char] || 'sly_bust.png';
+        avatarImg.style.transform = 'scale(0.8)';
+        avatarImg.style.opacity = '0.5';
+        setTimeout(() => {
+            avatarImg.src = newSrc;
+            avatarImg.style.transform = '';
+            avatarImg.style.opacity = '';
+        }, 200);
+    }
+
+    function init() {
+        setTimeout(() => avatarEl.classList.add('visible'), 800);
+    }
+
+    function dispose() {
+        avatarEl.classList.remove('visible');
+    }
+
+    // Expose — OVERRIDES the 3D avatar
+    window.SlyAvatar = { init, dispose, setState, lazyBoot: init, switchModel };
+    init();
 })();
 </script>
 </body>
