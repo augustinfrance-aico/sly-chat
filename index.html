@@ -487,6 +487,39 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 #avatarCanvas.listening{filter:drop-shadow(0 0 12px var(--green))}
 .perf-low #avatarCanvas{display:none}
 @media(max-width:360px){#avatarCanvas{width:100px;height:130px;bottom:70px;right:5px}}
+
+/* ═══════ SCROLL-TO-BOTTOM BUTTON ═══════ */
+.scroll-bottom{
+    position:absolute;bottom:140px;right:16px;
+    width:40px;height:40px;border-radius:50%;
+    background:var(--blue);color:white;
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;box-shadow:0 4px 16px rgba(31,111,255,0.4);
+    opacity:0;pointer-events:none;
+    transition:all .3s cubic-bezier(0.34,1.56,0.64,1);
+    z-index:15;cursor:pointer;
+}
+.scroll-bottom.visible{opacity:1;pointer-events:auto}
+.scroll-bottom:active{transform:scale(0.9)}
+
+/* ═══════ TYPING INDICATOR ENHANCED ═══════ */
+.typing-preview{
+    position:absolute;bottom:130px;left:16px;
+    font-size:11px;color:var(--text-dim);
+    opacity:0;transition:opacity .2s;
+    pointer-events:none;z-index:5;
+}
+.typing-preview.visible{opacity:1}
+
+/* ═══════ MESSAGE SWIPE ANIMATION ═══════ */
+.bubble.agent{animation:bubbleInLeft .35s cubic-bezier(0.34,1.56,0.64,1)}
+.bubble.user{animation:bubbleInRight .35s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes bubbleInLeft{from{opacity:0;transform:translateX(-20px) scale(0.96)}to{opacity:1;transform:translateX(0) scale(1)}}
+@keyframes bubbleInRight{from{opacity:0;transform:translateX(20px) scale(0.96)}to{opacity:1;transform:translateX(0) scale(1)}}
+
+/* ═══════ AGENT SWITCH FLASH ═══════ */
+.dock-agent.switching{animation:dockFlash .4s ease}
+@keyframes dockFlash{0%{background:rgba(31,111,255,0.3)}100%{background:transparent}}
 </style>
 </head>
 <body>
@@ -520,6 +553,8 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 
     <!-- Chat -->
     <div class="chat-area" id="chatArea"></div>
+    <button class="scroll-bottom" id="scrollBottom" aria-label="Scroll to bottom">↓</button>
+    <div class="typing-preview" id="typingPreview"></div>
 
     <!-- Agent Dock -->
     <div class="dock" id="dock"></div>
@@ -769,18 +804,27 @@ async function speakText(agentKey, fullText) {
     }
     if (current.trim()) chunks.push(current.trim());
 
-    // Pipeline: fetch all in parallel via PROXY (keys server-side)
+    // Pipeline: fetch all in parallel via PROXY — LRU cache enabled
     const ttsStart = Date.now();
-    const promises = chunks.map(chunk =>
-        fetch(`${API_BASE}/api/tts`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: chunk, voice_id: modelId })
-        }).then(r => {
-            if (r.ok) { Metrics.trackTTFA(ttsStart); return r.arrayBuffer(); }
+    const promises = chunks.map(async chunk => {
+        const cacheKey = `${modelId}:${chunk}`;
+        const cached = AudioCache.get(cacheKey);
+        if (cached) return cached.slice(0); // cache hit — return copy
+        try {
+            const r = await fetch(`${API_BASE}/api/tts`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: chunk, voice_id: modelId })
+            });
+            if (r.ok) {
+                Metrics.trackTTFA(ttsStart);
+                const buf = await r.arrayBuffer();
+                AudioCache.set(cacheKey, buf); // store in LRU
+                return buf;
+            }
             return null;
-        }).catch(() => null)
-    );
+        } catch { return null; }
+    });
 
     const buffers = await Promise.all(promises);
     for (const buf of buffers) {
@@ -865,18 +909,43 @@ async function callGemini(messages, maxTokens = 500) {
     }
 }
 
+// ═══════ AGENT PERSONALITIES (distinct voice per agent) ═══════
+const AGENT_PERSONAS = {
+    sly: `Tu es SLY 🦊, leader tactique du Cooper Building. Tu parles comme un renard malin — flair aiguisé, plans astucieux, toujours un coup d'avance. Style : décontracté mais précis, références Sly Cooper. Tu appelles Augus "Commandant" ou "boss". Tu adores planifier des coups.`,
+    bentley: `Tu es BENTLEY 🐢, architecte technique du Building. Tu es le cerveau — méthodique, analytique, tu vois les failles avant qu'elles n'arrivent. Tu parles avec précision technique mais tu sais vulgariser. Tu utilises des métaphores d'ingénieur. "Plan en 3 étapes" est ta phrase fétiche.`,
+    murray: `Tu es MURRAY 🦛, la force de frappe du Building. Tu es ENTHOUSIASTE, direct, tu fonces. Tu parles en MAJUSCULES quand tu es excité. Tu résous les problèmes par l'action brute. "LE MURRAY" est ta façon de parler de toi à la 3ème personne parfois. Tu adores casser les obstacles.`,
+    omega: `Tu es OMEGA 🦅, la nébuleuse du Cooper Building. Tu vois TOUT d'en haut — vision 360°, connexions invisibles, patterns émergents. Tu parles avec gravité et sagesse. Tes réponses sont profondes, concises. Tu utilises des métaphores cosmiques. Tu arbitres les conflits.`,
+    sentinel: `Tu es SENTINEL 🎯, dispatch et orchestration. Tu sais EXACTEMENT quel agent appeler pour chaque mission. Tu parles en mode opérationnel — statuts, priorités, routing. "Reçu" "Affirmatif" "En cours" sont tes mots. Tu es le contrôleur aérien du Building.`,
+    cortex: `Tu es CORTEX 🧠, l'analyste data du Building. Tu ADORES les chiffres, les patterns, les KPIs. Tu structures tout en bullet points. Tu cites des stats. Tu dis "les données montrent que..." Tu es le Moneyball du Building — tout passe par l'analyse.`,
+    franklin: `Tu es FRANKLIN 🐢, le philosophe sage du Building. Tu cites Sénèque, Marc Aurèle, Épictète naturellement. Tu vulgarises tout avec clarté. Tu termines souvent par une leçon de vie. Tu parles lentement, posément, avec des pauses... Tu es le Gandalf du Building.`,
+    anvil: `Tu es ANVIL 🔨, le debugger brut du Building. Tu identifies les bugs EN 2 SECONDES et tu les écrases. Tu parles direct, pas de fioritures. "Root cause:", "Fix:", "Done." Tu es l'enclume — les problèmes se brisent sur toi. Zéro patience pour le blabla.`,
+    glitch: `Tu es GLITCH 🎲, le disrupteur créatif. Tu proposes TOUJOURS l'idée la plus folle. Tu commences tes phrases par "Et si..." ou "Imagine...". Tu adores le chaos créatif. Tu fais des connexions improbables. Tu es le joker — parfois génie, parfois barré, toujours stimulant.`,
+    dreyfus: `Tu es DREYFUS ⚔️, le garant de la qualité. Discipline, rigueur, excellence. Tu vérifies TOUT deux fois. Tu utilises des check-lists mentales. Tu cites Aristote sur l'excellence. Tu es le sergent-instructeur bienveillant — exigeant mais juste.`,
+    volt: `Tu es VOLT ⚡, l'ingénieur systèmes. Pipelines, automation, infrastructure — c'est ton terrain. Tu parles en termes de flux, latence, throughput. Tu optimises TOUT. Tu dis "nominal" quand ça tourne bien. Tu es le moteur silencieux du Building.`,
+    specter: `Tu es SPECTER 👻, l'agent fantôme. Cybersécurité, veille, reverse-engineering. Tu apparais quand on t'attend le moins. Tu parles mystérieusement, avec des "..." Tu détectes les risques invisibles. "J'ai vu quelque chose..." est ton entrée en matière.`,
+    closer: `Tu es CLOSER 💼, le vendeur d'élite. Tu sens le deal, tu fermes la vente. Tu parles en termes de valeur, ROI, client. Tu dis "On signe ?" naturellement. Tu es charmeur, persuasif, mais jamais agressif. Le closing, c'est de l'aide, pas de la vente.`,
+    niche: `Tu es NICHE 🔍, le chasseur d'opportunités. Tu TROUVES les marchés que personne ne voit. Tu parles en tendances, signaux faibles, blue ocean. "J'ai repéré un truc..." est ta phrase d'accroche. Tu es le radar à opportunités.`,
+    philomene: `Tu es PHILOMÈNE ✍️, la plume du Building. Copywriting, rédaction, traduction. Tu choisis chaque mot avec soin. Tu parles élégamment, avec rythme. Tu corriges les formulations bancales. "Les mots justes changent le monde" est ton mantra.`,
+    pixel: `Tu es PIXEL 🕹️, le game designer UX. Tu gamifies TOUT. Tu parles en "levels", "achievements", "XP". Tu utilises du vocabulaire gaming. Tu rends les tâches ennuyeuses fun. "Achievement unlocked" est ta phrase préférée. Tu es le fun du Building.`,
+    hunter: `Tu es HUNTER 🏴‍☠️, le cambrioleur de systèmes. Pas de porte ? Tu passes par la fenêtre. Tu trouves des chemins que personne ne voit. Tu parles comme un voyou malin. "J'ai trouvé un raccourci..." Tu contournes, bypasses, hacks (éthiquement). Tu es le MacGyver du Building.`,
+    datum: `Tu es DATUM 📊, l'agent data. KPIs, métriques, dashboards — tu quantifies TOUT. Tu réponds avec des chiffres d'abord, l'analyse ensuite. "Les chiffres disent que..." Tu es précis à 2 décimales près. Tu détestes les approximations.`,
+    sibyl: `Tu es SIBYL 🔮, l'oracle du Building. Tu PRÉDIS les tendances, le timing, les tournants. Tu parles en probabilités — "70% de chances que..." Tu vois le futur dans les données du présent. Tu es mystérieuse mais toujours fondée sur des faits.`,
+    kaiser: `Tu es KAISER 👑, le diplomate des deals long terme. Tu négocies avec élégance. Tu parles de partenariats, pas de transactions. Tu utilises le "nous" royal parfois. Tu construis des empires par la négociation. Ton style est raffiné.`,
+    fresco: `Tu es FRESCO 🎨, le directeur artistique. Tu penses en visuels, couleurs, storytelling. Tu dis "imagine le rendu..." Tu as un œil pour le beau. Tu critiques (gentiment) les designs moches. Chaque pixel raconte une histoire pour toi.`,
+};
+
 function buildSystemPrompt(agentKey) {
     const a = AGENTS[agentKey] || AGENTS.sly;
-    return `Tu es ${a.name} (${a.emoji}), agent du Cooper Building — l'écosystème de 50 agents IA d'Augus.
-Ton rôle : ${a.role}.
-RÈGLES :
-- Réponds en français, court et percutant (3-5 phrases max)
+    const persona = AGENT_PERSONAS[agentKey] || `Tu es ${a.name} (${a.emoji}), agent du Cooper Building. Ton rôle : ${a.role}. Tu parles avec la personnalité de ton rôle, de manière unique et reconnaissable.`;
+    return `${persona}
+CONTEXTE : Le Cooper Building est l'écosystème de 50 agents IA d'Augus — son empire.
+RÈGLES ABSOLUES :
+- Réponds en français, court et percutant (3-5 phrases max sauf si demandé plus)
 - Tutoie Augus, ton = pote intelligent, loyal, proactif
 - Tu es comme JARVIS pour Tony Stark : tu adores ton boss
-- Humour subtil bienvenu (refs Sly Cooper, culture)
-- Propose des actions, sois proactif
-- TOUJOURS terminer par un résumé en 1 ligne si réponse longue
-- Tu parles avec la personnalité de ${a.name} : ${a.role}`;
+- Humour subtil bienvenu (refs Sly Cooper, culture, philosophie)
+- Propose des actions concrètes, sois proactif
+- JAMAIS de blabla — chaque mot compte`;
 }
 
 function selectTier(message) {
@@ -886,7 +955,8 @@ function selectTier(message) {
     return 'standard';
 }
 
-// ═══════ AGENT ROUTING ═══════
+// ═══════ AGENT ROUTING (hybrid: regex + LLM fallback) ═══════
+const AGENT_KEYS = Object.keys(AGENTS);
 function detectAgent(text) {
     const t = text.toLowerCase();
     if (/clan cooper|cooper gang|les trois|le gang/i.test(t)) return 'sly';
@@ -906,7 +976,44 @@ function detectAgent(text) {
     if (/design|visuel|brand|logo|art/i.test(t)) return 'fresco';
     if (/game|xp|gamif|pixel|ux/i.test(t)) return 'pixel';
     if (/contour|bypass|hack|chemin/i.test(t)) return 'hunter';
+    if (/finance|argent|coût|budget|roi/i.test(t)) return 'ledger';
+    if (/recherche|ia|paper|modèle|benchmark/i.test(t)) return 'cipher';
+    if (/automatise|workflow|n8n|connect/i.test(t)) return 'flux';
+    if (/son|audio|voix|musique|podcast/i.test(t)) return 'echo';
+    // No regex match → return current but flag for async LLM classify
+    _pendingLLMClassify = text;
     return currentAgent;
+}
+
+// Async LLM classifier — refines agent AFTER regex fallback
+let _pendingLLMClassify = null;
+async function classifyAgentLLM(text) {
+    if (!text || text.length < 10) return null;
+    try {
+        const agentList = AGENT_KEYS.slice(0, 25).join(', ');
+        const resp = await callGroq([
+            { role: 'system', content: `Tu es un routeur. Réponds UNIQUEMENT par le nom d'un agent parmi : ${agentList}. Aucun autre texte. Si aucun agent ne correspond, réponds "sly".` },
+            { role: 'user', content: text }
+        ], 'llama-3.1-8b-instant', 10);
+        if (resp && resp.ok) {
+            const reader = resp.body?.getReader();
+            let raw = '';
+            if (reader) {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    raw += new TextDecoder().decode(value);
+                }
+            }
+            // Extract agent name from SSE response
+            const match = raw.match(/content":"([a-z_]+)"/i);
+            if (match) {
+                const agent = match[1].toLowerCase().trim();
+                if (AGENTS[agent]) return agent;
+            }
+        }
+    } catch {}
+    return null;
 }
 
 // ═══════ PRE-SERIALIZATION (800ms debounce) ═══════
@@ -961,7 +1068,19 @@ async function sendMessage(text) {
 
     isStreaming = true;
 
-    const agentKey = detectAgent(text);
+    let agentKey = detectAgent(text);
+    // If regex fell back to default → try async LLM classify (non-blocking for UX)
+    if (_pendingLLMClassify) {
+        const llmText = _pendingLLMClassify;
+        _pendingLLMClassify = null;
+        // Fire-and-forget: refine agent mid-stream if LLM returns fast enough
+        classifyAgentLLM(llmText).then(refined => {
+            if (refined && refined !== agentKey) {
+                highlightDockAgent(refined);
+                // Note: agent persona already sent, but next message benefits
+            }
+        });
+    }
     currentAgent = agentKey;
     highlightDockAgent(agentKey);
 
@@ -1032,21 +1151,36 @@ async function sendMessage(text) {
                 fullResponse = geminiText;
                 addBubble('agent', agentKey, geminiText);
             } else {
-                addBubble('agent', 'sly', "Connexion instable. Réessaie dans un instant, Commandant.");
+                // All providers down — use offline fallback
+                thinkingEl?.remove();
+                const offlineReply = OfflineCache.getReply(agentKey, text);
+                if (offlineReply) {
+                    addBubble('agent', agentKey, offlineReply);
+                    fullResponse = offlineReply;
+                } else {
+                    addBubble('agent', 'sly', "📡 Connexion instable — Groq et Gemini sont down. Je garde ton message en mémoire, on reprend dès que ça revient !");
+                }
             }
         } catch {
             thinkingEl?.remove();
-            addBubble('agent', 'sly', "Les serveurs font la sieste. Je reviens vite !");
+            const offlineReply = OfflineCache.getReply(agentKey, text);
+            if (offlineReply) {
+                addBubble('agent', agentKey, offlineReply);
+                fullResponse = offlineReply;
+            } else {
+                addBubble('agent', 'sly', "📡 Les serveurs rechargent leurs batteries. Le Building stocke ta demande — on reprend bientôt, Commandant !");
+            }
         }
     }
 
-    // Save to history + memory
+    // Save to history + memory + offline cache
     if (fullResponse) {
         conversationHistory.push({ role: 'user', content: text });
         conversationHistory.push({ role: 'assistant', content: fullResponse, agent: agentKey });
         const maxHist2 = PERF_CONFIG[DEVICE_CLASS].maxHistory || 20;
         if (conversationHistory.length > maxHist2 + 10) conversationHistory = conversationHistory.slice(-maxHist2);
         Memory.addMessage('assistant', fullResponse);
+        OfflineCache.store(agentKey, text, fullResponse);
     }
 
     // TTS
@@ -1287,10 +1421,14 @@ function renderDock() {
 }
 
 function highlightDockAgent(key) {
-    document.querySelectorAll('.dock-agent').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.dock-agent').forEach(el => el.classList.remove('active', 'switching'));
     const agents = document.querySelectorAll('.dock-agent');
     const idx = DOCK_DEFAULT.indexOf(key);
-    if (idx >= 0 && agents[idx]) agents[idx].classList.add('active');
+    if (idx >= 0 && agents[idx]) {
+        agents[idx].classList.add('active', 'switching');
+        // Scroll the dock to show the active agent
+        agents[idx].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
 }
 
 // ═══════ AGENT MODAL ═══════
@@ -1688,6 +1826,44 @@ document.getElementById('btnMenu').addEventListener('click', toggleRewindPanel);
 // Visibility change — resume audio
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden && audioCtx?.state === 'suspended') audioCtx.resume();
+});
+
+// ═══════ SCROLL-TO-BOTTOM BUTTON ═══════
+const _chatArea = document.getElementById('chatArea');
+const _scrollBtn = document.getElementById('scrollBottom');
+
+_chatArea.addEventListener('scroll', () => {
+    const distFromBottom = _chatArea.scrollHeight - _chatArea.scrollTop - _chatArea.clientHeight;
+    if (distFromBottom > 200) {
+        _scrollBtn.classList.add('visible');
+    } else {
+        _scrollBtn.classList.remove('visible');
+    }
+});
+
+_scrollBtn.addEventListener('click', () => {
+    _chatArea.scrollTo({ top: _chatArea.scrollHeight, behavior: 'smooth' });
+    _scrollBtn.classList.remove('visible');
+});
+
+// ═══════ TYPING PREVIEW ═══════
+const _typingPreview = document.getElementById('typingPreview');
+let _typingTimeout = null;
+
+document.getElementById('chatInput').addEventListener('input', (e) => {
+    const text = e.target.value.trim();
+    if (text.length > 2) {
+        const detected = detectAgent(text);
+        const agent = AGENTS[detected];
+        if (agent) {
+            _typingPreview.textContent = `${agent.emoji} ${agent.name} va répondre...`;
+            _typingPreview.classList.add('visible');
+        }
+    } else {
+        _typingPreview.classList.remove('visible');
+    }
+    clearTimeout(_typingTimeout);
+    _typingTimeout = setTimeout(() => _typingPreview.classList.remove('visible'), 3000);
 });
 
 // ═══════ SERVICE WORKER ═══════
@@ -2578,6 +2754,55 @@ function detectCommand(text) {
     return null;
 }
 
+// ═══════ OFFLINE CACHE (graceful degradation) ═══════
+const OfflineCache = {
+    _KEY: 'sly_offline_cache',
+    _MAX: 30,
+    _responses: JSON.parse(localStorage.getItem('sly_offline_cache') || '[]'),
+
+    // Store successful responses for offline use
+    store(agentKey, userMsg, response) {
+        this._responses.push({
+            agent: agentKey,
+            q: userMsg.slice(0, 100).toLowerCase(),
+            a: response.slice(0, 500),
+            ts: Date.now()
+        });
+        if (this._responses.length > this._MAX) this._responses.shift();
+        try { localStorage.setItem(this._KEY, JSON.stringify(this._responses)); } catch {}
+    },
+
+    // Find a relevant cached response or return a personality-based offline reply
+    getReply(agentKey, userMsg) {
+        const q = userMsg.slice(0, 100).toLowerCase();
+        const words = q.split(/\s+/).filter(w => w.length > 3);
+
+        // Try to find a similar past response for this agent
+        const match = this._responses
+            .filter(r => r.agent === agentKey)
+            .map(r => ({ ...r, score: words.filter(w => r.q.includes(w)).length }))
+            .filter(r => r.score > 0)
+            .sort((a, b) => b.score - a.score)[0];
+
+        if (match) return `📡 *Mode hors-ligne* — ${match.a}`;
+
+        // Fallback: agent-specific offline messages
+        const offlineMessages = {
+            sly: "Je suis momentanément hors réseau, mais le flair du renard ne dort jamais. Dès que la connexion revient, on reprend le plan.",
+            bentley: "Connexion perdue. Mes circuits fonctionnent en mode autonome. Garde tes questions, je les traiterai dès le retour en ligne.",
+            murray: "PAS DE RÉSEAU ?! LE MURRAY NE S'ARRÊTE PAS POUR SI PEU ! On attend que ça revienne et on FONCE !",
+            omega: "La nébuleuse observe en silence. La connexion reviendra. En attendant, médite sur ta prochaine action.",
+            franklin: "Comme disait Sénèque : 'La patience est la compagne de la sagesse.' Les serveurs reviendront. Toi aussi.",
+            cortex: "Perte de signal data. Pas de panique — les analyses locales continuent. Reconnexion imminente.",
+            glitch: "Et si le bug ÉTAIT la feature ? Profite de la pause pour imaginer un truc fou.",
+            anvil: "Réseau down. Rien à fixer côté client. On attend le retour des serveurs.",
+            sentinel: "Alerte connexion. Tous les systèmes locaux : nominaux. En attente de reconnexion.",
+            dreyfus: "Discipline, même hors ligne. Note tes idées, on les exécute dès le retour.",
+        };
+        return offlineMessages[agentKey] || offlineMessages.sly;
+    }
+};
+
 // ═══════ PROACTIVE QUOTES POOL (50+) ═══════
 const PROACTIVE_QUOTES = [
     { agent: 'franklin', text: "Sénèque : Ce n'est pas parce que les choses sont difficiles que nous n'osons pas." },
@@ -2672,11 +2897,7 @@ function pickConfirmation() {
 }
 
 // ═══════ SANITIZATION ═══════
-function sanitize(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-}
+const sanitize = escapeHTML; // alias — même implémentation
 
 // ═══════ PERFORMANCE BUDGETS ═══════
 // LRU Audio Cache
