@@ -1107,6 +1107,8 @@ const VOICES = {
     homersimpson:'a78a204111a5453bbd972183db60b1bf',
     pujadas:'d84060c540ce4d4ca59188b68672fbf7',
     brucewillis:'87efb8f2ec4f4b3b8ed9f3fd64a3ab4b',
+    galadriel:'a288bdc744da4ad194921adad6863175',   // Clémence — voix FR profonde noble (Galadriel-style)
+    mariealice:'6cd316460ab543b0b5048a7908852c1e',   // Marie Alice V3 — narratrice FR Desperate Housewives
 };
 
 // ═══════ AGENTS ═══════
@@ -1125,12 +1127,12 @@ const AGENTS = {
     specter:  {name:'SPECTER',emoji:'👻',voice:'secretstory',color:'#7A3CFF',role:'Veille & cybersécurité'},
     closer:   {name:'CLOSER',emoji:'💼',voice:'pujadas',color:'#FFD740',role:'Vente & closing'},
     niche:    {name:'NICHE',emoji:'🔍',voice:'journtf1',color:'#00E5FF',role:'Opportunités marché'},
-    philomene:{name:'PHILOMÈNE',emoji:'✍️',voice:'gandalf',color:'#B18CFF',role:'Copywriting & contenu'},
+    philomene:{name:'PHILOMÈNE',emoji:'✍️',voice:'mariealice',color:'#B18CFF',role:'Copywriting & contenu'},
     pixel:    {name:'PIXEL',emoji:'🕹️',voice:'homersimpson',color:'#E040FB',role:'Gamification & UX'},
     fresco:   {name:'FRESCO',emoji:'🎨',voice:'bradpitt',color:'#FF6B35',role:'Branding & visuel'},
     hunter:   {name:'HUNTER',emoji:'🏴‍☠️',voice:'sarkozy',color:'#FF3B5C',role:'Contournement'},
     datum:    {name:'DATUM',emoji:'📊',voice:'pujadas',color:'#00E5FF',role:'Data & KPIs'},
-    sibyl:    {name:'SIBYL',emoji:'🔮',voice:'gandalf',color:'#B18CFF',role:'Prédiction & timing'},
+    sibyl:    {name:'SIBYL',emoji:'🔮',voice:'galadriel',color:'#B18CFF',role:'Prédiction & timing'},
     // ═══ VENTE ═══
     kaiser:   {name:'KAISER',emoji:'👑',voice:'freeman',color:'#FFD740',role:'Deals long terme & négociation'},
     prism:    {name:'PRISM',emoji:'💠',voice:'journtf1',color:'#00E5FF',role:'Pricing & psychologie'},
@@ -2367,9 +2369,9 @@ function scheduleWhisper() {
                     if (dyn) addWhisper(`${dyn.text}`);
                     else { const w = WHISPERS[Math.floor(Math.random() * WHISPERS.length)]; addWhisper(w.text); }
                 } else if (roll < 0.7 && typeof PROACTIVE_QUOTES !== 'undefined') {
-                    // 40% — proactive quotes
+                    // 40% — proactive quotes (avec TTS si autoSpeak)
                     const q = pickQuote();
-                    if (q) { const emoji = AGENTS[q.agent]?.emoji || '🦊'; addWhisper(`${emoji} ${q.text}`); }
+                    if (q) { const emoji = AGENTS[q.agent]?.emoji || '🦊'; addWhisper(`${emoji} ${q.text}`, q.agent); }
                 } else {
                     // 30% — standard whispers
                     const w = WHISPERS[Math.floor(Math.random() * WHISPERS.length)];
@@ -2382,7 +2384,7 @@ function scheduleWhisper() {
     }, delay);
 }
 
-function addWhisper(text) {
+function addWhisper(text, agentKey = null) {
     const area = document.getElementById('chatArea');
     const div = document.createElement('div');
     div.className = 'whisper';
@@ -2390,6 +2392,19 @@ function addWhisper(text) {
     area.appendChild(div);
     area.scrollTop = area.scrollHeight;
     setTimeout(() => div.remove(), 30000);
+    // TTS sur whispers proactifs si autoSpeak — voix basse (gain réduit à 0.5)
+    if (autoSpeak && agentKey && !isPlaying && !isStreaming) {
+        const speakKey = agentKey || 'sly';
+        // Parler à voix basse — on réduit le masterGain temporairement
+        if (masterGain && audioCtx) {
+            masterGain.gain.setTargetAtTime(0.45, audioCtx.currentTime, 0.1);
+            speakText(speakKey, text.replace(/^[^a-zA-ZÀ-ÿ]+/, '').slice(0, 120)).then(() => {
+                masterGain.gain.setTargetAtTime(dreamGain || 1, audioCtx.currentTime + 3, 0.5);
+            }).catch(() => {});
+        } else {
+            speakText(speakKey, text.replace(/^[^a-zA-ZÀ-ÿ]+/, '').slice(0, 120)).catch(() => {});
+        }
+    }
 }
 
 // ═══════ STT (Speech-to-Text) ═══════
@@ -3643,10 +3658,120 @@ async function bridgeCommand(command, data = {}) {
     return null; // Backend unreachable — command was cosmetic-only
 }
 
+// ═══════ MULTI-AGENT LLM — réponses séquentielles réelles ═══════
+async function launchMultiAgent(agentKeys, userText, contextHint = '') {
+    if (isStreaming) return;
+    isStreaming = true;
+    updateSendBtn();
+    addBubble('user', null, userText);
+
+    for (const agentKey of agentKeys) {
+        const a = AGENTS[agentKey];
+        if (!a) continue;
+        const persona = AGENT_PERSONAS[agentKey] || `Tu es ${a.name} (${a.emoji}), ${a.role}. Réponds en français, 2-3 phrases max, avec ton style unique.`;
+        const sysPrompt = `${persona}\nCONTEXTE : ${contextHint}\nRÈGLE : Réponds EN TAN QUE ${a.name}, 2-3 phrases MAX, percutant, ton unique. PAS de "En tant que [agent]" — parle directement.`;
+        const msgs = [
+            { role: 'system', content: sysPrompt },
+            { role: 'user', content: userText }
+        ];
+        const thinkEl = addThinking(agentKey);
+        try {
+            const resp = await callGroq(msgs, 'llama-3.3-70b-versatile', 150);
+            if (resp && resp.ok) {
+                const full = await streamResponse(resp, thinkEl, agentKey, Date.now());
+                if (full && autoSpeak) speakText(agentKey, full);
+            } else {
+                thinkEl?.remove();
+                const gemText = await callGemini(msgs, 150);
+                if (gemText) {
+                    addBubble('agent', agentKey, gemText);
+                    if (autoSpeak) speakText(agentKey, gemText);
+                }
+            }
+        } catch { thinkEl?.remove(); }
+        // 200ms pause between agents for readability
+        await new Promise(r => setTimeout(r, 200));
+    }
+
+    isStreaming = false;
+    updateSendBtn();
+    gainXP(25);
+    saveState();
+}
+
+// ═══════ CONSEIL DE GUERRE — SLY + BENTLEY + MURRAY avec War Council UI ═══════
+async function launchWarCouncil(userText) {
+    const wc = document.getElementById('warCouncil');
+    if (wc) wc.classList.add('active');
+
+    // Reset bubbles
+    ['sly','bentley','murray'].forEach(k => {
+        const el = document.getElementById(`wcText-${k}`);
+        if (el) { el.textContent = '...'; }
+        document.getElementById(`wc-${k}`)?.classList.remove('speaking');
+    });
+
+    addBubble('user', null, userText);
+
+    const councilAgents = [
+        { key: 'sly',     hint: 'Analyse tactique, angle malin, opportunité à saisir.' },
+        { key: 'bentley', hint: 'Plan technique précis, architecture, chiffres ou étapes.' },
+        { key: 'murray',  hint: 'Action directe, motivation brute, exécution immédiate.' },
+    ];
+
+    for (const { key, hint } of councilAgents) {
+        const a = AGENTS[key];
+        const persona = AGENT_PERSONAS[key] || `Tu es ${a.name} (${a.emoji}), ${a.role}.`;
+        const msgs = [
+            { role: 'system', content: `${persona}\nRÈGLE : 2 phrases MAX. Percutant. Ton unique. Pas d'intro. PAS de "En tant que". Angle : ${hint}` },
+            { role: 'user', content: userText }
+        ];
+
+        const wc_agent = document.getElementById(`wc-${key}`);
+        const wc_text  = document.getElementById(`wcText-${key}`);
+        wc_agent?.classList.add('speaking');
+
+        try {
+            const resp = await callGroq(msgs, 'llama-3.1-8b-instant', 80);
+            if (resp && resp.ok) {
+                const reader = resp.body.getReader();
+                const dec = new TextDecoder();
+                let full = '';
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    const chunk = dec.decode(value, { stream: true });
+                    const lines = chunk.split('\n').filter(l => l.startsWith('data: ') && l !== 'data: [DONE]');
+                    for (const line of lines) {
+                        try { const tok = JSON.parse(line.slice(6))?.choices?.[0]?.delta?.content || ''; full += tok; if (wc_text) wc_text.textContent = full; } catch {}
+                    }
+                }
+                if (autoSpeak && full) speakText(key, full);
+                // Also add to main chat
+                addBubble('agent', key, full);
+            } else {
+                const gem = await callGemini(msgs, 80);
+                if (gem) { if (wc_text) wc_text.textContent = gem; addBubble('agent', key, gem); if (autoSpeak) speakText(key, gem); }
+            }
+        } catch { if (wc_text) wc_text.textContent = '(connexion instable)'; }
+
+        wc_agent?.classList.remove('speaking');
+        await new Promise(r => setTimeout(r, 150));
+    }
+
+    gainXP(30);
+    trackBadge('cooper_invoked');
+    saveState();
+}
+
+function closeWarCouncil() {
+    document.getElementById('warCouncil')?.classList.remove('active');
+}
+
 function detectCommand(text) {
     const t = text.toLowerCase().trim();
     if (/^\/help$/i.test(t)) return { command: '/help', handler: () => {
-        addBubble('agent', 'sentinel', `🎯 COMMANDES DISPONIBLES :\n/help — Cette aide\n/clear — Effacer le chat\n/stats — Tes statistiques\n/cooper — Mobilisation générale\n/agents — Liste des agents\n/voice [agent] — Changer de voix\n/dream — Toggle Dream Mode\n/bridge — Status du bridge backend\n\nOu parle normalement, je route vers le bon agent !`);
+        addBubble('agent', 'sentinel', `🎯 COMMANDES DISPONIBLES :\n/help — Cette aide\n/clear — Effacer le chat\n/stats — Statistiques complètes\n/cooper — Conseil de Guerre (SLY+BENTLEY+MURRAY)\n/agents — Grille 50 agents\n/voice [agent] — Changer de voix TTS\n/dream — Toggle Dream Mode 🌙\n/bridge — Status backend Railway\n\n🗣️ PHRASES NATURELLES :\n"Clan Cooper, [mission]" → Conseil de Guerre\n"Tout le Building" → 50 agents\n"Mon empire" / "Vision 10 ans" → ATLAS+OMEGA+CHRONOS\n"Stratégie Upwork" → MERCER+CLOSER+HUNTER\n"Audit complet" → CORTEX+DATUM+PULSE\n"Bilan du jour" → DATUM bilan express`);
     }};
     if (/^\/clear$/i.test(t)) return { command: '/clear', handler: () => {
         document.getElementById('chatArea').innerHTML = '';
@@ -3680,17 +3805,24 @@ function detectCommand(text) {
         addBubble('agent', 'sly', dreamMode ? '🌙 Dream Mode activé. Le Building dort...' : '☀️ Dream Mode désactivé. On se réveille !');
     }};
     if (/^\/cooper$/i.test(t) || /clan cooper|cooper gang|les trois|le gang/i.test(t)) return { command: '/cooper', handler: () => {
-        addBubble('agent', 'sly', `🦊 ${pickConfirmation()} Le Clan Cooper se mobilise !`);
         trackBadge('cooper_invoked');
-        bridgeCommand('cooper', { agents: ['sly','bentley','murray'], text: text });
+        launchWarCouncil(text);
     }};
     if (/tout le building|mobilisation|50 agents|tous les agents/i.test(t)) return { command: '/cooper-all', handler: () => {
         addBubble('agent', 'sentinel', `🎯 ${pickConfirmation()} 50 agents déployés !`);
-        bridgeCommand('cooper-all', { agents: 'all', text: text });
+        // Lance 3 agents séquentiellement : OMEGA vision, CORTEX plan, SLY tactique
+        launchMultiAgent(['omega','cortex','sly'], text, "Mobilisation générale 50 agents. Analyse complète et plan d'action.");
     }};
     if (/audit|analyse complète|check complet/i.test(t)) return { command: '/audit', handler: () => {
-        addBubble('agent', 'cortex', `🧠 ${pickConfirmation()} Audit lancé — CORTEX + DATUM + PULSE sur le coup.`);
-        bridgeCommand('audit', { agents: ['cortex','datum','pulse'], text: text });
+        addBubble('agent', 'cortex', `🧠 ${pickConfirmation()} Audit lancé — CORTEX + DATUM + PULSE.`);
+        launchMultiAgent(['cortex','datum','pulse'], text, "Audit complet : analyse, données, performance.");
+    }};
+    if (/upwork|freelance|mission|client|prospect/i.test(t) && /stratégie|comment|aide|besoin|approche/i.test(t)) return { command: '/upwork', handler: () => {
+        launchMultiAgent(['mercer','closer','hunter'], text, "Stratégie Upwork : trouver des missions, closer des clients, contourner la concurrence.");
+    }};
+    if (/empire|vision|futur|10 ans|dans 5 ans|big picture/i.test(t)) return { command: '/empire', handler: () => {
+        addBubble('agent', 'omega', `🦅 ${pickConfirmation()} Vision empire activée.`);
+        launchMultiAgent(['atlas','omega','chronos'], text, "Vision stratégique long terme : empire d'agents, civilisation IA, projections futures.");
     }};
     if (/bilan|résumé du jour|point/i.test(t) && t.length < 30) return { command: '/bilan', handler: () => {
         const msgs = parseInt(localStorage.getItem('sly_msgs_sent') || '0');
@@ -3702,6 +3834,20 @@ function detectCommand(text) {
         const result = await bridgeCommand('ping');
         if (result) addBubble('agent', 'volt', `⚡ Bridge actif — Backend SLY connecté sur ${API_BASE}`);
         else addBubble('agent', 'volt', `⚡ Bridge offline — Backend SLY non joignable. Mode autonome.`);
+    }};
+    if (/^\/night$|bilan.*soir|récap.*jour|résumé.*nuit/i.test(t)) return { command: '/night', handler: () => {
+        const msgs = parseInt(localStorage.getItem('sly_msgs_sent') || '0');
+        const xpToday = xp;
+        const lvl = LEVELS[level-1]?.name || 'Recrue';
+        const agents = JSON.parse(localStorage.getItem('sly_agents_seen') || '[]');
+        addBubble('agent', 'dreyfus', `⚔️ BILAN NUIT — ${new Date().toLocaleDateString('fr-FR', {weekday:'long',day:'numeric',month:'long'})} :\n💬 Messages envoyés : ${msgs}\n🎯 Agents utilisés : ${agents.length}\n⭐ XP total : ${xpToday} — Niveau ${lvl}\n🔥 Streak : ${streak} jours\n🧠 Mémoires profondes : ${Memory.deep.length}\n\n${streak > 0 ? '✅ Streak maintenu — discipline appliquée.' : '⚠️ Streak perdu — reprendre demain.'}`);
+        if (autoSpeak) speakText('dreyfus', `Bilan de cette journée, Commandant. ${msgs} messages, niveau ${lvl}, streak ${streak} jours. ${streak > 0 ? 'Discipline maintenue.' : 'Reprendre demain.'}`);
+    }};
+    if (/^\/memory$|mes mémoires|voir.*mémoire|mémoire.*profonde/i.test(t)) return { command: '/memory', handler: () => {
+        if (Memory.deep.length === 0) { addBubble('agent', 'sly', "Aucune mémoire profonde encore. Parle-moi — je mémorise automatiquement les infos importantes."); return; }
+        const recent = Memory.deep.slice(-5).reverse();
+        const list = recent.map((m, i) => `${i+1}. "${m.text?.slice(0,80)}..." (${new Date(m.ts).toLocaleDateString('fr-FR')})`).join('\n');
+        addBubble('agent', 'cortex', `🧠 TES 5 DERNIÈRES MÉMOIRES PROFONDES :\n${list}\n\nTotal : ${Memory.deep.length} mémoires. Dis "SLY répète ce que tu m'as dit sur X" pour retrouver une info.`);
     }};
     if (/^\/voice\s+(\w+)/i.test(t)) {
         const match = t.match(/^\/voice\s+(\w+)/i);
