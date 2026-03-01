@@ -695,10 +695,10 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
     position:fixed;bottom:100px;right:8px;
     width:88px;height:88px;
     border-radius:50%;
-    border:2px solid rgba(31,111,255,0.7);
-    box-shadow:0 0 18px rgba(31,111,255,0.8),0 0 36px rgba(31,111,255,0.4),inset 0 0 12px rgba(31,111,255,0.15);
-    background:url('sly_logo_nobg.png') center/80% no-repeat, radial-gradient(circle,rgba(31,111,255,0.08) 0%,transparent 70%);
-    opacity:0.55;
+    border:2px solid rgba(31,111,255,0.9);
+    box-shadow:0 0 24px rgba(31,111,255,1),0 0 48px rgba(31,111,255,0.6),0 0 72px rgba(31,111,255,0.3),inset 0 0 18px rgba(31,111,255,0.25);
+    background:url('sly_logo_nobg.png') center/80% no-repeat, radial-gradient(circle,rgba(31,111,255,0.18) 0%,transparent 70%);
+    opacity:0.85;
     pointer-events:none;z-index:0;
     animation:slyBgFloat 4s ease-in-out infinite;
 }
@@ -1708,6 +1708,7 @@ function updateBubbleText(el, text) {
 
 function addThinking(agentKey) {
     const area = document.getElementById('chatArea');
+    if (!area) { console.error('[addThinking] chatArea null'); return null; }
     const agent = AGENTS[agentKey] || AGENTS.sly;
     const div = document.createElement('div');
     div.className = 'bubble agent thinking';
@@ -2002,7 +2003,7 @@ function openSettings() {
         <div class="settings-row" style="border:none">
             <span class="settings-label">📡 SLY-COMMAND</span>
             <a href="https://augustinfrance-aico.github.io/sly-command/" target="_blank" style="color:var(--blue);font-weight:600;text-decoration:none">Ouvrir →</a>
-        </div>`;
+        </div>
         <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08)">
           <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">🔑 Clés API directes</div>
           <label style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px">
@@ -2018,7 +2019,7 @@ function openSettings() {
               oninput="localStorage.setItem('sly_fish_key',this.value);window.FISH_KEY=this.value;updateApiStatusBadge()">
           </label>
           <div id="apiStatusBadge" style="font-size:11px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.04)">⏳ Vérification...</div>
-        </div>
+        </div>`;
     modal.classList.add('visible');
     overlay.classList.add('visible');
     overlay.onclick = closeSettings;
@@ -2314,13 +2315,15 @@ function runSplash() {
 
     // Callback quand le splash autonome ferme
     window._splashDone = function() {
+        // Signal au fallback 7s qu'on a bien démarré
+        if (typeof _bootFallbackFired !== 'undefined') _bootFallbackFired = true;
         gangClosed = true;
-        setTimeout(function(){ try { loadState(); } catch(e){} }, 0);
-        setTimeout(function(){ try { renderDock(); } catch(e){} }, 20);
+        setTimeout(function(){ try { loadState(); } catch(e){ console.error('[_splashDone] loadState:', e); } }, 0);
+        setTimeout(function(){ try { renderDock(); } catch(e){ console.error('[_splashDone] renderDock:', e); } }, 20);
         setTimeout(function(){ try { updateXPDisplay(); updateStreak(); } catch(e){} }, 40);
         setTimeout(function(){ try { initParticles(); } catch(e){} }, 60);
         setTimeout(function(){ try { initSTT(); scheduleWhisper(); } catch(e){} }, 80);
-        setTimeout(function(){ try { bootPhase2(); } catch(e){} }, 120);
+        setTimeout(function(){ try { bootPhase2(); } catch(e){ console.error('[_splashDone] bootPhase2:', e); } }, 120);
         setTimeout(function(){
             try {
                 var h = new Date().getHours();
@@ -2332,9 +2335,10 @@ function runSplash() {
                 ];
                 var msg = opts[Math.floor(Math.random()*opts.length)];
                 localStorage.setItem('sly_last_session', Date.now().toString());
-                addBubble('agent','sly',msg);
+                var bubbleEl = addBubble('agent','sly',msg);
+                if (!bubbleEl) console.error('[_splashDone] addBubble returned null — chatArea missing?');
                 if (autoSpeak) try { speakText('sly',msg); } catch(e){}
-            } catch(e) {}
+            } catch(e) { console.error('[_splashDone] bienvenue failed:', e); }
         }, 400);
     };
 }
@@ -2368,19 +2372,19 @@ function bootApp() {
         } else if (streakVal >= 7) {
             brief = salut + ' Streak ' + streakVal + ' jours — le Building est en feu. 50 agents en ligne, zéro anomalie.';
         } else if (streakVal >= 3) {
-            brief = salut + ' ' + streakVal + ' jours de suite. Le Cooper Building tourne. Qu'est-ce qu'on attaque ?';
+            brief = salut + " " + streakVal + " jours de suite. Le Cooper Building tourne. Qu'est-ce qu'on attaque ?";
         } else if (h < 12) {
             const morning = [
-                salut + ' Le Building t'attendait. Groq en ligne, 50 agents prêts. Go.',
-                salut + ' SENTINEL a scanné la nuit — tout est propre. On démarre ?',
-                salut + ' Nouvelle journée, nouvelle conquête. Les agents sont chauds.',
+                salut + " Le Building t'attendait. Groq en ligne, 50 agents prêts. Go.",
+                salut + " SENTINEL a scanné la nuit — tout est propre. On démarre ?",
+                salut + " Nouvelle journée, nouvelle conquête. Les agents sont chauds.",
             ];
             brief = morning[Math.floor(Math.random() * morning.length)];
         } else {
             const casual = [
-                salut + ' Le Building tourne nickel. Qu'est-ce qu'on fait ?',
-                salut + ' Content de te voir. 50 agents en ligne. Lance-moi quelque chose.',
-                salut + ' Tous les systèmes sont opérationnels. À tes ordres, Commandant.',
+                salut + " Le Building tourne nickel. Qu'est-ce qu'on fait ?",
+                salut + " Content de te voir. 50 agents en ligne. Lance-moi quelque chose.",
+                salut + " Tous les systèmes sont opérationnels. À tes ordres, Commandant.",
             ];
             brief = casual[Math.floor(Math.random() * casual.length)];
         }
@@ -2813,7 +2817,20 @@ function renderMarkdown(text) {
 // Patch addBubble and updateBubbleText for markdown
 const _origAddBubble = addBubble;
 addBubble = function(type, agentKey, text, streaming = false) {
-    const area = document.getElementById('chatArea');
+    var area = document.getElementById('chatArea');
+    if (!area) {
+        console.error('[addBubble] chatArea not found — DOM not ready?', type, agentKey, text && text.slice(0,30));
+        // Retry in 300ms — app might still be transitioning from splash
+        setTimeout(function() {
+            var retryArea = document.getElementById('chatArea');
+            if (retryArea) {
+                addBubble(type, agentKey, text, streaming);
+            } else {
+                console.error('[addBubble] chatArea still null after retry — abort');
+            }
+        }, 300);
+        return null;
+    }
     const div = document.createElement('div');
     div.className = `bubble ${type}`;
 
@@ -2854,9 +2871,11 @@ addBubble = function(type, agentKey, text, streaming = false) {
 };
 
 updateBubbleText = function(el, text) {
+    if (!el) { console.error('[updateBubbleText] el is null'); return; }
     const textEl = el.querySelector('.bubble-text');
     if (textEl) textEl.innerHTML = renderMarkdown(text);
-    document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
+    const area = document.getElementById('chatArea');
+    if (area) area.scrollTop = area.scrollHeight;
 };
 
 // ═══════ MESSAGE REACTIONS ═══════
@@ -4158,15 +4177,15 @@ initSessions().then(() => {});
 // Si le script autonome ferme le splash avant que runSplash() l'override, on boot quand même
 if (typeof window._splashDone !== 'function') {
     window._splashDone = function() {
-        try { loadState(); } catch(e) {}
-        try { renderDock(); } catch(e) {}
-        try { bootPhase2(); } catch(e) {}
+        try { loadState(); } catch(e) { console.error('[_splashDone fallback] loadState:', e); }
+        try { renderDock(); } catch(e) { console.error('[_splashDone fallback] renderDock:', e); }
+        try { bootPhase2(); } catch(e) { console.error('[_splashDone fallback] bootPhase2:', e); }
         setTimeout(function(){
             try {
                 var h = new Date().getHours();
                 var salut = h<6?'Nuit blanche, Commandant ?':h<12?'Bonjour Commandant.':h<18?'Bon après-midi.':'Bonsoir, Commandant.';
                 addBubble('agent','sly', salut+' Le Building t\'attendait. 50 agents prêts. Go.');
-            } catch(e) { console.error('bienvenue failed:', e); }
+            } catch(e) { console.error('[_splashDone fallback] bienvenue failed:', e); }
         }, 300);
     };
 }
@@ -4179,10 +4198,42 @@ try { runSplash(); } catch(e) {
     const sp = document.getElementById('splash');
     if (sp) sp.style.setProperty('display','none','important');
     if (typeof bootApp === 'function') bootApp();
-    try { bootPhase2(); } catch(e2) {}
+    try { bootPhase2(); } catch(e2) { console.error('bootPhase2 in runSplash catch:', e2); }
 }
+
+// FALLBACK GARANTI 7s — si _splashDone pas appelé ou si le boot a échoué silencieusement
+var _bootFallbackFired = false;
+setTimeout(function() {
+    if (_bootFallbackFired) return;
+    _bootFallbackFired = true;
+    console.warn('[FALLBACK BOOT 7s] Triggered — _splashDone may not have fired correctly');
+    try {
+        var sp = document.getElementById('splash');
+        var ap = document.getElementById('app');
+        if (sp) { sp.style.setProperty('display','none','important'); sp.style.setProperty('visibility','hidden','important'); }
+        if (ap) { ap.style.setProperty('display','flex','important'); ap.style.flexDirection='column'; ap.style.height='100dvh'; ap.classList.add('visible'); }
+        var chatArea = document.getElementById('chatArea');
+        // Only trigger fallback welcome if chat is empty
+        if (chatArea && chatArea.querySelectorAll('.bubble').length === 0) {
+            console.warn('[FALLBACK BOOT 7s] Chat empty — running emergency boot');
+            try { loadState(); } catch(e) { console.error('[FALLBACK] loadState:', e); }
+            try { renderDock(); } catch(e) { console.error('[FALLBACK] renderDock:', e); }
+            try { bootPhase2(); } catch(e) { console.error('[FALLBACK] bootPhase2:', e); }
+            setTimeout(function(){
+                try {
+                    var h = new Date().getHours();
+                    var salut = h<12?'Bonjour Commandant.':h<18?'Bon après-midi.':'Bonsoir, Commandant.';
+                    addBubble('agent','sly', salut+' Le Building t\'attendait. 50 agents prêts. Go.');
+                } catch(e) { console.error('[FALLBACK] bienvenue failed:', e); }
+            }, 200);
+        } else {
+            console.log('[FALLBACK BOOT 7s] Chat has messages — no action needed');
+        }
+    } catch(e) { console.error('[FALLBACK BOOT 7s] critical error:', e); }
+}, 7000);
+
 // Phase 3 boot — storage check
-setTimeout(() => { try { checkStorageEstimate(); } catch(e) {} }, 6000);
+setTimeout(() => { try { checkStorageEstimate(); } catch(e) {} }, 8000);
 </script>
 
 <!-- ═══════ THREE.JS 3D AVATAR MODULE — disabled (GLB not deployed) ═══════ -->
