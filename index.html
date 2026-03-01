@@ -1288,17 +1288,50 @@ async function callGroq(messages, model = 'llama-3.3-70b-versatile', maxTokens =
 
 async function callGemini(messages, maxTokens = 500) {
     if (!CircuitBreaker.canAttempt('gemini')) return null;
+    const geminiKey = window.GEMINI_KEY || localStorage.getItem('sly_gemini_key') || '';
     try {
-        const resp = await fetch(`${API_BASE}/api/gemini`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages, max_tokens: maxTokens })
-        });
-        if (!resp.ok) { CircuitBreaker.recordFailure('gemini'); return null; }
-        const data = await resp.json();
-        CircuitBreaker.recordSuccess('gemini');
-        Metrics.trackFallback('groq', 'gemini');
-        return data?.choices?.[0]?.message?.content || null;
+        // Direct Gemini API si clé dispo — fonctionne 100% local sans Railway
+        if (geminiKey) {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 12000);
+            const sysMsg = messages.find(m => m.role === 'system');
+            const chatMsgs = messages.filter(m => m.role !== 'system');
+            const geminiMsgs = chatMsgs.map(m => ({
+                role: m.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: m.content }]
+            }));
+            const body = {
+                contents: geminiMsgs,
+                generationConfig: { maxOutputTokens: maxTokens },
+                systemInstruction: sysMsg ? { parts: [{ text: sysMsg.content }] } : undefined
+            };
+            const resp = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+                { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: controller.signal }
+            );
+            clearTimeout(timeout);
+            if (resp.ok) {
+                const data = await resp.json();
+                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+                if (text) { CircuitBreaker.recordSuccess('gemini'); Metrics.trackFallback('groq', 'gemini-direct'); return text; }
+            }
+            CircuitBreaker.recordFailure('gemini');
+            return null;
+        }
+        // Fallback Railway proxy si pas de clé directe
+        if (_apiMode === 'proxy') {
+            const resp = await fetch(`${API_BASE}/api/gemini`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messages, max_tokens: maxTokens })
+            });
+            if (!resp.ok) { CircuitBreaker.recordFailure('gemini'); return null; }
+            const data = await resp.json();
+            CircuitBreaker.recordSuccess('gemini');
+            Metrics.trackFallback('groq', 'gemini');
+            return data?.choices?.[0]?.message?.content || null;
+        }
+        return null;
     } catch {
         CircuitBreaker.recordFailure('gemini');
         return null;
@@ -1680,11 +1713,13 @@ async function streamResponse(resp, thinkingEl, agentKey, sendStartTime) {
                         thinkingEl?.remove();
                         bubbleEl = addBubble('agent', agentKey, '', true);
                     }
-                    updateBubbleText(bubbleEl, full);
+                    updateBubbleText(bubbleEl, full, false);
                 }
             } catch {}
         }
     }
+    // Final render with markdown
+    if (bubbleEl && full) updateBubbleText(bubbleEl, full, true);
     return full;
 }
 
@@ -1692,8 +1727,8 @@ async function streamResponse(resp, thinkingEl, agentKey, sendStartTime) {
 // Agent avatar image mapping — real Sly Cooper artwork
 const AGENT_AVATARS = {
     sly: 'sly_avatar_2d.png',
-    murray: 'sly_avatar_2d.png',
-    bentley: 'sly_avatar_2d.png',
+    murray: 'murray.png',
+    bentley: 'bentley.png',
     franklin: 'sly_avatar_2d.png',
 };
 
@@ -1731,10 +1766,16 @@ function addBubble(type, agentKey, text, streaming = false) {
     return div;
 }
 
-function updateBubbleText(el, text) {
+function updateBubbleText(el, text, finalRender = false) {
     const textEl = el.querySelector('.bubble-text');
-    if (textEl) textEl.textContent = text;
-    document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
+    if (!textEl) return;
+    if (finalRender) {
+        try { textEl.innerHTML = renderMarkdown(text); } catch(e) { textEl.textContent = text; }
+    } else {
+        textEl.textContent = text;
+    }
+    const area = document.getElementById('chatArea');
+    if (area) area.scrollTop = area.scrollHeight;
 }
 
 function addThinking(agentKey) {
