@@ -25,8 +25,10 @@
 <!-- Three.js Import Map (r183, CDN, zero build tools) -->
 <script async src="https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js" crossorigin="anonymous"></script>
 <script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.183.0/examples/jsm/"}}
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}
 </script>
+<!-- Shim pour Safari < 16.4 qui ne supporte pas importmap -->
+<script>if(!HTMLScriptElement.supports?.('importmap'))document.write('<script src="https://cdn.jsdelivr.net/npm/es-module-shims@1.10.0/dist/es-module-shims.js"><\/script>');</script>
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
@@ -1299,7 +1301,7 @@ async function callGroq(messages, model = 'llama-3.3-70b-versatile', maxTokens =
     if (!CircuitBreaker.canAttempt(providerName)) return null;
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
+    const timeout = setTimeout(() => controller.abort(), 10000);
     try {
         let _groqUrl, _groqHeaders;
         if (window.GROQ_KEY) {
@@ -1336,7 +1338,7 @@ async function callGemini(messages, maxTokens = 500) {
         // Direct Gemini API si clé dispo — fonctionne 100% local sans Railway
         if (geminiKey) {
             const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 12000);
+            const timeout = setTimeout(() => controller.abort(), 10000);
             const sysMsg = messages.find(m => m.role === 'system');
             const chatMsgs = messages.filter(m => m.role !== 'system');
             const geminiMsgs = chatMsgs.map(m => ({
@@ -1897,10 +1899,19 @@ function addThinking(agentKey) {
         <div class="bubble-header">
             <span class="bubble-emoji">${agent.emoji}</span>
             <span class="bubble-name" style="color:${agent.color}">${agent.name}</span>
+            <span class="thinking-label" style="font-size:10px;color:var(--text-dim);margin-left:4px">réfléchit...</span>
         </div>
         <div class="thinking-dots"><span></span><span></span><span></span></div>`;
     area.appendChild(div);
     area.scrollTop = area.scrollHeight;
+    // After 5s, signal slow response
+    const slowTimer = setTimeout(() => {
+        const label = div.querySelector('.thinking-label');
+        if (label && div.isConnected) label.textContent = 'concentration intense...';
+    }, 5000);
+    div._slowTimer = slowTimer;
+    const _origRemove = div.remove.bind(div);
+    div.remove = () => { clearTimeout(slowTimer); _origRemove(); };
     return div;
 }
 
