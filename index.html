@@ -80,46 +80,34 @@ input{font-family:inherit;border:none;outline:none}
     display:flex;flex-direction:column;align-items:center;
     gap:0;
 }
-/* Disque lunaire — cercle qui entoure Sly */
+/* Sly flottant sur la lune — sans cercle, oreilles libres */
 .splash-moon-ring{
-    width:220px;height:220px;
-    border-radius:50%;
+    width:180px;height:180px;
+    border-radius:0;
     position:relative;
     display:flex;align-items:center;justify-content:center;
-    overflow:hidden;
-    box-shadow:
-        0 0 0 2px rgba(255,255,255,0.08),
-        0 0 40px rgba(31,111,255,0.25),
-        0 0 80px rgba(122,60,255,0.15),
-        inset 0 0 60px rgba(0,0,0,0.3);
-    animation:moonPulse 4s ease-in-out infinite;
+    overflow:visible;
+    background:transparent;
+    box-shadow:none;
 }
-@keyframes moonPulse{
-    0%,100%{box-shadow:0 0 0 2px rgba(255,255,255,0.08),0 0 40px rgba(31,111,255,0.25),0 0 80px rgba(122,60,255,0.15)}
-    50%{box-shadow:0 0 0 2px rgba(255,255,255,0.15),0 0 60px rgba(31,111,255,0.45),0 0 120px rgba(122,60,255,0.3)}
-}
-/* Image Sly — sans fond bleu, bien centrée dans le cercle */
 .splash-moon-ring img{
-    width:130%;height:130%;
+    width:100%;height:auto;
     object-fit:contain;
-    object-position:center 20%;
-    /* Supprime les pixels bleus résiduels */
-    mix-blend-mode:normal;
+    /* Supprime pixels bleus résiduels */
     filter:
-        drop-shadow(0 4px 20px rgba(0,0,0,0.8))
-        brightness(1.08)
-        contrast(1.1)
-        saturate(1.05);
+        drop-shadow(0 6px 24px rgba(0,0,0,0.85))
+        drop-shadow(0 0 40px rgba(31,111,255,0.2))
+        brightness(1.06)
+        contrast(1.08);
     animation:slyFloat 3.5s ease-in-out infinite;
-    position:relative;z-index:2;
 }
 @keyframes slyFloat{
     0%,100%{transform:translateY(0) scale(1)}
-    50%{transform:translateY(-8px) scale(1.03)}
+    50%{transform:translateY(-10px) scale(1.02)}
 }
 /* Titre SLY */
 .splash-title{
-    z-index:3;margin-top:22px;
+    z-index:3;margin-top:14px;
     font-family:'Orbitron',monospace;font-size:36px;font-weight:900;letter-spacing:10px;
     color:#fff;
     text-shadow:
@@ -2244,11 +2232,16 @@ function runSplash() {
     function _close() {
         if (_done) return;
         _done = true;
-        splash.style.cssText += ';transition:none!important;display:none!important;';
+        // 1. Fermer le splash IMMÉDIATEMENT — rien ne peut bloquer ça
+        splash.style.transition = 'none';
+        splash.style.opacity = '0';
+        splash.style.display = 'none';
+        // 2. Montrer l'app
         app.style.display = 'flex';
         app.classList.add('visible');
-        if (typeof bootApp === 'function') bootApp();
-        try { bootPhase2(); } catch(e) {}
+        // 3. Boot en async — chaque call isolé pour ne pas bloquer
+        setTimeout(() => { try { if (typeof bootApp === 'function') bootApp(); } catch(e) { console.warn('bootApp:', e); } }, 0);
+        setTimeout(() => { try { bootPhase2(); } catch(e) { console.warn('bootPhase2:', e); } }, 50);
     }
 
     // ── Barre bleue : CSS interval — pas de RAF ──
