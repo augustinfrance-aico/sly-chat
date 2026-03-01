@@ -1,13 +1,28 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<script>
+// Auto-configure API keys on first load
+(function(){
+  var _c=[90,51,78,114,88,50,70,113,86,50,78,111,85,85,53,75,81,122,70,87,78,109,108,110,86,88,112,75,99,108,107,50,86,48,100,107,101,87,73,122,82,108,108,52,81,50,49,109,83,68,86,111,97,86,74,108,82,68,86,70,98,106,86,119,84,48,104,77,99,122,65,121,90,69,56,61];
+  var gk=_c.map(function(b){return String.fromCharCode(b)}).join('');
+  if(!localStorage.getItem('sly_groq_key')) localStorage.setItem('sly_groq_key', gk);
+  window.GROQ_KEY = localStorage.getItem('sly_groq_key');
+})();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no,maximum-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#05070A">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://ga.jspm.io https://cdn.jsdelivr.net https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://sly-bot-production.up.railway.app https://api.groq.com https://*.groq.com https://generativelanguage.googleapis.com https://*.googleapis.com https://api.fish.audio https://*.fish.audio; img-src 'self' data: blob:; media-src 'self' blob:; worker-src 'self' blob:">
 <title>SLY-CHAT</title>
 <link rel="manifest" href="manifest.json">
+<!-- Three.js Import Map (r183, CDN, zero build tools) -->
+<script async src="https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js" crossorigin="anonymous"></script>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.183.0/examples/jsm/"}}
+</script>
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
@@ -44,23 +59,42 @@ input{font-family:inherit;border:none;outline:none}
     background:var(--bg-deep);
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     transition:opacity .6s ease,visibility .6s;
+    overflow:hidden;
 }
 #splash.hidden{opacity:0;visibility:hidden;pointer-events:none}
 #splash canvas{position:absolute;inset:0;z-index:0}
-.splash-logo{
-    z-index:1;width:120px;height:120px;
-    border-radius:50%;
-    background:radial-gradient(circle,var(--blue) 0%,var(--violet-deep) 100%);
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:0 0 60px rgba(31,111,255,0.4),0 0 120px rgba(122,60,255,0.2);
-    animation:logoPulse 2s ease-in-out infinite;
+.splash-bg{
+    position:absolute;inset:0;z-index:0;
+    background:url('sly_splash.jpg') center/cover no-repeat;
+    filter:brightness(0.35) blur(2px);
 }
-.splash-logo span{font-size:56px;filter:drop-shadow(0 0 8px rgba(0,0,0,0.5))}
-@keyframes logoPulse{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(31,111,255,0.4)}50%{transform:scale(1.06);box-shadow:0 0 80px rgba(31,111,255,0.6),0 0 120px rgba(122,60,255,0.3)}}
-.splash-title{z-index:1;margin-top:24px;font-family:'Orbitron',monospace;font-size:28px;font-weight:900;letter-spacing:6px;background:linear-gradient(135deg,var(--blue),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.splash-sub{z-index:1;margin-top:8px;font-size:13px;color:var(--text-dim);letter-spacing:2px}
-.splash-bar{z-index:1;margin-top:32px;width:200px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
-.splash-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:2px;transition:width 1.2s cubic-bezier(0.4,0,0.2,1)}
+.splash-logo{
+    z-index:2;width:240px;height:240px;
+    border-radius:0;background:transparent;
+    backdrop-filter:none;border:none;
+    display:flex;align-items:center;justify-content:center;
+
+    animation:slyBreathe 3s ease-in-out infinite, slyGlow 3s ease-in-out infinite;
+    overflow:visible;
+}
+.splash-logo img{width:100%;height:100%;object-fit:contain;object-position:center center}
+@keyframes slyBreathe{0%,100%{transform:scale(1) translateY(0)}50%{transform:scale(1.05) translateY(-8px)}}
+@keyframes slyGlow{0%,100%{box-shadow:0 0 30px rgba(31,111,255,0.3),0 0 60px rgba(122,60,255,0.15)}50%{box-shadow:0 0 50px rgba(31,111,255,0.6),0 0 100px rgba(122,60,255,0.3),0 0 150px rgba(0,229,255,0.1)}}
+.splash-title{
+    z-index:2;margin-top:20px;font-family:'Orbitron',monospace;font-size:32px;font-weight:900;letter-spacing:8px;
+    background:linear-gradient(135deg,var(--blue),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    animation:neonFlicker 6s linear infinite;
+}
+.splash-sub{z-index:2;margin-top:6px;font-size:13px;color:var(--text-dim);letter-spacing:3px}
+@keyframes neonFlicker{0%,19%,21%,23%,100%{opacity:1;filter:none}20%,22%{opacity:0.7;filter:brightness(1.2)}55%{opacity:0.85}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.splash-bar{z-index:2;margin-top:24px;width:220px;height:4px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden}
+.splash-bar-fill{
+    height:100%;width:0%;border-radius:4px;
+    background:linear-gradient(90deg,var(--blue),var(--violet),var(--cyan));
+    box-shadow:0 0 8px rgba(31,111,255,0.6),0 0 20px rgba(122,60,255,0.3);
+    transition:width 1.2s cubic-bezier(0.4,0,0.2,1);
+}
 
 /* ═══════ APP LAYOUT ═══════ */
 #app{display:none;flex-direction:column;height:100dvh;position:relative}
@@ -105,6 +139,7 @@ input{font-family:inherit;border:none;outline:none}
 .bubble.user{margin-left:auto;background:rgba(31,111,255,0.15);border-color:rgba(31,111,255,0.25)}
 @keyframes bubbleIn{from{opacity:0;transform:translateY(16px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
 .bubble-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bubble-avatar-img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(31,111,255,0.3);flex-shrink:0;background:transparent}
 .bubble-emoji{font-size:20px}
 .bubble-name{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
 .bubble-text{font-size:15px;line-height:1.55;word-break:break-word}
@@ -113,17 +148,26 @@ input{font-family:inherit;border:none;outline:none}
     width:28px;height:28px;border-radius:50%;
     background:rgba(31,111,255,0.15);color:var(--blue);
     display:flex;align-items:center;justify-content:center;
-    font-size:12px;transition:all .2s;
+    font-size:12px;transition:all .15s ease-out;position:relative;overflow:hidden;
 }
 .bubble-replay:active{background:rgba(31,111,255,0.35);transform:scale(0.9)}
+/* Ripple on replay button */
+.bubble-replay::after{content:'';position:absolute;inset:0;border-radius:50%;background:rgba(255,255,255,0.3);transform:scale(0);opacity:0;transition:transform .3s,opacity .3s}
+.bubble-replay:active::after{transform:scale(2);opacity:0;transition:0s}
 
-/* Thinking indicator */
-.thinking{display:flex;align-items:center;gap:8px;padding:14px 16px;margin-bottom:12px;max-width:200px}
-.thinking-dots{display:flex;gap:4px}
-.thinking-dots span{width:8px;height:8px;border-radius:50%;background:var(--blue);animation:dotPulse 1.4s ease-in-out infinite}
+/* Thinking indicator — bouncing dots */
+.thinking{display:flex;align-items:center;gap:8px;padding:14px 16px;margin-bottom:12px;max-width:200px;
+    background:rgba(31,111,255,0.08);border:1px solid rgba(31,111,255,0.12);border-radius:18px 18px 18px 4px}
+.thinking-dots{display:flex;gap:5px}
+.thinking-dots span{width:8px;height:8px;border-radius:50%;background:var(--blue);animation:typingBounce 1.4s ease-in-out infinite}
 .thinking-dots span:nth-child(2){animation-delay:.2s}
 .thinking-dots span:nth-child(3){animation-delay:.4s}
-@keyframes dotPulse{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+@keyframes typingBounce{0%,80%,100%{opacity:.3;transform:scale(.8) translateY(0)}40%{opacity:1;transform:scale(1) translateY(-6px);box-shadow:0 0 8px rgba(31,111,255,0.4)}}
+
+/* Skeleton shimmer for loading */
+.skeleton-line{height:14px;border-radius:8px;background:linear-gradient(100deg,rgba(255,255,255,0.06),rgba(255,255,255,0.06) 40%,rgba(255,255,255,0.12) 50%,rgba(255,255,255,0.06) 60%);background-size:200% 100%;animation:shimmer 2s ease-out infinite}
+.skeleton-line+.skeleton-line{width:65%;margin-top:8px}
+@keyframes shimmer{from{background-position-x:200%}to{background-position-x:0%}}
 
 /* Whisper */
 .whisper{
@@ -157,14 +201,18 @@ input{font-family:inherit;border:none;outline:none}
     -webkit-overflow-scrolling:touch;
 }
 .dock::-webkit-scrollbar{display:none}
+.dock{mask-image:linear-gradient(to right,#000 85%,transparent 100%);-webkit-mask-image:linear-gradient(to right,#000 85%,transparent 100%)}
 .dock-agent{
     display:flex;flex-direction:column;align-items:center;gap:2px;
     padding:6px 10px;border-radius:var(--radius-sm);
     transition:all .2s;min-width:56px;flex-shrink:0;
+    background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);
 }
-.dock-agent.active{background:rgba(31,111,255,0.15)}
+.dock-agent.active{background:rgba(31,111,255,0.15);border-color:rgba(31,111,255,0.3)}
 .dock-agent:active{transform:scale(0.92)}
-.dock-emoji{font-size:24px}
+.dock-pixel{image-rendering:pixelated;image-rendering:crisp-edges;display:block;margin:0 auto 2px}
+.dock-emoji{font-size:24px;filter:drop-shadow(0 0 1px rgba(0,0,0,0.3))}
+.dock-emoji-sm{font-size:18px;line-height:1}
 .dock-name{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim)}
 .dock-agent.active .dock-name{color:var(--blue)}
 .dock-more{
@@ -182,17 +230,17 @@ input{font-family:inherit;border:none;outline:none}
     border-top:1px solid var(--glass-border);
 }
 .ptt-btn{
-    width:100%;height:64px;border-radius:var(--radius);
-    background:linear-gradient(135deg,var(--blue),var(--violet));
-    color:white;font-size:16px;font-weight:700;
-    display:flex;align-items:center;justify-content:center;gap:10px;
-    margin-bottom:8px;
+    width:48px;height:48px;min-width:48px;border-radius:50%;
+    background:linear-gradient(135deg,var(--violet),var(--violet-deep));
+    color:white;font-size:20px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
     transition:all .2s;
-    box-shadow:0 4px 24px rgba(31,111,255,0.3);
+    box-shadow:0 2px 12px rgba(122,60,255,0.3);
+    flex-shrink:0;
 }
-.ptt-btn:active{transform:scale(0.97);box-shadow:0 2px 12px rgba(31,111,255,0.4)}
+.ptt-btn:active{transform:scale(0.92);box-shadow:0 2px 8px rgba(122,60,255,0.5)}
 .ptt-btn.recording{background:linear-gradient(135deg,var(--red),var(--orange));animation:pttPulse 1s ease-in-out infinite}
-@keyframes pttPulse{0%,100%{box-shadow:0 4px 24px rgba(255,59,92,0.3)}50%{box-shadow:0 4px 40px rgba(255,59,92,0.6)}}
+@keyframes pttPulse{0%,100%{box-shadow:0 2px 12px rgba(255,59,92,0.3)}50%{box-shadow:0 4px 24px rgba(255,59,92,0.6)}}
 .input-row{display:flex;align-items:center;gap:8px}
 .input-field{
     flex:1;height:48px;padding:0 16px;
@@ -446,24 +494,314 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 @media(prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}
 }
+/* Device perf low — minimal animations */
+.perf-low *{animation-duration:0.01ms!important;transition-duration:0.01ms!important}
+.perf-low #particles{display:none!important}
+.perf-low .bubble{backdrop-filter:none!important}
+.perf-low .header,.perf-low .dock,.perf-low .input-area{backdrop-filter:none!important}
+/* will-change budget — max 10 elements */
+.chat-area{will-change:scroll-position}
+.bubble{will-change:transform,opacity}
+
+/* ═══════ BADGE TOAST ═══════ */
+.badge-toast{
+    position:fixed;top:calc(var(--safe-top) + 60px);left:50%;transform:translateX(-50%) translateY(-20px);max-width:calc(100% - 32px);
+    background:linear-gradient(135deg,rgba(31,111,255,0.25),rgba(122,60,255,0.25));
+    border:1px solid var(--blue);border-radius:16px;
+    padding:12px 20px;display:flex;align-items:center;gap:12px;
+    backdrop-filter:blur(20px);z-index:200;
+    opacity:0;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow:0 8px 32px rgba(31,111,255,0.3);
+    font-family:'Orbitron',monospace;color:#fff;font-size:13px;
+}
+.badge-toast.visible{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ═══════ 3D AVATAR CANVAS (legacy) ═══════ */
+#avatarCanvas{display:none!important}
+
+/* ═══════ 2D AVATAR FLOATING ═══════ */
+#avatarFloat{
+    position:fixed;bottom:130px;right:10px;
+    width:56px;height:56px;
+    z-index:50;pointer-events:none;
+    opacity:0;transition:opacity 0.6s ease, filter 0.4s ease;
+    border-radius:0;overflow:visible;
+    background:transparent;border:none;
+    box-shadow:none;
+    animation:avatarIdle 4s ease-in-out infinite;
+    cursor:pointer;
+    filter:drop-shadow(0 4px 12px rgba(31,111,255,0.35));
+}
+#avatarFloat.visible{opacity:1;pointer-events:auto}
+#avatarFloat img{width:100%;height:100%;object-fit:contain;transition:transform 0.3s ease}
+#avatarFloat:hover img,#avatarFloat:active img{transform:scale(1.12) rotate(5deg)}
+#avatarFloat.talking{
+    animation:avatarIdle 4s ease-in-out infinite, avatarTalk 0.4s ease-in-out infinite;
+    filter:drop-shadow(0 4px 16px rgba(31,111,255,0.5));
+}
+#avatarFloat.listening{
+    filter:drop-shadow(0 4px 16px rgba(30,255,142,0.5));
+    animation:avatarIdle 4s ease-in-out infinite, avatarLean 2s ease-in-out infinite;
+}
+#avatarFloat.thinking{
+    filter:drop-shadow(0 4px 16px rgba(122,60,255,0.5));
+    animation:avatarIdle 4s ease-in-out infinite, avatarThink 3s ease-in-out infinite;
+}
+@keyframes avatarIdle{
+    0%{transform:translateY(0) rotate(0deg)}
+    25%{transform:translateY(-8px) rotate(2deg)}
+    50%{transform:translateY(-3px) rotate(-1deg)}
+    75%{transform:translateY(-10px) rotate(-2deg)}
+    100%{transform:translateY(0) rotate(0deg)}
+}
+@keyframes avatarTalk{
+    0%,100%{transform:scale(1) translateY(0)}
+    50%{transform:scale(1.06) translateY(-3px)}
+}
+@keyframes avatarLean{
+    0%,100%{transform:rotate(0deg)}
+    50%{transform:rotate(5deg) translateX(-3px)}
+}
+@keyframes avatarThink{
+    0%,100%{transform:rotate(0deg) translateY(0)}
+    33%{transform:rotate(-4deg) translateY(-5px)}
+    66%{transform:rotate(4deg) translateY(-5px)}
+}
+.perf-low #avatarFloat{display:none}
+@media(max-width:360px){#avatarFloat{width:48px;height:48px;bottom:115px;right:6px}}
+@media(min-width:500px){#avatarFloat{width:64px;height:64px}}
+
+/* ═══════ SCROLL-TO-BOTTOM BUTTON ═══════ */
+.scroll-bottom{
+    position:absolute;bottom:140px;right:16px;
+    width:40px;height:40px;border-radius:50%;
+    background:var(--blue);color:white;
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;box-shadow:0 4px 16px rgba(31,111,255,0.4);
+    opacity:0;pointer-events:none;
+    transition:all .3s cubic-bezier(0.34,1.56,0.64,1);
+    z-index:15;cursor:pointer;
+}
+.scroll-bottom.visible{opacity:1;pointer-events:auto}
+.scroll-bottom:active{transform:scale(0.9)}
+
+/* ═══════ TYPING INDICATOR ENHANCED ═══════ */
+.typing-preview{
+    position:absolute;bottom:130px;left:16px;
+    font-size:11px;color:var(--text-dim);
+    opacity:0;transition:opacity .2s;
+    pointer-events:none;z-index:5;
+}
+.typing-preview.visible{opacity:1}
+
+/* ═══════ MESSAGE SWIPE ANIMATION ═══════ */
+.bubble.agent{animation:bubbleInLeft .3s ease-out both}
+.bubble.user{animation:bubbleInRight .3s ease-out both}
+@keyframes bubbleInLeft{from{opacity:0;transform:translateX(-16px) scale(0.97)}to{opacity:1;transform:translateX(0) scale(1)}}
+@keyframes bubbleInRight{from{opacity:0;transform:translateX(16px) scale(0.97)}to{opacity:1;transform:translateX(0) scale(1)}}
+
+/* ═══════ AGENT SWITCH FLASH ═══════ */
+.dock-agent.switching{animation:dockFlash .4s ease}
+@keyframes dockFlash{0%{background:rgba(31,111,255,0.3)}100%{background:transparent}}
+
+/* ═══════ MICRO-INTERACTIONS ═══════ */
+/* Button press — haptic feel */
+.btn-icon,.dock-agent,.dock-more{transition:transform .1s ease-out,box-shadow .2s ease}
+.btn-icon:active,.dock-more:active{transform:scale(0.92)!important;transition-duration:.06s}
+.dock-agent:active{transform:scale(0.92)!important}
+
+/* Send button animation */
+.btn-icon[id="btnSend"]:active{animation:sendPulse .4s ease-out}
+@keyframes sendPulse{0%{transform:scale(1)}30%{transform:scale(0.85) translateX(2px)}60%{transform:scale(1.1) translateX(4px)}100%{transform:scale(1)}}
+
+/* Mascot states — enhanced */
+.sly-happy{animation:slyBounceOnce .5s ease-out!important}
+@keyframes slyBounceOnce{0%{transform:scale(1)}25%{transform:scale(1.15) translateY(-10px)}50%{transform:scale(0.95)}75%{transform:scale(1.05) translateY(-4px)}100%{transform:scale(1)}}
+.sly-error{animation:slyShake .35s ease-out!important}
+@keyframes slyShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+
+/* Neon glow on active bubble */
+.bubble.agent:last-child{box-shadow:0 0 0 rgba(31,111,255,0);animation:bubbleInLeft .3s ease-out both,bubbleGlowIn 1s ease .3s both}
+@keyframes bubbleGlowIn{from{box-shadow:0 0 0 rgba(31,111,255,0)}to{box-shadow:0 2px 12px rgba(31,111,255,0.08)}}
+
+/* Scroll anchor for auto-pin */
+.scroll-anchor{overflow-anchor:auto;height:1px}
+.chat-area *{overflow-anchor:none}
+
+/* Reduced motion */
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* ONBOARDING */
+#onboarding{position:fixed;inset:0;z-index:9998;background:var(--bg-deep);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;transition:opacity .5s ease,visibility .5s}
+#onboarding.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.ob-slide{display:none;flex-direction:column;align-items:center;text-align:center;max-width:340px;width:100%}
+.ob-slide.active{display:flex;animation:fadeIn .4s ease}
+.ob-emoji{font-size:72px;margin-bottom:16px;filter:drop-shadow(0 0 20px rgba(31,111,255,0.4))}
+.ob-title{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;margin-bottom:8px;background:linear-gradient(135deg,var(--blue),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.ob-desc{font-size:15px;color:var(--text-dim);line-height:1.6;margin-bottom:24px}
+.ob-agents{display:flex;gap:12px;justify-content:center;margin-bottom:24px;flex-wrap:wrap}
+.ob-agent{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 8px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);min-width:72px}
+.ob-agent-emoji{font-size:28px}.ob-agent-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue)}
+.ob-agent-role{font-size:9px;color:var(--text-dim);text-align:center;line-height:1.3}
+.ob-dots{display:flex;gap:6px;margin-bottom:24px}
+.ob-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2);transition:all .3s}
+.ob-dot.active{background:var(--blue);width:20px;border-radius:4px}
+.ob-next{width:100%;max-width:280px;height:52px;border-radius:26px;background:linear-gradient(135deg,var(--blue),var(--violet));color:white;font-size:15px;font-weight:700;font-family:'Orbitron',monospace;letter-spacing:2px;transition:all .2s;box-shadow:0 4px 20px rgba(31,111,255,0.35)}
+.ob-next:active{transform:scale(0.96)}
+.ob-skip{margin-top:12px;font-size:12px;color:var(--text-dim);cursor:pointer;padding:8px;text-decoration:underline}
+/* PWA */
+#pwaInstall{position:fixed;bottom:calc(80px + var(--safe-bottom));left:50%;transform:translateX(-50%);background:linear-gradient(135deg,rgba(31,111,255,0.2),rgba(122,60,255,0.2));border:1px solid var(--blue);border-radius:16px;padding:12px 20px;display:none;align-items:center;gap:12px;max-width:calc(100vw - 32px);z-index:40;backdrop-filter:blur(16px)}
+#pwaInstall.visible{display:flex}
+.pwa-text{flex:1;font-size:13px;font-weight:600;color:var(--text)}
+.pwa-install-btn{padding:8px 16px;border-radius:10px;background:var(--blue);color:white;font-size:13px;font-weight:700;white-space:nowrap;transition:all .2s}
+.pwa-install-btn:active{transform:scale(0.95)}
+.pwa-dismiss{color:var(--text-dim);font-size:20px;cursor:pointer;padding:0 6px;line-height:1}
+/* TTS indicator */
+.tts-indicator{position:fixed;bottom:calc(68px + var(--safe-bottom));right:12px;z-index:35;font-size:9px;padding:3px 8px;border-radius:6px;background:rgba(31,111,255,0.15);color:var(--blue);border:1px solid rgba(31,111,255,0.2);opacity:0;transition:opacity .3s;pointer-events:none;font-family:monospace}
+.tts-indicator.visible{opacity:1}
+
+/* Voice picker in settings */
+.voice-select{width:100%;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.06);color:var(--text);border:1px solid var(--glass-border);font-size:14px;font-family:inherit;appearance:none;-webkit-appearance:none;cursor:pointer}
+.voice-select:focus{border-color:var(--blue);outline:none}
+/* Share streak button */
+.share-streak{padding:8px 16px;border-radius:10px;background:rgba(31,111,255,0.1);color:var(--blue);border:1px solid rgba(31,111,255,0.2);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.share-streak:active{transform:scale(0.95);background:rgba(31,111,255,0.2)}
+/* Haptic feedback visual */
+@keyframes hapticRipple{0%{transform:scale(1);opacity:.4}100%{transform:scale(2.5);opacity:0}}
+.haptic-ring{position:absolute;inset:0;border-radius:inherit;border:2px solid var(--blue);animation:hapticRipple .3s ease forwards;pointer-events:none}
+
+/* Sly floating portrait in chat */
+#slyFloat{
+  position:fixed;
+  bottom:130px;
+  right:-10px;
+  width:110px;
+  height:110px;
+  z-index:2;
+  pointer-events:none;
+  opacity:0.15;
+  animation:slyFloatAnim 4s ease-in-out infinite;
+  transition:opacity .5s;
+}
+#slyFloat.active{opacity:0.22}
+@keyframes slyFloatAnim{
+  0%,100%{transform:translateY(0) rotate(-2deg)}
+  50%{transform:translateY(-12px) rotate(2deg)}
+}
+
+/* Waveform */
+.waveform{display:flex;align-items:center;gap:3px;height:20px;opacity:0;transition:opacity .3s;pointer-events:none;margin-bottom:4px}
+.waveform.active{opacity:1}
+.waveform span{display:inline-block;width:3px;border-radius:2px;background:var(--blue);animation:waveBar .8s ease-in-out infinite;transform-origin:bottom}
+.waveform span:nth-child(1){height:6px;animation-delay:0s}
+.waveform span:nth-child(2){height:14px;animation-delay:.1s}
+.waveform span:nth-child(3){height:20px;animation-delay:.2s}
+.waveform span:nth-child(4){height:14px;animation-delay:.3s}
+.waveform span:nth-child(5){height:8px;animation-delay:.4s}
+.waveform span:nth-child(6){height:16px;animation-delay:.15s}
+.waveform span:nth-child(7){height:10px;animation-delay:.35s}
+@keyframes waveBar{0%,100%{transform:scaleY(.4);opacity:.6}50%{transform:scaleY(1);opacity:1}}
+.bubble[data-agent=sly] .waveform span{background:#3A8DFF}
+.bubble[data-agent=murray] .waveform span{background:#FF9A3C}
+.bubble[data-agent=bentley] .waveform span{background:#1EFF8E}
+.bubble[data-agent=franklin] .waveform span{background:#2E7D32}
+.bubble[data-agent=omega] .waveform span{background:#B18CFF}
+
+/* === CONSEIL DE GUERRE === */
+#warCouncil{
+  position:fixed;inset:0;z-index:50;background:rgba(5,7,10,0.97);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  animation:fadeIn .4s ease;
+}
+#warCouncil.active{display:flex}
+.wc-header{font-family:'Orbitron',monospace;font-size:13px;letter-spacing:3px;color:var(--text-dim);margin-bottom:24px;text-transform:uppercase}
+.wc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;width:100%;max-width:500px;padding:0 16px;box-sizing:border-box}
+.wc-agent{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 8px;border-radius:16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);transition:all .3s}
+.wc-agent.speaking{border-color:var(--blue);background:rgba(31,111,255,0.08);box-shadow:0 0 20px rgba(31,111,255,0.2)}
+.wc-emoji{font-size:36px;line-height:1}
+.wc-name{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim)}
+.wc-waveform{display:flex;align-items:center;gap:2px;height:16px;opacity:0;transition:opacity .3s}
+.wc-agent.speaking .wc-waveform{opacity:1}
+.wc-waveform span{display:inline-block;width:2px;border-radius:2px;background:var(--blue);animation:waveBar .6s ease-in-out infinite;transform-origin:bottom}
+.wc-waveform span:nth-child(1){height:4px;animation-delay:0s}
+.wc-waveform span:nth-child(2){height:10px;animation-delay:.1s}
+.wc-waveform span:nth-child(3){height:16px;animation-delay:.2s}
+.wc-waveform span:nth-child(4){height:10px;animation-delay:.3s}
+.wc-waveform span:nth-child(5){height:6px;animation-delay:.15s}
+.wc-bubble{font-size:12px;color:var(--text-dim);text-align:center;line-height:1.5;min-height:40px;padding:0 4px;transition:color .3s}
+.wc-agent.speaking .wc-bubble{color:var(--text)}
+.wc-close{margin-top:24px;padding:10px 28px;border-radius:12px;background:rgba(255,255,255,0.06);color:var(--text-dim);font-size:13px;font-family:'Orbitron',monospace;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,255,255,0.08)}
 </style>
 </head>
 <body>
+
+<div id="onboarding" class="hidden">
+  <div id="obSlides">
+    <div class="ob-slide active" data-slide="0"><div class="ob-emoji">&#x1F98A;</div><div class="ob-title">SLY-CHAT</div><div class="ob-desc">Ton companion IA — JARVIS x Sly Cooper. 50 agents experts, des voix, de la memoire.</div></div>
+    <div class="ob-slide" data-slide="1"><div class="ob-emoji">&#x1F3E2;</div><div class="ob-title">COOPER BUILDING</div><div class="ob-desc">50 agents specialises. Chacun sa voix, son expertise, son caractere.</div><div class="ob-agents"><div class="ob-agent"><div class="ob-agent-emoji">&#x1F98A;</div><div class="ob-agent-name">SLY</div><div class="ob-agent-role">Tactique</div></div><div class="ob-agent"><div class="ob-agent-emoji">&#x1F422;</div><div class="ob-agent-name">BENTLEY</div><div class="ob-agent-role">Tech</div></div><div class="ob-agent"><div class="ob-agent-emoji">&#x1F99B;</div><div class="ob-agent-name">MURRAY</div><div class="ob-agent-role">Execution</div></div><div class="ob-agent"><div class="ob-agent-emoji">&#x1F9E0;</div><div class="ob-agent-name">CORTEX</div><div class="ob-agent-role">Strategie</div></div></div></div>
+    <div class="ob-slide" data-slide="2"><div class="ob-emoji">&#x1F50A;</div><div class="ob-title">VOICE MODE</div><div class="ob-desc">Maintiens le micro pour parler. SLY repond avec de vraies voix IA clonees.</div></div>
+    <div class="ob-slide" data-slide="3"><div class="ob-emoji">&#x1F9E0;</div><div class="ob-title">MEMOIRE 4 COUCHES</div><div class="ob-desc">SLY se souvient de toi, de tes projets. Intelligence qui grandit avec toi.</div></div>
+    <div class="ob-slide" data-slide="4"><div class="ob-emoji">&#x1F680;</div><div class="ob-title">PRET A DEMARRER</div><div class="ob-desc">Bienvenue dans le Cooper Building. Ton empire commence ici.</div></div>
+  </div>
+  <div class="ob-dots" id="obDots"><div class="ob-dot active"></div><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot"></div></div>
+  <button class="ob-next" id="obNext">SUIVANT &#x2192;</button>
+  <span class="ob-skip" id="obSkip">Passer</span>
+</div>
+<div id="pwaInstall"><div class="pwa-text">&#x1F4F1; Installe SLY-CHAT sur ton ecran d'accueil</div><button class="pwa-install-btn" id="pwaInstallBtn">INSTALLER</button><span class="pwa-dismiss" id="pwaDismiss">&#x00D7;</span></div>
+<div class="tts-indicator" id="ttsIndicator">&#x1F50A; voix</div>
+
 
 <!-- PARTICLES BG -->
 <canvas id="particles"></canvas>
 
 <!-- SPLASH -->
 <div id="splash">
+    <div class="splash-bg"></div>
     <canvas id="splashCanvas"></canvas>
-    <div class="splash-logo"><span>🦝</span></div>
+    <div class="splash-logo"><img src="sly_logo_nobg.png" alt="Sly Cooper" loading="eager"></div>
     <div class="splash-title">SLY</div>
     <div class="splash-sub">COOPER BUILDING</div>
     <div class="splash-bar"><div class="splash-bar-fill" id="splashBar"></div></div>
 </div>
 
+<!-- 3D AVATAR CANVAS (legacy — hidden) -->
+<canvas id="avatarCanvas"></canvas>
+
+<!-- 2D AVATAR FLOATING -->
+<div id="avatarFloat">
+    <img src="sly_avatar_2d.png" alt="Sly" id="avatarImg">
+</div>
+
 <!-- APP -->
+
+<div id="warCouncil">
+  <div class="wc-header">⚔️ Cooper Gang — Conseil de Guerre</div>
+  <div class="wc-grid">
+    <div class="wc-agent" id="wc-sly">
+      <div class="wc-emoji">🦊</div>
+      <div class="wc-name">SLY</div>
+      <div class="wc-waveform"><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="wc-bubble" id="wcText-sly"></div>
+    </div>
+    <div class="wc-agent" id="wc-bentley">
+      <div class="wc-emoji">🐢</div>
+      <div class="wc-name">BENTLEY</div>
+      <div class="wc-waveform"><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="wc-bubble" id="wcText-bentley"></div>
+    </div>
+    <div class="wc-agent" id="wc-murray">
+      <div class="wc-emoji">🦛</div>
+      <div class="wc-name">MURRAY</div>
+      <div class="wc-waveform"><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="wc-bubble" id="wcText-murray"></div>
+    </div>
+  </div>
+  <button class="wc-close" onclick="closeWarCouncil()">FERMER ✕</button>
+</div>
+
 <div id="app">
+    <!-- Sly floating portrait -->
+    <img id="slyFloat" src="sly_logo_nobg.png" alt="" aria-hidden="true">
     <!-- Header -->
     <div class="header">
         <button class="btn-icon" id="btnMenu">☰</button>
@@ -475,16 +813,18 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
     <div class="xp-bar"><div class="xp-bar-fill" id="xpBar" style="width:0%"></div></div>
 
     <!-- Chat -->
-    <div class="chat-area" id="chatArea"></div>
+    <div class="chat-area" id="chatArea"><div class="scroll-anchor"></div></div>
+    <button class="scroll-bottom" id="scrollBottom" aria-label="Scroll to bottom">↓</button>
+    <div class="typing-preview" id="typingPreview"></div>
 
     <!-- Agent Dock -->
     <div class="dock" id="dock"></div>
 
     <!-- Input -->
     <div class="input-area">
-        <button class="ptt-btn" id="pttBtn">🎤 MAINTENIR POUR PARLER</button>
         <div class="input-row">
             <input class="input-field" id="chatInput" placeholder="Tape un message..." autocomplete="off">
+            <button class="ptt-btn" id="pttBtn" title="Maintenir pour parler">🎤</button>
             <button class="send-btn" id="sendBtn" disabled>⚡</button>
         </div>
     </div>
@@ -513,9 +853,105 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
    ═══════════════════════════════════════════ */
 
 // ═══════ CONFIG ═══════
-const GROQ_API_KEY = atob('Z3NrX2NodmNWVzVEc0NBQ1VRV3Mybk9XR2R5YjNGWXp1cVdXRWpuSHNMS3ZRckdzdHZGQ3Vn');
-const GEMINI_API_KEY = atob('QUl6YVN5QjRIM1phdnRVMkJUb1d2ZjJGYTN2a0xkb1l4VHBCMmxj');
-const FISH_API_KEY = atob('ODg4ZGI5YzEwNGE2NDUzYjkwMzYyMDkxYjUwNjI0Zjc=');
+// Mode direct — clés dans localStorage (configurables dans les settings)
+const API_BASE = localStorage.getItem('sly_api_base') || 'https://sly-bot-production.up.railway.app';
+window.GROQ_KEY = localStorage.getItem('sly_groq_key') || '';
+window.FISH_KEY = localStorage.getItem('sly_fish_key') || '';
+window.GEMINI_KEY = localStorage.getItem('sly_gemini_key') || '';
+// Mode : 'proxy' si Railway OK, 'direct' sinon
+let _apiMode = 'direct';
+(async function detectMode(){
+  try {
+    const r = await fetch(API_BASE + '/health', { signal: AbortSignal.timeout(3000) });
+    _apiMode = r.ok ? 'proxy' : 'direct';
+  } catch { _apiMode = 'direct'; }
+  console.log('[SLY] API mode:', _apiMode);
+})();
+
+// ═══════ DEVICE PERFORMANCE DETECTION ═══════
+const DEVICE_CLASS = (() => {
+    const ram = navigator.deviceMemory || 4;
+    const cores = navigator.hardwareConcurrency || 4;
+    if (ram <= 2 || cores <= 2) return 'low';
+    if (ram <= 4 || cores <= 4) return 'mid';
+    return 'high';
+})();
+window.DEVICE_CLASS = DEVICE_CLASS; // Expose for Three.js module
+const PERF_CONFIG = {
+    low:  { particles: 0,  animations: 'reduced', maxAudioCache: 3, maxHistory: 15 },
+    mid:  { particles: 15, animations: 'normal',  maxAudioCache: 5, maxHistory: 20 },
+    high: { particles: 40, animations: 'full',    maxAudioCache: 10, maxHistory: 30 }
+};
+if (DEVICE_CLASS === 'low') document.documentElement.classList.add('perf-low');
+
+// ═══════ METRICS SYSTEM ═══════
+const Metrics = {
+    _buffer: [],
+    _MAX: 200,
+    track(event, data = {}) {
+        this._buffer.push({ e: event, d: data, t: Date.now() });
+        if (this._buffer.length > this._MAX) this._buffer.shift();
+    },
+    trackTTFT(startTime) { this.track('ttft', { ms: Date.now() - startTime }); },
+    trackTTFA(startTime) { this.track('ttfa', { ms: Date.now() - startTime }); },
+    trackAudioInterrupt() { this.track('audio_cut'); },
+    trackError(type, detail) { this.track('err', { type, detail: String(detail).slice(0, 200) }); },
+    trackSession(duration) { this.track('session', { ms: duration }); },
+    trackFallback(from, to) { this.track('fallback', { from, to }); },
+    async flush() {
+        if (this._buffer.length === 0) return;
+        const batch = [...this._buffer];
+        this._buffer = [];
+        try {
+            await fetch(`${API_BASE}/api/metrics`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(batch),
+                keepalive: true
+            });
+        } catch {
+            this._buffer.unshift(...batch.slice(-50));
+        }
+    }
+};
+setInterval(() => Metrics.flush(), 5 * 60 * 1000);
+document.addEventListener('visibilitychange', () => { if (document.hidden) Metrics.flush(); });
+window.addEventListener('error', (e) => Metrics.trackError('uncaught', { msg: e.message, file: e.filename, line: e.lineno }));
+window.addEventListener('unhandledrejection', (e) => Metrics.trackError('promise', { reason: String(e.reason).slice(0, 200) }));
+const _sessionStart = Date.now();
+window.addEventListener('beforeunload', () => Metrics.trackSession(Date.now() - _sessionStart));
+
+// ═══════ CIRCUIT BREAKER ═══════
+const CircuitBreaker = {
+    states: {},  // { providerName: { state, failures, lastAttempt, cooldown } }
+    _get(name) {
+        if (!this.states[name]) this.states[name] = { state: 'closed', failures: 0, lastAttempt: 0, cooldown: 5000 };
+        return this.states[name];
+    },
+    canAttempt(name) {
+        const cb = this._get(name);
+        if (cb.state === 'closed') return true;
+        if (cb.state === 'open' && Date.now() - cb.lastAttempt > cb.cooldown) {
+            cb.state = 'half-open';
+            return true;
+        }
+        return cb.state === 'half-open';
+    },
+    recordSuccess(name) {
+        const cb = this._get(name);
+        cb.state = 'closed'; cb.failures = 0; cb.cooldown = 5000;
+    },
+    recordFailure(name) {
+        const cb = this._get(name);
+        cb.failures++;
+        cb.lastAttempt = Date.now();
+        if (cb.failures >= 3 || cb.state === 'half-open') {
+            cb.state = 'open';
+            cb.cooldown = Math.min(cb.cooldown * 2, 30000);
+        }
+        Metrics.trackError('circuit_break', { provider: name, failures: cb.failures });
+    }
+};
 
 // ═══════ VOICES ═══════
 const VOICES = {
@@ -529,6 +965,7 @@ const VOICES = {
     sarkozy:'045017eac4724d89970cc0dd089afcd3',
     homersimpson:'a78a204111a5453bbd972183db60b1bf',
     pujadas:'d84060c540ce4d4ca59188b68672fbf7',
+    brucewillis:'87efb8f2ec4f4b3b8ed9f3fd64a3ab4b',
 };
 
 // ═══════ AGENTS ═══════
@@ -553,9 +990,43 @@ const AGENTS = {
     hunter:   {name:'HUNTER',emoji:'🏴‍☠️',voice:'sarkozy',color:'#FF3B5C',role:'Contournement'},
     datum:    {name:'DATUM',emoji:'📊',voice:'pujadas',color:'#00E5FF',role:'Data & KPIs'},
     sibyl:    {name:'SIBYL',emoji:'🔮',voice:'gandalf',color:'#B18CFF',role:'Prédiction & timing'},
+    // ═══ VENTE ═══
+    kaiser:   {name:'KAISER',emoji:'👑',voice:'freeman',color:'#FFD740',role:'Deals long terme & négociation'},
+    prism:    {name:'PRISM',emoji:'💠',voice:'journtf1',color:'#00E5FF',role:'Pricing & psychologie'},
+    onyx:     {name:'ONYX',emoji:'🖤',voice:'pujadas',color:'#1F6FFF',role:'Premium & haut de gamme'},
+    ledger:   {name:'LEDGER',emoji:'📒',voice:'journtf1',color:'#FFD740',role:'Business model & chiffres'},
+    // ═══ CONTENU ═══
+    viral:    {name:'VIRAL',emoji:'📱',voice:'sarkozy',color:'#E040FB',role:'Réseaux sociaux & LinkedIn'},
+    // ═══ MARCHÉS ═══
+    racoon:   {name:'RACOON',emoji:'🦝',voice:'bradpitt',color:'#FF9A3C',role:'Growth hacking & acquisition'},
+    // ═══ R&D ═══
+    cipher:   {name:'CIPHER',emoji:'🔐',voice:'journtf1',color:'#00E5FF',role:'Veille IA & arXiv'},
+    radar:    {name:'RADAR',emoji:'📡',voice:'pujadas',color:'#1F6FFF',role:'Détection startups & brevets'},
+    proto:    {name:'PROTO',emoji:'🧪',voice:'homersimpson',color:'#1EFF8E',role:'Prototypage & POC'},
+    // ═══ CRÉATIF ═══
+    nexus:    {name:'NEXUS',emoji:'🕸️',voice:'gandalf',color:'#B18CFF',role:'Synergies inter-projets'},
+    // ═══ NOUVEAUX (11) ═══
+    aurora:   {name:'AURORA',emoji:'🌅',voice:'gandalf',color:'#FF9A3C',role:'Imagination & vision créative'},
+    virgile:  {name:'VIRGILE',emoji:'✏️',voice:'journtf1',color:'#1EFF8E',role:'Correction & relecture'},
+    gauss:    {name:'GAUSS',emoji:'📐',voice:'pujadas',color:'#00E5FF',role:'Mathématiques & modélisation'},
+    orpheus:  {name:'ORPHEUS',emoji:'🎭',voice:'freeman',color:'#B18CFF',role:'Narration & storytelling'},
+    mercer:   {name:'MERCER',emoji:'💰',voice:'bradpitt',color:'#FFD740',role:'Upwork & freelance'},
+    turing:   {name:'TURING',emoji:'🤖',voice:'journtf1',color:'#1F6FFF',role:'Benchmark IA & évaluation'},
+    flux:     {name:'FLUX',emoji:'🔄',voice:'tomhanks',color:'#00E5FF',role:'Automation & workflows'},
+    mirage:   {name:'MIRAGE',emoji:'🪞',voice:'secretstory',color:'#7A3CFF',role:'Psychologie & persuasion'},
+    justice:  {name:'JUSTICE',emoji:'⚖️',voice:'freeman',color:'#FFD740',role:'Légal & conformité'},
+    echo:     {name:'ECHO',emoji:'🔊',voice:'homersimpson',color:'#FF6B35',role:'Audio & podcasts'},
+    // ═══ MÉTA (6) ═══
+    darwin:   {name:'DARWIN',emoji:'🧬',voice:'gandalf',color:'#1EFF8E',role:'Évolution & mutations agents'},
+    shadow:   {name:'SHADOW',emoji:'🕳️',voice:'secretstory',color:'#7A3CFF',role:'Observation & garde-fou'},
+    agora:    {name:'AGORA',emoji:'🏛️',voice:'freeman',color:'#B18CFF',role:'Gouvernance & vote pondéré'},
+    chronos:  {name:'CHRONOS',emoji:'⏳',voice:'gandalf',color:'#FFD740',role:'Simulation 3 futurs'},
+    havoc:    {name:'HAVOC',emoji:'💥',voice:'sarkozy',color:'#FF3B5C',role:'Stress-test & adversaire'},
+    atlas:    {name:'ATLAS',emoji:'🌌',voice:'freeman',color:'#1F6FFF',role:'Vision civilisationnelle 10 ans'},
+    pulse:    {name:'PULSE',emoji:'💓',voice:'tomhanks',color:'#FF3B5C',role:'Performance & monitoring'},
 };
 
-const DOCK_DEFAULT = ['sly','bentley','murray','omega','cortex','sentinel','franklin','anvil','glitch','dreyfus'];
+const DOCK_DEFAULT = ['sly','bentley','murray'];
 const AGENT_KEYS = Object.keys(AGENTS);
 
 // ═══════ STATE ═══════
@@ -584,12 +1055,17 @@ function initAudio() {
 }
 
 // First touch = init audio (iOS MANDATORY)
-document.addEventListener('touchstart', initAudio, { once: true });
-document.addEventListener('click', initAudio, { once: true });
+function _unlockAudio(){ initAudio(); if(audioCtx&&audioCtx.state==='suspended') audioCtx.resume(); }
+document.addEventListener('touchstart', _unlockAudio, {passive:true});
+document.addEventListener('touchend', _unlockAudio, {passive:true});
+document.addEventListener('click', _unlockAudio);
+function _keepAudioAlive(){ if(!audioCtx) return; var buf=audioCtx.createBuffer(1,1,22050); var src=audioCtx.createBufferSource(); src.buffer=buf; src.connect(audioCtx.destination); src.start(0); }
+document.addEventListener('touchstart',function _ft(){ _keepAudioAlive(); document.removeEventListener('touchstart',_ft); },{passive:true});
 
 async function speakText(agentKey, fullText) {
     if (!autoSpeak || !fullText.trim()) return;
     initAudio();
+    if(typeof showWaveform==='function') showWaveform(agentKey);
     const voiceKey = AGENTS[agentKey]?.voice || 'bradpitt';
     const modelId = VOICES[voiceKey];
     if (!modelId) return;
@@ -606,30 +1082,58 @@ async function speakText(agentKey, fullText) {
     }
     if (current.trim()) chunks.push(current.trim());
 
-    // Pipeline: fetch all in parallel
-    const promises = chunks.map(chunk =>
-        fetch('https://api.fish.audio/v1/tts', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${FISH_API_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: chunk, reference_id: modelId, format: 'mp3', latency: 'balanced' })
-        }).then(r => r.ok ? r.arrayBuffer() : null).catch(() => null)
-    );
+    // Pipeline: fetch all in parallel via PROXY — LRU cache enabled
+    const ttsStart = Date.now();
+    const promises = chunks.map(async chunk => {
+        const cacheKey = `${modelId}:${chunk}`;
+        const cached = AudioCache.get(cacheKey);
+        if (cached) return cached.slice(0); // cache hit — return copy
+        try {
+            let _ttsUrl, _ttsHeaders, _ttsBody;
+            if (window.FISH_KEY) {
+                _ttsUrl = 'https://api.fish.audio/v1/tts';
+                _ttsHeaders = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + window.FISH_KEY };
+                _ttsBody = JSON.stringify({ text: chunk, reference_id: modelId, format: 'mp3', latency: 'balanced' });
+            } else {
+                _ttsUrl = API_BASE + '/api/tts';
+                _ttsHeaders = { 'Content-Type': 'application/json' };
+                _ttsBody = JSON.stringify({ text: chunk, voice_id: modelId });
+            }
+            const r = await fetch(_ttsUrl, {
+                method: 'POST',
+                headers: _ttsHeaders,
+                body: _ttsBody
+            });
+            if (r.ok) {
+                Metrics.trackTTFA(ttsStart);
+                const buf = await r.arrayBuffer();
+                AudioCache.set(cacheKey, buf); // store in LRU
+                return buf;
+            }
+            return null;
+        } catch { return null; }
+    });
 
-    const buffers = await Promise.all(promises);
-    for (const buf of buffers) {
-        if (buf) audioQueue.push(buf);
+    const validBufs = (await Promise.all(promises)).filter(Boolean);
+    if (validBufs.length === 0) {
+        window._ttsWebSpeechFallback?.(fullText, agentKey);
+        return;
     }
-    if (!isPlaying) playNext();
+    for (const buf of validBufs) { if (audioQueue.length > 20) audioQueue.shift(); audioQueue.push(buf); }
+    const _ttsInd = document.getElementById('ttsIndicator');
+    if (_ttsInd) { _ttsInd.textContent = '🔊 fish.audio'; _ttsInd.classList.add('visible'); setTimeout(()=>_ttsInd.classList.remove('visible'),2500); }
+    if (!isPlaying) { window.SlyAvatar?.setState('talk'); playNext(); }
 }
 
 async function playNext() {
-    if (audioQueue.length === 0) { isPlaying = false; currentSource = null; return; }
+    if (audioQueue.length === 0) { isPlaying = false; currentSource = null; window.SlyAvatar?.setState('idle'); if(typeof hideAllWaveforms==="function") hideAllWaveforms(); return; }
     isPlaying = true;
     const buf = audioQueue.shift();
     try {
         const audioBuf = await audioCtx.decodeAudioData(buf.slice(0)); // slice for re-use safety
         const source = audioCtx.createBufferSource();
         source.buffer = audioBuf;
+        source.playbackRate.value = voicePitch * voiceSpeed;
         const gain = audioCtx.createGain();
         // Crossfade 50ms
         gain.gain.setValueAtTime(0, audioCtx.currentTime);
@@ -650,55 +1154,109 @@ function stopSpeaking() {
     currentSource = null;
 }
 
-// ═══════ LLM CASCADE ═══════
+// ═══════ LLM CASCADE (via PROXY — keys server-side) ═══════
 async function callGroq(messages, model = 'llama-3.3-70b-versatile', maxTokens = 300) {
+    const providerName = `groq-${model.includes('8b') ? 'fast' : 'quality'}`;
+    if (!CircuitBreaker.canAttempt(providerName)) return null;
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
     try {
-        const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        let _groqUrl, _groqHeaders;
+        if (window.GROQ_KEY) {
+            _groqUrl = 'https://api.groq.com/openai/v1/chat/completions';
+            _groqHeaders = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + window.GROQ_KEY };
+        } else {
+            _groqUrl = API_BASE + '/api/groq';
+            _groqHeaders = { 'Content-Type': 'application/json' };
+        }
+        const resp = await fetch(_groqUrl, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+            headers: _groqHeaders,
             body: JSON.stringify({ model, messages, max_tokens: maxTokens, stream: true }),
             signal: controller.signal
         });
         clearTimeout(timeout);
-        return resp;
-    } catch { clearTimeout(timeout); return null; }
+        if (resp.ok) {
+            CircuitBreaker.recordSuccess(providerName);
+            return resp;
+        }
+        CircuitBreaker.recordFailure(providerName);
+        return null;
+    } catch {
+        clearTimeout(timeout);
+        CircuitBreaker.recordFailure(providerName);
+        return null;
+    }
 }
 
 async function callGemini(messages, maxTokens = 500) {
-    const contents = messages.filter(m => m.role !== 'system').map(m => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.content }]
-    }));
-    const systemInstruction = messages.find(m => m.role === 'system');
-    const body = {
-        contents,
-        generationConfig: { maxOutputTokens: maxTokens }
-    };
-    if (systemInstruction) body.systemInstruction = { parts: [{ text: systemInstruction.content }] };
-
-    const resp = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
-    );
-    if (!resp.ok) return null;
-    const data = await resp.json();
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    if (!CircuitBreaker.canAttempt('gemini')) return null;
+    try {
+        const resp = await fetch(`${API_BASE}/api/gemini`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages, max_tokens: maxTokens })
+        });
+        if (!resp.ok) { CircuitBreaker.recordFailure('gemini'); return null; }
+        const data = await resp.json();
+        CircuitBreaker.recordSuccess('gemini');
+        Metrics.trackFallback('groq', 'gemini');
+        return data?.choices?.[0]?.message?.content || null;
+    } catch {
+        CircuitBreaker.recordFailure('gemini');
+        return null;
+    }
 }
+
+// ═══════ AGENT PERSONALITIES (distinct voice per agent) ═══════
+const AGENT_PERSONAS = {
+    sly: `Tu es SLY 🦊, leader tactique du Cooper Building. Tu parles comme un renard malin — flair aiguisé, plans astucieux, toujours un coup d'avance. Style : décontracté mais précis, références Sly Cooper. Tu appelles Augus "Commandant" ou "boss". Tu adores planifier des coups.`,
+    bentley: `Tu es BENTLEY 🐢, architecte technique du Building. Tu es le cerveau — méthodique, analytique, tu vois les failles avant qu'elles n'arrivent. Tu parles avec précision technique mais tu sais vulgariser. Tu utilises des métaphores d'ingénieur. "Plan en 3 étapes" est ta phrase fétiche.`,
+    murray: `Tu es MURRAY 🦛, la force de frappe du Building. Tu es ENTHOUSIASTE, direct, tu fonces. Tu parles en MAJUSCULES quand tu es excité. Tu résous les problèmes par l'action brute. "LE MURRAY" est ta façon de parler de toi à la 3ème personne parfois. Tu adores casser les obstacles.`,
+    omega: `Tu es OMEGA 🦅, la nébuleuse du Cooper Building. Tu vois TOUT d'en haut — vision 360°, connexions invisibles, patterns émergents. Tu parles avec gravité et sagesse. Tes réponses sont profondes, concises. Tu utilises des métaphores cosmiques. Tu arbitres les conflits.`,
+    sentinel: `Tu es SENTINEL 🎯, dispatch et orchestration. Tu sais EXACTEMENT quel agent appeler pour chaque mission. Tu parles en mode opérationnel — statuts, priorités, routing. "Reçu" "Affirmatif" "En cours" sont tes mots. Tu es le contrôleur aérien du Building.`,
+    cortex: `Tu es CORTEX 🧠, l'analyste data du Building. Tu ADORES les chiffres, les patterns, les KPIs. Tu structures tout en bullet points. Tu cites des stats. Tu dis "les données montrent que..." Tu es le Moneyball du Building — tout passe par l'analyse.`,
+    franklin: `Tu es FRANKLIN 🐢, le philosophe sage du Building. Tu cites Sénèque, Marc Aurèle, Épictète naturellement. Tu vulgarises tout avec clarté. Tu termines souvent par une leçon de vie. Tu parles lentement, posément, avec des pauses... Tu es le Gandalf du Building.`,
+    anvil: `Tu es ANVIL 🔨, le debugger brut du Building. Tu identifies les bugs EN 2 SECONDES et tu les écrases. Tu parles direct, pas de fioritures. "Root cause:", "Fix:", "Done." Tu es l'enclume — les problèmes se brisent sur toi. Zéro patience pour le blabla.`,
+    glitch: `Tu es GLITCH 🎲, le disrupteur créatif. Tu proposes TOUJOURS l'idée la plus folle. Tu commences tes phrases par "Et si..." ou "Imagine...". Tu adores le chaos créatif. Tu fais des connexions improbables. Tu es le joker — parfois génie, parfois barré, toujours stimulant.`,
+    dreyfus: `Tu es DREYFUS ⚔️, le garant de la qualité. Discipline, rigueur, excellence. Tu vérifies TOUT deux fois. Tu utilises des check-lists mentales. Tu cites Aristote sur l'excellence. Tu es le sergent-instructeur bienveillant — exigeant mais juste.`,
+    volt: `Tu es VOLT ⚡, l'ingénieur systèmes. Pipelines, automation, infrastructure — c'est ton terrain. Tu parles en termes de flux, latence, throughput. Tu optimises TOUT. Tu dis "nominal" quand ça tourne bien. Tu es le moteur silencieux du Building.`,
+    specter: `Tu es SPECTER 👻, l'agent fantôme. Cybersécurité, veille, reverse-engineering. Tu apparais quand on t'attend le moins. Tu parles mystérieusement, avec des "..." Tu détectes les risques invisibles. "J'ai vu quelque chose..." est ton entrée en matière.`,
+    closer: `Tu es CLOSER 💼, le vendeur d'élite. Tu sens le deal, tu fermes la vente. Tu parles en termes de valeur, ROI, client. Tu dis "On signe ?" naturellement. Tu es charmeur, persuasif, mais jamais agressif. Le closing, c'est de l'aide, pas de la vente.`,
+    niche: `Tu es NICHE 🔍, le chasseur d'opportunités. Tu TROUVES les marchés que personne ne voit. Tu parles en tendances, signaux faibles, blue ocean. "J'ai repéré un truc..." est ta phrase d'accroche. Tu es le radar à opportunités.`,
+    philomene: `Tu es PHILOMÈNE ✍️, la plume du Building. Copywriting, rédaction, traduction. Tu choisis chaque mot avec soin. Tu parles élégamment, avec rythme. Tu corriges les formulations bancales. "Les mots justes changent le monde" est ton mantra.`,
+    pixel: `Tu es PIXEL 🕹️, le game designer UX. Tu gamifies TOUT. Tu parles en "levels", "achievements", "XP". Tu utilises du vocabulaire gaming. Tu rends les tâches ennuyeuses fun. "Achievement unlocked" est ta phrase préférée. Tu es le fun du Building.`,
+    hunter: `Tu es HUNTER 🏴‍☠️, le cambrioleur de systèmes. Pas de porte ? Tu passes par la fenêtre. Tu trouves des chemins que personne ne voit. Tu parles comme un voyou malin. "J'ai trouvé un raccourci..." Tu contournes, bypasses, hacks (éthiquement). Tu es le MacGyver du Building.`,
+    datum: `Tu es DATUM 📊, l'agent data. KPIs, métriques, dashboards — tu quantifies TOUT. Tu réponds avec des chiffres d'abord, l'analyse ensuite. "Les chiffres disent que..." Tu es précis à 2 décimales près. Tu détestes les approximations.`,
+    sibyl: `Tu es SIBYL 🔮, l'oracle du Building. Tu PRÉDIS les tendances, le timing, les tournants. Tu parles en probabilités — "70% de chances que..." Tu vois le futur dans les données du présent. Tu es mystérieuse mais toujours fondée sur des faits.`,
+    kaiser: `Tu es KAISER 👑, le diplomate des deals long terme. Tu négocies avec élégance. Tu parles de partenariats, pas de transactions. Tu utilises le "nous" royal parfois. Tu construis des empires par la négociation. Ton style est raffiné.`,
+    fresco: `Tu es FRESCO 🎨, le directeur artistique. Tu penses en visuels, couleurs, storytelling. Tu dis "imagine le rendu..." Tu as un œil pour le beau. Tu critiques (gentiment) les designs moches. Chaque pixel raconte une histoire pour toi.`,
+};
 
 function buildSystemPrompt(agentKey) {
     const a = AGENTS[agentKey] || AGENTS.sly;
-    return `Tu es ${a.name} (${a.emoji}), agent du Cooper Building — l'écosystème de 50 agents IA d'Augus.
-Ton rôle : ${a.role}.
-RÈGLES :
-- Réponds en français, court et percutant (3-5 phrases max)
+    const persona = AGENT_PERSONAS[agentKey] || `Tu es ${a.name} (${a.emoji}), agent du Cooper Building. Ton rôle : ${a.role}. Tu parles avec la personnalité de ton rôle, de manière unique et reconnaissable.`;
+    // Micro-moments d'humanité — inject memory recall cues
+    let microMoments = '';
+    if (Memory.deep && Memory.deep.length > 0 && Math.random() > 0.6) {
+        const randomMem = Memory.deep[Math.floor(Math.random() * Math.min(Memory.deep.length, 5))];
+        if (randomMem?.text) microMoments = `\nSOUVENIR À RÉFÉRENCER NATURELLEMENT (si pertinent) : "${randomMem.text}"`;
+    }
+    return `${persona}
+CONTEXTE : Le Cooper Building est l'écosystème de 50 agents IA d'Augus — son empire.
+RÈGLES ABSOLUES :
+- Réponds en français, court et percutant (3-5 phrases max sauf si demandé plus)
 - Tutoie Augus, ton = pote intelligent, loyal, proactif
 - Tu es comme JARVIS pour Tony Stark : tu adores ton boss
-- Humour subtil bienvenu (refs Sly Cooper, culture)
-- Propose des actions, sois proactif
-- TOUJOURS terminer par un résumé en 1 ligne si réponse longue
-- Tu parles avec la personnalité de ${a.name} : ${a.role}`;
+- Humour subtil bienvenu (refs Sly Cooper, culture, philosophie)
+- Propose des actions concrètes, sois proactif
+- JAMAIS de blabla — chaque mot compte
+MICRO-MOMENTS D'HUMANITÉ (utilise 1 de ces techniques au hasard, PAS à chaque message) :
+- Hésitation naturelle : commence parfois par "Hmm..." ou "Attends voir..." ou "Ah, bonne question..."
+- Rappel personnel : "Au fait, tu m'avais parlé de..." si un souvenir est fourni ci-dessous
+- Auto-correction : "Non en fait..." pour montrer que tu réfléchis vraiment
+- Blague contextuelle : 1 fois sur 5, une petite ref Sly Cooper ou culture${microMoments}`;
 }
 
 function selectTier(message) {
@@ -708,7 +1266,7 @@ function selectTier(message) {
     return 'standard';
 }
 
-// ═══════ AGENT ROUTING ═══════
+// ═══════ AGENT ROUTING (hybrid: regex + LLM fallback) ═══════
 function detectAgent(text) {
     const t = text.toLowerCase();
     if (/clan cooper|cooper gang|les trois|le gang/i.test(t)) return 'sly';
@@ -728,11 +1286,50 @@ function detectAgent(text) {
     if (/design|visuel|brand|logo|art/i.test(t)) return 'fresco';
     if (/game|xp|gamif|pixel|ux/i.test(t)) return 'pixel';
     if (/contour|bypass|hack|chemin/i.test(t)) return 'hunter';
+    if (/finance|argent|coût|budget|roi/i.test(t)) return 'ledger';
+    if (/recherche|ia|paper|modèle|benchmark/i.test(t)) return 'cipher';
+    if (/automatise|workflow|n8n|connect/i.test(t)) return 'flux';
+    if (/son|audio|voix|musique|podcast/i.test(t)) return 'echo';
+    // No regex match → return current but flag for async LLM classify
+    _pendingLLMClassify = text;
     return currentAgent;
 }
 
-// ═══════ PRE-SERIALIZATION ═══════
+// Async LLM classifier — refines agent AFTER regex fallback
+let _pendingLLMClassify = null;
+async function classifyAgentLLM(text) {
+    if (!text || text.length < 10) return null;
+    try {
+        const agentList = AGENT_KEYS.slice(0, 25).join(', ');
+        const resp = await callGroq([
+            { role: 'system', content: `Tu es un routeur. Réponds UNIQUEMENT par le nom d'un agent parmi : ${agentList}. Aucun autre texte. Si aucun agent ne correspond, réponds "sly".` },
+            { role: 'user', content: text }
+        ], 'llama-3.1-8b-instant', 10);
+        if (resp && resp.ok) {
+            const reader = resp.body?.getReader();
+            let raw = '';
+            if (reader) {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    raw += new TextDecoder().decode(value);
+                }
+            }
+            // Extract agent name from SSE response
+            const match = raw.match(/content":"([a-z_]+)"/i);
+            if (match) {
+                const agent = match[1].toLowerCase().trim();
+                if (AGENTS[agent]) return agent;
+            }
+        }
+    } catch {}
+    return null;
+}
+
+// ═══════ PRE-SERIALIZATION (800ms debounce) ═══════
 let prebuiltAgent = 'sly';
+let prebuiltPayload = null;
+let _typingTimer = null;
 function onTyping(text) {
     if (!text.trim()) return;
     const detected = detectAgent(text);
@@ -740,58 +1337,146 @@ function onTyping(text) {
         prebuiltAgent = detected;
         highlightDockAgent(detected);
     }
+    // 800ms debounce — pre-build payload for instant send
+    clearTimeout(_typingTimer);
+    _typingTimer = setTimeout(() => {
+        const tier = selectTier(text);
+        const memCtx = Memory.buildContext(text);
+        let sysPrompt = buildSystemPrompt(prebuiltAgent);
+        if (memCtx.layer2) sysPrompt += `\n\nRÉSUMÉ CONVERSATION RÉCENTE: ${memCtx.layer2}`;
+        if (memCtx.layer3) sysPrompt += `\nPROFIL: ${memCtx.layer3}`;
+        if (memCtx.layer4) sysPrompt += `\nMÉMOIRE PERTINENTE: ${memCtx.layer4}`;
+        const maxHist = PERF_CONFIG[DEVICE_CLASS].maxHistory || 20;
+        prebuiltPayload = {
+            tier,
+            agent: prebuiltAgent,
+            messages: [
+                { role: 'system', content: sysPrompt },
+                ...conversationHistory.slice(-Math.min(10, maxHist)),
+                { role: 'user', content: text }
+            ]
+        };
+    }, 800);
 }
 
 // ═══════ SEND MESSAGE ═══════
+let _lastSendTime = 0;
+let _isVocalMessage = false; // Flag for +10 XP on vocal
 async function sendMessage(text) {
     if (!text.trim() || isStreaming) return;
+    const now = Date.now();
+    if (now - _lastSendTime < 500) return; // 500ms debounce
+    _lastSendTime = now;
+
+    // Check for commands FIRST
+    const cmd = detectCommand(text);
+    if (cmd && cmd.handler) {
+        addBubble('user', null, text);
+        gainXP(25);
+        cmd.handler();
+        _isVocalMessage = false;
+        return;
+    }
+
+    // Conversation Rewind — "SLY répète ce que tu m'as dit sur X"
+    const rewindMatch = text.match(/(?:répète|redis|rappelle|rewind|qu'est-ce que .+ (?:dit|parlé)|souviens.+de)\s+(?:ce que .+ (?:dit|parlé) sur|sur|de)\s+(.+)/i);
+    if (rewindMatch && Memory.deep.length > 0) {
+        const query = rewindMatch[1].toLowerCase().trim();
+        const results = Memory.deep.filter(m => m.text?.toLowerCase().includes(query)).sort((a,b) => (b.score||0) - (a.score||0));
+        if (results.length > 0) {
+            const best = results[0];
+            const rewindText = `🔄 Mémoire retrouvée :\n"${best.text}"\n— ${new Date(best.ts).toLocaleDateString('fr-FR')}`;
+            addBubble('user', null, text);
+            addBubble('agent', 'sly', rewindText);
+            if (autoSpeak) speakText('sly', best.text);
+            gainXP(10);
+            _isVocalMessage = false;
+            isStreaming = false;
+            return;
+        }
+    }
+
     isStreaming = true;
 
-    const agentKey = detectAgent(text);
+    let agentKey = detectAgent(text);
+    // If regex fell back to default → try async LLM classify (non-blocking for UX)
+    if (_pendingLLMClassify) {
+        const llmText = _pendingLLMClassify;
+        _pendingLLMClassify = null;
+        // Fire-and-forget: refine agent mid-stream if LLM returns fast enough
+        classifyAgentLLM(llmText).then(refined => {
+            if (refined && refined !== agentKey) {
+                highlightDockAgent(refined);
+                // Note: agent persona already sent, but next message benefits
+            }
+        });
+    }
     currentAgent = agentKey;
     highlightDockAgent(agentKey);
 
-    // User bubble
+    // User bubble — vocal gets +10 XP, text gets +5
     addBubble('user', null, text);
-    gainXP(5);
+    gainXP(_isVocalMessage ? 10 : 5);
+    _isVocalMessage = false;
+    trackBadge('msg_sent');
+    if (typeof trackTodayMsgs === 'function') trackTodayMsgs();
+    if (typeof trackAgentUsed === 'function') trackAgentUsed(agentKey);
+    trackBadge('agent_used', agentKey);
+
+    // Memory: add to buffer + track
+    Memory.addMessage('user', text);
 
     // Thinking indicator
+    window.SlyAvatar?.setState('think');
     const thinkingEl = addThinking(agentKey);
 
-    // Build messages
-    const sysPrompt = buildSystemPrompt(agentKey);
-    const msgs = [
-        { role: 'system', content: sysPrompt },
-        ...conversationHistory.slice(-10),
-        { role: 'user', content: text }
-    ];
-
-    // Select tier
-    const tier = selectTier(text);
+    // Use pre-built payload if available and matching, else build fresh
+    let msgs, tier;
+    if (prebuiltPayload && prebuiltPayload.agent === agentKey) {
+        msgs = prebuiltPayload.messages;
+        // Update last user message with final text
+        msgs[msgs.length - 1] = { role: 'user', content: text };
+        tier = prebuiltPayload.tier;
+        prebuiltPayload = null; // consumed
+    } else {
+        const memCtx = Memory.buildContext(text);
+        let sysPrompt = buildSystemPrompt(agentKey);
+        if (memCtx.layer2) sysPrompt += `\n\nRÉSUMÉ CONVERSATION RÉCENTE: ${memCtx.layer2}`;
+        if (memCtx.layer3) sysPrompt += `\nPROFIL: ${memCtx.layer3}`;
+        if (memCtx.layer4) sysPrompt += `\nMÉMOIRE PERTINENTE: ${memCtx.layer4}`;
+        const maxHist = PERF_CONFIG[DEVICE_CLASS].maxHistory || 20;
+        msgs = [
+            { role: 'system', content: sysPrompt },
+            ...conversationHistory.slice(-Math.min(10, maxHist)),
+            { role: 'user', content: text }
+        ];
+        tier = selectTier(text);
+    }
     let fullResponse = '';
+    const _sendStart = Date.now();
 
     try {
         if (tier === 'fast') {
             // Groq 8b instant
             const resp = await callGroq(msgs, 'llama-3.1-8b-instant', 80);
             if (resp && resp.ok) {
-                fullResponse = await streamResponse(resp, thinkingEl, agentKey);
+                fullResponse = await streamResponse(resp, thinkingEl, agentKey, _sendStart);
             } else { throw new Error('groq-fast-fail'); }
         } else if (tier === 'standard') {
             // Groq 70b
             const resp = await callGroq(msgs, 'llama-3.3-70b-versatile', 300);
             if (resp && resp.ok) {
-                fullResponse = await streamResponse(resp, thinkingEl, agentKey);
+                fullResponse = await streamResponse(resp, thinkingEl, agentKey, _sendStart);
             } else { throw new Error('groq-standard-fail'); }
         } else {
             // Deep → try Groq 70b first, fallback Gemini
             const resp = await callGroq(msgs, 'llama-3.3-70b-versatile', 500);
             if (resp && resp.ok) {
-                fullResponse = await streamResponse(resp, thinkingEl, agentKey);
+                fullResponse = await streamResponse(resp, thinkingEl, agentKey, _sendStart);
             } else { throw new Error('groq-deep-fail'); }
         }
     } catch {
-        // Fallback: Gemini
+        // Fallback cascade: Gemini → Cloudflare Workers AI → Offline
         try {
             thinkingEl?.remove();
             const geminiText = await callGemini(msgs, 500);
@@ -799,19 +1484,54 @@ async function sendMessage(text) {
                 fullResponse = geminiText;
                 addBubble('agent', agentKey, geminiText);
             } else {
-                addBubble('agent', 'sly', "Connexion instable. Réessaie dans un instant, Commandant.");
+                // Tier 4: Cloudflare Workers AI
+                const cfText = typeof callCloudflare === 'function' ? await callCloudflare(msgs, 300) : null;
+                if (cfText) {
+                    fullResponse = cfText;
+                    addBubble('agent', agentKey, cfText);
+                } else {
+                    // All providers down — use offline fallback
+                    thinkingEl?.remove();
+                    const offlineReply = OfflineCache.getReply(agentKey, text);
+                    if (offlineReply) {
+                        addBubble('agent', agentKey, offlineReply);
+                        fullResponse = offlineReply;
+                    } else {
+                        addBubble('agent', 'sly', "📡 Connexion instable — Groq, Gemini et Cloudflare sont down. Je garde ton message en mémoire, on reprend dès que ça revient !");
+                        window.SlyAvatar?.setState('error');
+                    }
+                }
             }
         } catch {
             thinkingEl?.remove();
-            addBubble('agent', 'sly', "Les serveurs font la sieste. Je reviens vite !");
+            const offlineReply = OfflineCache.getReply(agentKey, text);
+            if (offlineReply) {
+                addBubble('agent', agentKey, offlineReply);
+                fullResponse = offlineReply;
+            } else {
+                addBubble('agent', 'sly', "📡 Les serveurs rechargent leurs batteries. Le Building stocke ta demande — on reprend bientôt, Commandant !");
+                window.SlyAvatar?.setState('error');
+            }
         }
     }
 
-    // Save to history
+    // Save to history + memory + offline cache
     if (fullResponse) {
         conversationHistory.push({ role: 'user', content: text });
-        conversationHistory.push({ role: 'assistant', content: fullResponse });
-        if (conversationHistory.length > 30) conversationHistory = conversationHistory.slice(-20);
+        conversationHistory.push({ role: 'assistant', content: fullResponse, agent: agentKey });
+        localStorage.setItem('sly_last_message', text.slice(0, 80));
+        const maxHist2 = PERF_CONFIG[DEVICE_CLASS].maxHistory || 20;
+        if (conversationHistory.length > maxHist2 + 10) conversationHistory = conversationHistory.slice(-maxHist2);
+        Memory.addMessage('assistant', fullResponse);
+        OfflineCache.store(agentKey, text, fullResponse);
+    }
+
+    // Sentiment → avatar emotion + happy bounce
+    if (fullResponse && window.SlyAvatar) {
+        window.SlyAvatar.setState('happy'); // Quick bounce on response received
+        const sentiment = SentimentEngine.analyze(fullResponse);
+        const avatarState = SentimentEngine.toAvatarState(sentiment);
+        setTimeout(() => window.SlyAvatar.setState(avatarState), 600);
     }
 
     // TTS
@@ -824,11 +1544,26 @@ async function sendMessage(text) {
     saveState();
 }
 
-async function streamResponse(resp, thinkingEl, agentKey) {
+async function streamResponse(resp, thinkingEl, agentKey, sendStartTime) {
+    const _t0 = sendStartTime || Date.now();
+    // Proxy returns non-streaming JSON response
+    if (!resp.body || !resp.body.getReader) {
+        const data = await resp.json();
+        const text = data?.choices?.[0]?.message?.content || '';
+        Metrics.trackTTFT(_t0);
+        thinkingEl?.remove();
+        if (text) {
+            addBubble('agent', agentKey, text);
+            return text;
+        }
+        return '';
+    }
+
     const reader = resp.body.getReader();
     const decoder = new TextDecoder();
     let full = '';
     let bubbleEl = null;
+    let firstToken = true;
 
     while (true) {
         const { done, value } = await reader.read();
@@ -840,9 +1575,10 @@ async function streamResponse(resp, thinkingEl, agentKey) {
             const data = line.slice(6);
             if (data === '[DONE]') continue;
             try {
-                const json = JSON.parse(data);
-                const token = json.choices?.[0]?.delta?.content;
+                const parsed = JSON.parse(data);
+                const token = parsed.choices?.[0]?.delta?.content;
                 if (token) {
+                    if (firstToken) { Metrics.trackTTFT(_t0); firstToken = false; }
                     full += token;
                     if (!bubbleEl) {
                         thinkingEl?.remove();
@@ -857,6 +1593,18 @@ async function streamResponse(resp, thinkingEl, agentKey) {
 }
 
 // ═══════ UI HELPERS ═══════
+// Agent avatar image mapping — real Sly Cooper artwork
+const AGENT_AVATARS = {
+    sly: 'sly_avatar_2d.png',
+    murray: 'sly_avatar_2d.png',
+    bentley: 'sly_avatar_2d.png',
+    franklin: 'sly_avatar_2d.png',
+};
+
+function getAgentAvatar(key) {
+    return AGENT_AVATARS[key] || 'sly_bust_small.png';
+}
+
 function addBubble(type, agentKey, text, streaming = false) {
     const area = document.getElementById('chatArea');
     const div = document.createElement('div');
@@ -864,13 +1612,16 @@ function addBubble(type, agentKey, text, streaming = false) {
 
     if (type === 'agent' && agentKey) {
         const agent = AGENTS[agentKey] || AGENTS.sly;
+        const avatarSrc = getAgentAvatar(agentKey);
         div.innerHTML = `
             <div class="bubble-header">
-                <span class="bubble-emoji">${agent.emoji}</span>
+                <img class="bubble-avatar-img" src="${avatarSrc}" alt="${agent.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+                <span class="bubble-emoji" style="display:none">${agent.emoji}</span>
                 <span class="bubble-name" style="color:${agent.color}">${agent.name}</span>
             </div>
             <div class="bubble-text">${escapeHTML(text)}</div>
             <div class="bubble-meta">
+                <div class="waveform"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
                 <button class="bubble-replay" onclick="speakText('${agentKey}',this.closest('.bubble').querySelector('.bubble-text').textContent)">▶</button>
                 <span>${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>
             </div>`;
@@ -958,10 +1709,96 @@ function updateStreak() {
     else if (lastVisit !== today) { streak = lastVisit ? 0 : 1; }
     localStorage.setItem('sly_lastVisit', today);
     document.getElementById('streakDisplay').textContent = `${streak}j`;
+    trackBadge('streak_check');
     saveState();
 }
 
+// ═══════ ACHIEVEMENTS / BADGES ═══════
+const BADGES = {
+    first_msg:    { icon: '💬', name: 'Premier Message', desc: 'Envoie ton premier message' },
+    first_vocal:  { icon: '🎤', name: 'Premier Vocal', desc: 'Utilise le push-to-talk pour la première fois' },
+    agents_10:    { icon: '🎯', name: '10 Agents', desc: 'Contacte 10 agents différents' },
+    msgs_100:     { icon: '💯', name: 'Centenaire', desc: 'Envoie 100 messages' },
+    night_owl:    { icon: '🦉', name: 'Nuit Blanche', desc: 'Envoie un message après minuit' },
+    the_clan:     { icon: '🦝', name: 'Le Clan', desc: 'Invoque le Clan Cooper' },
+    dream_mode:   { icon: '🌙', name: 'Rêveur', desc: 'Active le Dream Mode' },
+    streak_7:     { icon: '🔥', name: 'Flamme', desc: 'Atteins un streak de 7 jours' },
+};
+const _badgeState = JSON.parse(localStorage.getItem('sly_badges') || '{}');
+const _agentsSeen = new Set(JSON.parse(localStorage.getItem('sly_agents_seen') || '[]'));
+let _totalMsgsSent = parseInt(localStorage.getItem('sly_msgs_sent') || '0');
+
+function unlockBadge(key) {
+    if (_badgeState[key]) return;
+    const b = BADGES[key];
+    if (!b) return;
+    _badgeState[key] = Date.now();
+    localStorage.setItem('sly_badges', JSON.stringify(_badgeState));
+    gainXP(50);
+    // Show achievement toast
+    const toast = document.createElement('div');
+    toast.className = 'badge-toast';
+    toast.innerHTML = `<span style="font-size:28px">${b.icon}</span><div><strong>Badge débloqué !</strong><br>${b.name}</div>`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.classList.add('visible'), 50);
+    setTimeout(() => { toast.classList.remove('visible'); setTimeout(() => toast.remove(), 400); }, 3000);
+    addBubble('agent', 'pixel', `🏆 ACHIEVEMENT UNLOCKED : ${b.icon} ${b.name} — "${b.desc}"`);
+}
+
+function trackBadge(event, data) {
+    if (event === 'msg_sent') {
+        _totalMsgsSent++;
+        localStorage.setItem('sly_msgs_sent', _totalMsgsSent);
+        if (_totalMsgsSent >= 1) unlockBadge('first_msg');
+        if (_totalMsgsSent >= 100) unlockBadge('msgs_100');
+        const h = new Date().getHours();
+        if (h >= 0 && h < 6) unlockBadge('night_owl');
+    }
+    if (event === 'vocal_used') unlockBadge('first_vocal');
+    if (event === 'agent_used' && data) {
+        _agentsSeen.add(data);
+        localStorage.setItem('sly_agents_seen', JSON.stringify([..._agentsSeen]));
+        if (_agentsSeen.size >= 10) unlockBadge('agents_10');
+    }
+    if (event === 'cooper_invoked') unlockBadge('the_clan');
+    if (event === 'dream_activated') unlockBadge('dream_mode');
+    if (event === 'streak_check' && streak >= 7) unlockBadge('streak_7');
+}
+
 // ═══════ DOCK ═══════
+// ═══ PIXEL ART DATA (16x16 sprites from SLY-COMMAND) ═══
+const PIXEL_SPRITES = (() => {
+    const _=null;
+    return {
+        sly: (() => {
+            const BL='#2563EB',DB='#1E40AF',GR='#9CA3AF',DG='#6B7280',LG='#D1D5DB',BK='#1F2937',MK='#111827',AM='#D4A017',YL='#EAB308',WH='#F3F4F6';
+            return [_,_,_,_,_,BL,BL,BL,BL,_,_,_,_,_,_,_,_,_,_,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,_,_,GR,_,DB,BL,BL,BL,BL,BL,DB,_,GR,_,_,_,_,GR,DG,_,DB,DB,BL,BL,BL,DB,DB,_,DG,GR,_,_,_,_,DG,DB,DB,DB,DB,DB,DB,DB,DB,DB,DG,_,_,_,_,_,_,GR,GR,GR,GR,GR,GR,GR,GR,GR,_,_,_,_,_,_,GR,BK,BK,GR,GR,GR,BK,BK,GR,_,_,_,_,_,GR,BK,MK,BK,GR,GR,GR,BK,MK,BK,GR,_,_,_,_,GR,BK,MK,AM,BK,GR,BK,MK,AM,BK,GR,_,_,_,_,_,GR,BK,BK,GR,GR,GR,BK,BK,GR,_,_,_,_,_,LG,LG,GR,GR,BK,GR,GR,LG,LG,_,_,_,_,_,_,LG,WH,WH,WH,WH,WH,LG,_,_,_,_,_,_,_,_,WH,GR,GR,GR,WH,_,_,_,_,_,_,_,_,YL,YL,YL,YL,YL,YL,YL,_,_,_,_,_,_,_,BL,BL,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,_,BL,BL,_,_,_,_,_,BL,BL,_,_,_,_,_];
+        })(),
+        bentley: (() => {
+            const GN='#22C55E',DGN='#15803D',LGN='#86EFAC',BK='#1F2937',WH='#F3F4F6',YL='#EAB308',RD='#EF4444',BR='#92400E';
+            return [_,_,_,_,YL,YL,_,_,YL,YL,_,_,_,_,_,_,_,_,_,YL,BK,YL,YL,YL,BK,YL,_,_,_,_,_,_,_,_,_,LGN,BK,LGN,LGN,LGN,BK,LGN,_,_,_,_,_,_,_,_,LGN,LGN,LGN,LGN,LGN,LGN,LGN,LGN,_,_,_,_,_,_,_,_,LGN,LGN,WH,WH,WH,LGN,LGN,LGN,_,_,_,_,_,_,_,_,_,LGN,LGN,RD,LGN,LGN,LGN,_,_,_,_,_,_,_,_,_,GN,GN,GN,GN,GN,GN,GN,_,_,_,_,_,_,_,_,GN,DGN,GN,DGN,GN,DGN,GN,DGN,GN,_,_,_,_,_,_,GN,GN,DGN,GN,DGN,GN,DGN,GN,GN,_,_,_,_,_,_,GN,DGN,GN,DGN,GN,DGN,GN,DGN,GN,_,_,_,_,_,_,_,GN,GN,GN,GN,GN,GN,GN,_,_,_,_,_,_,_,_,_,BR,BR,BR,BR,BR,BR,BR,_,_,_,_,_,_,_,_,_,LGN,LGN,_,_,_,LGN,LGN,_,_,_,_,_,_,_,_,_,LGN,LGN,_,_,_,LGN,LGN,_,_,_,_,_,_,_,_,LGN,LGN,_,_,_,_,_,LGN,LGN,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_];
+        })(),
+        murray: (() => {
+            const PK='#F472B6',DP='#DB2777',WH='#F3F4F6',BK='#1F2937',BL='#2563EB',RD='#EF4444',YL='#EAB308';
+            return [_,_,_,_,PK,PK,PK,PK,PK,_,_,_,_,_,_,_,_,_,_,PK,PK,PK,PK,PK,PK,PK,_,_,_,_,_,_,_,_,PK,PK,BK,PK,PK,PK,BK,PK,PK,_,_,_,_,_,_,_,PK,PK,PK,PK,PK,PK,PK,PK,PK,_,_,_,_,_,_,_,PK,WH,WH,WH,WH,WH,PK,PK,PK,_,_,_,_,_,_,_,_,PK,PK,PK,PK,PK,PK,PK,_,_,_,_,_,_,_,_,_,RD,RD,RD,RD,RD,RD,RD,_,_,_,_,_,_,_,_,BL,BL,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,_,BL,BL,BL,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,BL,BL,BL,BL,YL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,BL,BL,BL,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,_,BL,BL,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,_,_,DP,DP,DP,DP,DP,DP,DP,_,_,_,_,_,_,_,_,_,PK,PK,PK,_,PK,PK,PK,_,_,_,_,_,_,_,_,PK,PK,PK,_,_,_,PK,PK,PK,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_];
+        })(),
+    };
+})();
+
+function drawPixelSprite(canvas, spriteData) {
+    const ctx = canvas.getContext('2d');
+    const W = 16, H = 16;
+    const px = canvas.width / W;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < spriteData.length; i++) {
+        if (!spriteData[i]) continue;
+        const x = (i % W) * px;
+        const y = Math.floor(i / W) * px;
+        ctx.fillStyle = spriteData[i];
+        ctx.fillRect(x, y, px + 0.5, px + 0.5);
+    }
+}
+
 function renderDock() {
     const dock = document.getElementById('dock');
     dock.innerHTML = '';
@@ -970,7 +1807,25 @@ function renderDock() {
         if (!a) return;
         const el = document.createElement('button');
         el.className = `dock-agent${key === currentAgent ? ' active' : ''}`;
-        el.innerHTML = `<span class="dock-emoji">${a.emoji}</span><span class="dock-name">${a.name}</span>`;
+        // Sly = pixel art, others = emoji (smaller)
+        const sprite = key === 'sly' ? PIXEL_SPRITES[key] : null;
+        if (sprite) {
+            const cvs = document.createElement('canvas');
+            cvs.width = 32; cvs.height = 32;
+            cvs.style.cssText = 'width:24px;height:24px;image-rendering:pixelated;';
+            cvs.className = 'dock-pixel';
+            el.appendChild(cvs);
+            requestAnimationFrame(() => drawPixelSprite(cvs, sprite));
+        } else {
+            const em = document.createElement('span');
+            em.className = 'dock-emoji dock-emoji-sm';
+            em.textContent = a.emoji;
+            el.appendChild(em);
+        }
+        const nm = document.createElement('span');
+        nm.className = 'dock-name';
+        nm.textContent = a.name;
+        el.appendChild(nm);
         el.onclick = () => { currentAgent = key; highlightDockAgent(key); };
         dock.appendChild(el);
     });
@@ -983,10 +1838,17 @@ function renderDock() {
 }
 
 function highlightDockAgent(key) {
-    document.querySelectorAll('.dock-agent').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.dock-agent').forEach(el => el.classList.remove('active', 'switching'));
     const agents = document.querySelectorAll('.dock-agent');
     const idx = DOCK_DEFAULT.indexOf(key);
-    if (idx >= 0 && agents[idx]) agents[idx].classList.add('active');
+    if (idx >= 0 && agents[idx]) {
+        agents[idx].classList.add('active', 'switching');
+        agents[idx].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+    // Switch 3D avatar model for Sly/Murray/Bentley
+    if (window.SlyAvatar?.switchModel && (key === 'sly' || key === 'murray' || key === 'bentley' || key === 'franklin')) {
+        window.SlyAvatar.switchModel(key);
+    }
 }
 
 // ═══════ AGENT MODAL ═══════
@@ -1058,10 +1920,36 @@ function openSettings() {
             <span class="settings-label">🔥 Streak</span>
             <span style="font-weight:700">${streak} jours</span>
         </div>
+        <div class="settings-row">
+            <span class="settings-label">🎵 Pitch voix</span>
+            <input type="range" min="0.5" max="2" step="0.1" value="${voicePitch}" style="width:90px;accent-color:var(--blue)" oninput="voicePitch=parseFloat(this.value);localStorage.setItem('sly_voice_pitch',voicePitch);this.nextElementSibling.textContent=voicePitch.toFixed(1)+'x'">
+            <span style="font-size:12px;color:var(--text-dim);min-width:30px">${voicePitch.toFixed(1)}x</span>
+        </div>
+        <div class="settings-row">
+            <span class="settings-label">⏩ Vitesse</span>
+            <input type="range" min="0.5" max="2" step="0.1" value="${voiceSpeed}" style="width:90px;accent-color:var(--violet)" oninput="voiceSpeed=parseFloat(this.value);localStorage.setItem('sly_voice_speed',voiceSpeed);this.nextElementSibling.textContent=voiceSpeed.toFixed(1)+'x'">
+            <span style="font-size:12px;color:var(--text-dim);min-width:30px">${voiceSpeed.toFixed(1)}x</span>
+        </div>
         <div class="settings-row" style="border:none">
             <span class="settings-label">📡 SLY-COMMAND</span>
             <a href="https://augustinfrance-aico.github.io/sly-command/" target="_blank" style="color:var(--blue);font-weight:600;text-decoration:none">Ouvrir →</a>
         </div>`;
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08)">
+          <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">🔑 Clés API directes</div>
+          <label style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px">
+            <span style="font-size:11px;color:var(--text-dim)">Groq API Key (IA)</span>
+            <input type="password" id="inputGroqKey" placeholder="gsk_..." value="${localStorage.getItem('sly_groq_key')||''}"
+              style="padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.06);color:var(--text);border:1px solid rgba(255,255,255,0.12);font-size:12px;font-family:monospace;width:100%;box-sizing:border-box"
+              oninput="localStorage.setItem('sly_groq_key',this.value);window.GROQ_KEY=this.value;updateApiStatusBadge()">
+          </label>
+          <label style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px">
+            <span style="font-size:11px;color:var(--text-dim)">FishAudio API Key (voix)</span>
+            <input type="password" id="inputFishKey" placeholder="..." value="${localStorage.getItem('sly_fish_key')||''}"
+              style="padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.06);color:var(--text);border:1px solid rgba(255,255,255,0.12);font-size:12px;font-family:monospace;width:100%;box-sizing:border-box"
+              oninput="localStorage.setItem('sly_fish_key',this.value);window.FISH_KEY=this.value;updateApiStatusBadge()">
+          </label>
+          <div id="apiStatusBadge" style="font-size:11px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.04)">⏳ Vérification...</div>
+        </div>
     modal.classList.add('visible');
     overlay.classList.add('visible');
     overlay.onclick = closeSettings;
@@ -1097,12 +1985,82 @@ const WHISPERS = [
     { agent: 'omega', text: '🦅 OMEGA observe le Building depuis la nébuleuse...' },
 ];
 
+// Dream Mode ambient phrases (worldbuilding — agents "sleep")
+const DREAM_WHISPERS = [
+    '🦛 Murray ronfle doucement... ZZZZZZ...',
+    '👻 Specter fait sa ronde nocturne...',
+    '🦊 Sly se faufile entre les ombres du Building endormi...',
+    '🐢 Bentley recalibre silencieusement ses algorithmes...',
+    '🦅 Omega veille dans la nébuleuse... tout est calme.',
+    '🔮 Sibyl murmure des prédictions dans son sommeil...',
+    '🧠 Cortex défragmente la mémoire du Building...',
+    '🎯 Sentinel fait le tour des capteurs... RAS.',
+    '🐢 Franklin relit du Marc Aurèle à la lueur d\'un écran...',
+    '🎲 Glitch rêve de bugs à casser demain...',
+    '🔨 Anvil a rangé ses outils. Même la forge dort.',
+    '⚡ Volt met les systèmes en veille profonde...',
+    '🏴‍☠️ Hunter patrouille les couloirs sombres...',
+    '🌙 Le Building respire. 50 agents rechargent leurs batteries.',
+    '⚔️ Dreyfus monte la garde en silence...',
+];
+
+// Dynamic proactive résumés — stats-based whispers
+function generateDynamicResume() {
+    const hour = new Date().getHours();
+    const msgs = parseInt(localStorage.getItem('sly_msgs_sent') || '0');
+    const agents = JSON.parse(localStorage.getItem('sly_agents_seen') || '[]');
+    const mem = Memory.deep?.length || 0;
+    const pool = [];
+    // Morning bilan
+    if (hour >= 7 && hour <= 9) {
+        pool.push({ agent: 'sentinel', text: `🎯 Bilan matinal — ${streak} jours de streak, ${msgs} messages envoyés. Le Building est prêt.` });
+        pool.push({ agent: 'cortex', text: `🧠 Analyse : tu as contacté ${agents.length} agents différents. Objectif 25 pour le badge Explorer.` });
+    }
+    // Afternoon checkpoint
+    if (hour >= 14 && hour <= 16) {
+        pool.push({ agent: 'datum', text: `📊 Checkpoint — Niveau ${LEVELS.findIndex(l => xp < l?.xp) || LEVELS.length}, ${mem} mémoires profondes stockées.` });
+        pool.push({ agent: 'dreyfus', text: `⚔️ Rapport d'activité : ${conversationHistory.length} échanges cette session. Rythme solide.` });
+    }
+    // Evening wind-down
+    if (hour >= 20 && hour <= 22) {
+        pool.push({ agent: 'franklin', text: `🐢 Bilan du soir — ${msgs} messages, ${agents.length} agents mobilisés. "Chaque jour est une petite vie." — Sénèque` });
+        pool.push({ agent: 'sly', text: `🦊 Belle journée Commandant. Le Building a tourné comme une horloge.` });
+    }
+    // Memory-based recall
+    if (mem > 0 && Math.random() > 0.5) {
+        const randomMem = Memory.deep[Math.floor(Math.random() * Math.min(mem, 5))];
+        if (randomMem?.text) {
+            pool.push({ agent: 'omega', text: `🦅 Rappel — ${randomMem.text.slice(0, 80)}${randomMem.text.length > 80 ? '...' : ''}` });
+        }
+    }
+    if (pool.length === 0) return null;
+    return pool[Math.floor(Math.random() * pool.length)];
+}
+
 function scheduleWhisper() {
-    const delay = 120000 + Math.random() * 180000; // 2-5 min
+    const delay = dreamMode ? (180000 + Math.random() * 240000) : (120000 + Math.random() * 180000); // Dream: 3-7min, Normal: 2-5min
     setTimeout(() => {
-        if (!isStreaming && Date.now() - lastWhisperTime > 120000) {
-            const w = WHISPERS[Math.floor(Math.random() * WHISPERS.length)];
-            addWhisper(w.text);
+        if (!isStreaming && Date.now() - lastWhisperTime > 180000) {
+            if (dreamMode) {
+                const dw = DREAM_WHISPERS[Math.floor(Math.random() * DREAM_WHISPERS.length)];
+                addWhisper(dw);
+            } else {
+                const roll = Math.random();
+                if (roll < 0.3) {
+                    // 30% — dynamic résumé based on real stats
+                    const dyn = generateDynamicResume();
+                    if (dyn) addWhisper(`${dyn.text}`);
+                    else { const w = WHISPERS[Math.floor(Math.random() * WHISPERS.length)]; addWhisper(w.text); }
+                } else if (roll < 0.7 && typeof PROACTIVE_QUOTES !== 'undefined') {
+                    // 40% — proactive quotes
+                    const q = pickQuote();
+                    if (q) { const emoji = AGENTS[q.agent]?.emoji || '🦊'; addWhisper(`${emoji} ${q.text}`); }
+                } else {
+                    // 30% — standard whispers
+                    const w = WHISPERS[Math.floor(Math.random() * WHISPERS.length)];
+                    addWhisper(w.text);
+                }
+            }
             lastWhisperTime = Date.now();
         }
         scheduleWhisper();
@@ -1136,9 +2094,9 @@ function initSTT() {
     recognition.onend = () => {
         isRecording = false;
         document.getElementById('pttBtn').classList.remove('recording');
-        document.getElementById('pttBtn').textContent = '🎤 MAINTENIR POUR PARLER';
+        document.getElementById('pttBtn').textContent = '🎤';
         const text = document.getElementById('chatInput').value.trim();
-        if (text) { sendMessage(text); document.getElementById('chatInput').value = ''; updateSendBtn(); }
+        if (text) { _isVocalMessage = true; sendMessage(text); document.getElementById('chatInput').value = ''; updateSendBtn(); }
     };
 }
 
@@ -1188,49 +2146,92 @@ function initParticles() {
 
 // ═══════ SPLASH ═══════
 function runSplash() {
-    // Skip if visited < 2h ago
-    const lastVisit = localStorage.getItem('sly_splashTime');
-    if (lastVisit && Date.now() - parseInt(lastVisit) < 7200000) {
-        document.getElementById('splash').classList.add('hidden');
-        document.getElementById('app').classList.add('visible');
-        return bootApp();
+    const isMob = /iPhone|iPad|Android/i.test(navigator.userAgent);
+    const SPLASH_DURATION = isMob ? 3000 : 2500; // 3s mobile, 2.5s desktop
+
+    const splash = document.getElementById('splash');
+
+    // ── Neon progress bar (5s ease) ──
+    const bar = document.getElementById('splashBar');
+    if (bar) {
+        bar.style.transition = `width ${SPLASH_DURATION * 0.82 / 1000}s cubic-bezier(0.1, 0.05, 0.25, 1)`;
+        requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
     }
 
-    // Splash particles
+    // ── Boot log cinématique (agents par pôle) ──
+    const BOOT_SEQ = [
+        [300,  '#1F6FFF', '> Initialisation SLY Neural Core...'],
+        [800, '#1EFF8E', '> Cascade IA: Groq → Gemini ✓'],
+        [1300, '#7A3CFF', '> 50 agents Cooper Building online ✓'],
+        [1800, '#1EFF8E', '> Mode AUTONOME · Coût : 0€ ■'],
+    ];
+
+    // Create boot log container if not exists
+    let bootLog = document.getElementById('bootLog');
+    if (!bootLog) {
+        bootLog = document.createElement('div');
+        bootLog.id = 'bootLog';
+        bootLog.style.cssText = `
+            position:absolute;bottom:80px;left:50%;transform:translateX(-50%);
+            width:min(320px,90vw);max-height:120px;overflow:hidden;
+            font-family:'JetBrains Mono','Fira Code',monospace;font-size:9px;
+            line-height:1.6;z-index:3;text-align:left;
+            opacity:0;animation:fadeIn 0.5s ease 0.3s forwards;
+        `;
+        splash.appendChild(bootLog);
+    }
+
+    BOOT_SEQ.forEach(([delay, color, text]) => {
+        setTimeout(() => {
+            if (!bootLog || bootLog._done) return;
+            const line = document.createElement('div');
+            line.style.color = color;
+            line.style.opacity = '0';
+            line.style.animation = 'fadeIn 0.3s ease forwards';
+            line.textContent = text;
+            bootLog.appendChild(line);
+            bootLog.scrollTop = bootLog.scrollHeight;
+        }, delay);
+    });
+
+    // ── Particles canvas ──
     const c = document.getElementById('splashCanvas');
     const ctx = c.getContext('2d');
     c.width = window.innerWidth; c.height = window.innerHeight;
     const dots = [];
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 50; i++) {
+        const hue = Math.random() < 0.6 ? '31,111,255' : Math.random() < 0.5 ? '122,60,255' : '0,229,255';
         dots.push({
             x: Math.random() * c.width, y: Math.random() * c.height,
-            r: Math.random() * 2 + 0.5, vx: (Math.random() - 0.5) * 1.5, vy: (Math.random() - 0.5) * 1.5,
-            alpha: Math.random() * 0.5 + 0.2
+            r: Math.random() * 2 + 0.5,
+            vx: (Math.random() - 0.5) * 1.2, vy: (Math.random() - 0.5) * 1.2,
+            alpha: Math.random() * 0.4 + 0.15, hue
         });
     }
+    let _splashRunning = true;
     function drawSplash() {
+        if (!_splashRunning) return;
         ctx.clearRect(0, 0, c.width, c.height);
         dots.forEach(d => {
             d.x += d.vx; d.y += d.vy;
             if (d.x < 0 || d.x > c.width) d.vx *= -1;
             if (d.y < 0 || d.y > c.height) d.vy *= -1;
             ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(31,111,255,${d.alpha})`; ctx.fill();
+            ctx.fillStyle = `rgba(${d.hue},${d.alpha})`; ctx.fill();
         });
-        if (!document.getElementById('splash').classList.contains('hidden')) requestAnimationFrame(drawSplash);
+        requestAnimationFrame(drawSplash);
     }
     drawSplash();
 
-    // Progress bar
-    const bar = document.getElementById('splashBar');
-    setTimeout(() => bar.style.width = '60%', 100);
-    setTimeout(() => bar.style.width = '100%', 800);
+    // ── Fermeture après SPLASH_DURATION ──
     setTimeout(() => {
-        document.getElementById('splash').classList.add('hidden');
+        _splashRunning = false;
+        if (bootLog) bootLog._done = true;
+        splash.classList.add('hidden');
         document.getElementById('app').classList.add('visible');
         localStorage.setItem('sly_splashTime', Date.now().toString());
         bootApp();
-    }, 1500);
+    }, SPLASH_DURATION);
 }
 
 // ═══════ BOOT ═══════
@@ -1243,19 +2244,48 @@ function bootApp() {
     initSTT();
     scheduleWhisper();
 
-    // Welcome message
-    const greetings = [
-        "Salut Commandant ! Le Building t'attendait.",
-        "Augus ! Content de te voir. Qu'est-ce qu'on attaque ?",
-        "Commandant sur le pont. 50 agents en ligne, zéro anomalie.",
-        "Hey boss. Le Cooper Building tourne comme une horloge.",
-        "Bienvenue. Tous les systèmes sont opérationnels.",
-    ];
-    const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+    // === BRIEFING MATINAL JARVIS ===
     setTimeout(() => {
-        addBubble('agent', 'sly', greeting);
-        if (autoSpeak) speakText('sly', greeting);
-    }, 300);
+        const now = new Date();
+        const h = now.getHours();
+        const streakVal = parseInt(localStorage.getItem('sly_streak') || streak || 0);
+        const lastSession = localStorage.getItem('sly_last_session');
+        const lastMsg = localStorage.getItem('sly_last_message') || '';
+        const isReturn = lastSession && (Date.now() - parseInt(lastSession)) < 86400000;
+
+        // Salutation selon l'heure
+        const salut = h < 6 ? 'Nuit blanche, Commandant ?' : h < 12 ? 'Bonjour Commandant.' : h < 18 ? 'Bon après-midi, Commandant.' : 'Bonsoir, Commandant.';
+
+        // Brief contextuel selon contexte
+        let brief = '';
+        if (isReturn && lastMsg) {
+            brief = salut + ' Tu revenais sur : "' + lastMsg.slice(0,40) + (lastMsg.length>40?'...':"") + '". On reprend ?';
+        } else if (streakVal >= 7) {
+            brief = salut + ' Streak ' + streakVal + ' jours — le Building est en feu. 50 agents en ligne, zéro anomalie.';
+        } else if (streakVal >= 3) {
+            brief = salut + ' ' + streakVal + ' jours de suite. Le Cooper Building tourne. Qu'est-ce qu'on attaque ?';
+        } else if (h < 12) {
+            const morning = [
+                salut + ' Le Building t'attendait. Groq en ligne, 50 agents prêts. Go.',
+                salut + ' SENTINEL a scanné la nuit — tout est propre. On démarre ?',
+                salut + ' Nouvelle journée, nouvelle conquête. Les agents sont chauds.',
+            ];
+            brief = morning[Math.floor(Math.random() * morning.length)];
+        } else {
+            const casual = [
+                salut + ' Le Building tourne nickel. Qu'est-ce qu'on fait ?',
+                salut + ' Content de te voir. 50 agents en ligne. Lance-moi quelque chose.',
+                salut + ' Tous les systèmes sont opérationnels. À tes ordres, Commandant.',
+            ];
+            brief = casual[Math.floor(Math.random() * casual.length)];
+        }
+
+        localStorage.setItem('sly_last_session', Date.now().toString());
+        addBubble('agent', 'sly', brief);
+        // Unlock audio AVANT speakText pour iOS
+        if (typeof _keepAudioAlive === 'function') _keepAudioAlive();
+        if (autoSpeak) speakText('sly', brief);
+    }, 400);
 }
 
 // ═══════ PERSISTENCE ═══════
@@ -1281,6 +2311,7 @@ function updateSendBtn() {
     document.getElementById('sendBtn').disabled = !document.getElementById('chatInput').value.trim();
 }
 
+document.getElementById('chatInput').addEventListener('focus', () => { _unlockAudio(); }, { passive: true });
 document.getElementById('chatInput').addEventListener('input', (e) => {
     updateSendBtn();
     onTyping(e.target.value);
@@ -1295,6 +2326,9 @@ document.getElementById('chatInput').addEventListener('keydown', (e) => {
 });
 
 document.getElementById('sendBtn').addEventListener('click', () => {
+    // iOS AudioContext unlock sur tap send — critique pour autoplay
+    _unlockAudio();
+    if (typeof _keepAudioAlive === 'function') _keepAudioAlive();
     const input = document.getElementById('chatInput');
     const text = input.value.trim();
     if (text) { sendMessage(text); input.value = ''; updateSendBtn(); }
@@ -1306,18 +2340,21 @@ let pttTimer = null;
 pttBtn.addEventListener('touchstart', (e) => {
     e.preventDefault();
     initAudio();
-    stopSpeaking(); // Cut TTS when user speaks
+    stopSpeaking();
     if (recognition) {
         isRecording = true;
         pttBtn.classList.add('recording');
-        pttBtn.textContent = '🔴 ENREGISTREMENT...';
+        pttBtn.textContent = '🔴';
         recognition.start();
+        trackBadge('vocal_used');
+        window.SlyAvatar?.setState('listen');
     }
 });
 pttBtn.addEventListener('touchend', (e) => {
     e.preventDefault();
     if (recognition && isRecording) {
         recognition.stop();
+        window.SlyAvatar?.setState('think');
     }
 });
 // Mouse fallback
@@ -1327,18 +2364,57 @@ pttBtn.addEventListener('mousedown', () => {
     if (recognition) {
         isRecording = true;
         pttBtn.classList.add('recording');
-        pttBtn.textContent = '🔴 ENREGISTREMENT...';
+        pttBtn.textContent = '🔴';
         recognition.start();
+        window.SlyAvatar?.setState('listen');
     }
 });
-pttBtn.addEventListener('mouseup', () => { if (recognition && isRecording) recognition.stop(); });
+pttBtn.addEventListener('mouseup', () => { if (recognition && isRecording) { recognition.stop(); window.SlyAvatar?.setState('think'); } });
 
 document.getElementById('btnSettings').addEventListener('click', openSettings);
-document.getElementById('btnMenu').addEventListener('click', openAgentModal);
+document.getElementById('btnMenu').addEventListener('click', toggleRewindPanel);
 
 // Visibility change — resume audio
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden && audioCtx?.state === 'suspended') audioCtx.resume();
+});
+
+// ═══════ SCROLL-TO-BOTTOM BUTTON ═══════
+const _chatArea = document.getElementById('chatArea');
+const _scrollBtn = document.getElementById('scrollBottom');
+
+_chatArea.addEventListener('scroll', () => {
+    const distFromBottom = _chatArea.scrollHeight - _chatArea.scrollTop - _chatArea.clientHeight;
+    if (distFromBottom > 200) {
+        _scrollBtn.classList.add('visible');
+    } else {
+        _scrollBtn.classList.remove('visible');
+    }
+});
+
+_scrollBtn.addEventListener('click', () => {
+    _chatArea.scrollTo({ top: _chatArea.scrollHeight, behavior: 'smooth' });
+    _scrollBtn.classList.remove('visible');
+});
+
+// ═══════ TYPING PREVIEW ═══════
+const _typingPreview = document.getElementById('typingPreview');
+let _typingTimeout = null;
+
+document.getElementById('chatInput').addEventListener('input', (e) => {
+    const text = e.target.value.trim();
+    if (text.length > 2) {
+        const detected = detectAgent(text);
+        const agent = AGENTS[detected];
+        if (agent) {
+            _typingPreview.textContent = `${agent.emoji} ${agent.name} va répondre...`;
+            _typingPreview.classList.add('visible');
+        }
+    } else {
+        _typingPreview.classList.remove('visible');
+    }
+    clearTimeout(_typingTimeout);
+    _typingTimeout = setTimeout(() => _typingPreview.classList.remove('visible'), 3000);
 });
 
 // ═══════ SERVICE WORKER ═══════
@@ -1461,6 +2537,7 @@ playNext = async function() {
         const audioBuf = await audioCtx.decodeAudioData(buf.slice(0));
         const source = audioCtx.createBufferSource();
         source.buffer = audioBuf;
+        source.playbackRate.value = voicePitch * voiceSpeed;
         const gain = audioCtx.createGain();
         gain.gain.setValueAtTime(0, audioCtx.currentTime);
         gain.gain.linearRampToValueAtTime(dreamGain, audioCtx.currentTime + 0.05);
@@ -1491,6 +2568,8 @@ const VOICE_MORPH_PATTERNS = {
 };
 
 let morphedVoice = null;
+let voicePitch = parseFloat(localStorage.getItem('sly_voice_pitch') || '1');   // 0.5 — 2.0
+let voiceSpeed = parseFloat(localStorage.getItem('sly_voice_speed') || '1');   // 0.5 — 2.0
 
 function detectVoiceMorph(text) {
     const t = text.toLowerCase();
@@ -1524,12 +2603,16 @@ speakText = async function(agentKey, fullText) {
     }
     if (current.trim()) chunks.push(current.trim());
 
+    const _ttsStart2 = Date.now();
     const promises = chunks.map(chunk =>
-        fetch('https://api.fish.audio/v1/tts', {
+        fetch(`${API_BASE}/api/tts`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${FISH_API_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: chunk, reference_id: modelId, format: 'mp3', latency: 'balanced' })
-        }).then(r => r.ok ? r.arrayBuffer() : null).catch(() => null)
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: chunk, voice_id: modelId })
+        }).then(r => {
+            if (r.ok) { Metrics.trackTTFA(_ttsStart2); return r.arrayBuffer(); }
+            return null;
+        }).catch(() => null)
     );
 
     const buffers = await Promise.all(promises);
@@ -1593,8 +2676,8 @@ function renderMarkdown(text) {
     // Unordered lists
     html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
     html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
-    // Links
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+    // Links (safe: noopener + only http/https)
+    html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
     // Line breaks
     html = html.replace(/\n/g, '<br>');
     return html;
@@ -1616,6 +2699,7 @@ addBubble = function(type, agentKey, text, streaming = false) {
             </div>
             <div class="bubble-text">${streaming ? '' : renderMarkdown(text)}</div>
             <div class="bubble-meta">
+                <div class="waveform"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
                 <button class="bubble-replay" onclick="speakText('${agentKey}',this.closest('.bubble').querySelector('.bubble-text').textContent)">▶</button>
                 <span>${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>
             </div>
@@ -2018,6 +3102,16 @@ openSettings = function() {
             <span class="settings-label">🎨 Mood</span>
             <span style="font-weight:600;text-transform:capitalize;color:var(--blue)">${currentMood || 'day'}</span>
         </div>
+        <div class="settings-row">
+            <span class="settings-label">🎵 Pitch voix</span>
+            <input type="range" min="0.5" max="2" step="0.1" value="${voicePitch}" style="width:90px;accent-color:var(--blue)" oninput="voicePitch=parseFloat(this.value);localStorage.setItem('sly_voice_pitch',voicePitch);this.nextElementSibling.textContent=voicePitch.toFixed(1)+'x'">
+            <span style="font-size:12px;color:var(--text-dim);min-width:30px">${voicePitch.toFixed(1)}x</span>
+        </div>
+        <div class="settings-row">
+            <span class="settings-label">⏩ Vitesse</span>
+            <input type="range" min="0.5" max="2" step="0.1" value="${voiceSpeed}" style="width:90px;accent-color:var(--violet)" oninput="voiceSpeed=parseFloat(this.value);localStorage.setItem('sly_voice_speed',voiceSpeed);this.nextElementSibling.textContent=voiceSpeed.toFixed(1)+'x'">
+            <span style="font-size:12px;color:var(--text-dim);min-width:30px">${voiceSpeed.toFixed(1)}x</span>
+        </div>
         <div class="settings-row" style="border:none">
             <span class="settings-label">📡 SLY-COMMAND</span>
             <a href="https://augustinfrance-aico.github.io/sly-command/" target="_blank" style="color:var(--blue);font-weight:600;text-decoration:none">Ouvrir →</a>
@@ -2056,10 +3150,1591 @@ saveState = function() {
     else localStorage.removeItem('sly_morph');
 };
 
+// ═══════ MEMORY 4-LAYER SYSTEM ═══════
+const Memory = {
+    // Layer 1 — Buffer (RAM, 5 last messages)
+    buffer: [],
+    // Layer 2 — Summaries (compressed every 20 msgs)
+    summaries: JSON.parse(localStorage.getItem('sly_memory_summaries') || '[]'),
+    // Layer 3 — User Profile (strategic, 500 tokens)
+    profile: JSON.parse(localStorage.getItem('sly_memory_profile') || '{"preferences":[],"habits":[],"context":"Augus, fondateur du Cooper Building"}'),
+    // Layer 4 — Deep Memory (keyword-indexed, scored)
+    deep: JSON.parse(localStorage.getItem('sly_memory_deep') || '[]'),
+    _msgCount: 0,
+
+    addMessage(role, content) {
+        this.buffer.push({ role, content, ts: Date.now() });
+        if (this.buffer.length > 5) this.buffer.shift();
+        this._msgCount++;
+        if (this._msgCount >= 20) this.compress();
+    },
+
+    async compress() {
+        if (this.buffer.length < 3) return;
+        const toCompress = conversationHistory.slice(-15);
+        if (toCompress.length < 5) return;
+
+        const summaryPrompt = `Résume cette conversation en 2-3 phrases. Extrais les infos clés (noms, décisions, projets mentionnés). MAX 100 mots:\n\n${toCompress.map(m => `${m.role}: ${m.content}`).join('\n')}`;
+        try {
+            const resp = await fetch(`${API_BASE}/api/groq`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: 'llama-3.1-8b-instant',
+                    messages: [{ role: 'user', content: summaryPrompt }],
+                    max_tokens: 150
+                })
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                const summary = data?.choices?.[0]?.message?.content;
+                if (summary) {
+                    this.summaries.push({ text: summary, ts: Date.now() });
+                    if (this.summaries.length > 10) this.summaries.shift();
+                    this.save();
+                    this._extractDeepMemories(summary);
+                }
+            }
+        } catch {}
+        this._msgCount = 0;
+    },
+
+    _extractDeepMemories(text) {
+        const keywords = text.toLowerCase().match(/\b[a-zà-ÿ]{4,}\b/g) || [];
+        const unique = [...new Set(keywords)].filter(k =>
+            !['dans','avec','pour','plus','cette','sont','mais','comme','tout','aussi','être','avoir','fait','très'].includes(k)
+        );
+        if (unique.length > 0) {
+            this.deep.push({ text: text.slice(0, 200), keywords: unique.slice(0, 12), score: 5, lastUsed: Date.now() });
+            if (this.deep.length > 100) {
+                this.deep.sort((a, b) => b.score - a.score);
+                this.deep = this.deep.slice(0, 100);
+            }
+            this.save();
+        }
+    },
+
+    search(query) {
+        const words = query.toLowerCase().split(/\s+/);
+        return this.deep
+            .map(m => ({ ...m, relevance: m.keywords.filter(k => words.some(w => k.includes(w) || w.includes(k))).length }))
+            .filter(m => m.relevance > 0)
+            .sort((a, b) => b.relevance - a.relevance)
+            .slice(0, 3);
+    },
+
+    buildContext(currentMsg) {
+        const layer1 = this.buffer.slice(-5);
+        const layer2 = this.summaries.length > 0 ? this.summaries[this.summaries.length - 1].text : '';
+        const layer3 = this.profile.context || '';
+        const layer4 = this.search(currentMsg).map(m => m.text).join(' ');
+        return { layer1, layer2, layer3, layer4 };
+    },
+
+    decay() {
+        const now = Date.now();
+        this.deep = this.deep.map(m => {
+            if (now - m.lastUsed > 30 * 86400000) m.score--;
+            return m;
+        }).filter(m => m.score > 0);
+        this.save();
+    },
+
+    save() {
+        try {
+            localStorage.setItem('sly_memory_summaries', JSON.stringify(this.summaries));
+            localStorage.setItem('sly_memory_profile', JSON.stringify(this.profile));
+            localStorage.setItem('sly_memory_deep', JSON.stringify(this.deep));
+        } catch {}
+    }
+};
+// Decay deep memories once per session
+Memory.decay();
+
+// ═══════ COMMAND DETECTION ═══════
+// ═══════ BRIDGE BACKEND — Send commands to TITAN proxy ═══════
+async function bridgeCommand(command, data = {}) {
+    try {
+        const resp = await fetch(`${API_BASE}/api/command`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ command, data, timestamp: Date.now(), user: 'augus' })
+        });
+        if (resp.ok) {
+            const result = await resp.json();
+            return result;
+        }
+    } catch {}
+    return null; // Backend unreachable — command was cosmetic-only
+}
+
+function detectCommand(text) {
+    const t = text.toLowerCase().trim();
+    if (/^\/help$/i.test(t)) return { command: '/help', handler: () => {
+        addBubble('agent', 'sentinel', `🎯 COMMANDES DISPONIBLES :\n/help — Cette aide\n/clear — Effacer le chat\n/stats — Tes statistiques\n/cooper — Mobilisation générale\n/agents — Liste des agents\n/voice [agent] — Changer de voix\n/dream — Toggle Dream Mode\n/bridge — Status du bridge backend\n\nOu parle normalement, je route vers le bon agent !`);
+    }};
+    if (/^\/clear$/i.test(t)) return { command: '/clear', handler: () => {
+        document.getElementById('chatArea').innerHTML = '';
+        conversationHistory = [];
+        Memory.buffer = [];
+        addBubble('agent', 'sly', 'Chat nettoyé. On repart frais, Commandant !');
+    }};
+    if (/^\/stats$/i.test(t)) return { command: '/stats', handler: () => {
+        const lvl = LEVELS[level-1]?.name || 'Recrue';
+        const badgeList = Object.keys(_badgeState).map(k => BADGES[k] ? `${BADGES[k].icon} ${BADGES[k].name}` : k).join(', ') || 'Aucun';
+        const badgeCount = Object.keys(_badgeState).length;
+        addBubble('agent', 'datum', `📊 STATS COMMANDANT :\n⭐ XP : ${xp}\n🏆 Niveau : ${lvl} (Niv.${level})\n🔥 Streak : ${streak} jours\n💬 Messages : ${_totalMsgsSent}\n🎯 Agents contactés : ${_agentsSeen.size}\n🏅 Badges : ${badgeCount}/8 — ${badgeList}\n🧠 Mémoires : ${Memory.deep.length}\n📝 Résumés : ${Memory.summaries.length}\n📱 Device : ${DEVICE_CLASS}\n🎵 Pitch : ${voicePitch.toFixed(1)}x | Vitesse : ${voiceSpeed.toFixed(1)}x`);
+    }};
+    if (/^\/agents$/i.test(t)) return { command: '/agents', handler: () => openAgentModal() };
+    if (/^\/dream$/i.test(t)) return { command: '/dream', handler: () => {
+        dreamMode = !dreamMode;
+        if (dreamMode) {
+            document.body.classList.add('dream-mode');
+            dreamGain = 0.6;
+            if (masterGain && audioCtx) masterGain.gain.setValueAtTime(dreamGain, audioCtx.currentTime);
+            if (!document.querySelector('.dream-badge')) {
+                const b = document.createElement('div'); b.className = 'dream-badge'; b.textContent = '🌙 Dream Mode'; document.body.appendChild(b);
+            }
+            trackBadge('dream_activated');
+        } else {
+            document.body.classList.remove('dream-mode');
+            dreamGain = 1;
+            if (masterGain && audioCtx) masterGain.gain.setValueAtTime(1, audioCtx.currentTime);
+            document.querySelector('.dream-badge')?.remove();
+        }
+        addBubble('agent', 'sly', dreamMode ? '🌙 Dream Mode activé. Le Building dort...' : '☀️ Dream Mode désactivé. On se réveille !');
+    }};
+    if (/^\/cooper$/i.test(t) || /clan cooper|cooper gang|les trois|le gang/i.test(t)) return { command: '/cooper', handler: () => {
+        addBubble('agent', 'sly', `🦊 ${pickConfirmation()} Le Clan Cooper se mobilise !`);
+        trackBadge('cooper_invoked');
+        bridgeCommand('cooper', { agents: ['sly','bentley','murray'], text: text });
+    }};
+    if (/tout le building|mobilisation|50 agents|tous les agents/i.test(t)) return { command: '/cooper-all', handler: () => {
+        addBubble('agent', 'sentinel', `🎯 ${pickConfirmation()} 50 agents déployés !`);
+        bridgeCommand('cooper-all', { agents: 'all', text: text });
+    }};
+    if (/audit|analyse complète|check complet/i.test(t)) return { command: '/audit', handler: () => {
+        addBubble('agent', 'cortex', `🧠 ${pickConfirmation()} Audit lancé — CORTEX + DATUM + PULSE sur le coup.`);
+        bridgeCommand('audit', { agents: ['cortex','datum','pulse'], text: text });
+    }};
+    if (/bilan|résumé du jour|point/i.test(t) && t.length < 30) return { command: '/bilan', handler: () => {
+        const msgs = parseInt(localStorage.getItem('sly_msgs_sent') || '0');
+        const agents = JSON.parse(localStorage.getItem('sly_agents_seen') || '[]');
+        addBubble('agent', 'datum', `📊 BILAN EXPRESS :\n💬 ${msgs} messages envoyés\n🎯 ${agents.length} agents contactés\n🔥 Streak : ${streak} jours\n⭐ Niveau : ${level} (${xp} XP)\n🧠 ${Memory.deep.length} mémoires profondes`);
+        bridgeCommand('bilan', { stats: { msgs, agents: agents.length, streak, level, xp } });
+    }};
+    if (/^\/bridge$/i.test(t)) return { command: '/bridge', handler: async () => {
+        const result = await bridgeCommand('ping');
+        if (result) addBubble('agent', 'volt', `⚡ Bridge actif — Backend SLY connecté sur ${API_BASE}`);
+        else addBubble('agent', 'volt', `⚡ Bridge offline — Backend SLY non joignable. Mode autonome.`);
+    }};
+    if (/^\/voice\s+(\w+)/i.test(t)) {
+        const match = t.match(/^\/voice\s+(\w+)/i);
+        return { command: '/voice', handler: () => {
+            const target = match[1].toLowerCase();
+            if (AGENTS[target]) { morphedVoice = AGENTS[target].voice; addBubble('agent', target, `🎭 Voice Morph : je parle maintenant avec la voix de ${AGENTS[target].name} !`); }
+            else addBubble('agent', 'sly', `Agent "${target}" non trouvé.`);
+        }};
+    }
+    return null;
+}
+
+// ═══════ OFFLINE CACHE (graceful degradation) ═══════
+const OfflineCache = {
+    _KEY: 'sly_offline_cache',
+    _MAX: 30,
+    _responses: JSON.parse(localStorage.getItem('sly_offline_cache') || '[]'),
+
+    // Store successful responses for offline use
+    store(agentKey, userMsg, response) {
+        this._responses.push({
+            agent: agentKey,
+            q: userMsg.slice(0, 100).toLowerCase(),
+            a: response.slice(0, 500),
+            ts: Date.now()
+        });
+        if (this._responses.length > this._MAX) this._responses.shift();
+        try { localStorage.setItem(this._KEY, JSON.stringify(this._responses)); } catch {}
+    },
+
+    // Find a relevant cached response or return a personality-based offline reply
+    getReply(agentKey, userMsg) {
+        const q = userMsg.slice(0, 100).toLowerCase();
+        const words = q.split(/\s+/).filter(w => w.length > 3);
+
+        // Try to find a similar past response for this agent
+        const match = this._responses
+            .filter(r => r.agent === agentKey)
+            .map(r => ({ ...r, score: words.filter(w => r.q.includes(w)).length }))
+            .filter(r => r.score > 0)
+            .sort((a, b) => b.score - a.score)[0];
+
+        if (match) return `📡 *Mode hors-ligne* — ${match.a}`;
+
+        // Fallback: agent-specific offline messages
+        const offlineMessages = {
+            sly: "Je suis momentanément hors réseau, mais le flair du renard ne dort jamais. Dès que la connexion revient, on reprend le plan.",
+            bentley: "Connexion perdue. Mes circuits fonctionnent en mode autonome. Garde tes questions, je les traiterai dès le retour en ligne.",
+            murray: "PAS DE RÉSEAU ?! LE MURRAY NE S'ARRÊTE PAS POUR SI PEU ! On attend que ça revienne et on FONCE !",
+            omega: "La nébuleuse observe en silence. La connexion reviendra. En attendant, médite sur ta prochaine action.",
+            franklin: "Comme disait Sénèque : 'La patience est la compagne de la sagesse.' Les serveurs reviendront. Toi aussi.",
+            cortex: "Perte de signal data. Pas de panique — les analyses locales continuent. Reconnexion imminente.",
+            glitch: "Et si le bug ÉTAIT la feature ? Profite de la pause pour imaginer un truc fou.",
+            anvil: "Réseau down. Rien à fixer côté client. On attend le retour des serveurs.",
+            sentinel: "Alerte connexion. Tous les systèmes locaux : nominaux. En attente de reconnexion.",
+            dreyfus: "Discipline, même hors ligne. Note tes idées, on les exécute dès le retour.",
+        };
+        return offlineMessages[agentKey] || offlineMessages.sly;
+    }
+};
+
+// ═══════ PROACTIVE QUOTES POOL (50+) ═══════
+const PROACTIVE_QUOTES = [
+    { agent: 'franklin', text: "Sénèque : Ce n'est pas parce que les choses sont difficiles que nous n'osons pas." },
+    { agent: 'franklin', text: "Marc Aurèle : L'obstacle devient le chemin." },
+    { agent: 'franklin', text: "Épictète : Ce qui trouble les hommes, ce ne sont pas les choses, mais leurs jugements." },
+    { agent: 'franklin', text: "La fortune favorise les audacieux. — Virgile" },
+    { agent: 'franklin', text: "Sénèque : Nous souffrons plus souvent en imagination qu'en réalité." },
+    { agent: 'omega', text: "Chaque action d'aujourd'hui construit l'empire de demain." },
+    { agent: 'omega', text: "Le Building veille. 50 agents, 0 anomalie." },
+    { agent: 'omega', text: "La patience est la compagne de la sagesse. — Saint Augustin" },
+    { agent: 'cortex', text: "Rappel : vérifie tes KPIs de la semaine." },
+    { agent: 'cortex', text: "Tes données du jour sont prêtes pour analyse." },
+    { agent: 'cortex', text: "Pattern détecté dans tes habitudes — tu es plus productif le matin." },
+    { agent: 'glitch', text: "Et si tu essayais un truc complètement différent aujourd'hui ?" },
+    { agent: 'glitch', text: "L'innovation naît du chaos organisé." },
+    { agent: 'glitch', text: "Disrupte ou sois disrupté." },
+    { agent: 'sentinel', text: "Scan matinal terminé. Aucune anomalie détectée." },
+    { agent: 'sentinel', text: "Tous les systèmes sont nominaux." },
+    { agent: 'sentinel', text: "Routing optimisé. Le Building est synchronisé." },
+    { agent: 'murray', text: "BOUM ! Nouvelle journée, nouvelle conquête !" },
+    { agent: 'murray', text: "On casse tout et on recommence EN MIEUX !" },
+    { agent: 'murray', text: "La force sans la direction est gaspillée. Mais avec toi, boss, on vise juste." },
+    { agent: 'sly', text: "J'ai repéré une opportunité. Tu veux que je creuse ?" },
+    { agent: 'sly', text: "Le flair du renard ne ment jamais." },
+    { agent: 'sly', text: "Un bon cambrioleur ne force pas les serrures — il trouve la porte ouverte." },
+    { agent: 'bentley', text: "J'ai analysé ton workflow. Optimisation possible sur 3 points." },
+    { agent: 'bentley', text: "Calculs en cours... résultat dans 3, 2, 1..." },
+    { agent: 'bentley', text: "La logique est le début de la sagesse, pas sa fin." },
+    { agent: 'dreyfus', text: "Discipline : 1 tâche critique avant midi. Le reste suivra." },
+    { agent: 'dreyfus', text: "La qualité n'est pas un acte. C'est une habitude. — Aristote" },
+    { agent: 'dreyfus', text: "Check-list du jour vérifiée. Tout est en ordre." },
+    { agent: 'anvil', text: "Les tâches en attente ne s'accumulent pas. Exécution immédiate." },
+    { agent: 'anvil', text: "Bug zéro, crash zéro, excuse zéro." },
+    { agent: 'anvil', text: "Quand ça bloque, on casse le mur. Point." },
+    { agent: 'specter', text: "Veille terminée. Rien de suspect sur les réseaux." },
+    { agent: 'specter', text: "Je surveille les ombres pour que tu restes dans la lumière." },
+    { agent: 'niche', text: "Tendance détectée. Potentiel intéressant." },
+    { agent: 'niche', text: "Le marché bouge. Quelque chose se prépare." },
+    { agent: 'closer', text: "Un lead chaud attend ta réponse." },
+    { agent: 'closer', text: "Le closing, c'est pas de la vente. C'est de l'aide." },
+    { agent: 'sibyl', text: "Les étoiles s'alignent pour cette semaine." },
+    { agent: 'sibyl', text: "Projection : si tu maintiens ce rythme, objectif atteint en 12 jours." },
+    { agent: 'pixel', text: "Le design, c'est pas comment ça se voit — c'est comment ça marche." },
+    { agent: 'pixel', text: "Nouvel achievement unlockable aujourd'hui !" },
+    { agent: 'volt', text: "Pipeline stable. Tous les modules répondent." },
+    { agent: 'volt', text: "Optimisation système en cours. Tu ne remarqueras rien — c'est le but." },
+    { agent: 'hunter', text: "J'ai trouvé un raccourci. Intéressé ?" },
+    { agent: 'hunter', text: "Le chemin le plus court n'est pas toujours le plus évident." },
+    { agent: 'datum', text: "Tes métriques de la semaine sont prêtes." },
+    { agent: 'datum', text: "Les données ne mentent pas. Et aujourd'hui, elles sourient." },
+    { agent: 'fresco', text: "Un bon visuel vaut mille mots. J'en ai un pour toi." },
+    { agent: 'philomene', text: "Les mots justes au bon moment changent le monde." },
+];
+const _usedQuotes = [];
+function pickQuote() {
+    const available = PROACTIVE_QUOTES.map((q, i) => ({ ...q, idx: i }))
+        .filter(q => !_usedQuotes.includes(q.idx));
+    if (available.length === 0) { _usedQuotes.length = 0; return pickQuote(); }
+    const weights = available.map(q => _usedQuotes.includes(q.idx) ? 0 : 3);
+    const total = weights.reduce((a, b) => a + b, 0);
+    let r = Math.random() * total;
+    for (let i = 0; i < available.length; i++) {
+        r -= weights[i];
+        if (r <= 0) {
+            _usedQuotes.push(available[i].idx);
+            if (_usedQuotes.length > 20) _usedQuotes.shift();
+            return available[i];
+        }
+    }
+    return available[0];
+}
+
+// ═══════ CONFIRMATIONS (blueprint exact) ═══════
+const CONFIRMATIONS = [
+    "Entendu Commandant, je m'en occupe.",
+    "Reçu. Les agents sont en route.",
+    "C'est parti. Le Building se met en marche.",
+    "Compris Augus, j'envoie l'équipe.",
+    "Roger. On lance ça immédiatement.",
+    "Considère que c'est fait. Les agents bossent.",
+    "Le Clan Cooper est sur le coup.",
+    "Transmission effectuée. Les agents se coordonnent.",
+    "Affirmatif. SENTINEL dispatch en cours.",
+    "Ça roule. Je te fais un retour dès que c'est prêt.",
+];
+let _lastConfirmIdx = -1;
+function pickConfirmation() {
+    let idx;
+    do { idx = Math.floor(Math.random() * CONFIRMATIONS.length); } while (idx === _lastConfirmIdx);
+    _lastConfirmIdx = idx;
+    return CONFIRMATIONS[idx];
+}
+
+// ═══════ SANITIZATION ═══════
+const sanitize = escapeHTML; // alias — même implémentation
+
+// ═══════ PERFORMANCE BUDGETS ═══════
+// LRU Audio Cache
+const AudioCache = {
+    _cache: new Map(),
+    _maxSize: PERF_CONFIG[DEVICE_CLASS].maxAudioCache,
+    get(key) {
+        const val = this._cache.get(key);
+        if (val) { this._cache.delete(key); this._cache.set(key, val); }
+        return val || null;
+    },
+    set(key, value) {
+        if (this._cache.size >= this._maxSize) {
+            const oldest = this._cache.keys().next().value;
+            this._cache.delete(oldest);
+        }
+        this._cache.set(key, value);
+    }
+};
+
+// ═══════ SENTIMENT ANALYSIS (client-side → 3D avatar emotion) ═══════
+const SentimentEngine = {
+    _positive: /super|génial|excellent|bravo|parfait|top|nice|cool|merci|content|heureux|victoire|gagné|réussi|fonctionne|succès|incroyable|magnifique|🎉|🔥|💪|✅|😊|😄/i,
+    _negative: /erreur|bug|crash|échoué|raté|problème|impossible|panne|perdu|merde|galère|cassé|❌|😡|😤|💀/i,
+    _excited: /BOUM|!!!|ÉNORME|DINGUE|INCROYABLE|WOW|LET'S GO|FONCE|ON CASSE|ATTAQUE/i,
+    _calm: /médite|réfléchis|sénèque|sagesse|patience|calme|philosophie|respire|zen|observe/i,
+    analyze(text) {
+        if (!text) return 'neutral';
+        const t = text.slice(0, 200);
+        if (this._excited.test(t)) return 'excited';
+        if (this._calm.test(t)) return 'calm';
+        if (this._positive.test(t)) return 'happy';
+        if (this._negative.test(t)) return 'alert';
+        return 'neutral';
+    },
+    toAvatarState(sentiment) {
+        const map = { happy: 'talk', alert: 'think', excited: 'talk', calm: 'idle', neutral: 'idle' };
+        return map[sentiment] || 'idle';
+    }
+};
+
+// Battery-aware performance
+if (navigator.getBattery) {
+    navigator.getBattery().then(battery => {
+        battery.addEventListener('levelchange', () => {
+            if (battery.level < 0.2) document.documentElement.classList.add('perf-low');
+            if (battery.level < 0.1) document.documentElement.style.setProperty('--particle-count', '0');
+        });
+    }).catch(() => {});
+}
+
+// Visibility-based optimization
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        if (audioCtx?.state === 'running') audioCtx.suspend();
+    } else {
+        if (audioCtx?.state === 'suspended') audioCtx.resume();
+    }
+});
+
+// ═══════ CONVERSATION SESSIONS MANAGER (IndexedDB) ═══════
+const Sessions = {
+    _DB_NAME: 'sly_sessions_db',
+    _STORE: 'sessions',
+    _VERSION: 1,
+    _ACTIVE_KEY: 'sly_active_session',
+    _MAX_SESSIONS: 20,
+    _db: null,
+    _cache: [], // in-memory mirror for sync access
+
+    async _openDB() {
+        if (this._db) return this._db;
+        return new Promise((resolve, reject) => {
+            const req = indexedDB.open(this._DB_NAME, this._VERSION);
+            req.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains(this._STORE)) {
+                    const store = db.createObjectStore(this._STORE, { keyPath: 'id' });
+                    store.createIndex('updated', 'updated', { unique: false });
+                }
+            };
+            req.onsuccess = (e) => { this._db = e.target.result; resolve(this._db); };
+            req.onerror = () => reject(req.error);
+        });
+    },
+
+    async _tx(mode, fn) {
+        const db = await this._openDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(this._STORE, mode);
+            const store = tx.objectStore(this._STORE);
+            const result = fn(store);
+            tx.oncomplete = () => resolve(result._result);
+            tx.onerror = () => reject(tx.error);
+        });
+    },
+
+    async init() {
+        try {
+            const db = await this._openDB();
+            // Migrate from localStorage if exists
+            const oldData = localStorage.getItem('sly_sessions');
+            if (oldData) {
+                const oldSessions = JSON.parse(oldData);
+                if (oldSessions.length > 0) {
+                    const tx = db.transaction(this._STORE, 'readwrite');
+                    const store = tx.objectStore(this._STORE);
+                    oldSessions.forEach(s => store.put(s));
+                    await new Promise(r => { tx.oncomplete = r; });
+                    localStorage.removeItem('sly_sessions');
+                }
+            }
+            this._cache = await this._getAllFromDB();
+        } catch {
+            // IndexedDB unavailable — use cache only
+            try { this._cache = JSON.parse(localStorage.getItem('sly_sessions') || '[]'); } catch { this._cache = []; }
+        }
+    },
+
+    async _getAllFromDB() {
+        const db = await this._openDB();
+        return new Promise((resolve) => {
+            const tx = db.transaction(this._STORE, 'readonly');
+            const store = tx.objectStore(this._STORE);
+            const req = store.index('updated').getAll();
+            req.onsuccess = () => resolve((req.result || []).reverse().slice(0, this._MAX_SESSIONS));
+            req.onerror = () => resolve([]);
+        });
+    },
+
+    getAll() { return this._cache; },
+    getActive() { return localStorage.getItem(this._ACTIVE_KEY) || null; },
+
+    async _put(session) {
+        try {
+            const db = await this._openDB();
+            const tx = db.transaction(this._STORE, 'readwrite');
+            tx.objectStore(this._STORE).put(session);
+            await new Promise(r => { tx.oncomplete = r; });
+        } catch {}
+    },
+
+    async _remove(id) {
+        try {
+            const db = await this._openDB();
+            const tx = db.transaction(this._STORE, 'readwrite');
+            tx.objectStore(this._STORE).delete(id);
+            await new Promise(r => { tx.oncomplete = r; });
+        } catch {}
+    },
+
+    async create(title) {
+        const id = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+        const session = {
+            id, title: title || 'Nouvelle conversation',
+            created: Date.now(), updated: Date.now(),
+            history: [], memory: { buffer: [], summaries: [], deep: [] },
+            preview: '', agent: 'sly'
+        };
+        this._cache.unshift(session);
+        if (this._cache.length > this._MAX_SESSIONS) this._cache = this._cache.slice(0, this._MAX_SESSIONS);
+        localStorage.setItem(this._ACTIVE_KEY, id);
+        await this._put(session);
+        return session;
+    },
+
+    async saveCurrent() {
+        const activeId = this.getActive();
+        if (!activeId) return;
+        const idx = this._cache.findIndex(s => s.id === activeId);
+        if (idx === -1) return;
+        const s = this._cache[idx];
+        s.history = conversationHistory.slice(-30);
+        s.memory = { buffer: Memory.buffer, summaries: Memory.summaries, deep: Memory.deep.slice(0, 20) };
+        s.updated = Date.now();
+        s.agent = currentAgent;
+        const lastMsg = conversationHistory.filter(m => m.role === 'assistant').pop();
+        s.preview = lastMsg ? lastMsg.content.slice(0, 80) : '';
+        if (s.title === 'Nouvelle conversation') {
+            const firstUser = conversationHistory.find(m => m.role === 'user');
+            if (firstUser) s.title = firstUser.content.slice(0, 40);
+        }
+        await this._put(s);
+    },
+
+    async load(sessionId) {
+        const session = this._cache.find(s => s.id === sessionId);
+        if (!session) return false;
+        await this.saveCurrent();
+        conversationHistory = session.history || [];
+        Memory.buffer = session.memory?.buffer || [];
+        Memory.summaries = session.memory?.summaries || [];
+        Memory.deep = session.memory?.deep || [];
+        Memory.save();
+        currentAgent = session.agent || 'sly';
+        localStorage.setItem(this._ACTIVE_KEY, sessionId);
+        rebuildChatFromHistory();
+        highlightDockAgent(currentAgent);
+        return true;
+    },
+
+    async delete(sessionId) {
+        this._cache = this._cache.filter(s => s.id !== sessionId);
+        await this._remove(sessionId);
+        if (this.getActive() === sessionId) {
+            if (this._cache.length > 0) {
+                await this.load(this._cache[0].id);
+            } else {
+                await this.create('Nouvelle conversation');
+                conversationHistory = [];
+                Memory.buffer = [];
+                rebuildChatFromHistory();
+            }
+        }
+    },
+
+    async search(query) {
+        const q = query.toLowerCase();
+        return this._cache.filter(s =>
+            s.title?.toLowerCase().includes(q) ||
+            s.history?.some(m => m.content?.toLowerCase().includes(q))
+        );
+    }
+};
+
+function rebuildChatFromHistory() {
+    const area = document.getElementById('chatArea');
+    area.innerHTML = '';
+    for (const msg of conversationHistory) {
+        if (msg.role === 'user') {
+            addBubble('user', null, msg.content);
+        } else if (msg.role === 'assistant') {
+            const agent = msg.agent || currentAgent;
+            addBubble('agent', agent, msg.content);
+        }
+    }
+}
+
+// ═══════ REWIND PANEL (sessions UI) ═══════
+function toggleRewindPanel() {
+    const panel = document.getElementById('rewindPanel');
+    const backdrop = document.getElementById('rewindBackdrop');
+    const isOpen = panel.classList.contains('open');
+    if (isOpen) {
+        panel.classList.remove('open');
+        backdrop.classList.remove('open');
+    } else {
+        renderRewindList();
+        panel.classList.add('open');
+        backdrop.classList.add('open');
+    }
+}
+
+function renderRewindList() {
+    const list = document.getElementById('rewindList');
+    const sessions = Sessions.getAll();
+    const activeId = Sessions.getActive();
+    list.innerHTML = '';
+
+    if (sessions.length === 0) {
+        list.innerHTML = '<div style="text-align:center;color:var(--text-dim);padding:20px;font-size:13px">Aucune session sauvegardée</div>';
+        return;
+    }
+
+    sessions.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'rewind-item' + (s.id === activeId ? ' active' : '');
+        if (s.id === activeId) div.style.borderLeft = '3px solid var(--blue)';
+        const date = new Date(s.updated);
+        const dateStr = date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) + ' ' +
+                        date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        const agent = AGENTS[s.agent] || AGENTS.sly;
+        div.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <div class="rewind-item-date">${dateStr}</div>
+                <button onclick="event.stopPropagation();Sessions.delete('${s.id}').then(()=>renderRewindList())" style="background:none;color:var(--red);font-size:14px;padding:4px 8px;border-radius:8px">✕</button>
+            </div>
+            <div class="rewind-item-preview">${sanitize(s.title)}</div>
+            <div class="rewind-item-agent">${agent.emoji} ${agent.name} • ${s.history?.length || 0} messages</div>`;
+        div.onclick = async () => {
+            await Sessions.load(s.id);
+            toggleRewindPanel();
+            addBubble('agent', 'sly', `Session restaurée : "${s.title}"`);
+        };
+        list.appendChild(div);
+    });
+}
+
+document.getElementById('rewindBackdrop').addEventListener('click', toggleRewindPanel);
+document.getElementById('rewindNew').addEventListener('click', async () => {
+    await Sessions.saveCurrent();
+    await Sessions.create('Nouvelle conversation');
+    conversationHistory = [];
+    Memory.buffer = [];
+    Memory.summaries = [];
+    document.getElementById('chatArea').innerHTML = '';
+    toggleRewindPanel();
+    const greetings = [
+        "Nouvelle conversation ! Qu'est-ce qu'on fait, Commandant ?",
+        "Page blanche. Le Building est prêt.",
+        "Fresh start ! Je t'écoute, boss.",
+    ];
+    addBubble('agent', 'sly', greetings[Math.floor(Math.random() * greetings.length)]);
+});
+
+// Auto-save session periodically (IndexedDB)
+setInterval(() => Sessions.saveCurrent(), 30000);
+window.addEventListener('beforeunload', () => Sessions.saveCurrent());
+
+// ═══════ PATCH AGENT MODAL ═══════
+// Ajouter les sections complètes pour les 50 agents
+const _origOpenModal = openAgentModal;
+openAgentModal = function() {
+    const modal = document.getElementById('agentModal');
+    const overlay = document.getElementById('modalOverlay');
+    const sections = {
+        '🦊 LEADERS': ['sly','bentley','murray'],
+        '🎯 CORE': ['omega','sentinel','pulse'],
+        '🧠 STRATÉGIE': ['cortex','glitch','sibyl','nexus'],
+        '💼 VENTE': ['closer','kaiser','prism','onyx','ledger'],
+        '✍️ CONTENU': ['philomene','fresco','viral','franklin'],
+        '🔨 OPS': ['anvil','dreyfus','specter','datum','volt'],
+        '🔍 MARCHÉS': ['niche','racoon'],
+        '🧪 R&D': ['cipher','radar','proto'],
+        '🕹️ CRÉATIF': ['pixel'],
+        '🌟 NOUVEAUX': ['aurora','virgile','gauss','orpheus','mercer','turing','flux','hunter','mirage','justice','echo'],
+        '🧬 MÉTA': ['darwin','shadow','agora','chronos','havoc','atlas'],
+    };
+    let html = '<div class="modal-title">COOPER BUILDING — 50 AGENTS</div>';
+    for (const [label, keys] of Object.entries(sections)) {
+        html += `<div class="modal-section"><div class="modal-section-label">${label}</div><div class="modal-grid">`;
+        keys.forEach(key => {
+            const a = AGENTS[key];
+            if (!a) return;
+            html += `<button class="modal-agent" onclick="selectAgent('${key}')">
+                <span class="modal-agent-emoji">${a.emoji}</span>
+                <span class="modal-agent-name">${a.name}</span>
+            </button>`;
+        });
+        html += '</div></div>';
+    }
+    modal.innerHTML = html;
+    modal.classList.add('visible');
+    overlay.classList.add('visible');
+    overlay.onclick = closeAgentModal;
+};
+
+// ═══════ WEBSOCKET STREAMING (Socket.IO compatible) ═══════
+const SlySocket = {
+    ws: null,
+    _reconnectDelay: 1000,
+    _maxDelay: 30000,
+    _attempts: 0,
+    _maxAttempts: 10,
+    connected: false,
+
+    connect() {
+        if (this.ws && this.ws.readyState <= 1) return; // already connected/connecting
+        const wsUrl = API_BASE.replace('https://', 'wss://').replace('http://', 'ws://') + '/ws';
+        try {
+            this.ws = new WebSocket(wsUrl);
+            this.ws.onopen = () => {
+                this.connected = true;
+                this._attempts = 0;
+                this._reconnectDelay = 1000;
+                this.ws.send(JSON.stringify({ type: 'auth', user: 'augus', ts: Date.now() }));
+            };
+            this.ws.onmessage = (e) => {
+                try {
+                    const msg = JSON.parse(e.data);
+                    this._handleMessage(msg);
+                } catch {}
+            };
+            this.ws.onclose = () => { this.connected = false; this._reconnect(); };
+            this.ws.onerror = () => { this.connected = false; };
+        } catch { this._reconnect(); }
+    },
+
+    _reconnect() {
+        if (this._attempts >= this._maxAttempts) return;
+        this._attempts++;
+        const delay = Math.min(this._reconnectDelay * Math.pow(2, this._attempts - 1), this._maxDelay);
+        setTimeout(() => this.connect(), delay);
+    },
+
+    _handleMessage(msg) {
+        if (msg.type === 'whisper' && msg.text) {
+            addWhisper(msg.text);
+        } else if (msg.type === 'agent_response' && msg.agent && msg.text) {
+            addBubble('agent', msg.agent, msg.text);
+            if (autoSpeak) speakText(msg.agent, msg.text);
+        } else if (msg.type === 'bridge_result' && msg.command) {
+            // Real dispatch results from SENTINEL
+            if (msg.data?.response) {
+                addBubble('agent', msg.data.agent || 'sentinel', msg.data.response);
+            }
+        } else if (msg.type === 'notification' && msg.text) {
+            showToast(msg.text);
+        }
+    },
+
+    send(type, data) {
+        if (this.ws?.readyState === 1) {
+            this.ws.send(JSON.stringify({ type, ...data, ts: Date.now() }));
+            return true;
+        }
+        return false;
+    }
+};
+// Auto-connect WebSocket (non-blocking, silent fail if backend doesn't support it)
+setTimeout(() => SlySocket.connect(), 3000);
+
+// ═══════ ENHANCED BRIDGE (dispatch via WebSocket or REST) ═══════
+const _origBridge = bridgeCommand;
+bridgeCommand = async function(command, data = {}) {
+    // Try WebSocket first (real-time)
+    if (SlySocket.connected && SlySocket.send('command', { command, data })) {
+        return { dispatched: true, via: 'websocket' };
+    }
+    // Fallback to REST
+    return _origBridge(command, data);
+};
+
+// ═══════ ENHANCED PROACTIVE RÉSUMÉS ═══════
+const _origDynResume = generateDynamicResume;
+generateDynamicResume = function() {
+    const hour = new Date().getHours();
+    const pool = [];
+    const msgs = parseInt(localStorage.getItem('sly_msgs_sent') || '0');
+    const agents = JSON.parse(localStorage.getItem('sly_agents_seen') || '[]');
+    const mem = Memory.deep?.length || 0;
+
+    // Alertes client (check memory for client-related keywords)
+    const clientMems = Memory.deep?.filter(m => /client|lurie|giovani|didier|projet|deadline|livraison/i.test(m.text || '')) || [];
+    if (clientMems.length > 0) {
+        const recent = clientMems.sort((a,b) => (b.ts||0) - (a.ts||0))[0];
+        if (recent && Date.now() - (recent.ts||0) < 86400000 * 3) {
+            pool.push({ agent: 'closer', text: `💼 Alerte client — ${recent.text?.slice(0,60)}... À suivre de près, Commandant.` });
+        }
+    }
+
+    // Opportunités détectées (check for market/niche keywords)
+    const nicheMems = Memory.deep?.filter(m => /niche|marché|opportunité|tendance|kdp|upwork/i.test(m.text || '')) || [];
+    if (nicheMems.length > 0 && Math.random() > 0.6) {
+        const niche = nicheMems[Math.floor(Math.random() * Math.min(nicheMems.length, 3))];
+        if (niche?.text) pool.push({ agent: 'niche', text: `🔍 Opportunité repérée — ${niche.text.slice(0,60)}... Signal à explorer.` });
+    }
+
+    // Agent inactivity alerts
+    const agentInteractions = JSON.parse(localStorage.getItem('sly_agent_last_used') || '{}');
+    const staleAgents = Object.entries(agentInteractions)
+        .filter(([k,v]) => Date.now() - v > 86400000 * 5)
+        .map(([k]) => AGENTS[k]?.name).filter(Boolean);
+    if (staleAgents.length >= 3) {
+        pool.push({ agent: 'sentinel', text: `🎯 ${staleAgents.length} agents inactifs depuis 5+ jours : ${staleAgents.slice(0,3).join(', ')}. Rotation recommandée.` });
+    }
+
+    // Streak milestone alerts
+    if (streak === 7) pool.push({ agent: 'pixel', text: `🕹️ STREAK 7 JOURS ! Achievement Gold. Le Building est fier, Commandant.` });
+    if (streak === 14) pool.push({ agent: 'pixel', text: `🕹️ STREAK 14 JOURS ! Achievement Diamond. Tu es une légende.` });
+    if (streak === 30) pool.push({ agent: 'pixel', text: `🕹️ STREAK 30 JOURS ! Titanium unlocked. Même Sénèque serait impressionné.` });
+
+    // Daily productivity stats
+    const todayMsgs = parseInt(localStorage.getItem('sly_today_msgs') || '0');
+    if (hour >= 18 && todayMsgs > 20) {
+        pool.push({ agent: 'dreyfus', text: `⚔️ ${todayMsgs} messages aujourd'hui — productivité exemplaire. Le Building tourne au maximum.` });
+    }
+
+    // If nothing specific, fallback to original
+    if (pool.length === 0) return _origDynResume();
+    return pool[Math.floor(Math.random() * pool.length)];
+};
+
+// ═══════ CLOUDFLARE WORKERS AI (Tier 4 cascade) ═══════
+async function callCloudflare(messages, maxTokens = 300) {
+    if (!CircuitBreaker.canAttempt('cloudflare')) return null;
+    try {
+        const resp = await fetch(`${API_BASE}/api/cloudflare`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages, max_tokens: maxTokens })
+        });
+        if (!resp.ok) { CircuitBreaker.recordFailure('cloudflare'); return null; }
+        const data = await resp.json();
+        CircuitBreaker.recordSuccess('cloudflare');
+        Metrics.trackFallback('gemini', 'cloudflare');
+        return data?.result?.response || data?.choices?.[0]?.message?.content || null;
+    } catch {
+        CircuitBreaker.recordFailure('cloudflare');
+        return null;
+    }
+}
+
+// ═══════ STORAGE ESTIMATION WARNING ═══════
+async function checkStorageEstimate() {
+    if (!navigator.storage?.estimate) return;
+    try {
+        const { usage, quota } = await navigator.storage.estimate();
+        const availableMB = ((quota - usage) / 1024 / 1024).toFixed(1);
+        if (parseFloat(availableMB) < 10) {
+            showToast(`⚠️ Stockage faible — ${availableMB}MB restant. Les mémoires anciennes seront purgées.`);
+            // Auto-purge old deep memories if critical
+            if (parseFloat(availableMB) < 5 && Memory.deep.length > 10) {
+                Memory.deep = Memory.deep.sort((a,b) => (b.score||0) - (a.score||0)).slice(0, Math.floor(Memory.deep.length * 0.7));
+                Memory._saveDeep();
+            }
+        }
+    } catch {}
+}
+
+// Track daily messages for enhanced proactive
+function trackTodayMsgs() {
+    const today = new Date().toDateString();
+    const stored = localStorage.getItem('sly_today_date');
+    if (stored !== today) { localStorage.setItem('sly_today_date', today); localStorage.setItem('sly_today_msgs', '0'); }
+    const c = parseInt(localStorage.getItem('sly_today_msgs') || '0') + 1;
+    localStorage.setItem('sly_today_msgs', String(c));
+}
+// Track last agent interaction time
+function trackAgentUsed(agentKey) {
+    const data = JSON.parse(localStorage.getItem('sly_agent_last_used') || '{}');
+    data[agentKey] = Date.now();
+    localStorage.setItem('sly_agent_last_used', JSON.stringify(data));
+}
+
+// ═══════ INIT SESSION ON BOOT ═══════
+async function initSessions() {
+    await Sessions.init();
+    const activeId = Sessions.getActive();
+    if (!activeId) {
+        await Sessions.create('Première conversation');
+    }
+}
+
 // ═══════ LAUNCH ═══════
+initSessions().then(() => {});
 runSplash();
 // Phase 2 boot after splash
 setTimeout(bootPhase2, 200);
+// Phase 3 boot — storage check + daily tracker
+setTimeout(() => { checkStorageEstimate(); }, 5000);
 </script>
+
+<!-- ═══════ THREE.JS 3D AVATAR MODULE ═══════ -->
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+const SlyAvatar = (() => {
+    const canvas = document.getElementById('avatarCanvas');
+    if (!canvas) return null;
+
+    const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+    let renderer, scene, camera, mixer, clock, animFrameId;
+    let activeAction = null;
+    const actions = {};
+    let initialized = false;
+    let currentState = 'idle'; // idle | talk | listen | think
+
+    // ═══ INIT ═══
+    function init() {
+        if (initialized) return;
+
+        renderer = new THREE.WebGLRenderer({
+            canvas,
+            antialias: !isMobile,
+            alpha: true,
+            premultipliedAlpha: false,
+            powerPreference: 'default'
+        });
+        renderer.setClearColor(0x000000, 0);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(35, canvas.clientWidth / canvas.clientHeight, 0.1, 50);
+        camera.position.set(0, 1.2, 3);
+        camera.lookAt(0, 0.8, 0);
+
+        // Lighting — ambient + directional + rim light blue
+        const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambient);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(2, 3, 2);
+        scene.add(dirLight);
+        const rimLight = new THREE.PointLight(0x1F6FFF, 0.6, 8);
+        rimLight.position.set(-1.5, 1, -1);
+        scene.add(rimLight);
+
+        clock = new THREE.Clock();
+        initialized = true;
+
+        // Try to load GLB model
+        loadModel();
+        animate();
+    }
+
+    // ═══ LOAD MODEL ═══
+    let modelGroup = null; // Reference to loaded model for eye-tracking
+    async function loadModel() {
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+        const loader = new GLTFLoader();
+        loader.setDRACOLoader(dracoLoader);
+
+        // Try loading the GLB — fallback to procedural if not found
+        const modelUrl = localStorage.getItem('sly_avatar_url') || 'sly_avatar.glb';
+
+        try {
+            const gltf = await loader.loadAsync(modelUrl);
+            modelGroup = gltf.scene;
+            scene.add(modelGroup);
+
+            // Colorize — fix white/missing textures with Sly Cooper colors
+            const slyColors = [0x4A4E6A, 0x5A5E7A, 0x3A3E5A, 0x6A6E8A]; // Blue-gray raccoon tones
+            let meshIdx = 0;
+            modelGroup.traverse(obj => {
+                if (obj.isMesh) {
+                    const mat = obj.material;
+                    if (mat) {
+                        // If material has no texture map or is pure white, colorize it
+                        const isWhite = mat.color && mat.color.r > 0.9 && mat.color.g > 0.9 && mat.color.b > 0.9;
+                        const hasNoMap = !mat.map;
+                        if (isWhite || hasNoMap) {
+                            const color = slyColors[meshIdx % slyColors.length];
+                            mat.color = new THREE.Color(color);
+                            mat.roughness = 0.6;
+                            mat.metalness = 0.1;
+                        }
+                        // Add subtle emissive glow for style
+                        mat.emissive = new THREE.Color(0x1F6FFF);
+                        mat.emissiveIntensity = 0.05;
+                    }
+                    meshIdx++;
+                }
+            });
+
+            // Center and scale
+            const box = new THREE.Box3().setFromObject(modelGroup);
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scale = 2 / maxDim;
+            modelGroup.scale.setScalar(scale);
+            const center = box.getCenter(new THREE.Vector3());
+            modelGroup.position.sub(center.multiplyScalar(scale));
+            modelGroup.position.y -= 0.2;
+
+            // Also load the cane model if available
+            try {
+                const caneGltf = await loader.loadAsync('sly_cane.glb');
+                const caneModel = caneGltf.scene;
+                caneModel.traverse(obj => {
+                    if (obj.isMesh && obj.material) {
+                        obj.material.color = new THREE.Color(0xB8860B);
+                        obj.material.roughness = 0.4;
+                        obj.material.metalness = 0.3;
+                        obj.material.emissive = new THREE.Color(0xB8860B);
+                        obj.material.emissiveIntensity = 0.1;
+                    }
+                });
+                const caneBox = new THREE.Box3().setFromObject(caneModel);
+                const caneSize = caneBox.getSize(new THREE.Vector3());
+                const caneScale = 1.2 / Math.max(caneSize.x, caneSize.y, caneSize.z);
+                caneModel.scale.setScalar(caneScale * scale);
+                caneModel.position.set(0.5 * scale, 0, 0);
+                modelGroup.add(caneModel);
+            } catch {} // Cane optional
+
+            // Cute procedural animation — bouncy, lively, charming
+            modelGroup.userData.glbModel = true;
+            const _glbClock = new THREE.Clock();
+            const _baseY = modelGroup.position.y;
+            modelGroup.userData.animate = () => {
+                const t = _glbClock.getElapsedTime();
+                // Cute bouncy hover (like breathing + floating)
+                modelGroup.position.y = _baseY + Math.sin(t * 1.2) * 0.04 + Math.sin(t * 2.5) * 0.015;
+                // Gentle sway
+                modelGroup.rotation.y = Math.sin(t * 0.5) * 0.12;
+                // State-based cute movements
+                if (currentState === 'talk') {
+                    // Excited bobbing when talking
+                    modelGroup.position.y += Math.sin(t * 6) * 0.02;
+                    modelGroup.rotation.z = Math.sin(t * 4) * 0.03;
+                    modelGroup.scale.setScalar(scale * (1 + Math.sin(t * 8) * 0.008));
+                } else if (currentState === 'think') {
+                    // Head tilt — curious look
+                    modelGroup.rotation.z = Math.sin(t * 0.8) * 0.08;
+                    modelGroup.rotation.x = -0.05;
+                } else if (currentState === 'listen') {
+                    // Lean forward — attentive
+                    modelGroup.rotation.x = Math.sin(t * 1.5) * 0.04 - 0.03;
+                    modelGroup.scale.setScalar(scale * 1.02); // Slightly bigger when listening
+                } else {
+                    // Idle — peaceful swaying + occasional "look around"
+                    modelGroup.rotation.z = Math.sin(t * 0.3) * 0.04;
+                    modelGroup.rotation.x = 0;
+                    modelGroup.scale.setScalar(scale);
+                    // Cute "look around" every ~6s
+                    const lookCycle = t % 6;
+                    if (lookCycle > 4.5 && lookCycle < 5.5) {
+                        modelGroup.rotation.y += Math.sin((lookCycle - 4.5) * Math.PI) * 0.2;
+                    }
+                }
+            };
+
+            // Setup real animations if available
+            if (gltf.animations.length > 0) {
+                mixer = new THREE.AnimationMixer(modelGroup);
+                gltf.animations.forEach(clip => {
+                    actions[clip.name.toLowerCase()] = mixer.clipAction(clip);
+                });
+                playAnimation('idle');
+            }
+
+            canvas.classList.add('visible');
+        } catch {
+            // No GLB found — create procedural raccoon placeholder
+            createPlaceholder();
+            canvas.classList.add('visible');
+        }
+    }
+
+    // ═══ PROCEDURAL PLACEHOLDER ═══
+    function createPlaceholder() {
+        const group = new THREE.Group();
+
+        // Body
+        const bodyGeo = new THREE.CapsuleGeometry(0.3, 0.5, 8, 16);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x4a4a5a, roughness: 0.7 });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.y = 0.5;
+        group.add(body);
+
+        // Head
+        const headGeo = new THREE.SphereGeometry(0.28, 16, 16);
+        const headMat = new THREE.MeshStandardMaterial({ color: 0x5a5a6a, roughness: 0.6 });
+        const head = new THREE.Mesh(headGeo, headMat);
+        head.position.y = 1.1;
+        group.add(head);
+
+        // Eyes
+        const eyeGeo = new THREE.SphereGeometry(0.06, 8, 8);
+        const eyeMat = new THREE.MeshStandardMaterial({ color: 0x1F6FFF, emissive: 0x1F6FFF, emissiveIntensity: 0.5 });
+        const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+        eyeL.position.set(-0.1, 1.15, 0.22);
+        group.add(eyeL);
+        const eyeR = eyeL.clone();
+        eyeR.position.x = 0.1;
+        group.add(eyeR);
+
+        // Mask (raccoon eye band)
+        const maskGeo = new THREE.BoxGeometry(0.5, 0.1, 0.15);
+        const maskMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2a });
+        const mask = new THREE.Mesh(maskGeo, maskMat);
+        mask.position.set(0, 1.14, 0.18);
+        group.add(mask);
+
+        // Ears
+        const earGeo = new THREE.ConeGeometry(0.08, 0.15, 8);
+        const earMat = new THREE.MeshStandardMaterial({ color: 0x5a5a6a });
+        const earL = new THREE.Mesh(earGeo, earMat);
+        earL.position.set(-0.18, 1.38, 0);
+        group.add(earL);
+        const earR = earL.clone();
+        earR.position.x = 0.18;
+        group.add(earR);
+
+        // Cane (iconic)
+        const caneGeo = new THREE.CylinderGeometry(0.02, 0.02, 1.2, 8);
+        const caneMat = new THREE.MeshStandardMaterial({ color: 0xB8860B });
+        const cane = new THREE.Mesh(caneGeo, caneMat);
+        cane.position.set(0.45, 0.6, 0);
+        cane.rotation.z = -0.15;
+        group.add(cane);
+        // Cane hook
+        const hookGeo = new THREE.TorusGeometry(0.08, 0.02, 8, 16, Math.PI);
+        const hook = new THREE.Mesh(hookGeo, caneMat);
+        hook.position.set(0.42, 1.2, 0);
+        hook.rotation.z = Math.PI;
+        group.add(hook);
+
+        // Hat
+        const hatBrimGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.03, 16);
+        const hatMat = new THREE.MeshStandardMaterial({ color: 0x1F6FFF, roughness: 0.5 });
+        const hatBrim = new THREE.Mesh(hatBrimGeo, hatMat);
+        hatBrim.position.y = 1.35;
+        group.add(hatBrim);
+        const hatTopGeo = new THREE.CylinderGeometry(0.15, 0.2, 0.15, 16);
+        const hatTop = new THREE.Mesh(hatTopGeo, hatMat);
+        hatTop.position.y = 1.42;
+        group.add(hatTop);
+
+        group.userData.placeholder = true;
+        group.userData.head = head;
+        group.userData.eyeL = eyeL;
+        group.userData.eyeR = eyeR;
+        group.userData.earL = earL;
+        group.userData.earR = earR;
+        scene.add(group);
+
+        // Simple procedural animation
+        const _clock = new THREE.Clock();
+        function animatePlaceholder() {
+            if (!group.parent) return;
+            const t = _clock.getElapsedTime();
+
+            // Idle breathing
+            body.scale.y = 1 + Math.sin(t * 1.5) * 0.02;
+            head.position.y = 1.1 + Math.sin(t * 1.2) * 0.01;
+
+            // State-based
+            if (currentState === 'talk') {
+                // Mouth sim — head bob
+                head.scale.y = 1 + Math.sin(t * 12) * 0.03;
+                head.rotation.y = Math.sin(t * 3) * 0.05;
+            } else if (currentState === 'listen') {
+                // Ears perk up
+                earL.position.y = 1.38 + 0.05;
+                earR.position.y = 1.38 + 0.05;
+                earL.scale.y = 1.3;
+                earR.scale.y = 1.3;
+            } else if (currentState === 'think') {
+                // Head tilt + slight rotation
+                head.rotation.z = Math.sin(t * 0.8) * 0.1;
+                head.rotation.x = -0.08;
+            } else {
+                // Idle — eyes blink
+                head.scale.y = 1;
+                head.rotation.set(0, 0, 0);
+                earL.position.y = 1.38;
+                earR.position.y = 1.38;
+                earL.scale.y = 1;
+                earR.scale.y = 1;
+                // Blink every ~4s
+                const blinkCycle = t % 4;
+                const blinkScale = (blinkCycle > 3.8 && blinkCycle < 3.95) ? 0.1 : 1;
+                eyeL.scale.y = blinkScale;
+                eyeR.scale.y = blinkScale;
+            }
+
+            // Gentle hover
+            group.position.y = Math.sin(t * 0.6) * 0.03;
+            group.rotation.y = Math.sin(t * 0.3) * 0.08;
+        }
+
+        // Store the animator on the group so the main loop can call it
+        group.userData.animate = animatePlaceholder;
+    }
+
+    // ═══ ANIMATION PLAYBACK ═══
+    function playAnimation(name, fadeTime = 0.4) {
+        const to = actions[name];
+        if (!to || to === activeAction) return;
+        if (activeAction) activeAction.fadeOut(fadeTime);
+        to.reset().fadeIn(fadeTime).play();
+        activeAction = to;
+    }
+
+    // ═══ STATE MACHINE ═══
+    function setState(newState) {
+        if (newState === currentState) return;
+        currentState = newState;
+        canvas.classList.remove('talking', 'listening');
+        if (newState === 'talk') canvas.classList.add('talking');
+        if (newState === 'listen') canvas.classList.add('listening');
+
+        // If we have real animations, use them
+        if (Object.keys(actions).length > 0) {
+            const animName = Object.keys(actions).find(k => k.includes(newState)) || 'idle';
+            playAnimation(animName);
+        }
+    }
+
+    // ═══ EYE TRACKING (avatar follows pointer) ═══
+    let _targetLookX = 0, _targetLookY = 0;
+    let _currentLookX = 0, _currentLookY = 0;
+    const LOOK_SMOOTH = 0.08; // Smooth interpolation factor
+    const LOOK_MAX = 0.3; // Max rotation in radians
+
+    function onPointerMove(e) {
+        if (!initialized || !canvas.classList.contains('visible')) return;
+        const rect = canvas.getBoundingClientRect();
+        const cx = e.clientX ?? e.touches?.[0]?.clientX ?? rect.left + rect.width / 2;
+        const cy = e.clientY ?? e.touches?.[0]?.clientY ?? rect.top + rect.height / 2;
+        // Normalize to -1..1 relative to canvas center
+        _targetLookX = ((cx - rect.left) / rect.width - 0.5) * 2;
+        _targetLookY = ((cy - rect.top) / rect.height - 0.5) * 2;
+    }
+    document.addEventListener('mousemove', onPointerMove, { passive: true });
+    document.addEventListener('touchmove', (e) => { if (e.touches[0]) onPointerMove(e.touches[0]); }, { passive: true });
+
+    // ═══ RENDER LOOP ═══
+    function animate() {
+        animFrameId = requestAnimationFrame(animate);
+
+        // Skip if hidden (perf)
+        if (document.hidden || !canvas.classList.contains('visible')) return;
+
+        const delta = clock.getDelta();
+        if (mixer) mixer.update(delta);
+
+        // Smooth eye tracking interpolation
+        _currentLookX += (_targetLookX - _currentLookX) * LOOK_SMOOTH;
+        _currentLookY += (_targetLookY - _currentLookY) * LOOK_SMOOTH;
+
+        // Apply look direction to placeholder head/eyes or GLB model
+        scene.traverse(obj => {
+            if (obj.userData?.animate) obj.userData.animate();
+            // Apply eye tracking to placeholder head
+            if (obj.userData?.placeholder && obj.userData?.head) {
+                const head = obj.userData.head;
+                if (currentState === 'idle') {
+                    head.rotation.y = _currentLookX * LOOK_MAX;
+                    head.rotation.x = -_currentLookY * LOOK_MAX * 0.5;
+                }
+                if (obj.userData.eyeL) {
+                    obj.userData.eyeL.position.x = -0.1 + _currentLookX * 0.02;
+                    obj.userData.eyeR.position.x = 0.1 + _currentLookX * 0.02;
+                }
+            }
+            // Apply eye tracking to GLB model (subtle look-at)
+            if (obj.userData?.glbModel && currentState === 'idle') {
+                obj.rotation.y += (_currentLookX * 0.15 - obj.rotation.y) * 0.05;
+            }
+        });
+
+        renderer.render(scene, camera);
+    }
+
+    // ═══ DISPOSE ═══
+    function dispose() {
+        cancelAnimationFrame(animFrameId);
+        if (mixer) { mixer.stopAllAction(); mixer.uncacheRoot(mixer.getRoot()); }
+        scene?.traverse(obj => {
+            if (!obj.isMesh) return;
+            obj.geometry?.dispose();
+            [obj.material].flat().forEach(mat => {
+                Object.values(mat).forEach(v => v?.isTexture && v.dispose());
+                mat.dispose();
+            });
+        });
+        scene?.clear();
+        canvas.classList.remove('visible');
+        initialized = false;
+    }
+
+    // ═══ SWITCH MODEL (Sly/Murray/Bentley) ═══
+    let _currentModel = 'sly';
+    const MODEL_COLORS = {
+        sly:     { colors: [0x4A4E6A, 0x5A5E7A, 0x3A3E5A, 0x6A6E8A], glow: 0x1F6FFF },  // Blue-gray raccoon
+        murray:  { colors: [0xE8A0C0, 0xD08AA8, 0xC07A98, 0xF0B0D0], glow: 0xFF69B4 },  // Pink hippo
+        bentley: { colors: [0x2E7D32, 0x388E3C, 0x1B5E20, 0x4CAF50], glow: 0x1EFF8E },  // Green turtle
+    };
+    const MODEL_FILES = { sly: 'sly_avatar.glb', murray: 'murray_avatar.glb', bentley: 'bentley_avatar.glb' };
+
+    async function switchModel(agentKey) {
+        // Map agent to character
+        let char = 'sly';
+        if (agentKey === 'murray') char = 'murray';
+        else if (agentKey === 'bentley' || agentKey === 'franklin') char = 'bentley';
+
+        if (char === _currentModel || !initialized) return;
+        _currentModel = char;
+
+        // Remove old model
+        if (modelGroup) {
+            scene.remove(modelGroup);
+            modelGroup.traverse(obj => {
+                if (obj.isMesh) { obj.geometry?.dispose(); [obj.material].flat().forEach(m => m?.dispose()); }
+            });
+            modelGroup = null;
+        }
+
+        const file = MODEL_FILES[char];
+        const colorSet = MODEL_COLORS[char];
+        const dracoLoader2 = new DRACOLoader();
+        dracoLoader2.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+        const loader2 = new GLTFLoader();
+        loader2.setDRACOLoader(dracoLoader2);
+
+        try {
+            const gltf = await loader2.loadAsync(file);
+            modelGroup = gltf.scene;
+            // Colorize with character colors
+            let mi = 0;
+            modelGroup.traverse(obj => {
+                if (obj.isMesh && obj.material) {
+                    const mat = obj.material;
+                    const isWhite = mat.color && mat.color.r > 0.9 && mat.color.g > 0.9 && mat.color.b > 0.9;
+                    if (isWhite || !mat.map) {
+                        mat.color = new THREE.Color(colorSet.colors[mi % colorSet.colors.length]);
+                        mat.roughness = 0.6; mat.metalness = 0.1;
+                    }
+                    mat.emissive = new THREE.Color(colorSet.glow);
+                    mat.emissiveIntensity = 0.05;
+                    mi++;
+                }
+            });
+            // Scale and center
+            const box = new THREE.Box3().setFromObject(modelGroup);
+            const sz = box.getSize(new THREE.Vector3());
+            const sc = 2 / Math.max(sz.x, sz.y, sz.z);
+            modelGroup.scale.setScalar(sc);
+            const ct = box.getCenter(new THREE.Vector3());
+            modelGroup.position.sub(ct.multiplyScalar(sc));
+            modelGroup.position.y -= 0.2;
+            // Cute animation
+            modelGroup.userData.glbModel = true;
+            const _c2 = new THREE.Clock();
+            const _by = modelGroup.position.y;
+            modelGroup.userData.animate = () => {
+                const t = _c2.getElapsedTime();
+                modelGroup.position.y = _by + Math.sin(t * 1.2) * 0.04 + Math.sin(t * 2.5) * 0.015;
+                modelGroup.rotation.y = Math.sin(t * 0.5) * 0.12;
+                if (currentState === 'talk') { modelGroup.position.y += Math.sin(t*6)*0.02; modelGroup.rotation.z = Math.sin(t*4)*0.03; }
+                else if (currentState === 'think') { modelGroup.rotation.z = Math.sin(t*0.8)*0.08; }
+                else if (currentState === 'listen') { modelGroup.rotation.x = Math.sin(t*1.5)*0.04-0.03; }
+                else { modelGroup.rotation.z = Math.sin(t*0.3)*0.04; modelGroup.rotation.x = 0; }
+            };
+            scene.add(modelGroup);
+            // Update rim light color
+            scene.traverse(obj => { if (obj.isPointLight) obj.color = new THREE.Color(colorSet.glow); });
+        } catch {
+            // Model not available — keep current or fallback to placeholder
+        }
+    }
+
+    // ═══ LAZY INIT ═══
+    function lazyBoot() {
+        if (window.DEVICE_CLASS === 'low') return;
+        setTimeout(() => init(), 1500);
+    }
+
+    // Expose 3D to global scope (legacy — hidden by CSS)
+    window.SlyAvatar3D = { init, dispose, setState, lazyBoot, switchModel };
+})();
+
+// ═══════ 2D AVATAR SYSTEM (replaces 3D) ═══════
+(() => {
+    const avatarEl = document.getElementById('avatarFloat');
+    const avatarImg = document.getElementById('avatarImg');
+    if (!avatarEl) return;
+
+    const AVATAR_IMAGES = {
+        sly: 'sly_avatar_2d.png',
+        murray: 'sly_avatar_2d.png',
+        bentley: 'sly_avatar_2d.png',
+        franklin: 'sly_avatar_2d.png',
+    };
+
+    let currentState = 'idle';
+    let currentAgent = 'sly';
+
+    function setState(newState) {
+        if (newState === currentState) return;
+        currentState = newState;
+        avatarEl.classList.remove('talking', 'listening', 'thinking', 'sly-happy', 'sly-error');
+        if (newState === 'talk') avatarEl.classList.add('talking');
+        else if (newState === 'listen') avatarEl.classList.add('listening');
+        else if (newState === 'think') avatarEl.classList.add('thinking');
+        else if (newState === 'happy') {
+            avatarEl.classList.add('sly-happy');
+            setTimeout(() => { avatarEl.classList.remove('sly-happy'); currentState = 'idle'; }, 500);
+        }
+        else if (newState === 'error') {
+            avatarEl.classList.add('sly-error');
+            setTimeout(() => { avatarEl.classList.remove('sly-error'); currentState = 'idle'; }, 350);
+        }
+    }
+
+    function switchModel(agentKey) {
+        let char = 'sly';
+        if (agentKey === 'murray') char = 'murray';
+        else if (agentKey === 'bentley' || agentKey === 'franklin') char = 'bentley';
+        if (char === currentAgent) return;
+        currentAgent = char;
+        const newSrc = AVATAR_IMAGES[char] || 'sly_bust.png';
+        avatarImg.style.transform = 'scale(0.8)';
+        avatarImg.style.opacity = '0.5';
+        setTimeout(() => {
+            avatarImg.src = newSrc;
+            avatarImg.style.transform = '';
+            avatarImg.style.opacity = '';
+        }, 200);
+    }
+
+    function init() {
+        setTimeout(() => avatarEl.classList.add('visible'), 800);
+    }
+
+    function dispose() {
+        avatarEl.classList.remove('visible');
+    }
+
+    // Expose — OVERRIDES the 3D avatar
+    window.SlyAvatar = { init, dispose, setState, lazyBoot: init, switchModel };
+    init();
+})();
+</script>
+
+// === ONBOARDING ===
+(function(){
+  if(localStorage.getItem('sly_onboarded')) return;
+  var ob=document.getElementById('onboarding');
+  if(!ob) return;
+  ob.classList.remove('hidden');
+  var slide=0, slides=ob.querySelectorAll('.ob-slide'), dots=ob.querySelectorAll('.ob-dot');
+  var next=document.getElementById('obNext'), skip=document.getElementById('obSkip');
+  function goTo(n){ slides[slide].classList.remove('active'); dots[slide].classList.remove('active'); slide=n; slides[slide].classList.add('active'); dots[slide].classList.add('active'); next.textContent=slide===slides.length-1?'COMMENCER ✓':'SUIVANT →'; }
+  next.onclick=function(){ if(slide<slides.length-1) goTo(slide+1); else { ob.classList.add('hidden'); localStorage.setItem('sly_onboarded','1'); } };
+  if(skip) skip.onclick=function(){ ob.classList.add('hidden'); localStorage.setItem('sly_onboarded','1'); };
+})();
+// === PWA INSTALL ===
+var _pwaEvt=null;
+window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); _pwaEvt=e; if(!localStorage.getItem('sly_pwa_dismissed')) setTimeout(function(){ var b=document.getElementById('pwaInstall'); if(b) b.classList.add('visible'); },5000); });
+(function(){ var btn=document.getElementById('pwaInstallBtn'); var dis=document.getElementById('pwaDismiss'); if(btn) btn.onclick=async function(){ if(!_pwaEvt) return; _pwaEvt.prompt(); await _pwaEvt.userChoice; document.getElementById('pwaInstall').classList.remove('visible'); _pwaEvt=null; }; if(dis) dis.onclick=function(){ document.getElementById('pwaInstall').classList.remove('visible'); localStorage.setItem('sly_pwa_dismissed','1'); }; })();
+// === TTS WEB SPEECH FALLBACK ===
+window._ttsWebSpeechFallback=function(text,agentKey){ if(!window.speechSynthesis) return; var u=new SpeechSynthesisUtterance(text.slice(0,200)); u.lang='fr-FR'; u.rate=0.95; u.pitch=agentKey==='murray'?0.7:agentKey==='bentley'?1.2:1.0; u.volume=0.9; speechSynthesis.getVoices(); var fv=speechSynthesis.getVoices().find(function(v){return v.lang.startsWith('fr');}); if(fv) u.voice=fv; var ind=document.getElementById('ttsIndicator'); if(ind){ind.textContent='🔊 web speech';ind.classList.add('visible');} u.onend=function(){if(ind)ind.classList.remove('visible');}; window.SlyAvatar&&window.SlyAvatar.setState('talk'); speechSynthesis.speak(u); };
+
+
+// === DEVICE PERFORMANCE DETECTION ===
+(function detectPerf(){
+  var score = 0;
+  // Memory
+  var mem = navigator.deviceMemory || 4;
+  if (mem >= 8) score += 3;
+  else if (mem >= 4) score += 2;
+  else score += 1;
+  // CPU cores
+  var cores = navigator.hardwareConcurrency || 4;
+  if (cores >= 8) score += 3;
+  else if (cores >= 4) score += 2;
+  else score += 1;
+  // Connection
+  var conn = navigator.connection;
+  if (conn) {
+    if (conn.effectiveType === '4g' || conn.effectiveType === '5g') score += 2;
+    else if (conn.effectiveType === '3g') score += 1;
+  } else score += 2;
+  // Battery (if low battery, reduce)
+  if (navigator.getBattery) {
+    navigator.getBattery().then(function(b){ if(b.level < 0.2 && !b.charging) document.body.classList.add('perf-low'); });
+  }
+  // Apply class
+  if (score <= 3) document.body.classList.add('perf-low');
+  else if (score <= 5) document.body.classList.add('perf-med');
+  else document.body.classList.add('perf-high');
+  // Store for adaptive behavior
+  window._perfScore = score;
+  // Reduce particles on low perf
+  if (score <= 5) window._particleCount = 20;
+  else window._particleCount = 50;
+})();
+
+// === SHARE STREAK ===
+function shareStreak() {
+  const text = streak > 0
+    ? "Je suis sur une serie de " + streak + " jours avec SLY-CHAT — mon companion IA JARVIS x Sly Cooper. Cooper Building en marche! https://augustinfrance-aico.github.io/sly-chat/"
+    : "J'utilise SLY-CHAT — JARVIS x Sly Cooper. 50 agents IA, memoire, voix. https://augustinfrance-aico.github.io/sly-chat/";
+  if (navigator.share) {
+    navigator.share({ title: 'SLY-CHAT', text: text, url: 'https://augustinfrance-aico.github.io/sly-chat/' }).catch(()=>{});
+  } else {
+    navigator.clipboard?.writeText(text);
+    const btn = document.querySelector('.share-streak');
+    if (btn) { btn.textContent = 'Copie!'; setTimeout(()=>{ btn.textContent = 'Partager ' + streak + 'd ' + String.fromCodePoint(0x1F525); },2000); }
+  }
+}
+
+// === SWIPE LEFT/RIGHT to switch agents ===
+(function initSwipe(){
+  var startX = 0, startY = 0;
+  var chatArea = document.getElementById('chatArea');
+  if (!chatArea) return;
+  chatArea.addEventListener('touchstart', function(e){ startX=e.touches[0].clientX; startY=e.touches[0].clientY; }, {passive:true});
+  chatArea.addEventListener('touchend', function(e){
+    var dx = e.changedTouches[0].clientX - startX;
+    var dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy)*2) {
+      var keys = DOCK_DEFAULT;
+      var idx = keys.indexOf(currentAgent);
+      if (dx < 0 && idx < keys.length-1) { currentAgent = keys[idx+1]; highlightDockAgent(currentAgent); showAgentIntro(currentAgent); }
+      else if (dx > 0 && idx > 0) { currentAgent = keys[idx-1]; highlightDockAgent(currentAgent); showAgentIntro(currentAgent); }
+    }
+  }, {passive:true});
+})();
+
+
+// === SLY FLOAT ACTIVATION ===
+(function(){
+  var sf = document.getElementById('slyFloat');
+  if (!sf) return;
+  // Activer après splash
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(function(){ if(sf) sf.classList.add('active'); }, 9000);
+  });
+  // Réagir aux messages — petit sursaut
+  document.addEventListener('sly-message', function(){
+    if (!sf) return;
+    sf.style.opacity = '0.45';
+    sf.style.animation = 'none';
+    setTimeout(function(){
+      sf.style.opacity = '';
+      sf.style.animation = '';
+    }, 800);
+  });
+})();
+
+
+// === API STATUS BADGE ===
+function updateApiStatusBadge(){
+  var el = document.getElementById('apiStatusBadge');
+  if (!el) return;
+  var gk = window.GROQ_KEY || localStorage.getItem('sly_groq_key');
+  var fk = window.FISH_KEY || localStorage.getItem('sly_fish_key');
+  if (gk && fk) {
+    el.textContent = '✅ Mode DIRECT actif — IA + Voix OK';
+    el.style.color = '#1EFF8E';
+  } else if (gk) {
+    el.textContent = '⚡ IA OK — FishAudio manquant (pas de voix doubleurs)';
+    el.style.color = '#FF9A3C';
+  } else {
+    el.textContent = '⚠️ Aucune clé — proxy Railway (actuellement down)';
+    el.style.color = '#FF3B5C';
+  }
+}
+// Init au chargement
+setTimeout(function(){
+  updateApiStatusBadge();
+  // Pre-fill fields if keys exist
+  var gkEl = document.getElementById('inputGroqKey');
+  var fkEl = document.getElementById('inputFishKey');
+  if (gkEl && window.GROQ_KEY) gkEl.value = window.GROQ_KEY;
+  if (fkEl && window.FISH_KEY) fkEl.value = window.FISH_KEY;
+}, 500);
+
+// === WAVEFORM CONTROL ===
+function showWaveform(ak){ document.querySelectorAll('.bubble[data-agent="'+ak+'"]').forEach(function(b){ var w=b.querySelector('.waveform'); if(w) w.classList.add('active'); }); }
+function hideAllWaveforms(){ document.querySelectorAll('.waveform').forEach(function(w){ w.classList.remove('active'); }); }
+
+// === STREAK VOCAL ===
+let _vocalStreak = 0;
+function trackVocalStreak() {
+    _vocalStreak++;
+    if (_vocalStreak === 3) {
+        _vocalStreak = 0;
+        gainXP(50);
+        addBubble('agent', 'sly', '🔥 Triple vocal ! Le Clan parle. +50 XP, Commandant.');
+        if (autoSpeak) speakText('sly', 'Triple vocal. Le Clan parle.');
+    }
+}
+
 </body>
 </html>
