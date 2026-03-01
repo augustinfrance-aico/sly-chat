@@ -68,7 +68,7 @@ input{font-family:inherit;border:none;outline:none}
     animation:slyBreathe 3s ease-in-out infinite, slyGlow 3s ease-in-out infinite;
     overflow:visible;
 }
-.splash-logo img{width:100%;height:100%;object-fit:contain;object-position:center top;mix-blend-mode:luminosity;filter:drop-shadow(0 0 30px rgba(31,111,255,0.7)) drop-shadow(0 0 60px rgba(122,60,255,0.4)) brightness(1.05) contrast(1.05)}
+.splash-logo img{width:100%;height:100%;object-fit:contain;object-position:center center;filter:drop-shadow(0 0 30px rgba(31,111,255,0.7)) drop-shadow(0 0 60px rgba(122,60,255,0.4))}
 @keyframes slyBreathe{0%,100%{transform:scale(1) translateY(0)}50%{transform:scale(1.05) translateY(-8px)}}
 @keyframes slyGlow{0%,100%{box-shadow:0 0 30px rgba(31,111,255,0.3),0 0 60px rgba(122,60,255,0.15)}50%{box-shadow:0 0 50px rgba(31,111,255,0.6),0 0 100px rgba(122,60,255,0.3),0 0 150px rgba(0,229,255,0.1)}}
 .splash-title{
@@ -660,6 +660,26 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 /* Haptic feedback visual */
 @keyframes hapticRipple{0%{transform:scale(1);opacity:.4}100%{transform:scale(2.5);opacity:0}}
 .haptic-ring{position:absolute;inset:0;border-radius:inherit;border:2px solid var(--blue);animation:hapticRipple .3s ease forwards;pointer-events:none}
+
+/* Sly floating portrait in chat */
+#slyFloat{
+  position:fixed;
+  bottom:140px;
+  right:-20px;
+  width:180px;
+  height:180px;
+  z-index:2;
+  pointer-events:none;
+  opacity:0.18;
+  animation:slyFloatAnim 4s ease-in-out infinite;
+  filter:drop-shadow(0 0 20px rgba(31,111,255,0.4));
+  transition:opacity .5s;
+}
+#slyFloat.active{opacity:0.28}
+@keyframes slyFloatAnim{
+  0%,100%{transform:translateY(0) rotate(-2deg)}
+  50%{transform:translateY(-12px) rotate(2deg)}
+}
 </style>
 </head>
 <body>
@@ -703,6 +723,8 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 
 <!-- APP -->
 <div id="app">
+    <!-- Sly floating portrait -->
+    <img id="slyFloat" src="sly_logo_nobg.png" alt="" aria-hidden="true">
     <!-- Header -->
     <div class="header">
         <button class="btn-icon" id="btnMenu">☰</button>
@@ -4490,6 +4512,27 @@ function shareStreak() {
       else if (dx > 0 && idx > 0) { currentAgent = keys[idx-1]; highlightDockAgent(currentAgent); showAgentIntro(currentAgent); }
     }
   }, {passive:true});
+})();
+
+
+// === SLY FLOAT ACTIVATION ===
+(function(){
+  var sf = document.getElementById('slyFloat');
+  if (!sf) return;
+  // Activer après splash
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(function(){ if(sf) sf.classList.add('active'); }, 9000);
+  });
+  // Réagir aux messages — petit sursaut
+  document.addEventListener('sly-message', function(){
+    if (!sf) return;
+    sf.style.opacity = '0.45';
+    sf.style.animation = 'none';
+    setTimeout(function(){
+      sf.style.opacity = '';
+      sf.style.animation = '';
+    }, 800);
+  });
 })();
 
 </body>
