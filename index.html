@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#05070A">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://ga.jspm.io https://cdn.jsdelivr.net https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://sly-bot-production.up.railway.app https://*.groq.com https://*.googleapis.com https://*.fish.audio; img-src 'self' data: blob:; media-src 'self' blob:; worker-src 'self' blob:">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://ga.jspm.io https://cdn.jsdelivr.net https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://sly-bot-production.up.railway.app https://api.groq.com https://*.groq.com https://generativelanguage.googleapis.com https://*.googleapis.com https://api.fish.audio https://*.fish.audio; img-src 'self' data: blob:; media-src 'self' blob:; worker-src 'self' blob:">
 <title>SLY-CHAT</title>
 <link rel="manifest" href="manifest.json">
 <!-- Three.js Import Map (r183, CDN, zero build tools) -->
@@ -68,7 +68,7 @@ input{font-family:inherit;border:none;outline:none}
     animation:slyBreathe 3s ease-in-out infinite, slyGlow 3s ease-in-out infinite;
     overflow:visible;
 }
-.splash-logo img{width:100%;height:100%;object-fit:contain;object-position:center center;filter:drop-shadow(0 0 30px rgba(31,111,255,0.7)) drop-shadow(0 0 60px rgba(122,60,255,0.4))}
+.splash-logo img{width:100%;height:100%;object-fit:contain;object-position:center center}
 @keyframes slyBreathe{0%,100%{transform:scale(1) translateY(0)}50%{transform:scale(1.05) translateY(-8px)}}
 @keyframes slyGlow{0%,100%{box-shadow:0 0 30px rgba(31,111,255,0.3),0 0 60px rgba(122,60,255,0.15)}50%{box-shadow:0 0 50px rgba(31,111,255,0.6),0 0 100px rgba(122,60,255,0.3),0 0 150px rgba(0,229,255,0.1)}}
 .splash-title{
@@ -664,18 +664,17 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 /* Sly floating portrait in chat */
 #slyFloat{
   position:fixed;
-  bottom:140px;
-  right:-20px;
-  width:180px;
-  height:180px;
+  bottom:130px;
+  right:-10px;
+  width:110px;
+  height:110px;
   z-index:2;
   pointer-events:none;
-  opacity:0.18;
+  opacity:0.15;
   animation:slyFloatAnim 4s ease-in-out infinite;
-  filter:drop-shadow(0 0 20px rgba(31,111,255,0.4));
   transition:opacity .5s;
 }
-#slyFloat.active{opacity:0.28}
+#slyFloat.active{opacity:0.22}
 @keyframes slyFloatAnim{
   0%,100%{transform:translateY(0) rotate(-2deg)}
   50%{transform:translateY(-12px) rotate(2deg)}
@@ -776,9 +775,20 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
    ═══════════════════════════════════════════ */
 
 // ═══════ CONFIG ═══════
-// API keys are SERVER-SIDE ONLY — proxied through SLY backend (Railway)
-// Frontend uses proxy endpoints: /api/groq, /api/tts, /api/gemini, /api/metrics
+// Mode direct — clés dans localStorage (configurables dans les settings)
 const API_BASE = localStorage.getItem('sly_api_base') || 'https://sly-bot-production.up.railway.app';
+window.GROQ_KEY = localStorage.getItem('sly_groq_key') || '';
+window.FISH_KEY = localStorage.getItem('sly_fish_key') || '';
+window.GEMINI_KEY = localStorage.getItem('sly_gemini_key') || '';
+// Mode : 'proxy' si Railway OK, 'direct' sinon
+let _apiMode = 'direct';
+(async function detectMode(){
+  try {
+    const r = await fetch(API_BASE + '/health', { signal: AbortSignal.timeout(3000) });
+    _apiMode = r.ok ? 'proxy' : 'direct';
+  } catch { _apiMode = 'direct'; }
+  console.log('[SLY] API mode:', _apiMode);
+})();
 
 // ═══════ DEVICE PERFORMANCE DETECTION ═══════
 const DEVICE_CLASS = (() => {
@@ -995,10 +1005,20 @@ async function speakText(agentKey, fullText) {
         const cached = AudioCache.get(cacheKey);
         if (cached) return cached.slice(0); // cache hit — return copy
         try {
-            const r = await fetch(`${API_BASE}/api/tts`, {
+            let _ttsUrl, _ttsHeaders, _ttsBody;
+            if (window.FISH_KEY) {
+                _ttsUrl = 'https://api.fish.audio/v1/tts';
+                _ttsHeaders = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + window.FISH_KEY };
+                _ttsBody = JSON.stringify({ text: chunk, reference_id: modelId, format: 'mp3', latency: 'balanced' });
+            } else {
+                _ttsUrl = API_BASE + '/api/tts';
+                _ttsHeaders = { 'Content-Type': 'application/json' };
+                _ttsBody = JSON.stringify({ text: chunk, voice_id: modelId });
+            }
+            const r = await fetch(_ttsUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: chunk, voice_id: modelId })
+                headers: _ttsHeaders,
+                body: _ttsBody
             });
             if (r.ok) {
                 Metrics.trackTTFA(ttsStart);
@@ -1058,9 +1078,17 @@ async function callGroq(messages, model = 'llama-3.3-70b-versatile', maxTokens =
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
     try {
-        const resp = await fetch(`${API_BASE}/api/groq`, {
+        let _groqUrl, _groqHeaders;
+        if (window.GROQ_KEY) {
+            _groqUrl = 'https://api.groq.com/openai/v1/chat/completions';
+            _groqHeaders = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + window.GROQ_KEY };
+        } else {
+            _groqUrl = API_BASE + '/api/groq';
+            _groqHeaders = { 'Content-Type': 'application/json' };
+        }
+        const resp = await fetch(_groqUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: _groqHeaders,
             body: JSON.stringify({ model, messages, max_tokens: maxTokens, stream: true }),
             signal: controller.signal
         });
@@ -1820,6 +1848,22 @@ function openSettings() {
             <span class="settings-label">📡 SLY-COMMAND</span>
             <a href="https://augustinfrance-aico.github.io/sly-command/" target="_blank" style="color:var(--blue);font-weight:600;text-decoration:none">Ouvrir →</a>
         </div>`;
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08)">
+          <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">🔑 Clés API directes</div>
+          <label style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px">
+            <span style="font-size:11px;color:var(--text-dim)">Groq API Key (IA)</span>
+            <input type="password" id="inputGroqKey" placeholder="gsk_..." value="${localStorage.getItem('sly_groq_key')||''}"
+              style="padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.06);color:var(--text);border:1px solid rgba(255,255,255,0.12);font-size:12px;font-family:monospace;width:100%;box-sizing:border-box"
+              oninput="localStorage.setItem('sly_groq_key',this.value);window.GROQ_KEY=this.value;updateApiStatusBadge()">
+          </label>
+          <label style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px">
+            <span style="font-size:11px;color:var(--text-dim)">FishAudio API Key (voix)</span>
+            <input type="password" id="inputFishKey" placeholder="..." value="${localStorage.getItem('sly_fish_key')||''}"
+              style="padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.06);color:var(--text);border:1px solid rgba(255,255,255,0.12);font-size:12px;font-family:monospace;width:100%;box-sizing:border-box"
+              oninput="localStorage.setItem('sly_fish_key',this.value);window.FISH_KEY=this.value;updateApiStatusBadge()">
+          </label>
+          <div id="apiStatusBadge" style="font-size:11px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.04)">⏳ Vérification...</div>
+        </div>
     modal.classList.add('visible');
     overlay.classList.add('visible');
     overlay.onclick = closeSettings;
@@ -4534,6 +4578,34 @@ function shareStreak() {
     }, 800);
   });
 })();
+
+
+// === API STATUS BADGE ===
+function updateApiStatusBadge(){
+  var el = document.getElementById('apiStatusBadge');
+  if (!el) return;
+  var gk = window.GROQ_KEY || localStorage.getItem('sly_groq_key');
+  var fk = window.FISH_KEY || localStorage.getItem('sly_fish_key');
+  if (gk && fk) {
+    el.textContent = '✅ Mode DIRECT actif — IA + Voix OK';
+    el.style.color = '#1EFF8E';
+  } else if (gk) {
+    el.textContent = '⚡ IA OK — FishAudio manquant (pas de voix doubleurs)';
+    el.style.color = '#FF9A3C';
+  } else {
+    el.textContent = '⚠️ Aucune clé — proxy Railway (actuellement down)';
+    el.style.color = '#FF3B5C';
+  }
+}
+// Init au chargement
+setTimeout(function(){
+  updateApiStatusBadge();
+  // Pre-fill fields if keys exist
+  var gkEl = document.getElementById('inputGroqKey');
+  var fkEl = document.getElementById('inputFishKey');
+  if (gkEl && window.GROQ_KEY) gkEl.value = window.GROQ_KEY;
+  if (fkEl && window.FISH_KEY) fkEl.value = window.FISH_KEY;
+}, 500);
 
 </body>
 </html>
