@@ -59,7 +59,7 @@ input{font-family:inherit;border:none;outline:none}
 /* ═══════ SPLASH ═══════ */
 /* ═══════ SPLASH v4 ═══════ */
 #splash{position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
-#splash.hidden{display:none!important}
+#splash.hidden{display:none}
 #splash canvas{display:none}
 /* Fond lune */
 .sp2-bg{position:absolute;inset:0;z-index:0;background:url('moon_bg.webp?v=4') center/cover no-repeat;opacity:0.88}
@@ -71,19 +71,19 @@ input{font-family:inherit;border:none;outline:none}
 /* Wrap central */
 .sp2-wrap{position:relative;z-index:4;display:flex;flex-direction:column;align-items:center;gap:0;animation:sp2FadeIn 0.8s ease both}
 @keyframes sp2FadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-/* Conteneur médaillon Sly — fond transparent, rond bleu lumineux */
+/* Conteneur médaillon Sly — sans rond, juste glow bleu */
 .sp2-sly-wrap{
-    width:130px;height:130px;border-radius:50%;
-    overflow:visible;
-    border:2.5px solid rgba(31,111,255,0.8);
-    box-shadow:0 0 24px rgba(31,111,255,0.6),0 0 48px rgba(31,111,255,0.3),0 0 80px rgba(31,111,255,0.15);
-    animation:sp2Float 3.5s ease-in-out infinite;
+    width:140px;height:140px;
+    border-radius:50%;
+    border:none;
     background:transparent;
+    animation:sp2Float 3.5s ease-in-out infinite;
     display:flex;align-items:center;justify-content:center;
+    overflow:visible;
 }
-.sp2-sly{width:110%;height:110%;display:block;
+.sp2-sly{width:100%;height:100%;display:block;
     object-fit:contain;object-position:center center;
-    filter:drop-shadow(0 0 12px rgba(31,111,255,0.5)) drop-shadow(0 0 4px rgba(0,229,255,0.3));}
+    filter:drop-shadow(0 0 18px rgba(31,111,255,0.7)) drop-shadow(0 0 8px rgba(31,111,255,0.5)) drop-shadow(0 0 3px rgba(0,229,255,0.4));}
 @keyframes sp2Float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.03)}}
 /* Titre "SLY" — Orbitron 40px, néon blanc bleuté */
 .sp2-title{
@@ -2210,212 +2210,141 @@ function initParticles() {
 
 // ═══════ SPLASH ═══════
 function runSplash() {
-    const DUR = 5000;
-    const splash = document.getElementById('splash');
-    const app   = document.getElementById('app');
+    var DUR = 5000;
+    var splash = document.getElementById('splash');
+    var app = document.getElementById('app');
 
-    // ── Générer étoiles scintillantes ──
-    const starsEl = document.getElementById('sp2Stars');
-    if (starsEl) {
-        for (let i = 0; i < 40; i++) {
-            const s = document.createElement('div');
-            s.className = 'sp2-star';
-            s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${1.5+Math.random()*3}s;--del:${-Math.random()*3}s;opacity:${0.2+Math.random()*0.8}`;
-            starsEl.appendChild(s);
-        }
-        // ── Générer vaisseaux traversants (JS RAF) ──
-        const shipEmojis = ['🚀','🛸','✈️','🛩️','🚀'];
-        const W = window.innerWidth, H = window.innerHeight;
-        const shipDefs = [
-            {y:0.15, rtl:false}, {y:0.28, rtl:true},
-            {y:0.50, rtl:false}, {y:0.68, rtl:true}, {y:0.82, rtl:false}
-        ];
-        shipDefs.forEach((def, i) => {
-            const el = document.createElement('div');
-            el.className = 'sp2-ship';
-            el.textContent = shipEmojis[i];
-            el.style.top = (def.y * 100) + '%';
-            el.style.filter = 'drop-shadow(0 0 4px rgba(31,111,255,0.9))';
-            el.style.fontSize = (12 + Math.random() * 8) + 'px';
-            starsEl.appendChild(el);
-            const speed = 60 + Math.random() * 60; // px/s
-            let x = def.rtl ? W + 40 : -40;
-            const targetX = def.rtl ? -80 : W + 80;
-            const startDelay = i * 1200 + Math.random() * 800;
-            setTimeout(() => {
-                el.style.opacity = '0.7';
-                let last = null;
-                function step(ts) {
-                    if (!last) last = ts;
-                    const dt = (ts - last) / 1000;
-                    last = ts;
-                    x += def.rtl ? -speed * dt : speed * dt;
-                    el.style.transform = `translateX(${x}px) scaleX(${def.rtl ? -1 : 1})`;
-                    if (def.rtl ? x > -80 : x < W + 80) {
-                        requestAnimationFrame(step);
-                    } else {
-                        // Restart
-                        x = def.rtl ? W + 40 : -40;
-                        setTimeout(() => requestAnimationFrame(step), 2000 + Math.random() * 3000);
-                    }
-                }
-                el.style.transform = `translateX(${x}px) scaleX(${def.rtl ? -1 : 1})`;
-                requestAnimationFrame(step);
-            }, startDelay);
-        });
-    }
-
-    // ── Fallback immédiat si DOM pas prêt ──
-    if (!splash || !app) {
-        if (app) { app.style.display='flex'; app.classList.add('visible'); }
-        setTimeout(() => { try { bootApp(); } catch(e){} }, 0);
-        return;
-    }
-
-    let _done = false;
+    // Fermeture garantie — fonction atomique
+    var _done = false;
     function _close() {
         if (_done) return;
         _done = true;
-        // Fermer splash — classList + style direct (pas cssText avec !important qui ne marche pas)
+        // Cacher splash
+        splash.style.setProperty('display', 'none', 'important');
+        splash.style.setProperty('visibility', 'hidden', 'important');
+        splash.style.setProperty('pointer-events', 'none', 'important');
         splash.classList.add('hidden');
-        splash.style.display = 'none';
-        splash.style.visibility = 'hidden';
-        splash.style.pointerEvents = 'none';
-        // Forcer l'app visible
-        app.style.display = 'flex';
+        // Montrer app
+        app.style.setProperty('display', 'flex', 'important');
         app.style.flexDirection = 'column';
         app.style.height = '100dvh';
         app.style.position = 'relative';
         app.classList.add('visible');
-        document.body.style.overflow = '';
-        // Boot async isolé
-        setTimeout(() => { try { if(typeof bootApp==='function') bootApp(); } catch(e){ console.warn('bootApp:',e); } }, 10);
-        setTimeout(() => { try { bootPhase2(); } catch(e){ console.warn('bootPhase2:',e); } }, 80);
+        try { bootApp(); } catch(e) { console.warn(e); }
+        setTimeout(function(){ try { bootPhase2(); } catch(e){} }, 100);
     }
 
-    // ── Barre bleue ──
-    const bar = document.getElementById('splashBar');
+    // Fallback absolu — si splash ou app manquant, on ouvre quand même
+    if (!splash || !app) { try { bootApp(); } catch(e){} return; }
+
+    // Étoiles CSS légères (20 max)
+    var starsEl = document.getElementById('sp2Stars');
+    if (starsEl) {
+        for (var i = 0; i < 20; i++) {
+            var s = document.createElement('div');
+            s.className = 'sp2-star';
+            s.style.cssText = 'left:'+Math.round(Math.random()*100)+'%;top:'+Math.round(Math.random()*100)+'%;--d:'+(1.5+Math.random()*2).toFixed(1)+'s;--del:'+(-Math.random()*2).toFixed(1)+'s';
+            starsEl.appendChild(s);
+        }
+    }
+
+    // Barre bleue — transition CSS pure, démarre immédiatement
+    var bar = document.getElementById('splashBar');
     if (bar) {
-        bar.style.transition = 'none';
         bar.style.width = '0%';
-        setTimeout(() => {
-            bar.style.transition = `width ${DUR * 0.86 / 1000}s linear`;
-            bar.style.width = '100%';
-        }, 100);
-    }
-    // ── "COOPER BUILDING" blanc → bleu à 40% ──
-    setTimeout(() => { const sub = document.getElementById('splashSub'); if (sub) sub.classList.add('loaded'); }, DUR * 0.40);
-
-    // ── Pulse ring autour de Sly ──
-    const slyEl = splash.querySelector('.sp2-sly');
-    if (slyEl) {
-        const ring = document.createElement('div');
-        ring.style.cssText = 'position:absolute;width:160px;height:160px;border-radius:50%;border:2px solid rgba(31,111,255,0.4);animation:sp2Ring 1.8s ease-out infinite;pointer-events:none;z-index:3;top:0;left:50%;transform:translateX(-50%)';
-        const ring2 = document.createElement('div');
-        ring2.style.cssText = 'position:absolute;width:160px;height:160px;border-radius:50%;border:1px solid rgba(122,60,255,0.3);animation:sp2Ring 1.8s ease-out 0.9s infinite;pointer-events:none;z-index:3;top:0;left:50%;transform:translateX(-50%)';
-        splash.querySelector('.sp2-wrap').style.position = 'relative';
-        splash.querySelector('.sp2-wrap').appendChild(ring);
-        splash.querySelector('.sp2-wrap').appendChild(ring2);
+        bar.style.transition = 'none';
+        // Force reflow avant d'appliquer la transition
+        bar.getBoundingClientRect();
+        bar.style.transition = 'width ' + (DUR * 0.9 / 1000).toFixed(1) + 's linear';
+        bar.style.width = '100%';
     }
 
-    // ── Panel données style SLY-COMMAND ──
-    const panel = document.createElement('div');
-    panel.style.cssText = `
-        position:absolute;bottom:0;left:0;right:0;
-        padding:16px 24px 20px;
-        background:linear-gradient(to top,rgba(0,0,3,0.85) 0%,rgba(0,0,3,0.6) 70%,transparent 100%);
-        font-family:monospace;font-size:11px;line-height:1;
-        z-index:20;pointer-events:none;
-    `;
+    // "COOPER BUILDING" blanc → bleu à mi-chemin
+    setTimeout(function() {
+        var sub = document.getElementById('splashSub');
+        if (sub) sub.classList.add('loaded');
+    }, DUR * 0.45);
 
-    // ── Row header: AGENTS ONLINE counter ──
-    const counter = document.createElement('div');
-    counter.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:12px';
-    counter.innerHTML = `<span style="color:#00E5FF;letter-spacing:2px;font-size:10px;font-family:monospace">AGENTS ONLINE</span><span id="agentCount" style="color:#1EFF8E;font-weight:bold;font-size:14px;font-family:monospace">0</span><span style="color:rgba(255,255,255,0.3);font-family:monospace">/50</span><span style="flex:1"></span><span style="color:#FF9A3C;font-size:10px;font-family:monospace" id="splashStatus">INIT...</span>`;
-    panel.appendChild(counter);
+    // Panel bas — log agents
+    var panel = document.createElement('div');
+    panel.style.cssText = 'position:absolute;bottom:0;left:0;right:0;padding:14px 20px 18px;background:linear-gradient(to top,rgba(0,0,6,0.88) 0%,rgba(0,0,6,0.5) 70%,transparent 100%);z-index:20;pointer-events:none';
 
-    // ── Cards Cooper Gang : Sly + Bentley + Murray ──
-    const gang = document.createElement('div');
-    gang.style.cssText = 'display:flex;gap:10px;margin-bottom:12px;justify-content:flex-start';
-    const gangData = [
-        { img:'sly_logo_nobg.png', name:'SLY',    role:'TACTIQUE',   color:'#3A8DFF', delay:800  },
-        { img:'bentley.png',     name:'BENTLEY',  role:'TECH',       color:'#1EFF8E', delay:1600 },
-        { img:'murray.png',      name:'MURRAY',   role:'FORCE',      color:'#FF9A3C', delay:2400 },
-    ];
-    gangData.forEach(({img, name, role, color, delay}) => {
-        const card = document.createElement('div');
-        card.style.cssText = `
-            display:flex;flex-direction:column;align-items:center;gap:4px;
-            width:68px;opacity:0;transition:opacity 0.4s ease;
-        `;
-        card.innerHTML = `
-            <div style="width:56px;height:56px;border-radius:12px;overflow:hidden;border:2px solid ${color};box-shadow:0 0 8px ${color}66;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center">
-                <img src="${img}" style="width:90%;height:90%;object-fit:contain;object-position:center 10%;filter:brightness(1.05) drop-shadow(0 2px 4px rgba(0,0,0,0.5))" loading="eager">
-            </div>
-            <div style="font-family:monospace;font-size:9px;font-weight:bold;color:${color};letter-spacing:1px">${name}</div>
-            <div style="font-family:monospace;font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:0.5px">${role}</div>
-            <div style="width:6px;height:6px;border-radius:50%;background:${color};box-shadow:0 0 6px ${color};animation:sp2Pulse 1s ease-in-out infinite" id="dot_${name}"></div>
-        `;
+    // Header compteur
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px;font-family:monospace;font-size:10px';
+    hdr.innerHTML = '<span style="color:#00E5FF;letter-spacing:2px">AGENTS ONLINE</span>'
+        + '<span id="spCount" style="color:#1EFF8E;font-weight:bold;font-size:13px">0</span>'
+        + '<span style="color:rgba(255,255,255,0.3)">/50</span>'
+        + '<span style="flex:1"></span>'
+        + '<span id="spStat" style="color:#FF9A3C">INIT...</span>';
+    panel.appendChild(hdr);
+
+    // Cards Gang
+    var gang = document.createElement('div');
+    gang.style.cssText = 'display:flex;gap:8px;margin-bottom:10px';
+    [
+        {e:'🦊', n:'SLY',    r:'TACTIQUE', c:'#3A8DFF', t:600},
+        {e:'🐢', n:'BENTLEY',r:'TECH',     c:'#1EFF8E', t:1400},
+        {e:'🦛', n:'MURRAY', r:'FORCE',    c:'#FF9A3C', t:2200},
+    ].forEach(function(g) {
+        var card = document.createElement('div');
+        card.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:3px;opacity:0;transition:opacity 0.5s';
+        card.innerHTML = '<div style="width:44px;height:44px;border-radius:10px;border:2px solid '+g.c+';box-shadow:0 0 10px '+g.c+'88;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(0,0,0,0.4)">'+g.e+'</div>'
+            + '<div style="font-family:monospace;font-size:9px;font-weight:bold;color:'+g.c+';letter-spacing:1px">'+g.n+'</div>'
+            + '<div style="font-family:monospace;font-size:8px;color:rgba(255,255,255,0.4)">'+g.r+'</div>';
         gang.appendChild(card);
-        setTimeout(() => { if (!_done) { card.style.opacity = '1'; } }, delay);
+        setTimeout(function(c){ return function(){ if(!_done) c.style.opacity='1'; }; }(card), g.t);
     });
     panel.appendChild(gang);
 
-    // ── Log lignes ──
-    const log = document.createElement('div');
-    log.style.cssText = 'min-height:60px';
+    // Log
+    var log = document.createElement('div');
+    log.style.cssText = 'font-family:monospace;font-size:10px;min-height:52px;line-height:1.5';
     panel.appendChild(log);
-
     splash.appendChild(panel);
 
-    // Séquence boot avec compteur
-    const SEQ = [
-        [150,  '#1F6FFF', 0,  '> INIT',    'SLY Neural Core v4.0'],
-        [500,  '#1EFF8E', 0,  '> NET',     'Groq cascade · Gemini fallback ✓'],
-        [900,  '#6FB1FF', 3,  '> CORE',    'OMEGA · SENTINEL · leaders ✓'],
-        [1250, '#B18CFF', 6,  '> RECON',   'CORTEX · SIBYL · SPECTER · NICHE ✓'],
-        [1600, '#3A8DFF', 12, '> FORGE',   'VOLT · ANVIL · PULSE · PIXEL ✓'],
-        [1950, '#7A3CFF', 20, '> DEPLOY',  'DREYFUS · CLOSER · KAISER · LEDGER ✓'],
-        [2300, '#00E5FF', 30, '> R&D',     'CIPHER · RADAR · TURING · PROTO ✓'],
-        [2650, '#FF9A3C', 40, '> CONTENT', 'FRESCO · PHILOMÈNE · VIRAL · FRANKLIN ✓'],
-        [3000, '#1EFF8E', 48, '> FINAL',   'GLITCH · HUNTER · MERCER · FLUX ✓'],
-        [3400, '#1EFF8E', 50, '> READY',   '50/50 agents · 0€ · MODE AUTONOME ■'],
-        [3800, '#1F6FFF', 50, '> ACCESS',  'Commandant Augus — accès autorisé ▮'],
+    // Séquence boot
+    var SEQ = [
+        [200,  '#1F6FFF', 0,  'INIT',    'SLY Neural Core v4.0'],
+        [700,  '#1EFF8E', 0,  'NET',     'Groq · Gemini fallback ✓'],
+        [1200, '#6FB1FF', 8,  'CORE',    'OMEGA · SENTINEL · Gang ✓'],
+        [1800, '#B18CFF', 18, 'RECON',   'CORTEX · SIBYL · NICHE ✓'],
+        [2300, '#3A8DFF', 28, 'FORGE',   'VOLT · ANVIL · PULSE ✓'],
+        [2800, '#7A3CFF', 38, 'DEPLOY',  'DREYFUS · CLOSER · KAISER ✓'],
+        [3300, '#00E5FF', 46, 'R&D',     'CIPHER · RADAR · TURING ✓'],
+        [3800, '#1EFF8E', 50, 'READY',   '50/50 · MODE AUTONOME ■'],
+        [4300, '#1F6FFF', 50, 'ACCESS',  'Commandant Augus — autorisé ▮'],
     ];
 
-    // Animer le compteur
-    let currentCount = 0;
-    function animCount(target) {
-        const el = document.getElementById('agentCount');
-        if (!el) return;
-        const step = Math.ceil((target - currentCount) / 8);
-        const iv = setInterval(() => {
-            currentCount = Math.min(currentCount + step, target);
-            el.textContent = currentCount;
-            if (currentCount >= target) clearInterval(iv);
-        }, 40);
-    }
-
-    SEQ.forEach(([ms, color, count, tag, txt]) => {
-        setTimeout(() => {
+    var cnt = 0;
+    SEQ.forEach(function(item) {
+        var ms=item[0], col=item[1], num=item[2], tag=item[3], txt=item[4];
+        setTimeout(function() {
             if (_done) return;
-            // Ligne log
-            const d = document.createElement('div');
-            d.style.cssText = `color:${color};opacity:0;margin-bottom:3px;transition:opacity 0.2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis`;
-            d.innerHTML = `<span style="color:rgba(255,255,255,0.35)">${tag}</span> <span>${txt}</span>`;
+            // log line
+            var d = document.createElement('div');
+            d.style.color = col;
+            d.innerHTML = '<span style="color:rgba(255,255,255,0.3)">› '+tag+'</span>  '+txt;
             log.appendChild(d);
-            requestAnimationFrame(() => { d.style.opacity = '1'; });
-            while (log.children.length > 5) log.removeChild(log.firstChild);
-            // Compteur
-            if (count > 0) animCount(count);
-            // Status
-            const st = document.getElementById('splashStatus');
-            if (st) st.textContent = tag === '> READY' ? 'ONLINE ✓' : tag === '> ACCESS' ? 'GRANTED ▮' : 'LOADING...';
+            if (log.children.length > 4) log.removeChild(log.firstChild);
+            // compteur
+            if (num > cnt) {
+                var target = num, iv = setInterval(function(){
+                    cnt = Math.min(cnt+2, target);
+                    var el = document.getElementById('spCount');
+                    if (el) el.textContent = cnt;
+                    if (cnt >= target) clearInterval(iv);
+                }, 30);
+            }
+            // status
+            var st = document.getElementById('spStat');
+            if (st) st.textContent = tag==='READY'?'ONLINE ✓':tag==='ACCESS'?'GRANTED ▮':'LOADING...';
         }, ms);
     });
 
+    // Fermeture à DUR ms — double sécurité
     setTimeout(_close, DUR);
-    setTimeout(() => { if (!_done) { console.warn('splash safety'); _close(); } }, DUR + 1500);
+    setTimeout(function(){ if (!_done) _close(); }, DUR + 2000);
 }
 
 // ═══════ BOOT ═══════
