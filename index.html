@@ -71,11 +71,17 @@ input{font-family:inherit;border:none;outline:none}
 /* Wrap central */
 .sp2-wrap{position:relative;z-index:4;display:flex;flex-direction:column;align-items:center;gap:0;animation:sp2FadeIn 0.8s ease both}
 @keyframes sp2FadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-/* Sly — multiply supprime fond blanc sur fond sombre */
-.sp2-sly{width:150px;height:auto;display:block;
-    mix-blend-mode:multiply;
-    filter:brightness(1.1) contrast(1.1) saturate(1.2);
-    animation:sp2Float 3.5s ease-in-out infinite}
+/* Conteneur médaillon Sly */
+.sp2-sly-wrap{
+    width:130px;height:130px;border-radius:50%;
+    overflow:hidden;
+    border:2.5px solid rgba(31,111,255,0.7);
+    box-shadow:0 0 20px rgba(31,111,255,0.5),0 0 40px rgba(31,111,255,0.2);
+    animation:sp2Float 3.5s ease-in-out infinite;
+    background:#e8edf5;
+}
+.sp2-sly{width:100%;height:100%;display:block;
+    object-fit:cover;object-position:center 10%;}
 @keyframes sp2Float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.03)}}
 /* Titre "SLY" — Orbitron 40px, néon blanc bleuté */
 .sp2-title{
@@ -103,10 +109,10 @@ input{font-family:inherit;border:none;outline:none}
 }
 .sp2-sub.loaded{color:#6FB1FF;text-shadow:0 0 14px rgba(31,111,255,0.9),0 0 28px rgba(31,111,255,0.5),0 2px 8px rgba(0,0,0,0.7)}
 /* Barre bleue */
-.sp2-bar{margin-top:28px;width:240px;height:3px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden}
-.sp2-bar-fill{height:100%;width:0%;border-radius:3px;
+.sp2-bar{margin-top:24px;width:260px;height:4px;background:rgba(255,255,255,0.15);border-radius:4px;overflow:hidden;box-shadow:0 0 0 1px rgba(31,111,255,0.2)}
+.sp2-bar-fill{height:100%;width:0%;border-radius:4px;
     background:linear-gradient(90deg,#1F6FFF,#6FB1FF,#00E5FF);
-    box-shadow:0 0 12px #1F6FFF,0 0 24px rgba(31,111,255,0.6);
+    box-shadow:0 0 16px #1F6FFF,0 0 32px rgba(31,111,255,0.7);
     transition:none}
 /* Boot log */
 #bootLog div{text-shadow:0 1px 6px rgba(0,0,0,0.95),0 0 10px rgba(0,0,0,0.7)}
@@ -794,7 +800,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
     <div class="sp2-overlay"></div>
     <div class="sp2-stars" id="sp2Stars"></div>
     <div class="sp2-wrap">
-        <img class="sp2-sly" src="sly_avatar_2d.png" alt="Sly Cooper" loading="eager">
+        <div class="sp2-sly-wrap"><img class="sp2-sly" src="sly_bust.webp" alt="Sly" loading="eager"></div>
         <div class="sp2-title">SLY</div>
         <div class="sp2-sub" id="splashSub">COOPER BUILDING</div>
         <div class="sp2-bar"><div class="sp2-bar-fill" id="splashBar"></div></div>
@@ -2226,16 +2232,21 @@ function runSplash() {
     function _close() {
         if (_done) return;
         _done = true;
-        // Fermer splash — aucune transition, direct
-        splash.style.cssText = 'display:none!important';
-        // Forcer l'app visible — toutes les façons possibles
-        app.removeAttribute('style');
-        app.style.cssText = 'display:flex!important;flex-direction:column;height:100dvh;position:relative';
+        // Fermer splash — classList + style direct (pas cssText avec !important qui ne marche pas)
+        splash.classList.add('hidden');
+        splash.style.display = 'none';
+        splash.style.visibility = 'hidden';
+        splash.style.pointerEvents = 'none';
+        // Forcer l'app visible
+        app.style.display = 'flex';
+        app.style.flexDirection = 'column';
+        app.style.height = '100dvh';
+        app.style.position = 'relative';
         app.classList.add('visible');
         document.body.style.overflow = '';
-        // Boot isolé async
-        setTimeout(() => { try { bootApp(); } catch(e){ console.warn('bootApp err',e); } }, 0);
-        setTimeout(() => { try { bootPhase2(); } catch(e){ console.warn('bootPhase2 err',e); } }, 60);
+        // Boot async isolé
+        setTimeout(() => { try { if(typeof bootApp==='function') bootApp(); } catch(e){ console.warn('bootApp:',e); } }, 10);
+        setTimeout(() => { try { bootPhase2(); } catch(e){ console.warn('bootPhase2:',e); } }, 80);
     }
 
     // ── Barre bleue ──
