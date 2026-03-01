@@ -16,7 +16,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#05070A">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://ga.jspm.io https://cdn.jsdelivr.net https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://sly-bot-production.up.railway.app https://api.groq.com https://*.groq.com https://generativelanguage.googleapis.com https://*.googleapis.com https://api.fish.audio https://*.fish.audio; img-src 'self' data: blob:; media-src 'self' blob:; worker-src 'self' blob:">
-<title>SLY-CHAT</title>
+<title>SLY-CHAT v6</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <link rel="manifest" href="manifest.json">
 <!-- Three.js Import Map (r183, CDN, zero build tools) -->
 <script async src="https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js" crossorigin="anonymous"></script>
@@ -68,10 +71,10 @@ input{font-family:inherit;border:none;outline:none}
 /* Wrap central */
 .sp2-wrap{position:relative;z-index:4;display:flex;flex-direction:column;align-items:center;gap:0;animation:sp2FadeIn 0.8s ease both}
 @keyframes sp2FadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-/* Sly — fond blanc supprimé par screen blend */
-.sp2-sly{width:130px;height:auto;display:block;
-    mix-blend-mode:screen;
-    filter:brightness(0.92) contrast(1.15) saturate(1.1);
+/* Sly — multiply supprime fond blanc sur fond sombre */
+.sp2-sly{width:150px;height:auto;display:block;
+    mix-blend-mode:multiply;
+    filter:brightness(1.1) contrast(1.1) saturate(1.2);
     animation:sp2Float 3.5s ease-in-out infinite}
 @keyframes sp2Float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.03)}}
 /* Titre "SLY" — Orbitron 40px, néon blanc bleuté */
@@ -791,7 +794,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
     <div class="sp2-overlay"></div>
     <div class="sp2-stars" id="sp2Stars"></div>
     <div class="sp2-wrap">
-        <img class="sp2-sly" src="sly_bust.webp" alt="Sly Cooper" loading="eager">
+        <img class="sp2-sly" src="sly_avatar_2d.png" alt="Sly Cooper" loading="eager">
         <div class="sp2-title">SLY</div>
         <div class="sp2-sub" id="splashSub">COOPER BUILDING</div>
         <div class="sp2-bar"><div class="sp2-bar-fill" id="splashBar"></div></div>
@@ -2291,8 +2294,8 @@ function runSplash() {
             width:68px;opacity:0;transition:opacity 0.4s ease;
         `;
         card.innerHTML = `
-            <div style="width:56px;height:56px;border-radius:12px;overflow:hidden;border:1.5px solid ${color}44;background:rgba(0,0,0,0.3);display:flex;align-items:flex-end;justify-content:center">
-                <img src="${img}" style="width:100%;height:100%;object-fit:cover;object-position:center top;mix-blend-mode:screen;filter:brightness(1.05) contrast(1.1)" loading="eager">
+            <div style="width:56px;height:56px;border-radius:12px;overflow:hidden;border:2px solid ${color};box-shadow:0 0 8px ${color}66;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center">
+                <img src="${img}" style="width:90%;height:90%;object-fit:contain;object-position:center 10%;filter:brightness(1.05) drop-shadow(0 2px 4px rgba(0,0,0,0.5))" loading="eager">
             </div>
             <div style="font-family:monospace;font-size:9px;font-weight:bold;color:${color};letter-spacing:1px">${name}</div>
             <div style="font-family:monospace;font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:0.5px">${role}</div>
