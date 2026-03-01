@@ -69,7 +69,7 @@ input{font-family:inherit;border:none;outline:none}
     filter:brightness(0.35) blur(2px);
 }
 .splash-logo{
-    z-index:2;width:200px;height:200px;
+    z-index:2;width:155px;height:155px;
     border-radius:0;background:transparent;
     backdrop-filter:none;border:none;
     display:flex;align-items:center;justify-content:center;
@@ -737,6 +737,20 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 .wc-bubble{font-size:12px;color:var(--text-dim);text-align:center;line-height:1.5;min-height:40px;padding:0 4px;transition:color .3s}
 .wc-agent.speaking .wc-bubble{color:var(--text)}
 .wc-close{margin-top:24px;padding:10px 28px;border-radius:12px;background:rgba(255,255,255,0.06);color:var(--text-dim);font-size:13px;font-family:'Orbitron',monospace;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,255,255,0.08)}
+
+/* === BOOT LOG — style SLY-COMMAND === */
+#bootLog div {
+    opacity: 0;
+    transform: translateX(-8px);
+    animation: bootLineIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    padding: 1px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+@keyframes bootLineIn {
+    to { opacity: 1; transform: translateX(0); }
+}
 </style>
 </head>
 <body>
@@ -1725,10 +1739,14 @@ const BADGES = {
     first_vocal:  { icon: '🎤', name: 'Premier Vocal', desc: 'Utilise le push-to-talk pour la première fois' },
     agents_10:    { icon: '🎯', name: '10 Agents', desc: 'Contacte 10 agents différents' },
     msgs_100:     { icon: '💯', name: 'Centenaire', desc: 'Envoie 100 messages' },
+    msgs_500:     { icon: '🏆', name: 'Légende', desc: '500 messages — le Cooper Building te salue' },
     night_owl:    { icon: '🦉', name: 'Nuit Blanche', desc: 'Envoie un message après minuit' },
     the_clan:     { icon: '🦝', name: 'Le Clan', desc: 'Invoque le Clan Cooper' },
     dream_mode:   { icon: '🌙', name: 'Rêveur', desc: 'Active le Dream Mode' },
     streak_7:     { icon: '🔥', name: 'Flamme', desc: 'Atteins un streak de 7 jours' },
+    streak_30:    { icon: '💎', name: 'Diamant', desc: '30 jours de suite — tu es le Building' },
+    voice_morph:  { icon: '🎭', name: 'Caméléon', desc: 'Change de voix mid-conversation' },
+    triple_vocal: { icon: '🎙️', name: 'Triple Vocal', desc: '3 messages vocaux de suite' },
 };
 const _badgeState = JSON.parse(localStorage.getItem('sly_badges') || '{}');
 const _agentsSeen = new Set(JSON.parse(localStorage.getItem('sly_agents_seen') || '[]'));
@@ -2043,10 +2061,23 @@ function generateDynamicResume() {
     return pool[Math.floor(Math.random() * pool.length)];
 }
 
+const _recentWhispers = [];
+function _isDuplicateWhisper(text) {
+    if (_recentWhispers.includes(text)) return true;
+    _recentWhispers.push(text);
+    if (_recentWhispers.length > 10) _recentWhispers.shift();
+    return false;
+}
+function _whisperAllowed() {
+    const h = new Date().getHours();
+    if ((h >= 23 || h < 8) && !dreamMode) return false; // Pas de whisper la nuit hors Dream Mode
+    if (document.querySelector('#chatInput') === document.activeElement) return false; // User is typing
+    return true;
+}
 function scheduleWhisper() {
     const delay = dreamMode ? (180000 + Math.random() * 240000) : (120000 + Math.random() * 180000); // Dream: 3-7min, Normal: 2-5min
     setTimeout(() => {
-        if (!isStreaming && Date.now() - lastWhisperTime > 180000) {
+        if (!isStreaming && Date.now() - lastWhisperTime > 180000 && _whisperAllowed()) {
             if (dreamMode) {
                 const dw = DREAM_WHISPERS[Math.floor(Math.random() * DREAM_WHISPERS.length)];
                 addWhisper(dw);
@@ -2153,7 +2184,7 @@ function initParticles() {
 // ═══════ SPLASH ═══════
 function runSplash() {
     const isMob = /iPhone|iPad|Android/i.test(navigator.userAgent);
-    const SPLASH_DURATION = isMob ? 4500 : 4000; // 4.5s mobile, 4s desktop
+    const SPLASH_DURATION = isMob ? 5000 : 4800; // 5s mobile pour lire la seq complète
 
     const splash = document.getElementById('splash');
 
@@ -2166,17 +2197,19 @@ function runSplash() {
 
     // ── Boot log cinématique (agents par pôle) ──
     const BOOT_SEQ = [
-        [500,  '#1F6FFF', '> Initialisation SLY Neural Core...'],
-        [1100, '#1EFF8E', '> Cascade IA: Groq → Gemini → Cloudflare ✓'],
-        [1800, '#1F6FFF', '> Chargement 50 agents du Cooper Building...'],
-        [2400, '#9CA3AF', '> NÉBULEUSE · OMEGA ✓'],
-        [2900, '#1F6FFF', '> LEADERS · SLY · BENTLEY · MURRAY ✓'],
-        [3400, '#7A3CFF', '> OLYMPE · DARWIN · SHADOW · AGORA · CHRONOS · HAVOC · ATLAS ✓'],
-        [4000, '#1EFF8E', '> PÔLE R — RECON · CORTEX · SIBYL · NICHE · SPECTER · PRISM · DATUM · GLITCH · NEXUS · GAUSS · MIRAGE ✓'],
-        [4700, '#00E5FF', '> PÔLE F — FORGE · VOLT · PHILOMÈNE · ANVIL · FRESCO · VIRAL · PULSE · PIXEL · AURORA · VIRGILE · ORPHEUS · HUNTER · FLUX ✓'],
-        [5400, '#FF9A3C', '> PÔLE D — DEPLOY · DREYFUS · CLOSER · RACOON · KAISER · ONYX · LEDGER · FRANKLIN · JUSTICE · MERCER ✓'],
-        [6100, '#B18CFF', '> R&D LAB · CIPHER · RADAR · PROTO · TURING · ECHO ✓'],
-        [6800, '#1EFF8E', '> 50 agents online · Coût : 0€ · Mode AUTONOME ■'],
+        [200,  '#1F6FFF', '> SLY Neural Core — init...'],
+        [600,  '#1EFF8E', '> Groq 6-model stack ✓  Gemini fallback ✓'],
+        [1000, '#1F6FFF', '> Chargement 50 agents du Cooper Building...'],
+        [1400, '#B18CFF', '> 🦅 NÉBULEUSE — OMEGA online ✓'],
+        [1750, '#1F6FFF', '> 🦊 COOPER GANG — SLY · BENTLEY · MURRAY ✓'],
+        [2100, '#7A3CFF', '> 🏛️ OLYMPE — 6 méta-agents online ✓'],
+        [2450, '#00E5FF', '> 🔭 PÔLE R RECON — 10 agents ✓'],
+        [2800, '#FF9A3C', '> 🔨 PÔLE F FORGE — 12 agents ✓'],
+        [3150, '#1EFF8E', '> 🚀 PÔLE D DEPLOY — 9 agents ✓'],
+        [3500, '#B18CFF', '> 🧪 R&D LAB — CIPHER · RADAR · PROTO · TURING · ECHO ✓'],
+        [3900, '#1EFF8E', '> 50/50 agents online · Coût : 0€ · Mode AUTONOME ■'],
+        [4200, '#9CA3AF', '> Mémoire neuronale : injection contexte ✓'],
+        [4400, '#1F6FFF', '> Bienvenue Commandant Augus ▮'],
     ];
 
     // Create boot log container if not exists
@@ -2237,14 +2270,30 @@ function runSplash() {
     drawSplash();
 
     // ── Fermeture après SPLASH_DURATION ──
-    setTimeout(() => {
+    // Safety: toujours passer après SPLASH_DURATION
+    const _splashTimer = setTimeout(() => {
         _splashRunning = false;
         if (bootLog) bootLog._done = true;
         splash.classList.add('hidden');
-        document.getElementById('app').classList.add('visible');
+        const app = document.getElementById('app');
+        if (app) app.classList.add('visible');
         localStorage.setItem('sly_splashTime', Date.now().toString());
-        bootApp();
+        if (typeof bootApp === 'function') bootApp();
     }, SPLASH_DURATION);
+
+    // Safety fallback: si 6s passées et app encore cachée → forcer
+    setTimeout(() => {
+        const app = document.getElementById('app');
+        if (app && !app.classList.contains('visible')) {
+            clearTimeout(_splashTimer);
+            _splashRunning = false;
+            if (splash) splash.style.display = 'none';
+            app.style.display = 'flex';
+            app.classList.add('visible');
+            if (typeof bootApp === 'function') bootApp();
+            console.warn('⚠️ Splash safety timeout triggered');
+        }
+    }, 6000);
 }
 
 // ═══════ BOOT ═══════
@@ -2578,6 +2627,8 @@ const VOICE_MORPH_PATTERNS = {
     'secret story|voix secret story': 'secretstory',
     'voix pujadas|voix de pujadas': 'pujadas',
     'voix du journal|voix tf1': 'journtf1',
+    'bruce willis|voix de bruce|die hard': 'brucewillis',
+    'voix normale|voix originale|reset voix|voix par défaut': '__reset__',
 };
 
 let morphedVoice = null;
@@ -2588,11 +2639,17 @@ function detectVoiceMorph(text) {
     const t = text.toLowerCase();
     for (const [pattern, voice] of Object.entries(VOICE_MORPH_PATTERNS)) {
         if (new RegExp(pattern, 'i').test(t)) {
+            if (voice === '__reset__') {
+                morphedVoice = null;
+                localStorage.removeItem('sly_morph');
+                addBubble('agent', 'sly', '🎭 Voix réinitialisée — je reprends ma voix habituelle.');
+                return null;
+            }
             morphedVoice = voice;
+            if (typeof trackBadge === 'function') trackBadge('voice_morph');
             return voice;
         }
     }
-    // Reset morph after one use? No, keep it until changed
     return null;
 }
 
@@ -4032,18 +4089,33 @@ async function initSessions() {
 
 // ═══════ LAUNCH ═══════
 initSessions().then(() => {});
-runSplash();
+// Lancer le splash immédiatement — pas d'attente DOM (on est déjà in-body)
+try { runSplash(); } catch(e) {
+    console.error('runSplash failed:', e);
+    // Fallback direct si runSplash crash
+    const app = document.getElementById('app');
+    if (app) { app.style.display='flex'; app.classList.add('visible'); }
+    const sp = document.getElementById('splash');
+    if (sp) sp.style.display='none';
+    if (typeof bootApp === 'function') bootApp();
+}
 // Phase 2 boot after splash
 setTimeout(() => { try { bootPhase2(); } catch(e) { console.warn('bootPhase2 error:', e); } }, 200);
 // Phase 3 boot — storage check + daily tracker
 setTimeout(() => { checkStorageEstimate(); }, 5000);
 </script>
 
-<!-- ═══════ THREE.JS 3D AVATAR MODULE ═══════ -->
-<script type="module">
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+<!-- ═══════ THREE.JS 3D AVATAR MODULE — disabled (GLB not deployed) ═══════ -->
+<script>
+// Three.js désactivé — GLB non déployé, évite blocage CDN
+// Stub pour compatibilité
+async function initThreeJS() {
+try {
+const THREE = null; // disabled
+if (!THREE) { console.log('3D disabled — GLB not deployed'); return; }
+const GLTFLoader = null;
+const DRACOLoader = null;
+if (!GLTFLoader || !DRACOLoader) { return; }
 
 const SlyAvatar = (() => {
     const canvas = document.getElementById('avatarCanvas');
@@ -4534,6 +4606,10 @@ const SlyAvatar = (() => {
     // Expose 3D to global scope (legacy — hidden by CSS)
     window.SlyAvatar3D = { init, dispose, setState, lazyBoot, switchModel };
 })();
+} catch(e) { console.log('3D init skipped:', e.message); }
+} // end initThreeJS
+// Lancer Three.js seulement 3s après load (splash terminé)
+setTimeout(initThreeJS, 3000);
 
 // ═══════ 2D AVATAR SYSTEM (replaces 3D) ═══════
 (() => {
@@ -4744,10 +4820,70 @@ function trackVocalStreak() {
     if (_vocalStreak === 3) {
         _vocalStreak = 0;
         gainXP(50);
+        if (typeof trackBadge === 'function') trackBadge('triple_vocal');
         addBubble('agent', 'sly', '🔥 Triple vocal ! Le Clan parle. +50 XP, Commandant.');
         if (autoSpeak) speakText('sly', 'Triple vocal. Le Clan parle.');
     }
 }
+
+
+// === MICRO-MOMENTS D'HUMANITÉ ===
+const _humanityPhrases = {
+    hesitation: ['Hmm...', 'Attends voir...', 'Laisse-moi réfléchir...', 'Ah, bonne question...', 'Un instant...'],
+    memory: [
+        "Au fait, t'avais mentionné ça l'autre fois —",
+        "Ça me rappelle ce qu'on avait discuté —",
+        "Je me souviens que tu m'avais parlé de ça —",
+    ],
+    humor: [
+        '(SENTINEL a failli me couper la parole sur celui-là)',
+        '(BENTLEY approuve de loin)',
+        '(MURRAY aurait dit la même chose, mais plus fort)',
+    ],
+};
+
+// 15% de chance d'ajouter une hésitation naturelle avant une longue réponse
+function _maybeAddHesitation(text) {
+    if (text.length < 80 || Math.random() > 0.15) return text;
+    const h = _humanityPhrases.hesitation;
+    return h[Math.floor(Math.random() * h.length)] + ' ' + text;
+}
+
+// 10% de chance de terminer par une blague Cooper Building
+function _maybeAddHumor(text) {
+    if (text.length < 120 || Math.random() > 0.10) return text;
+    const jokes = _humanityPhrases.humor;
+    return text + ' ' + jokes[Math.floor(Math.random() * jokes.length)];
+}
+
+// Rappel mémoire : si un deep memory récent correspond, le mentionner
+function _maybeMemoryRecall() {
+    if (!Memory.deep || Memory.deep.length === 0 || Math.random() > 0.08) return '';
+    const recent = Memory.deep.slice(-5);
+    const pick = recent[Math.floor(Math.random() * recent.length)];
+    if (!pick?.text) return '';
+    const mem = _humanityPhrases.memory;
+    return ' ' + mem[Math.floor(Math.random() * mem.length)] + ' "' + pick.text.slice(0, 50) + (pick.text.length > 50 ? '...' : '') + '"';
+}
+
+
+// === EXTRA QUOTES ===
+(function() {
+    if (typeof PROACTIVE_QUOTES === 'undefined') return;
+    const extras = [
+        { agent:'franklin', text:'"La vie est longue si tu sais comment la remplir." — Sénèque. Aujourd'hui, une action vaut mille plans.' },
+        { agent:'franklin', text:'"Ce n'est pas que la tâche est difficile. C'est que le difficile décourage." — Marc Aurèle.' },
+        { agent:'cortex', text:'Rappel stratégique : une décision prise maintenant vaut mieux que la décision parfaite demain.' },
+        { agent:'sly', text:'Le Cooper Building ne dort jamais vraiment. Les plans murissent, même en silence.' },
+        { agent:'omega', text:'Chaque agent actif est un outil. Chaque outil bien utilisé est une victoire.' },
+        { agent:'glitch', text:'Et si le problème que tu évites était en fait la solution déguisée ?' },
+        { agent:'sentinel', text:'Priorité absolue : ce qui avance aujourd'hui. Tout le reste peut attendre.' },
+        { agent:'anvil', text:'Un bug non fixé est une dette. Les dettes composent. Fixe-le maintenant.' },
+        { agent:'sibyl', text:'Dans 3 mois, tu remercieras la version de toi d'aujourd'hui pour les décisions prises ce soir.' },
+        { agent:'dreyfus', text:'La discipline c'est choisir entre ce que tu veux maintenant et ce que tu veux vraiment.' },
+    ];
+    PROACTIVE_QUOTES.push(...extras);
+})();
 
 </body>
 </html>
