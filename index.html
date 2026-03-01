@@ -62,8 +62,9 @@ input{font-family:inherit;border:none;outline:none}
 .sp2-overlay{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse 70% 70% at 50% 42%,transparent 35%,rgba(0,0,0,0.5) 100%)}
 .sp2-wrap{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;gap:0}
 /* Sly — petit, libre, sans cercle */
-.sp2-sly{width:130px;height:auto;display:block;
-    filter:drop-shadow(0 8px 28px rgba(0,0,0,0.9)) brightness(1.05) contrast(1.1);
+.sp2-sly{width:140px;height:auto;display:block;
+    mix-blend-mode:multiply;
+    filter:drop-shadow(0 8px 28px rgba(0,0,0,0.9)) brightness(1.02) contrast(1.08);
     animation:sp2Float 3.5s ease-in-out infinite}
 @keyframes sp2Float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 /* Titre */
@@ -755,7 +756,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
     <div class="sp2-bg"></div>
     <div class="sp2-overlay"></div>
     <div class="sp2-wrap">
-        <img class="sp2-sly" src="sly_logo_nobg.png?v=3" alt="Sly Cooper" loading="eager">
+        <img class="sp2-sly" src="sly_bust.webp" alt="Sly Cooper" loading="eager">
         <div class="sp2-title">SLY</div>
         <div class="sp2-sub" id="splashSub">COOPER BUILDING</div>
         <div class="sp2-bar"><div class="sp2-bar-fill" id="splashBar"></div></div>
