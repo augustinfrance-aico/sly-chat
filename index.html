@@ -97,9 +97,9 @@ input{font-family:inherit;border:none;outline:none}
 .splash-bar{z-index:2;margin-top:24px;width:220px;height:4px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden}
 .splash-bar-fill{
     height:100%;width:0%;border-radius:4px;
-    background:linear-gradient(90deg,var(--blue),var(--violet),var(--cyan));
-    box-shadow:0 0 8px rgba(31,111,255,0.6),0 0 20px rgba(122,60,255,0.3);
-    transition:width 1.2s cubic-bezier(0.4,0,0.2,1);
+    background:linear-gradient(90deg,#1F6FFF,#3A8DFF,#6FB1FF);
+    box-shadow:0 0 12px rgba(31,111,255,0.8),0 0 24px rgba(31,111,255,0.4);
+    transition:none;
 }
 
 /* ═══════ APP LAYOUT ═══════ */
@@ -2183,116 +2183,67 @@ function initParticles() {
 
 // ═══════ SPLASH ═══════
 function runSplash() {
-    const isMob = /iPhone|iPad|Android/i.test(navigator.userAgent);
-    const SPLASH_DURATION = isMob ? 4200 : 4000; // 4s — seq finit à 3.5s
-
+    const DUR = 4000;
     const splash = document.getElementById('splash');
+    const app   = document.getElementById('app');
+    if (!splash || !app) { app && (app.style.display='flex', app.classList.add('visible')); if(typeof bootApp==='function') bootApp(); return; }
 
-    // ── Neon progress bar (5s ease) ──
+    let _done = false;
+    function _close() {
+        if (_done) return;
+        _done = true;
+        splash.style.cssText += ';transition:none!important;display:none!important;';
+        app.style.display = 'flex';
+        app.classList.add('visible');
+        if (typeof bootApp === 'function') bootApp();
+        try { bootPhase2(); } catch(e) {}
+    }
+
+    // ── Barre bleue : CSS interval — pas de RAF ──
     const bar = document.getElementById('splashBar');
     if (bar) {
-        bar.style.transition = `width ${SPLASH_DURATION * 0.82 / 1000}s cubic-bezier(0.1, 0.05, 0.25, 1)`;
-        requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
+        bar.style.transition = 'none';
+        bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.transition = `width ${DUR * 0.9 / 1000}s linear`;
+            bar.style.width = '100%';
+        }, 50);
     }
 
-    // ── Boot log cinématique (agents par pôle) ──
-    const BOOT_SEQ = [
-        [150,  '#1F6FFF', '> SLY Neural Core — init...'],
-        [500,  '#1EFF8E', '> Groq + Gemini cascade ✓'],
-        [900,  '#1F6FFF', '> Cooper Building — 50 agents...'],
-        [1200, '#B18CFF', '> 🦅 OMEGA online ✓'],
-        [1500, '#3A8DFF', '> 🦊 SLY  ·  🐢 BENTLEY  ·  🦛 MURRAY ✓'],
-        [1850, '#7A3CFF', '> 🏛️ OLYMPE — DARWIN · SHADOW · HAVOC ✓'],
-        [2200, '#00E5FF', '> 🔭 RECON — CORTEX · SIBYL · SPECTER ✓'],
-        [2550, '#FF9A3C', '> 🔨 FORGE — VOLT · ANVIL · PULSE ✓'],
-        [2900, '#1EFF8E', '> 🚀 DEPLOY — DREYFUS · CLOSER · RACOON ✓'],
-        [3200, '#1EFF8E', '> 50/50 online · 0€ · AUTONOME ■'],
-        [3500, '#1F6FFF', '> Bienvenue Commandant Augus ▮'],
+    // ── Boot log — agents par pôle ──
+    const SEQ = [
+        [200,  '#1F6FFF', '> SLY Neural Core — init...'],
+        [600,  '#1EFF8E', '> Groq + Gemini cascade ✓'],
+        [1000, '#6FB1FF', '> Cooper Building — 50 agents...'],
+        [1350, '#B18CFF', '> 🦅 OMEGA — nébuleuse online ✓'],
+        [1700, '#3A8DFF', '> 🦊 SLY  ·  🐢 BENTLEY  ·  🦛 MURRAY ✓'],
+        [2050, '#7A3CFF', '> 🏛️ OLYMPE — 6 méta-agents ✓'],
+        [2400, '#00E5FF', '> 🔭 RECON — CORTEX · SIBYL · SPECTER ✓'],
+        [2750, '#FF9A3C', '> 🔨 FORGE — VOLT · ANVIL · PULSE ✓'],
+        [3100, '#1EFF8E', '> 🚀 DEPLOY — DREYFUS · CLOSER ✓'],
+        [3450, '#1EFF8E', '> 50/50 online · 0€ · MODE AUTONOME ■'],
+        [3750, '#1F6FFF', '> Commandant Augus — accès autorisé ▮'],
     ];
 
-    // Create boot log container if not exists
-    let bootLog = document.getElementById('bootLog');
-    if (!bootLog) {
-        bootLog = document.createElement('div');
-        bootLog.id = 'bootLog';
-        bootLog.style.cssText = `
-            position:absolute;bottom:100px;left:50%;transform:translateX(-50%);
-            width:min(340px,92vw);max-height:160px;overflow:hidden;
-            font-family:'JetBrains Mono','Fira Code',monospace;font-size:10px;
-            line-height:1.8;z-index:10;text-align:left;
-            opacity:0;animation:fadeIn 0.4s ease 0.1s forwards;
-        `;
-        splash.appendChild(bootLog);
-    }
+    const bootLog = document.createElement('div');
+    bootLog.style.cssText = 'position:absolute;bottom:90px;left:0;right:0;padding:0 24px;font-family:monospace;font-size:11px;line-height:1.9;z-index:20;text-align:left;pointer-events:none;';
+    splash.appendChild(bootLog);
 
-    BOOT_SEQ.forEach(([delay, color, text]) => {
+    SEQ.forEach(([ms, color, txt]) => {
         setTimeout(() => {
-            if (!bootLog || bootLog._done) return;
-            const line = document.createElement('div');
-            line.style.color = color;
-            line.style.opacity = '0';
-            line.style.animation = 'fadeIn 0.3s ease forwards';
-            line.textContent = text;
-            bootLog.appendChild(line);
-            bootLog.scrollTop = bootLog.scrollHeight;
-        }, delay);
+            if (_done) return;
+            const d = document.createElement('div');
+            d.textContent = txt;
+            d.style.cssText = `color:${color};opacity:0;transform:translateX(-6px);transition:opacity 0.25s,transform 0.25s;`;
+            bootLog.appendChild(d);
+            requestAnimationFrame(() => { d.style.opacity='1'; d.style.transform='translateX(0)'; });
+            // garde que les 6 dernières lignes visibles
+            while (bootLog.children.length > 6) bootLog.removeChild(bootLog.firstChild);
+        }, ms);
     });
 
-    // ── Particles canvas ──
-    const c = document.getElementById('splashCanvas');
-    const ctx = c.getContext('2d');
-    c.width = window.innerWidth; c.height = window.innerHeight;
-    const dots = [];
-    for (let i = 0; i < 50; i++) {
-        const hue = Math.random() < 0.6 ? '31,111,255' : Math.random() < 0.5 ? '122,60,255' : '0,229,255';
-        dots.push({
-            x: Math.random() * c.width, y: Math.random() * c.height,
-            r: Math.random() * 2 + 0.5,
-            vx: (Math.random() - 0.5) * 1.2, vy: (Math.random() - 0.5) * 1.2,
-            alpha: Math.random() * 0.4 + 0.15, hue
-        });
-    }
-    let _splashRunning = true;
-    function drawSplash() {
-        if (!_splashRunning) return;
-        ctx.clearRect(0, 0, c.width, c.height);
-        dots.forEach(d => {
-            d.x += d.vx; d.y += d.vy;
-            if (d.x < 0 || d.x > c.width) d.vx *= -1;
-            if (d.y < 0 || d.y > c.height) d.vy *= -1;
-            ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(${d.hue},${d.alpha})`; ctx.fill();
-        });
-        requestAnimationFrame(drawSplash);
-    }
-    drawSplash();
-
-    // ── Fermeture après SPLASH_DURATION ──
-    function _closeSplash() {
-        if (_splashRunning === false) return; // déjà fermé
-        _splashRunning = false;
-        if (bootLog) bootLog._done = true;
-        // Fermeture immédiate sans transition pour éviter tout blocage
-        splash.style.transition = 'none';
-        splash.style.display = 'none';
-        splash.classList.add('hidden');
-        const app = document.getElementById('app');
-        if (app) { app.style.display = 'flex'; app.classList.add('visible'); }
-        localStorage.setItem('sly_splashTime', Date.now().toString());
-        if (typeof bootApp === 'function') bootApp();
-    }
-
-    const _splashTimer = setTimeout(_closeSplash, SPLASH_DURATION);
-
-    // Safety fallback: si 5s passées et app encore cachée → forcer
-    setTimeout(() => {
-        const app = document.getElementById('app');
-        if (app && !app.classList.contains('visible')) {
-            clearTimeout(_splashTimer);
-            _closeSplash();
-            console.warn('⚠️ Splash safety timeout triggered');
-        }
-    }, 5000);
+    setTimeout(_close, DUR);
+    setTimeout(() => { if (!_done) { console.warn('splash safety'); _close(); } }, DUR + 1500);
 }
 
 // ═══════ BOOT ═══════
@@ -4088,20 +4039,18 @@ async function initSessions() {
 
 // ═══════ LAUNCH ═══════
 initSessions().then(() => {});
-// Lancer le splash immédiatement — pas d'attente DOM (on est déjà in-body)
+// runSplash gère tout : barre, boot log, fermeture, bootApp(), bootPhase2()
 try { runSplash(); } catch(e) {
     console.error('runSplash failed:', e);
-    // Fallback direct si runSplash crash
     const app = document.getElementById('app');
     if (app) { app.style.display='flex'; app.classList.add('visible'); }
     const sp = document.getElementById('splash');
     if (sp) sp.style.display='none';
     if (typeof bootApp === 'function') bootApp();
+    try { bootPhase2(); } catch(e2) {}
 }
-// Phase 2 boot after splash
-setTimeout(() => { try { bootPhase2(); } catch(e) { console.warn('bootPhase2 error:', e); } }, 200);
-// Phase 3 boot — storage check + daily tracker
-setTimeout(() => { checkStorageEstimate(); }, 5000);
+// Phase 3 boot — storage check
+setTimeout(() => { try { checkStorageEstimate(); } catch(e) {} }, 6000);
 </script>
 
 <!-- ═══════ THREE.JS 3D AVATAR MODULE — disabled (GLB not deployed) ═══════ -->
