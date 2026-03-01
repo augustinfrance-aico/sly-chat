@@ -108,6 +108,7 @@ input{font-family:inherit;border:none;outline:none}
 /* Boot log */
 #bootLog div{text-shadow:0 1px 6px rgba(0,0,0,0.95),0 0 10px rgba(0,0,0,0.7)}
 @keyframes sp2Ring{0%{transform:translateX(-50%) scale(1);opacity:0.6}100%{transform:translateX(-50%) scale(1.8);opacity:0}}
+@keyframes sp2Pulse{0%,100%{opacity:0.5;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
 @keyframes neonFlicker{0%,19%,21%,23%,100%{opacity:1}20%,22%{opacity:0.75}55%{opacity:0.88}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 
@@ -2269,15 +2270,42 @@ function runSplash() {
         z-index:20;pointer-events:none;
     `;
 
-    // Compteur agents
+    // ── Row header: AGENTS ONLINE counter ──
     const counter = document.createElement('div');
-    counter.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px';
-    counter.innerHTML = `<span style="color:#00E5FF;letter-spacing:2px;font-size:10px">AGENTS ONLINE</span><span id="agentCount" style="color:#1EFF8E;font-weight:bold;font-size:13px">0</span><span style="color:rgba(255,255,255,0.3)">/</span><span style="color:#1EFF8E;font-size:13px">50</span><span style="flex:1"></span><span style="color:#FF9A3C;font-size:10px" id="splashStatus">INIT...</span>`;
+    counter.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:12px';
+    counter.innerHTML = `<span style="color:#00E5FF;letter-spacing:2px;font-size:10px;font-family:monospace">AGENTS ONLINE</span><span id="agentCount" style="color:#1EFF8E;font-weight:bold;font-size:14px;font-family:monospace">0</span><span style="color:rgba(255,255,255,0.3);font-family:monospace">/50</span><span style="flex:1"></span><span style="color:#FF9A3C;font-size:10px;font-family:monospace" id="splashStatus">INIT...</span>`;
     panel.appendChild(counter);
 
-    // Log lignes
+    // ── Cards Cooper Gang : Sly + Bentley + Murray ──
+    const gang = document.createElement('div');
+    gang.style.cssText = 'display:flex;gap:10px;margin-bottom:12px;justify-content:flex-start';
+    const gangData = [
+        { img:'sly_bust.webp',   name:'SLY',     role:'TACTIQUE',   color:'#3A8DFF', delay:800  },
+        { img:'bentley.png',     name:'BENTLEY',  role:'TECH',       color:'#1EFF8E', delay:1600 },
+        { img:'murray.png',      name:'MURRAY',   role:'FORCE',      color:'#FF9A3C', delay:2400 },
+    ];
+    gangData.forEach(({img, name, role, color, delay}) => {
+        const card = document.createElement('div');
+        card.style.cssText = `
+            display:flex;flex-direction:column;align-items:center;gap:4px;
+            width:68px;opacity:0;transition:opacity 0.4s ease;
+        `;
+        card.innerHTML = `
+            <div style="width:56px;height:56px;border-radius:12px;overflow:hidden;border:1.5px solid ${color}44;background:rgba(0,0,0,0.3);display:flex;align-items:flex-end;justify-content:center">
+                <img src="${img}" style="width:100%;height:100%;object-fit:cover;object-position:center top;mix-blend-mode:screen;filter:brightness(1.05) contrast(1.1)" loading="eager">
+            </div>
+            <div style="font-family:monospace;font-size:9px;font-weight:bold;color:${color};letter-spacing:1px">${name}</div>
+            <div style="font-family:monospace;font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:0.5px">${role}</div>
+            <div style="width:6px;height:6px;border-radius:50%;background:${color};box-shadow:0 0 6px ${color};animation:sp2Pulse 1s ease-in-out infinite" id="dot_${name}"></div>
+        `;
+        gang.appendChild(card);
+        setTimeout(() => { if (!_done) { card.style.opacity = '1'; } }, delay);
+    });
+    panel.appendChild(gang);
+
+    // ── Log lignes ──
     const log = document.createElement('div');
-    log.style.cssText = 'margin-bottom:10px;min-height:80px';
+    log.style.cssText = 'min-height:60px';
     panel.appendChild(log);
 
     splash.appendChild(panel);
