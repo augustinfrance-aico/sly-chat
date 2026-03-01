@@ -706,6 +706,31 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 .bubble[data-agent=bentley] .waveform span{background:#1EFF8E}
 .bubble[data-agent=franklin] .waveform span{background:#2E7D32}
 .bubble[data-agent=omega] .waveform span{background:#B18CFF}
+
+/* === CONSEIL DE GUERRE === */
+#warCouncil{
+  position:fixed;inset:0;z-index:50;background:rgba(5,7,10,0.97);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  animation:fadeIn .4s ease;
+}
+#warCouncil.active{display:flex}
+.wc-header{font-family:'Orbitron',monospace;font-size:13px;letter-spacing:3px;color:var(--text-dim);margin-bottom:24px;text-transform:uppercase}
+.wc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;width:100%;max-width:500px;padding:0 16px;box-sizing:border-box}
+.wc-agent{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 8px;border-radius:16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);transition:all .3s}
+.wc-agent.speaking{border-color:var(--blue);background:rgba(31,111,255,0.08);box-shadow:0 0 20px rgba(31,111,255,0.2)}
+.wc-emoji{font-size:36px;line-height:1}
+.wc-name{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim)}
+.wc-waveform{display:flex;align-items:center;gap:2px;height:16px;opacity:0;transition:opacity .3s}
+.wc-agent.speaking .wc-waveform{opacity:1}
+.wc-waveform span{display:inline-block;width:2px;border-radius:2px;background:var(--blue);animation:waveBar .6s ease-in-out infinite;transform-origin:bottom}
+.wc-waveform span:nth-child(1){height:4px;animation-delay:0s}
+.wc-waveform span:nth-child(2){height:10px;animation-delay:.1s}
+.wc-waveform span:nth-child(3){height:16px;animation-delay:.2s}
+.wc-waveform span:nth-child(4){height:10px;animation-delay:.3s}
+.wc-waveform span:nth-child(5){height:6px;animation-delay:.15s}
+.wc-bubble{font-size:12px;color:var(--text-dim);text-align:center;line-height:1.5;min-height:40px;padding:0 4px;transition:color .3s}
+.wc-agent.speaking .wc-bubble{color:var(--text)}
+.wc-close{margin-top:24px;padding:10px 28px;border-radius:12px;background:rgba(255,255,255,0.06);color:var(--text-dim);font-size:13px;font-family:'Orbitron',monospace;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,255,255,0.08)}
 </style>
 </head>
 <body>
@@ -748,6 +773,32 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 </div>
 
 <!-- APP -->
+
+<div id="warCouncil">
+  <div class="wc-header">⚔️ Cooper Gang — Conseil de Guerre</div>
+  <div class="wc-grid">
+    <div class="wc-agent" id="wc-sly">
+      <div class="wc-emoji">🦊</div>
+      <div class="wc-name">SLY</div>
+      <div class="wc-waveform"><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="wc-bubble" id="wcText-sly"></div>
+    </div>
+    <div class="wc-agent" id="wc-bentley">
+      <div class="wc-emoji">🐢</div>
+      <div class="wc-name">BENTLEY</div>
+      <div class="wc-waveform"><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="wc-bubble" id="wcText-bentley"></div>
+    </div>
+    <div class="wc-agent" id="wc-murray">
+      <div class="wc-emoji">🦛</div>
+      <div class="wc-name">MURRAY</div>
+      <div class="wc-waveform"><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="wc-bubble" id="wcText-murray"></div>
+    </div>
+  </div>
+  <button class="wc-close" onclick="closeWarCouncil()">FERMER ✕</button>
+</div>
+
 <div id="app">
     <!-- Sly floating portrait -->
     <img id="slyFloat" src="sly_logo_nobg.png" alt="" aria-hidden="true">
@@ -1468,6 +1519,7 @@ async function sendMessage(text) {
     if (fullResponse) {
         conversationHistory.push({ role: 'user', content: text });
         conversationHistory.push({ role: 'assistant', content: fullResponse, agent: agentKey });
+        localStorage.setItem('sly_last_message', text.slice(0, 80));
         const maxHist2 = PERF_CONFIG[DEVICE_CLASS].maxHistory || 20;
         if (conversationHistory.length > maxHist2 + 10) conversationHistory = conversationHistory.slice(-maxHist2);
         Memory.addMessage('assistant', fullResponse);
@@ -2199,19 +2251,48 @@ function bootApp() {
     initSTT();
     scheduleWhisper();
 
-    // Welcome message
-    const greetings = [
-        "Salut Commandant ! Le Building t'attendait.",
-        "Augus ! Content de te voir. Qu'est-ce qu'on attaque ?",
-        "Commandant sur le pont. 50 agents en ligne, zéro anomalie.",
-        "Hey boss. Le Cooper Building tourne comme une horloge.",
-        "Bienvenue. Tous les systèmes sont opérationnels.",
-    ];
-    const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+    // === BRIEFING MATINAL JARVIS ===
     setTimeout(() => {
-        addBubble('agent', 'sly', greeting);
-        if (autoSpeak) speakText('sly', greeting);
-    }, 300);
+        const now = new Date();
+        const h = now.getHours();
+        const streakVal = parseInt(localStorage.getItem('sly_streak') || streak || 0);
+        const lastSession = localStorage.getItem('sly_last_session');
+        const lastMsg = localStorage.getItem('sly_last_message') || '';
+        const isReturn = lastSession && (Date.now() - parseInt(lastSession)) < 86400000;
+
+        // Salutation selon l'heure
+        const salut = h < 6 ? 'Nuit blanche, Commandant ?' : h < 12 ? 'Bonjour Commandant.' : h < 18 ? 'Bon après-midi, Commandant.' : 'Bonsoir, Commandant.';
+
+        // Brief contextuel selon contexte
+        let brief = '';
+        if (isReturn && lastMsg) {
+            brief = salut + ' Tu revenais sur : "' + lastMsg.slice(0,40) + (lastMsg.length>40?'...':"") + '". On reprend ?';
+        } else if (streakVal >= 7) {
+            brief = salut + ' Streak ' + streakVal + ' jours — le Building est en feu. 50 agents en ligne, zéro anomalie.';
+        } else if (streakVal >= 3) {
+            brief = salut + ' ' + streakVal + ' jours de suite. Le Cooper Building tourne. Qu'est-ce qu'on attaque ?';
+        } else if (h < 12) {
+            const morning = [
+                salut + ' Le Building t'attendait. Groq en ligne, 50 agents prêts. Go.',
+                salut + ' SENTINEL a scanné la nuit — tout est propre. On démarre ?',
+                salut + ' Nouvelle journée, nouvelle conquête. Les agents sont chauds.',
+            ];
+            brief = morning[Math.floor(Math.random() * morning.length)];
+        } else {
+            const casual = [
+                salut + ' Le Building tourne nickel. Qu'est-ce qu'on fait ?',
+                salut + ' Content de te voir. 50 agents en ligne. Lance-moi quelque chose.',
+                salut + ' Tous les systèmes sont opérationnels. À tes ordres, Commandant.',
+            ];
+            brief = casual[Math.floor(Math.random() * casual.length)];
+        }
+
+        localStorage.setItem('sly_last_session', Date.now().toString());
+        addBubble('agent', 'sly', brief);
+        // Unlock audio AVANT speakText pour iOS
+        if (typeof _keepAudioAlive === 'function') _keepAudioAlive();
+        if (autoSpeak) speakText('sly', brief);
+    }, 400);
 }
 
 // ═══════ PERSISTENCE ═══════
@@ -2237,6 +2318,7 @@ function updateSendBtn() {
     document.getElementById('sendBtn').disabled = !document.getElementById('chatInput').value.trim();
 }
 
+document.getElementById('chatInput').addEventListener('focus', () => { _unlockAudio(); }, { passive: true });
 document.getElementById('chatInput').addEventListener('input', (e) => {
     updateSendBtn();
     onTyping(e.target.value);
@@ -2251,6 +2333,9 @@ document.getElementById('chatInput').addEventListener('keydown', (e) => {
 });
 
 document.getElementById('sendBtn').addEventListener('click', () => {
+    // iOS AudioContext unlock sur tap send — critique pour autoplay
+    _unlockAudio();
+    if (typeof _keepAudioAlive === 'function') _keepAudioAlive();
     const input = document.getElementById('chatInput');
     const text = input.value.trim();
     if (text) { sendMessage(text); input.value = ''; updateSendBtn(); }
@@ -4645,5 +4730,18 @@ setTimeout(function(){
 // === WAVEFORM CONTROL ===
 function showWaveform(ak){ document.querySelectorAll('.bubble[data-agent="'+ak+'"]').forEach(function(b){ var w=b.querySelector('.waveform'); if(w) w.classList.add('active'); }); }
 function hideAllWaveforms(){ document.querySelectorAll('.waveform').forEach(function(w){ w.classList.remove('active'); }); }
+
+// === STREAK VOCAL ===
+let _vocalStreak = 0;
+function trackVocalStreak() {
+    _vocalStreak++;
+    if (_vocalStreak === 3) {
+        _vocalStreak = 0;
+        gainXP(50);
+        addBubble('agent', 'sly', '🔥 Triple vocal ! Le Clan parle. +50 XP, Commandant.');
+        if (autoSpeak) speakText('sly', 'Triple vocal. Le Clan parle.');
+    }
+}
+
 </body>
 </html>
