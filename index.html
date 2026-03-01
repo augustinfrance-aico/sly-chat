@@ -137,11 +137,16 @@ input{font-family:inherit;border:none;outline:none}
     border-bottom:1px solid var(--glass-border);
     min-height:56px;gap:12px;position:relative;z-index:10;
 }
-.header-title{font-family:'Orbitron',monospace;font-size:16px;font-weight:700;flex:1;background:linear-gradient(135deg,var(--blue),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-center{flex:1;display:flex;flex-direction:column;gap:2px}
+.header-title{font-family:'Orbitron',monospace;font-size:16px;font-weight:700;background:linear-gradient(135deg,var(--blue),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-agent-indicator{display:flex;align-items:center;gap:5px}
+.agent-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:agentPulse 2s ease-in-out infinite;flex-shrink:0}
+@keyframes agentPulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.agent-label{font-size:10px;font-weight:600;color:var(--blue-focus);text-transform:uppercase;letter-spacing:1px}
 .header-stat{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--text-dim)}
 .header-stat .val{color:var(--text)}
-.xp-bar{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
-.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:2px;transition:width .5s cubic-bezier(0.34,1.56,0.64,1)}
+.xp-bar{height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;box-shadow:inset 0 0 4px rgba(0,0,0,0.3)}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--violet),var(--cyan));border-radius:2px;transition:width .5s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 0 8px rgba(31,111,255,0.6)}
 .btn-icon{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.06);color:var(--text);display:flex;align-items:center;justify-content:center;font-size:18px;transition:background .2s}
 .btn-icon:active{background:rgba(31,111,255,0.2)}
 
@@ -290,14 +295,17 @@ input{font-family:inherit;border:none;outline:none}
     transition:border .2s;
 }
 .input-field:focus{border-color:var(--blue)}
-.input-field::placeholder{color:var(--text-dim)}
+.input-field::placeholder{color:var(--text-dim);transition:color .3s}
+.input-field:focus::placeholder{color:rgba(230,237,245,0.2)}
 .send-btn{
     width:48px;height:48px;border-radius:50%;
-    background:var(--blue);color:white;font-size:20px;
+    background:linear-gradient(135deg,var(--blue),var(--violet));
+    color:white;font-size:18px;
     display:flex;align-items:center;justify-content:center;
     transition:all .2s;
+    box-shadow:0 2px 14px rgba(31,111,255,0.35);
 }
-.send-btn:active{transform:scale(0.9);background:var(--blue-hover)}
+.send-btn:active{transform:scale(0.9);box-shadow:0 2px 8px rgba(31,111,255,0.5)}
 .send-btn:disabled{opacity:.3;pointer-events:none}
 
 /* ═══════ AGENT GRID MODAL ═══════ */
@@ -887,7 +895,13 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
     <!-- Header -->
     <div class="header">
         <button class="btn-icon" id="btnMenu">☰</button>
-        <div class="header-title">SLY-CHAT</div>
+        <div class="header-center">
+            <div class="header-title">SLY-CHAT</div>
+            <div class="header-agent-indicator" id="activeAgentIndicator">
+                <span class="agent-dot"></span>
+                <span class="agent-label" id="activeAgentLabel">SLY</span>
+            </div>
+        </div>
         <div class="header-stat">⭐<span class="val" id="levelDisplay">Niv.1</span></div>
         <div class="header-stat">🔥<span class="val" id="streakDisplay">0j</span></div>
         <button class="btn-icon" id="btnSettings">⚙</button>
@@ -1913,7 +1927,7 @@ function renderDock() {
         nm.className = 'dock-name';
         nm.textContent = a.name;
         el.appendChild(nm);
-        el.onclick = () => { currentAgent = key; highlightDockAgent(key); };
+        el.onclick = () => { currentAgent = key; highlightDockAgent(key); updateActiveAgentIndicator(key); };
         dock.appendChild(el);
     });
     // More button
@@ -1924,6 +1938,32 @@ function renderDock() {
     dock.appendChild(more);
 }
 
+function updateActiveAgentIndicator(key) {
+    const lbl = document.getElementById('activeAgentLabel');
+    if (lbl && AGENTS[key]) lbl.textContent = AGENTS[key].name;
+}
+
+var _placeholderTimer = null;
+function startPlaceholderCycle() {
+    var input = document.getElementById('chatInput');
+    if (!input) return;
+    var hints = [
+        'Tape un message…',
+        'Mission du jour ?',
+        'Quel problème à résoudre ?',
+        'Ask the Building…',
+        'Stratégie, code, contenu…',
+        'SLY écoute.'
+    ];
+    var idx = 0;
+    if (_placeholderTimer) clearInterval(_placeholderTimer);
+    _placeholderTimer = setInterval(function() {
+        if (document.activeElement === input) return;
+        idx = (idx + 1) % hints.length;
+        input.placeholder = hints[idx];
+    }, 4000);
+}
+
 function highlightDockAgent(key) {
     document.querySelectorAll('.dock-agent').forEach(el => el.classList.remove('active', 'switching'));
     const agents = document.querySelectorAll('.dock-agent');
@@ -1932,6 +1972,7 @@ function highlightDockAgent(key) {
         agents[idx].classList.add('active', 'switching');
         agents[idx].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     }
+    updateActiveAgentIndicator(key);
     // Switch 3D avatar model for Sly/Murray/Bentley
     if (window.SlyAvatar?.switchModel && (key === 'sly' || key === 'murray' || key === 'bentley' || key === 'franklin')) {
         window.SlyAvatar.switchModel(key);
@@ -2278,19 +2319,22 @@ function runSplash() {
     panel.appendChild(hdr);
 
     var gang = document.createElement('div');
-    gang.style.cssText = 'display:flex;gap:8px;margin-bottom:10px';
+    gang.style.cssText = 'display:flex;gap:12px;margin-bottom:12px;align-items:flex-end';
     var gangClosed = false;
-    [{e:'🦊',n:'SLY',r:'TACTIQUE',c:'#3A8DFF',t:500},
-     {e:'🐢',n:'BENTLEY',r:'TECH',c:'#1EFF8E',t:1200},
-     {e:'🦛',n:'MURRAY',r:'FORCE',c:'#FF9A3C',t:2000}
+    [{img:'sly_avatar_2d.png',n:'SLY',r:'TACTIQUE',c:'#3A8DFF',t:500},
+     {img:'bentley.png',n:'BENTLEY',r:'TECH',c:'#1EFF8E',t:1200},
+     {img:'murray.png',n:'MURRAY',r:'FORCE',c:'#FF9A3C',t:2000}
     ].forEach(function(g) {
         var card = document.createElement('div');
-        card.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:3px;opacity:0;transition:opacity 0.5s';
-        card.innerHTML = '<div style="width:44px;height:44px;border-radius:10px;border:2px solid '+g.c+';box-shadow:0 0 10px '+g.c+'88;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(0,0,0,0.4)">'+g.e+'</div>'
-            +'<div style="font-family:monospace;font-size:9px;font-weight:bold;color:'+g.c+'">'+g.n+'</div>'
-            +'<div style="font-family:monospace;font-size:8px;color:rgba(255,255,255,0.35)">'+g.r+'</div>';
+        card.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;opacity:0;transition:opacity 0.6s,transform 0.6s;transform:translateY(12px)';
+        card.innerHTML = '<div style="width:72px;height:72px;border-radius:14px;border:2px solid '+g.c+';box-shadow:0 0 16px '+g.c+'99,0 0 32px '+g.c+'44;overflow:hidden;background:rgba(0,0,6,0.6);position:relative">'
+            +'<img src="'+g.img+'" alt="'+g.n+'" style="width:100%;height:100%;object-fit:cover;object-position:top center" onerror="this.parentNode.innerHTML=\'<div style=&quot;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px&quot;>'+({SLY:'🦊',BENTLEY:'🐢',MURRAY:'🦛'}[g.n]||'⚡')+'</div>\'">'
+            +'<div style="position:absolute;bottom:0;left:0;right:0;height:24px;background:linear-gradient(to top,rgba(0,0,0,0.7),transparent)"></div>'
+            +'</div>'
+            +'<div style="font-family:\'Orbitron\',monospace;font-size:10px;font-weight:900;color:'+g.c+';letter-spacing:1.5px">'+g.n+'</div>'
+            +'<div style="font-family:monospace;font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:0.5px">'+g.r+'</div>';
         gang.appendChild(card);
-        setTimeout(function(c){ return function(){ if(!gangClosed) c.style.opacity='1'; }; }(card), g.t);
+        setTimeout(function(c){ return function(){ if(!gangClosed){c.style.opacity='1';c.style.transform='translateY(0)';} }; }(card), g.t);
     });
     panel.appendChild(gang);
 
@@ -2336,7 +2380,7 @@ function runSplash() {
         if (typeof _bootFallbackFired !== 'undefined') _bootFallbackFired = true;
         gangClosed = true;
         setTimeout(function(){ try { loadState(); } catch(e){ console.error('[_splashDone] loadState:', e); } }, 0);
-        setTimeout(function(){ try { renderDock(); } catch(e){ console.error('[_splashDone] renderDock:', e); } }, 20);
+        setTimeout(function(){ try { renderDock(); updateActiveAgentIndicator(currentAgent); startPlaceholderCycle(); } catch(e){ console.error('[_splashDone] renderDock:', e); } }, 20);
         setTimeout(function(){ try { updateXPDisplay(); updateStreak(); } catch(e){} }, 40);
         setTimeout(function(){ try { initParticles(); } catch(e){} }, 60);
         setTimeout(function(){ try { initSTT(); scheduleWhisper(); } catch(e){} }, 80);
