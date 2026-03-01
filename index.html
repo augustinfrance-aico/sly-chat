@@ -690,19 +690,26 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 
 /* Sly floating portrait in chat */
 /* Sly en arrière-plan de l'app — même image que splash, semi-transparent */
-#app::before{
-    content:'';
-    position:fixed;bottom:90px;right:4px;
-    width:120px;height:120px;
-    background:url('sly_logo_nobg.png') center/contain no-repeat;
-    opacity:0.18;
+#app::before{display:none}
+#slyAppBg{
+    position:fixed;bottom:100px;right:8px;
+    width:88px;height:88px;
+    border-radius:50%;
+    border:2px solid rgba(31,111,255,0.7);
+    box-shadow:0 0 18px rgba(31,111,255,0.8),0 0 36px rgba(31,111,255,0.4),inset 0 0 12px rgba(31,111,255,0.15);
+    background:url('sly_logo_nobg.png') center/80% no-repeat, radial-gradient(circle,rgba(31,111,255,0.08) 0%,transparent 70%);
+    opacity:0.55;
     pointer-events:none;z-index:0;
-    filter:drop-shadow(0 0 18px rgba(31,111,255,0.85)) drop-shadow(0 0 8px rgba(31,111,255,0.6));
+    animation:slyBgFloat 4s ease-in-out infinite;
 }
 #slyFloat{display:none}
 @keyframes slyFloatAnim{
   0%,100%{transform:translateY(0) rotate(-2deg)}
   50%{transform:translateY(-12px) rotate(2deg)}
+}
+@keyframes slyBgFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-8px)}
 }
 
 /* Waveform */
@@ -856,8 +863,10 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 </div>
 
 <div id="app">
-    <!-- Sly floating portrait -->
-    <img id="slyFloat" src="sly_logo_nobg.png" alt="" aria-hidden="true">
+    <!-- Sly floating portrait (legacy, hidden) -->
+    <img id="slyFloat" src="sly_logo_nobg.png" alt="" aria-hidden="true" style="display:none!important">
+    <!-- Sly bg circle — cercle bleu lumineux -->
+    <div id="slyAppBg" aria-hidden="true"></div>
     <!-- Header -->
     <div class="header">
         <button class="btn-icon" id="btnMenu">☰</button>
@@ -4144,13 +4153,31 @@ async function initSessions() {
 
 // ═══════ LAUNCH ═══════
 initSessions().then(() => {});
+
+// Sécurité race condition : définir _splashDone par défaut avant runSplash()
+// Si le script autonome ferme le splash avant que runSplash() l'override, on boot quand même
+if (typeof window._splashDone !== 'function') {
+    window._splashDone = function() {
+        try { loadState(); } catch(e) {}
+        try { renderDock(); } catch(e) {}
+        try { bootPhase2(); } catch(e) {}
+        setTimeout(function(){
+            try {
+                var h = new Date().getHours();
+                var salut = h<6?'Nuit blanche, Commandant ?':h<12?'Bonjour Commandant.':h<18?'Bon après-midi.':'Bonsoir, Commandant.';
+                addBubble('agent','sly', salut+' Le Building t\'attendait. 50 agents prêts. Go.');
+            } catch(e) { console.error('bienvenue failed:', e); }
+        }, 300);
+    };
+}
+
 // runSplash gère tout : barre, boot log, fermeture, bootApp(), bootPhase2()
 try { runSplash(); } catch(e) {
     console.error('runSplash failed:', e);
     const app = document.getElementById('app');
-    if (app) { app.style.display='flex'; app.classList.add('visible'); }
+    if (app) { app.style.setProperty('display','flex','important'); app.classList.add('visible'); }
     const sp = document.getElementById('splash');
-    if (sp) sp.style.display='none';
+    if (sp) sp.style.setProperty('display','none','important');
     if (typeof bootApp === 'function') bootApp();
     try { bootPhase2(); } catch(e2) {}
 }
