@@ -168,10 +168,11 @@ input{font-family:inherit;border:none;outline:none}
     display:flex;flex-direction:column;align-items:center;gap:2px;
     padding:6px 10px;border-radius:var(--radius-sm);
     transition:all .2s;min-width:56px;flex-shrink:0;
+    background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);
 }
-.dock-agent.active{background:rgba(31,111,255,0.15)}
+.dock-agent.active{background:rgba(31,111,255,0.15);border-color:rgba(31,111,255,0.3)}
 .dock-agent:active{transform:scale(0.92)}
-.dock-emoji{font-size:24px}
+.dock-emoji{font-size:24px;filter:drop-shadow(0 0 1px rgba(0,0,0,0.3))}
 .dock-name{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim)}
 .dock-agent.active .dock-name{color:var(--blue)}
 .dock-more{
@@ -1065,6 +1066,7 @@ function onTyping(text) {
 
 // ═══════ SEND MESSAGE ═══════
 let _lastSendTime = 0;
+let _isVocalMessage = false; // Flag for +10 XP on vocal
 async function sendMessage(text) {
     if (!text.trim() || isStreaming) return;
     const now = Date.now();
@@ -1077,7 +1079,26 @@ async function sendMessage(text) {
         addBubble('user', null, text);
         gainXP(25);
         cmd.handler();
+        _isVocalMessage = false;
         return;
+    }
+
+    // Conversation Rewind — "SLY répète ce que tu m'as dit sur X"
+    const rewindMatch = text.match(/(?:répète|redis|rappelle|rewind|qu'est-ce que .+ (?:dit|parlé)|souviens.+de)\s+(?:ce que .+ (?:dit|parlé) sur|sur|de)\s+(.+)/i);
+    if (rewindMatch && Memory.deep.length > 0) {
+        const query = rewindMatch[1].toLowerCase().trim();
+        const results = Memory.deep.filter(m => m.text?.toLowerCase().includes(query)).sort((a,b) => (b.score||0) - (a.score||0));
+        if (results.length > 0) {
+            const best = results[0];
+            const rewindText = `🔄 Mémoire retrouvée :\n"${best.text}"\n— ${new Date(best.ts).toLocaleDateString('fr-FR')}`;
+            addBubble('user', null, text);
+            addBubble('agent', 'sly', rewindText);
+            if (autoSpeak) speakText('sly', best.text);
+            gainXP(10);
+            _isVocalMessage = false;
+            isStreaming = false;
+            return;
+        }
     }
 
     isStreaming = true;
@@ -1098,10 +1119,13 @@ async function sendMessage(text) {
     currentAgent = agentKey;
     highlightDockAgent(agentKey);
 
-    // User bubble
+    // User bubble — vocal gets +10 XP, text gets +5
     addBubble('user', null, text);
-    gainXP(5);
+    gainXP(_isVocalMessage ? 10 : 5);
+    _isVocalMessage = false;
     trackBadge('msg_sent');
+    if (typeof trackTodayMsgs === 'function') trackTodayMsgs();
+    if (typeof trackAgentUsed === 'function') trackAgentUsed(agentKey);
     trackBadge('agent_used', agentKey);
 
     // Memory: add to buffer + track
@@ -1157,7 +1181,7 @@ async function sendMessage(text) {
             } else { throw new Error('groq-deep-fail'); }
         }
     } catch {
-        // Fallback: Gemini
+        // Fallback cascade: Gemini → Cloudflare Workers AI → Offline
         try {
             thinkingEl?.remove();
             const geminiText = await callGemini(msgs, 500);
@@ -1165,14 +1189,21 @@ async function sendMessage(text) {
                 fullResponse = geminiText;
                 addBubble('agent', agentKey, geminiText);
             } else {
-                // All providers down — use offline fallback
-                thinkingEl?.remove();
-                const offlineReply = OfflineCache.getReply(agentKey, text);
-                if (offlineReply) {
-                    addBubble('agent', agentKey, offlineReply);
-                    fullResponse = offlineReply;
+                // Tier 4: Cloudflare Workers AI
+                const cfText = typeof callCloudflare === 'function' ? await callCloudflare(msgs, 300) : null;
+                if (cfText) {
+                    fullResponse = cfText;
+                    addBubble('agent', agentKey, cfText);
                 } else {
-                    addBubble('agent', 'sly', "📡 Connexion instable — Groq et Gemini sont down. Je garde ton message en mémoire, on reprend dès que ça revient !");
+                    // All providers down — use offline fallback
+                    thinkingEl?.remove();
+                    const offlineReply = OfflineCache.getReply(agentKey, text);
+                    if (offlineReply) {
+                        addBubble('agent', agentKey, offlineReply);
+                        fullResponse = offlineReply;
+                    } else {
+                        addBubble('agent', 'sly', "📡 Connexion instable — Groq, Gemini et Cloudflare sont down. Je garde ton message en mémoire, on reprend dès que ça revient !");
+                    }
                 }
             }
         } catch {
@@ -1681,7 +1712,7 @@ function initSTT() {
         document.getElementById('pttBtn').classList.remove('recording');
         document.getElementById('pttBtn').textContent = '🎤';
         const text = document.getElementById('chatInput').value.trim();
-        if (text) { sendMessage(text); document.getElementById('chatInput').value = ''; updateSendBtn(); }
+        if (text) { _isVocalMessage = true; sendMessage(text); document.getElementById('chatInput').value = ''; updateSendBtn(); }
     };
 }
 
@@ -3338,6 +3369,184 @@ openAgentModal = function() {
     overlay.onclick = closeAgentModal;
 };
 
+// ═══════ WEBSOCKET STREAMING (Socket.IO compatible) ═══════
+const SlySocket = {
+    ws: null,
+    _reconnectDelay: 1000,
+    _maxDelay: 30000,
+    _attempts: 0,
+    _maxAttempts: 10,
+    connected: false,
+
+    connect() {
+        if (this.ws && this.ws.readyState <= 1) return; // already connected/connecting
+        const wsUrl = API_BASE.replace('https://', 'wss://').replace('http://', 'ws://') + '/ws';
+        try {
+            this.ws = new WebSocket(wsUrl);
+            this.ws.onopen = () => {
+                this.connected = true;
+                this._attempts = 0;
+                this._reconnectDelay = 1000;
+                this.ws.send(JSON.stringify({ type: 'auth', user: 'augus', ts: Date.now() }));
+            };
+            this.ws.onmessage = (e) => {
+                try {
+                    const msg = JSON.parse(e.data);
+                    this._handleMessage(msg);
+                } catch {}
+            };
+            this.ws.onclose = () => { this.connected = false; this._reconnect(); };
+            this.ws.onerror = () => { this.connected = false; };
+        } catch { this._reconnect(); }
+    },
+
+    _reconnect() {
+        if (this._attempts >= this._maxAttempts) return;
+        this._attempts++;
+        const delay = Math.min(this._reconnectDelay * Math.pow(2, this._attempts - 1), this._maxDelay);
+        setTimeout(() => this.connect(), delay);
+    },
+
+    _handleMessage(msg) {
+        if (msg.type === 'whisper' && msg.text) {
+            addWhisper(msg.text);
+        } else if (msg.type === 'agent_response' && msg.agent && msg.text) {
+            addBubble('agent', msg.agent, msg.text);
+            if (autoSpeak) speakText(msg.agent, msg.text);
+        } else if (msg.type === 'bridge_result' && msg.command) {
+            // Real dispatch results from SENTINEL
+            if (msg.data?.response) {
+                addBubble('agent', msg.data.agent || 'sentinel', msg.data.response);
+            }
+        } else if (msg.type === 'notification' && msg.text) {
+            showToast(msg.text);
+        }
+    },
+
+    send(type, data) {
+        if (this.ws?.readyState === 1) {
+            this.ws.send(JSON.stringify({ type, ...data, ts: Date.now() }));
+            return true;
+        }
+        return false;
+    }
+};
+// Auto-connect WebSocket (non-blocking, silent fail if backend doesn't support it)
+setTimeout(() => SlySocket.connect(), 3000);
+
+// ═══════ ENHANCED BRIDGE (dispatch via WebSocket or REST) ═══════
+const _origBridge = bridgeCommand;
+bridgeCommand = async function(command, data = {}) {
+    // Try WebSocket first (real-time)
+    if (SlySocket.connected && SlySocket.send('command', { command, data })) {
+        return { dispatched: true, via: 'websocket' };
+    }
+    // Fallback to REST
+    return _origBridge(command, data);
+};
+
+// ═══════ ENHANCED PROACTIVE RÉSUMÉS ═══════
+const _origDynResume = generateDynamicResume;
+generateDynamicResume = function() {
+    const hour = new Date().getHours();
+    const pool = [];
+    const msgs = parseInt(localStorage.getItem('sly_msgs_sent') || '0');
+    const agents = JSON.parse(localStorage.getItem('sly_agents_seen') || '[]');
+    const mem = Memory.deep?.length || 0;
+
+    // Alertes client (check memory for client-related keywords)
+    const clientMems = Memory.deep?.filter(m => /client|lurie|giovani|didier|projet|deadline|livraison/i.test(m.text || '')) || [];
+    if (clientMems.length > 0) {
+        const recent = clientMems.sort((a,b) => (b.ts||0) - (a.ts||0))[0];
+        if (recent && Date.now() - (recent.ts||0) < 86400000 * 3) {
+            pool.push({ agent: 'closer', text: `💼 Alerte client — ${recent.text?.slice(0,60)}... À suivre de près, Commandant.` });
+        }
+    }
+
+    // Opportunités détectées (check for market/niche keywords)
+    const nicheMems = Memory.deep?.filter(m => /niche|marché|opportunité|tendance|kdp|upwork/i.test(m.text || '')) || [];
+    if (nicheMems.length > 0 && Math.random() > 0.6) {
+        const niche = nicheMems[Math.floor(Math.random() * Math.min(nicheMems.length, 3))];
+        if (niche?.text) pool.push({ agent: 'niche', text: `🔍 Opportunité repérée — ${niche.text.slice(0,60)}... Signal à explorer.` });
+    }
+
+    // Agent inactivity alerts
+    const agentInteractions = JSON.parse(localStorage.getItem('sly_agent_last_used') || '{}');
+    const staleAgents = Object.entries(agentInteractions)
+        .filter(([k,v]) => Date.now() - v > 86400000 * 5)
+        .map(([k]) => AGENTS[k]?.name).filter(Boolean);
+    if (staleAgents.length >= 3) {
+        pool.push({ agent: 'sentinel', text: `🎯 ${staleAgents.length} agents inactifs depuis 5+ jours : ${staleAgents.slice(0,3).join(', ')}. Rotation recommandée.` });
+    }
+
+    // Streak milestone alerts
+    if (streak === 7) pool.push({ agent: 'pixel', text: `🕹️ STREAK 7 JOURS ! Achievement Gold. Le Building est fier, Commandant.` });
+    if (streak === 14) pool.push({ agent: 'pixel', text: `🕹️ STREAK 14 JOURS ! Achievement Diamond. Tu es une légende.` });
+    if (streak === 30) pool.push({ agent: 'pixel', text: `🕹️ STREAK 30 JOURS ! Titanium unlocked. Même Sénèque serait impressionné.` });
+
+    // Daily productivity stats
+    const todayMsgs = parseInt(localStorage.getItem('sly_today_msgs') || '0');
+    if (hour >= 18 && todayMsgs > 20) {
+        pool.push({ agent: 'dreyfus', text: `⚔️ ${todayMsgs} messages aujourd'hui — productivité exemplaire. Le Building tourne au maximum.` });
+    }
+
+    // If nothing specific, fallback to original
+    if (pool.length === 0) return _origDynResume();
+    return pool[Math.floor(Math.random() * pool.length)];
+};
+
+// ═══════ CLOUDFLARE WORKERS AI (Tier 4 cascade) ═══════
+async function callCloudflare(messages, maxTokens = 300) {
+    if (!CircuitBreaker.canAttempt('cloudflare')) return null;
+    try {
+        const resp = await fetch(`${API_BASE}/api/cloudflare`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages, max_tokens: maxTokens })
+        });
+        if (!resp.ok) { CircuitBreaker.recordFailure('cloudflare'); return null; }
+        const data = await resp.json();
+        CircuitBreaker.recordSuccess('cloudflare');
+        Metrics.trackFallback('gemini', 'cloudflare');
+        return data?.result?.response || data?.choices?.[0]?.message?.content || null;
+    } catch {
+        CircuitBreaker.recordFailure('cloudflare');
+        return null;
+    }
+}
+
+// ═══════ STORAGE ESTIMATION WARNING ═══════
+async function checkStorageEstimate() {
+    if (!navigator.storage?.estimate) return;
+    try {
+        const { usage, quota } = await navigator.storage.estimate();
+        const availableMB = ((quota - usage) / 1024 / 1024).toFixed(1);
+        if (parseFloat(availableMB) < 10) {
+            showToast(`⚠️ Stockage faible — ${availableMB}MB restant. Les mémoires anciennes seront purgées.`);
+            // Auto-purge old deep memories if critical
+            if (parseFloat(availableMB) < 5 && Memory.deep.length > 10) {
+                Memory.deep = Memory.deep.sort((a,b) => (b.score||0) - (a.score||0)).slice(0, Math.floor(Memory.deep.length * 0.7));
+                Memory._saveDeep();
+            }
+        }
+    } catch {}
+}
+
+// Track daily messages for enhanced proactive
+function trackTodayMsgs() {
+    const today = new Date().toDateString();
+    const stored = localStorage.getItem('sly_today_date');
+    if (stored !== today) { localStorage.setItem('sly_today_date', today); localStorage.setItem('sly_today_msgs', '0'); }
+    const c = parseInt(localStorage.getItem('sly_today_msgs') || '0') + 1;
+    localStorage.setItem('sly_today_msgs', String(c));
+}
+// Track last agent interaction time
+function trackAgentUsed(agentKey) {
+    const data = JSON.parse(localStorage.getItem('sly_agent_last_used') || '{}');
+    data[agentKey] = Date.now();
+    localStorage.setItem('sly_agent_last_used', JSON.stringify(data));
+}
+
 // ═══════ INIT SESSION ON BOOT ═══════
 async function initSessions() {
     await Sessions.init();
@@ -3352,6 +3561,8 @@ initSessions().then(() => {});
 runSplash();
 // Phase 2 boot after splash
 setTimeout(bootPhase2, 200);
+// Phase 3 boot — storage check + daily tracker
+setTimeout(() => { checkStorageEstimate(); }, 5000);
 </script>
 
 <!-- ═══════ THREE.JS 3D AVATAR MODULE ═══════ -->
@@ -3411,6 +3622,7 @@ const SlyAvatar = (() => {
     }
 
     // ═══ LOAD MODEL ═══
+    let modelGroup = null; // Reference to loaded model for eye-tracking
     async function loadModel() {
         const dracoLoader = new DRACOLoader();
         dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
@@ -3422,25 +3634,60 @@ const SlyAvatar = (() => {
 
         try {
             const gltf = await loader.loadAsync(modelUrl);
-            scene.add(gltf.scene);
+            modelGroup = gltf.scene;
+            scene.add(modelGroup);
 
             // Center and scale
-            const box = new THREE.Box3().setFromObject(gltf.scene);
+            const box = new THREE.Box3().setFromObject(modelGroup);
             const size = box.getSize(new THREE.Vector3());
             const maxDim = Math.max(size.x, size.y, size.z);
             const scale = 2 / maxDim;
-            gltf.scene.scale.setScalar(scale);
+            modelGroup.scale.setScalar(scale);
             const center = box.getCenter(new THREE.Vector3());
-            gltf.scene.position.sub(center.multiplyScalar(scale));
-            gltf.scene.position.y -= 0.2;
+            modelGroup.position.sub(center.multiplyScalar(scale));
+            modelGroup.position.y -= 0.2;
+
+            // Also load the cane model if available
+            try {
+                const caneGltf = await loader.loadAsync('sly_cane.glb');
+                const caneModel = caneGltf.scene;
+                const caneBox = new THREE.Box3().setFromObject(caneModel);
+                const caneSize = caneBox.getSize(new THREE.Vector3());
+                const caneScale = 1.2 / Math.max(caneSize.x, caneSize.y, caneSize.z);
+                caneModel.scale.setScalar(caneScale * scale);
+                caneModel.position.set(0.5 * scale, 0, 0);
+                modelGroup.add(caneModel);
+            } catch {} // Cane optional
 
             // Setup animations
             if (gltf.animations.length > 0) {
-                mixer = new THREE.AnimationMixer(gltf.scene);
+                mixer = new THREE.AnimationMixer(modelGroup);
                 gltf.animations.forEach(clip => {
                     actions[clip.name.toLowerCase()] = mixer.clipAction(clip);
                 });
                 playAnimation('idle');
+            } else {
+                // No animations in GLB — add procedural idle animation
+                modelGroup.userData.glbModel = true;
+                const _glbClock = new THREE.Clock();
+                modelGroup.userData.animate = () => {
+                    const t = _glbClock.getElapsedTime();
+                    // Gentle breathing + hover
+                    modelGroup.position.y = -0.2 + Math.sin(t * 0.8) * 0.02;
+                    // State-based subtle movements
+                    if (currentState === 'talk') {
+                        modelGroup.rotation.y = Math.sin(t * 3) * 0.04;
+                        modelGroup.scale.y = scale * (1 + Math.sin(t * 8) * 0.005);
+                    } else if (currentState === 'think') {
+                        modelGroup.rotation.z = Math.sin(t * 0.6) * 0.05;
+                    } else if (currentState === 'listen') {
+                        modelGroup.rotation.y = Math.sin(t * 1.5) * 0.03;
+                    } else {
+                        modelGroup.rotation.z = 0;
+                        modelGroup.scale.y = scale;
+                        modelGroup.rotation.y = Math.sin(t * 0.3) * 0.06;
+                    }
+                };
             }
 
             canvas.classList.add('visible');
@@ -3602,6 +3849,24 @@ const SlyAvatar = (() => {
         }
     }
 
+    // ═══ EYE TRACKING (avatar follows pointer) ═══
+    let _targetLookX = 0, _targetLookY = 0;
+    let _currentLookX = 0, _currentLookY = 0;
+    const LOOK_SMOOTH = 0.08; // Smooth interpolation factor
+    const LOOK_MAX = 0.3; // Max rotation in radians
+
+    function onPointerMove(e) {
+        if (!initialized || !canvas.classList.contains('visible')) return;
+        const rect = canvas.getBoundingClientRect();
+        const cx = e.clientX ?? e.touches?.[0]?.clientX ?? rect.left + rect.width / 2;
+        const cy = e.clientY ?? e.touches?.[0]?.clientY ?? rect.top + rect.height / 2;
+        // Normalize to -1..1 relative to canvas center
+        _targetLookX = ((cx - rect.left) / rect.width - 0.5) * 2;
+        _targetLookY = ((cy - rect.top) / rect.height - 0.5) * 2;
+    }
+    document.addEventListener('mousemove', onPointerMove, { passive: true });
+    document.addEventListener('touchmove', (e) => { if (e.touches[0]) onPointerMove(e.touches[0]); }, { passive: true });
+
     // ═══ RENDER LOOP ═══
     function animate() {
         animFrameId = requestAnimationFrame(animate);
@@ -3612,9 +3877,29 @@ const SlyAvatar = (() => {
         const delta = clock.getDelta();
         if (mixer) mixer.update(delta);
 
-        // Animate placeholder if present
+        // Smooth eye tracking interpolation
+        _currentLookX += (_targetLookX - _currentLookX) * LOOK_SMOOTH;
+        _currentLookY += (_targetLookY - _currentLookY) * LOOK_SMOOTH;
+
+        // Apply look direction to placeholder head/eyes or GLB model
         scene.traverse(obj => {
             if (obj.userData?.animate) obj.userData.animate();
+            // Apply eye tracking to placeholder head
+            if (obj.userData?.placeholder && obj.userData?.head) {
+                const head = obj.userData.head;
+                if (currentState === 'idle') {
+                    head.rotation.y = _currentLookX * LOOK_MAX;
+                    head.rotation.x = -_currentLookY * LOOK_MAX * 0.5;
+                }
+                if (obj.userData.eyeL) {
+                    obj.userData.eyeL.position.x = -0.1 + _currentLookX * 0.02;
+                    obj.userData.eyeR.position.x = 0.1 + _currentLookX * 0.02;
+                }
+            }
+            // Apply eye tracking to GLB model (subtle look-at)
+            if (obj.userData?.glbModel && currentState === 'idle') {
+                obj.rotation.y += (_currentLookX * 0.15 - obj.rotation.y) * 0.05;
+            }
         });
 
         renderer.render(scene, camera);
