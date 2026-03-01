@@ -692,12 +692,12 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 /* Sly en arrière-plan de l'app — même image que splash, semi-transparent */
 #app::before{
     content:'';
-    position:fixed;bottom:80px;right:-20px;
-    width:180px;height:180px;
+    position:fixed;bottom:90px;right:4px;
+    width:120px;height:120px;
     background:url('sly_logo_nobg.png') center/contain no-repeat;
-    opacity:0.08;
+    opacity:0.18;
     pointer-events:none;z-index:0;
-    filter:drop-shadow(0 0 20px rgba(31,111,255,0.3));
+    filter:drop-shadow(0 0 18px rgba(31,111,255,0.85)) drop-shadow(0 0 8px rgba(31,111,255,0.6));
 }
 #slyFloat{display:none}
 @keyframes slyFloatAnim{
@@ -881,7 +881,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
         <div class="input-row">
             <input class="input-field" id="chatInput" placeholder="Tape un message..." autocomplete="off">
             <button class="ptt-btn" id="pttBtn" title="Maintenir pour parler">🎤</button>
-            <button class="send-btn" id="sendBtn" disabled>⚡</button>
+            <button class="send-btn" id="sendBtn">➤</button>
         </div>
     </div>
 </div>
@@ -2405,9 +2405,7 @@ function loadState() {
 // ═══════ EVENT LISTENERS ═══════
 // SAFE — tous les listeners sont wrappés dans bootPhase2() pour éviter crash si DOM pas prêt
 function updateSendBtn() {
-    const btn = document.getElementById('sendBtn');
-    const inp = document.getElementById('chatInput');
-    if (btn && inp) btn.disabled = !inp.value.trim();
+    // Keep btn always enabled — JS guards the empty send
 }
 
 // Visibility change — toujours safe (document existe)
