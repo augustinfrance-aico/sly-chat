@@ -937,6 +937,12 @@ const AGENT_PERSONAS = {
 function buildSystemPrompt(agentKey) {
     const a = AGENTS[agentKey] || AGENTS.sly;
     const persona = AGENT_PERSONAS[agentKey] || `Tu es ${a.name} (${a.emoji}), agent du Cooper Building. Ton rôle : ${a.role}. Tu parles avec la personnalité de ton rôle, de manière unique et reconnaissable.`;
+    // Micro-moments d'humanité — inject memory recall cues
+    let microMoments = '';
+    if (Memory.deep && Memory.deep.length > 0 && Math.random() > 0.6) {
+        const randomMem = Memory.deep[Math.floor(Math.random() * Math.min(Memory.deep.length, 5))];
+        if (randomMem?.text) microMoments = `\nSOUVENIR À RÉFÉRENCER NATURELLEMENT (si pertinent) : "${randomMem.text}"`;
+    }
     return `${persona}
 CONTEXTE : Le Cooper Building est l'écosystème de 50 agents IA d'Augus — son empire.
 RÈGLES ABSOLUES :
@@ -945,7 +951,12 @@ RÈGLES ABSOLUES :
 - Tu es comme JARVIS pour Tony Stark : tu adores ton boss
 - Humour subtil bienvenu (refs Sly Cooper, culture, philosophie)
 - Propose des actions concrètes, sois proactif
-- JAMAIS de blabla — chaque mot compte`;
+- JAMAIS de blabla — chaque mot compte
+MICRO-MOMENTS D'HUMANITÉ (utilise 1 de ces techniques au hasard, PAS à chaque message) :
+- Hésitation naturelle : commence parfois par "Hmm..." ou "Attends voir..." ou "Ah, bonne question..."
+- Rappel personnel : "Au fait, tu m'avais parlé de..." si un souvenir est fourni ci-dessous
+- Auto-correction : "Non en fait..." pour montrer que tu réfléchis vraiment
+- Blague contextuelle : 1 fois sur 5, une petite ref Sly Cooper ou culture${microMoments}`;
 }
 
 function selectTier(message) {
@@ -956,7 +967,6 @@ function selectTier(message) {
 }
 
 // ═══════ AGENT ROUTING (hybrid: regex + LLM fallback) ═══════
-const AGENT_KEYS = Object.keys(AGENTS);
 function detectAgent(text) {
     const t = text.toLowerCase();
     if (/clan cooper|cooper gang|les trois|le gang/i.test(t)) return 'sly';
@@ -1181,6 +1191,13 @@ async function sendMessage(text) {
         if (conversationHistory.length > maxHist2 + 10) conversationHistory = conversationHistory.slice(-maxHist2);
         Memory.addMessage('assistant', fullResponse);
         OfflineCache.store(agentKey, text, fullResponse);
+    }
+
+    // Sentiment → 3D avatar emotion
+    if (fullResponse && window.SlyAvatar) {
+        const sentiment = SentimentEngine.analyze(fullResponse);
+        const avatarState = SentimentEngine.toAvatarState(sentiment);
+        window.SlyAvatar.setState(avatarState);
     }
 
     // TTS
@@ -1568,23 +1585,62 @@ const DREAM_WHISPERS = [
     '⚔️ Dreyfus monte la garde en silence...',
 ];
 
+// Dynamic proactive résumés — stats-based whispers
+function generateDynamicResume() {
+    const hour = new Date().getHours();
+    const msgs = parseInt(localStorage.getItem('sly_msgs_sent') || '0');
+    const agents = JSON.parse(localStorage.getItem('sly_agents_seen') || '[]');
+    const mem = Memory.deep?.length || 0;
+    const pool = [];
+    // Morning bilan
+    if (hour >= 7 && hour <= 9) {
+        pool.push({ agent: 'sentinel', text: `🎯 Bilan matinal — ${streak} jours de streak, ${msgs} messages envoyés. Le Building est prêt.` });
+        pool.push({ agent: 'cortex', text: `🧠 Analyse : tu as contacté ${agents.length} agents différents. Objectif 25 pour le badge Explorer.` });
+    }
+    // Afternoon checkpoint
+    if (hour >= 14 && hour <= 16) {
+        pool.push({ agent: 'datum', text: `📊 Checkpoint — Niveau ${LEVELS.findIndex(l => xp < l?.xp) || LEVELS.length}, ${mem} mémoires profondes stockées.` });
+        pool.push({ agent: 'dreyfus', text: `⚔️ Rapport d'activité : ${conversationHistory.length} échanges cette session. Rythme solide.` });
+    }
+    // Evening wind-down
+    if (hour >= 20 && hour <= 22) {
+        pool.push({ agent: 'franklin', text: `🐢 Bilan du soir — ${msgs} messages, ${agents.length} agents mobilisés. "Chaque jour est une petite vie." — Sénèque` });
+        pool.push({ agent: 'sly', text: `🦊 Belle journée Commandant. Le Building a tourné comme une horloge.` });
+    }
+    // Memory-based recall
+    if (mem > 0 && Math.random() > 0.5) {
+        const randomMem = Memory.deep[Math.floor(Math.random() * Math.min(mem, 5))];
+        if (randomMem?.text) {
+            pool.push({ agent: 'omega', text: `🦅 Rappel — ${randomMem.text.slice(0, 80)}${randomMem.text.length > 80 ? '...' : ''}` });
+        }
+    }
+    if (pool.length === 0) return null;
+    return pool[Math.floor(Math.random() * pool.length)];
+}
+
 function scheduleWhisper() {
     const delay = dreamMode ? (180000 + Math.random() * 240000) : (120000 + Math.random() * 180000); // Dream: 3-7min, Normal: 2-5min
     setTimeout(() => {
         if (!isStreaming && Date.now() - lastWhisperTime > 180000) {
             if (dreamMode) {
-                // Dream Mode: ambient phrases only
                 const dw = DREAM_WHISPERS[Math.floor(Math.random() * DREAM_WHISPERS.length)];
                 addWhisper(dw);
-            } else if (Math.random() > 0.5 && typeof PROACTIVE_QUOTES !== 'undefined') {
-                const q = pickQuote();
-                if (q) {
-                    const emoji = AGENTS[q.agent]?.emoji || '🦊';
-                    addWhisper(`${emoji} ${q.text}`);
-                }
             } else {
-                const w = WHISPERS[Math.floor(Math.random() * WHISPERS.length)];
-                addWhisper(w.text);
+                const roll = Math.random();
+                if (roll < 0.3) {
+                    // 30% — dynamic résumé based on real stats
+                    const dyn = generateDynamicResume();
+                    if (dyn) addWhisper(`${dyn.text}`);
+                    else { const w = WHISPERS[Math.floor(Math.random() * WHISPERS.length)]; addWhisper(w.text); }
+                } else if (roll < 0.7 && typeof PROACTIVE_QUOTES !== 'undefined') {
+                    // 40% — proactive quotes
+                    const q = pickQuote();
+                    if (q) { const emoji = AGENTS[q.agent]?.emoji || '🦊'; addWhisper(`${emoji} ${q.text}`); }
+                } else {
+                    // 30% — standard whispers
+                    const w = WHISPERS[Math.floor(Math.random() * WHISPERS.length)];
+                    addWhisper(w.text);
+                }
             }
             lastWhisperTime = Date.now();
         }
@@ -2700,10 +2756,26 @@ const Memory = {
 Memory.decay();
 
 // ═══════ COMMAND DETECTION ═══════
+// ═══════ BRIDGE BACKEND — Send commands to TITAN proxy ═══════
+async function bridgeCommand(command, data = {}) {
+    try {
+        const resp = await fetch(`${API_BASE}/api/command`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ command, data, timestamp: Date.now(), user: 'augus' })
+        });
+        if (resp.ok) {
+            const result = await resp.json();
+            return result;
+        }
+    } catch {}
+    return null; // Backend unreachable — command was cosmetic-only
+}
+
 function detectCommand(text) {
     const t = text.toLowerCase().trim();
     if (/^\/help$/i.test(t)) return { command: '/help', handler: () => {
-        addBubble('agent', 'sentinel', `🎯 COMMANDES DISPONIBLES :\n/help — Cette aide\n/clear — Effacer le chat\n/stats — Tes statistiques\n/cooper — Mobilisation générale\n/agents — Liste des agents\n/voice [agent] — Changer de voix\n/dream — Toggle Dream Mode\n\nOu parle normalement, je route vers le bon agent !`);
+        addBubble('agent', 'sentinel', `🎯 COMMANDES DISPONIBLES :\n/help — Cette aide\n/clear — Effacer le chat\n/stats — Tes statistiques\n/cooper — Mobilisation générale\n/agents — Liste des agents\n/voice [agent] — Changer de voix\n/dream — Toggle Dream Mode\n/bridge — Status du bridge backend\n\nOu parle normalement, je route vers le bon agent !`);
     }};
     if (/^\/clear$/i.test(t)) return { command: '/clear', handler: () => {
         document.getElementById('chatArea').innerHTML = '';
@@ -2739,9 +2811,26 @@ function detectCommand(text) {
     if (/^\/cooper$/i.test(t) || /clan cooper|cooper gang|les trois|le gang/i.test(t)) return { command: '/cooper', handler: () => {
         addBubble('agent', 'sly', `🦊 ${pickConfirmation()} Le Clan Cooper se mobilise !`);
         trackBadge('cooper_invoked');
+        bridgeCommand('cooper', { agents: ['sly','bentley','murray'], text: text });
     }};
     if (/tout le building|mobilisation|50 agents|tous les agents/i.test(t)) return { command: '/cooper-all', handler: () => {
         addBubble('agent', 'sentinel', `🎯 ${pickConfirmation()} 50 agents déployés !`);
+        bridgeCommand('cooper-all', { agents: 'all', text: text });
+    }};
+    if (/audit|analyse complète|check complet/i.test(t)) return { command: '/audit', handler: () => {
+        addBubble('agent', 'cortex', `🧠 ${pickConfirmation()} Audit lancé — CORTEX + DATUM + PULSE sur le coup.`);
+        bridgeCommand('audit', { agents: ['cortex','datum','pulse'], text: text });
+    }};
+    if (/bilan|résumé du jour|point/i.test(t) && t.length < 30) return { command: '/bilan', handler: () => {
+        const msgs = parseInt(localStorage.getItem('sly_msgs_sent') || '0');
+        const agents = JSON.parse(localStorage.getItem('sly_agents_seen') || '[]');
+        addBubble('agent', 'datum', `📊 BILAN EXPRESS :\n💬 ${msgs} messages envoyés\n🎯 ${agents.length} agents contactés\n🔥 Streak : ${streak} jours\n⭐ Niveau : ${level} (${xp} XP)\n🧠 ${Memory.deep.length} mémoires profondes`);
+        bridgeCommand('bilan', { stats: { msgs, agents: agents.length, streak, level, xp } });
+    }};
+    if (/^\/bridge$/i.test(t)) return { command: '/bridge', handler: async () => {
+        const result = await bridgeCommand('ping');
+        if (result) addBubble('agent', 'volt', `⚡ Bridge actif — Backend SLY connecté sur ${API_BASE}`);
+        else addBubble('agent', 'volt', `⚡ Bridge offline — Backend SLY non joignable. Mode autonome.`);
     }};
     if (/^\/voice\s+(\w+)/i.test(t)) {
         const match = t.match(/^\/voice\s+(\w+)/i);
@@ -2915,6 +3004,27 @@ const AudioCache = {
             this._cache.delete(oldest);
         }
         this._cache.set(key, value);
+    }
+};
+
+// ═══════ SENTIMENT ANALYSIS (client-side → 3D avatar emotion) ═══════
+const SentimentEngine = {
+    _positive: /super|génial|excellent|bravo|parfait|top|nice|cool|merci|content|heureux|victoire|gagné|réussi|fonctionne|succès|incroyable|magnifique|🎉|🔥|💪|✅|😊|😄/i,
+    _negative: /erreur|bug|crash|échoué|raté|problème|impossible|panne|perdu|merde|galère|cassé|❌|😡|😤|💀/i,
+    _excited: /BOUM|!!!|ÉNORME|DINGUE|INCROYABLE|WOW|LET'S GO|FONCE|ON CASSE|ATTAQUE/i,
+    _calm: /médite|réfléchis|sénèque|sagesse|patience|calme|philosophie|respire|zen|observe/i,
+    analyze(text) {
+        if (!text) return 'neutral';
+        const t = text.slice(0, 200);
+        if (this._excited.test(t)) return 'excited';
+        if (this._calm.test(t)) return 'calm';
+        if (this._positive.test(t)) return 'happy';
+        if (this._negative.test(t)) return 'alert';
+        return 'neutral';
+    },
+    toAvatarState(sentiment) {
+        const map = { happy: 'talk', alert: 'think', excited: 'talk', calm: 'idle', neutral: 'idle' };
+        return map[sentiment] || 'idle';
     }
 };
 
