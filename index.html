@@ -60,22 +60,17 @@ input{font-family:inherit;border:none;outline:none}
     filter:brightness(0.35) blur(2px);
 }
 .splash-logo{
-    z-index:2;width:140px;height:140px;
+    z-index:2;width:180px;height:180px;
     border-radius:50%;
-    background:rgba(11,15,20,0.5);
-    backdrop-filter:blur(12px);
+    background:rgba(11,15,20,0.4);
+    backdrop-filter:blur(16px);
     display:flex;align-items:center;justify-content:center;
     box-shadow:0 0 60px rgba(31,111,255,0.4),0 0 120px rgba(122,60,255,0.2);
     animation:logoPulse 2s ease-in-out infinite;
     overflow:hidden;border:2px solid rgba(31,111,255,0.3);
 }
-.splash-logo img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.splash-gang{
-    z-index:2;margin-top:16px;height:80px;
-    opacity:0;animation:gangFadeIn 1s ease 0.8s forwards;
-}
-.splash-gang img{height:100%;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.6))}
-@keyframes gangFadeIn{to{opacity:1}}
+.splash-logo img{width:110%;height:110%;object-fit:contain;filter:drop-shadow(0 4px 20px rgba(0,0,0,0.5))}
+/* gang removed per Augus request */
 @keyframes logoPulse{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(31,111,255,0.4)}50%{transform:scale(1.06);box-shadow:0 0 80px rgba(31,111,255,0.6),0 0 120px rgba(122,60,255,0.3)}}
 .splash-title{z-index:2;margin-top:20px;font-family:'Orbitron',monospace;font-size:32px;font-weight:900;letter-spacing:8px;background:linear-gradient(135deg,var(--blue),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 40px rgba(31,111,255,0.3)}
 .splash-sub{z-index:2;margin-top:6px;font-size:13px;color:var(--text-dim);letter-spacing:3px}
@@ -187,6 +182,7 @@ input{font-family:inherit;border:none;outline:none}
 }
 .dock-agent.active{background:rgba(31,111,255,0.15);border-color:rgba(31,111,255,0.3)}
 .dock-agent:active{transform:scale(0.92)}
+.dock-pixel{image-rendering:pixelated;image-rendering:crisp-edges;display:block;margin:0 auto 2px}
 .dock-emoji{font-size:24px;filter:drop-shadow(0 0 1px rgba(0,0,0,0.3))}
 .dock-name{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim)}
 .dock-agent.active .dock-name{color:var(--blue)}
@@ -496,49 +492,55 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 
 /* ═══════ 2D AVATAR FLOATING ═══════ */
 #avatarFloat{
-    position:fixed;bottom:120px;right:12px;
-    width:80px;height:80px;
+    position:fixed;bottom:130px;right:10px;
+    width:56px;height:56px;
     z-index:50;pointer-events:none;
     opacity:0;transition:opacity 0.6s ease, filter 0.4s ease;
-    border-radius:50%;overflow:hidden;
-    border:2px solid rgba(31,111,255,0.4);
-    box-shadow:0 0 20px rgba(31,111,255,0.3),0 0 40px rgba(31,111,255,0.1);
-    animation:avatarFloat 3s ease-in-out infinite;
+    border-radius:0;overflow:visible;
+    background:transparent;border:none;
+    box-shadow:none;
+    animation:avatarIdle 4s ease-in-out infinite;
     cursor:pointer;
+    filter:drop-shadow(0 4px 12px rgba(31,111,255,0.35));
 }
 #avatarFloat.visible{opacity:1;pointer-events:auto}
-#avatarFloat img{width:100%;height:100%;object-fit:cover;transition:transform 0.3s ease}
-#avatarFloat:hover img,#avatarFloat:active img{transform:scale(1.1)}
+#avatarFloat img{width:100%;height:100%;object-fit:contain;transition:transform 0.3s ease}
+#avatarFloat:hover img,#avatarFloat:active img{transform:scale(1.12) rotate(5deg)}
 #avatarFloat.talking{
-    border-color:var(--blue);
-    box-shadow:0 0 24px rgba(31,111,255,0.5),0 0 48px rgba(31,111,255,0.2);
-    animation:avatarFloat 3s ease-in-out infinite, avatarTalk 0.3s ease-in-out infinite;
+    animation:avatarIdle 4s ease-in-out infinite, avatarTalk 0.4s ease-in-out infinite;
+    filter:drop-shadow(0 4px 16px rgba(31,111,255,0.5));
 }
 #avatarFloat.listening{
-    border-color:var(--green);
-    box-shadow:0 0 24px rgba(30,255,142,0.5),0 0 48px rgba(30,255,142,0.2);
+    filter:drop-shadow(0 4px 16px rgba(30,255,142,0.5));
+    animation:avatarIdle 4s ease-in-out infinite, avatarLean 2s ease-in-out infinite;
 }
 #avatarFloat.thinking{
-    border-color:var(--violet);
-    box-shadow:0 0 24px rgba(122,60,255,0.5),0 0 48px rgba(122,60,255,0.2);
-    animation:avatarFloat 3s ease-in-out infinite, avatarThink 2s ease-in-out infinite;
+    filter:drop-shadow(0 4px 16px rgba(122,60,255,0.5));
+    animation:avatarIdle 4s ease-in-out infinite, avatarThink 3s ease-in-out infinite;
 }
-@keyframes avatarFloat{
-    0%,100%{transform:translateY(0)}
-    50%{transform:translateY(-6px)}
+@keyframes avatarIdle{
+    0%{transform:translateY(0) rotate(0deg)}
+    25%{transform:translateY(-8px) rotate(2deg)}
+    50%{transform:translateY(-3px) rotate(-1deg)}
+    75%{transform:translateY(-10px) rotate(-2deg)}
+    100%{transform:translateY(0) rotate(0deg)}
 }
 @keyframes avatarTalk{
-    0%,100%{transform:translateY(0) scale(1)}
-    50%{transform:translateY(-2px) scale(1.04)}
+    0%,100%{transform:scale(1) translateY(0)}
+    50%{transform:scale(1.06) translateY(-3px)}
+}
+@keyframes avatarLean{
+    0%,100%{transform:rotate(0deg)}
+    50%{transform:rotate(5deg) translateX(-3px)}
 }
 @keyframes avatarThink{
-    0%,100%{transform:translateY(0) rotate(0deg)}
-    25%{transform:translateY(-4px) rotate(-3deg)}
-    75%{transform:translateY(-4px) rotate(3deg)}
+    0%,100%{transform:rotate(0deg) translateY(0)}
+    33%{transform:rotate(-4deg) translateY(-5px)}
+    66%{transform:rotate(4deg) translateY(-5px)}
 }
 .perf-low #avatarFloat{display:none}
-@media(max-width:360px){#avatarFloat{width:60px;height:60px;bottom:110px;right:8px}}
-@media(min-width:500px){#avatarFloat{width:96px;height:96px}}
+@media(max-width:360px){#avatarFloat{width:48px;height:48px;bottom:115px;right:6px}}
+@media(min-width:500px){#avatarFloat{width:64px;height:64px}}
 
 /* ═══════ SCROLL-TO-BOTTOM BUTTON ═══════ */
 .scroll-bottom{
@@ -583,10 +585,9 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 <div id="splash">
     <div class="splash-bg"></div>
     <canvas id="splashCanvas"></canvas>
-    <div class="splash-logo"><img src="sly_bust.png" alt="Sly Cooper" loading="eager"></div>
+    <div class="splash-logo"><img src="sly_avatar_2d.png" alt="Sly Cooper" loading="eager"></div>
     <div class="splash-title">SLY</div>
     <div class="splash-sub">COOPER BUILDING</div>
-    <div class="splash-gang"><img src="cooper_gang_sly3.png" alt="Cooper Gang"></div>
     <div class="splash-bar"><div class="splash-bar-fill" id="splashBar"></div></div>
 </div>
 
@@ -595,7 +596,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 
 <!-- 2D AVATAR FLOATING -->
 <div id="avatarFloat">
-    <img src="sly_bust.png" alt="Sly" id="avatarImg">
+    <img src="sly_avatar_2d.png" alt="Sly" id="avatarImg">
 </div>
 
 <!-- APP -->
@@ -812,7 +813,7 @@ const AGENTS = {
     pulse:    {name:'PULSE',emoji:'💓',voice:'tomhanks',color:'#FF3B5C',role:'Performance & monitoring'},
 };
 
-const DOCK_DEFAULT = ['sly','bentley','murray','omega','cortex','sentinel','franklin','anvil','glitch','dreyfus'];
+const DOCK_DEFAULT = ['sly','bentley','murray'];
 const AGENT_KEYS = Object.keys(AGENTS);
 
 // ═══════ STATE ═══════
@@ -1353,10 +1354,10 @@ async function streamResponse(resp, thinkingEl, agentKey, sendStartTime) {
 // ═══════ UI HELPERS ═══════
 // Agent avatar image mapping — real Sly Cooper artwork
 const AGENT_AVATARS = {
-    sly: 'sly_bust.webp',
-    murray: 'cooper_gang.png',    // Murray from gang shot
-    bentley: 'cooper_gang.png',   // Bentley from gang shot
-    franklin: 'cooper_gang.png',
+    sly: 'sly_avatar_2d.png',
+    murray: 'sly_avatar_2d.png',
+    bentley: 'sly_avatar_2d.png',
+    franklin: 'sly_avatar_2d.png',
 };
 
 function getAgentAvatar(key) {
@@ -1523,6 +1524,39 @@ function trackBadge(event, data) {
 }
 
 // ═══════ DOCK ═══════
+// ═══ PIXEL ART DATA (16x16 sprites from SLY-COMMAND) ═══
+const PIXEL_SPRITES = (() => {
+    const _=null;
+    return {
+        sly: (() => {
+            const BL='#2563EB',DB='#1E40AF',GR='#9CA3AF',DG='#6B7280',LG='#D1D5DB',BK='#1F2937',MK='#111827',AM='#D4A017',YL='#EAB308',WH='#F3F4F6';
+            return [_,_,_,_,_,BL,BL,BL,BL,_,_,_,_,_,_,_,_,_,_,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,_,_,GR,_,DB,BL,BL,BL,BL,BL,DB,_,GR,_,_,_,_,GR,DG,_,DB,DB,BL,BL,BL,DB,DB,_,DG,GR,_,_,_,_,DG,DB,DB,DB,DB,DB,DB,DB,DB,DB,DG,_,_,_,_,_,_,GR,GR,GR,GR,GR,GR,GR,GR,GR,_,_,_,_,_,_,GR,BK,BK,GR,GR,GR,BK,BK,GR,_,_,_,_,_,GR,BK,MK,BK,GR,GR,GR,BK,MK,BK,GR,_,_,_,_,GR,BK,MK,AM,BK,GR,BK,MK,AM,BK,GR,_,_,_,_,_,GR,BK,BK,GR,GR,GR,BK,BK,GR,_,_,_,_,_,LG,LG,GR,GR,BK,GR,GR,LG,LG,_,_,_,_,_,_,LG,WH,WH,WH,WH,WH,LG,_,_,_,_,_,_,_,_,WH,GR,GR,GR,WH,_,_,_,_,_,_,_,_,YL,YL,YL,YL,YL,YL,YL,_,_,_,_,_,_,_,BL,BL,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,_,BL,BL,_,_,_,_,_,BL,BL,_,_,_,_,_];
+        })(),
+        bentley: (() => {
+            const GN='#22C55E',DGN='#15803D',LGN='#86EFAC',BK='#1F2937',WH='#F3F4F6',YL='#EAB308',RD='#EF4444',BR='#92400E';
+            return [_,_,_,_,YL,YL,_,_,YL,YL,_,_,_,_,_,_,_,_,_,YL,BK,YL,YL,YL,BK,YL,_,_,_,_,_,_,_,_,_,LGN,BK,LGN,LGN,LGN,BK,LGN,_,_,_,_,_,_,_,_,LGN,LGN,LGN,LGN,LGN,LGN,LGN,LGN,_,_,_,_,_,_,_,_,LGN,LGN,WH,WH,WH,LGN,LGN,LGN,_,_,_,_,_,_,_,_,_,LGN,LGN,RD,LGN,LGN,LGN,_,_,_,_,_,_,_,_,_,GN,GN,GN,GN,GN,GN,GN,_,_,_,_,_,_,_,_,GN,DGN,GN,DGN,GN,DGN,GN,DGN,GN,_,_,_,_,_,_,GN,GN,DGN,GN,DGN,GN,DGN,GN,GN,_,_,_,_,_,_,GN,DGN,GN,DGN,GN,DGN,GN,DGN,GN,_,_,_,_,_,_,_,GN,GN,GN,GN,GN,GN,GN,_,_,_,_,_,_,_,_,_,BR,BR,BR,BR,BR,BR,BR,_,_,_,_,_,_,_,_,_,LGN,LGN,_,_,_,LGN,LGN,_,_,_,_,_,_,_,_,_,LGN,LGN,_,_,_,LGN,LGN,_,_,_,_,_,_,_,_,LGN,LGN,_,_,_,_,_,LGN,LGN,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_];
+        })(),
+        murray: (() => {
+            const PK='#F472B6',DP='#DB2777',WH='#F3F4F6',BK='#1F2937',BL='#2563EB',RD='#EF4444',YL='#EAB308';
+            return [_,_,_,_,PK,PK,PK,PK,PK,_,_,_,_,_,_,_,_,_,_,PK,PK,PK,PK,PK,PK,PK,_,_,_,_,_,_,_,_,PK,PK,BK,PK,PK,PK,BK,PK,PK,_,_,_,_,_,_,_,PK,PK,PK,PK,PK,PK,PK,PK,PK,_,_,_,_,_,_,_,PK,WH,WH,WH,WH,WH,PK,PK,PK,_,_,_,_,_,_,_,_,PK,PK,PK,PK,PK,PK,PK,_,_,_,_,_,_,_,_,_,RD,RD,RD,RD,RD,RD,RD,_,_,_,_,_,_,_,_,BL,BL,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,_,BL,BL,BL,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,BL,BL,BL,BL,YL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,BL,BL,BL,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,_,BL,BL,BL,BL,BL,BL,BL,BL,BL,_,_,_,_,_,_,_,DP,DP,DP,DP,DP,DP,DP,_,_,_,_,_,_,_,_,_,PK,PK,PK,_,PK,PK,PK,_,_,_,_,_,_,_,_,PK,PK,PK,_,_,_,PK,PK,PK,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_];
+        })(),
+    };
+})();
+
+function drawPixelSprite(canvas, spriteData) {
+    const ctx = canvas.getContext('2d');
+    const W = 16, H = 16;
+    const px = canvas.width / W;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < spriteData.length; i++) {
+        if (!spriteData[i]) continue;
+        const x = (i % W) * px;
+        const y = Math.floor(i / W) * px;
+        ctx.fillStyle = spriteData[i];
+        ctx.fillRect(x, y, px + 0.5, px + 0.5);
+    }
+}
+
 function renderDock() {
     const dock = document.getElementById('dock');
     dock.innerHTML = '';
@@ -1531,7 +1565,25 @@ function renderDock() {
         if (!a) return;
         const el = document.createElement('button');
         el.className = `dock-agent${key === currentAgent ? ' active' : ''}`;
-        el.innerHTML = `<span class="dock-emoji">${a.emoji}</span><span class="dock-name">${a.name}</span>`;
+        // Pixel art canvas instead of emoji
+        const sprite = PIXEL_SPRITES[key];
+        if (sprite) {
+            const cvs = document.createElement('canvas');
+            cvs.width = 32; cvs.height = 32;
+            cvs.style.cssText = 'width:28px;height:28px;image-rendering:pixelated;';
+            cvs.className = 'dock-pixel';
+            el.appendChild(cvs);
+            requestAnimationFrame(() => drawPixelSprite(cvs, sprite));
+        } else {
+            const em = document.createElement('span');
+            em.className = 'dock-emoji';
+            em.textContent = a.emoji;
+            el.appendChild(em);
+        }
+        const nm = document.createElement('span');
+        nm.className = 'dock-name';
+        nm.textContent = a.name;
+        el.appendChild(nm);
         el.onclick = () => { currentAgent = key; highlightDockAgent(key); };
         dock.appendChild(el);
     });
@@ -4142,10 +4194,10 @@ const SlyAvatar = (() => {
     if (!avatarEl) return;
 
     const AVATAR_IMAGES = {
-        sly: 'sly_bust.png',
-        murray: 'sly_sly2.png',     // Will use Sly image for now (Murray bust TBD)
-        bentley: 'sly_sly2.png',    // Same
-        franklin: 'sly_sly2.png',
+        sly: 'sly_avatar_2d.png',
+        murray: 'sly_avatar_2d.png',
+        bentley: 'sly_avatar_2d.png',
+        franklin: 'sly_avatar_2d.png',
     };
 
     let currentState = 'idle';
