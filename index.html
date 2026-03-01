@@ -478,19 +478,19 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 
 /* ═══════ 3D AVATAR ═══════ */
 #avatarCanvas{
-    position:fixed;bottom:140px;left:50%;transform:translateX(-50%);
-    width:220px;height:280px;
+    position:fixed;bottom:120px;right:12px;
+    width:130px;height:160px;
     z-index:50;pointer-events:none;
     opacity:0;transition:opacity 0.6s ease;
-    border-radius:24px;
-    filter:drop-shadow(0 0 20px rgba(31,111,255,0.3));
+    border-radius:16px;
+    filter:drop-shadow(0 0 12px rgba(31,111,255,0.25));
 }
 #avatarCanvas.visible{opacity:1;pointer-events:auto}
-#avatarCanvas.talking{filter:drop-shadow(0 0 24px var(--blue)) drop-shadow(0 0 48px rgba(31,111,255,0.2))}
-#avatarCanvas.listening{filter:drop-shadow(0 0 24px var(--green)) drop-shadow(0 0 48px rgba(30,255,142,0.2))}
+#avatarCanvas.talking{filter:drop-shadow(0 0 16px var(--blue)) drop-shadow(0 0 32px rgba(31,111,255,0.15))}
+#avatarCanvas.listening{filter:drop-shadow(0 0 16px var(--green)) drop-shadow(0 0 32px rgba(30,255,142,0.15))}
 .perf-low #avatarCanvas{display:none}
-@media(max-width:400px){#avatarCanvas{width:180px;height:230px;bottom:130px}}
-@media(min-width:500px){#avatarCanvas{width:280px;height:350px;bottom:160px}}
+@media(max-width:360px){#avatarCanvas{width:100px;height:130px;bottom:110px;right:8px}}
+@media(min-width:500px){#avatarCanvas{width:160px;height:200px}}
 
 /* ═══════ SCROLL-TO-BOTTOM BUTTON ═══════ */
 .scroll-bottom{
@@ -534,7 +534,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 <!-- SPLASH -->
 <div id="splash">
     <canvas id="splashCanvas"></canvas>
-    <div class="splash-logo"><span>🦝</span></div>
+    <div class="splash-logo"><span style="font-size:0;line-height:0"><svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="32" cy="36" rx="18" ry="20" fill="#4A4E6A"/><ellipse cx="32" cy="28" rx="15" ry="14" fill="#5A5E7A"/><rect x="17" y="25" width="30" height="7" rx="3.5" fill="#1a1a2e"/><circle cx="24" cy="28" r="4" fill="#1F6FFF"/><circle cx="40" cy="28" r="4" fill="#1F6FFF"/><circle cx="25" cy="27" r="1.5" fill="white"/><circle cx="41" cy="27" r="1.5" fill="white"/><polygon points="20,17 24,8 28,17" fill="#5A5E7A"/><polygon points="36,17 40,8 44,17" fill="#5A5E7A"/><ellipse cx="32" cy="34" rx="4" ry="2.5" fill="#3a3e5a"/><circle cx="32" cy="33" r="1.5" fill="#2a2e4a"/><path d="M48 20 Q55 12 50 6" stroke="#B8860B" stroke-width="3" stroke-linecap="round" fill="none"/><circle cx="50" cy="5" r="3" stroke="#B8860B" stroke-width="2" fill="none"/><rect x="47" y="20" width="3" height="30" rx="1.5" fill="#B8860B" transform="rotate(-10 48 20)"/></svg></span></div>
     <div class="splash-title">SLY</div>
     <div class="splash-sub">COOPER BUILDING</div>
     <div class="splash-bar"><div class="splash-bar-fill" id="splashBar"></div></div>
@@ -1480,8 +1480,11 @@ function highlightDockAgent(key) {
     const idx = DOCK_DEFAULT.indexOf(key);
     if (idx >= 0 && agents[idx]) {
         agents[idx].classList.add('active', 'switching');
-        // Scroll the dock to show the active agent
         agents[idx].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+    // Switch 3D avatar model for Sly/Murray/Bentley
+    if (window.SlyAvatar?.switchModel && (key === 'sly' || key === 'murray' || key === 'bentley' || key === 'franklin')) {
+        window.SlyAvatar.switchModel(key);
     }
 }
 
@@ -3639,6 +3642,30 @@ const SlyAvatar = (() => {
             modelGroup = gltf.scene;
             scene.add(modelGroup);
 
+            // Colorize — fix white/missing textures with Sly Cooper colors
+            const slyColors = [0x4A4E6A, 0x5A5E7A, 0x3A3E5A, 0x6A6E8A]; // Blue-gray raccoon tones
+            let meshIdx = 0;
+            modelGroup.traverse(obj => {
+                if (obj.isMesh) {
+                    const mat = obj.material;
+                    if (mat) {
+                        // If material has no texture map or is pure white, colorize it
+                        const isWhite = mat.color && mat.color.r > 0.9 && mat.color.g > 0.9 && mat.color.b > 0.9;
+                        const hasNoMap = !mat.map;
+                        if (isWhite || hasNoMap) {
+                            const color = slyColors[meshIdx % slyColors.length];
+                            mat.color = new THREE.Color(color);
+                            mat.roughness = 0.6;
+                            mat.metalness = 0.1;
+                        }
+                        // Add subtle emissive glow for style
+                        mat.emissive = new THREE.Color(0x1F6FFF);
+                        mat.emissiveIntensity = 0.05;
+                    }
+                    meshIdx++;
+                }
+            });
+
             // Center and scale
             const box = new THREE.Box3().setFromObject(modelGroup);
             const size = box.getSize(new THREE.Vector3());
@@ -3653,6 +3680,15 @@ const SlyAvatar = (() => {
             try {
                 const caneGltf = await loader.loadAsync('sly_cane.glb');
                 const caneModel = caneGltf.scene;
+                caneModel.traverse(obj => {
+                    if (obj.isMesh && obj.material) {
+                        obj.material.color = new THREE.Color(0xB8860B);
+                        obj.material.roughness = 0.4;
+                        obj.material.metalness = 0.3;
+                        obj.material.emissive = new THREE.Color(0xB8860B);
+                        obj.material.emissiveIntensity = 0.1;
+                    }
+                });
                 const caneBox = new THREE.Box3().setFromObject(caneModel);
                 const caneSize = caneBox.getSize(new THREE.Vector3());
                 const caneScale = 1.2 / Math.max(caneSize.x, caneSize.y, caneSize.z);
@@ -3661,35 +3697,50 @@ const SlyAvatar = (() => {
                 modelGroup.add(caneModel);
             } catch {} // Cane optional
 
-            // Setup animations
+            // Cute procedural animation — bouncy, lively, charming
+            modelGroup.userData.glbModel = true;
+            const _glbClock = new THREE.Clock();
+            const _baseY = modelGroup.position.y;
+            modelGroup.userData.animate = () => {
+                const t = _glbClock.getElapsedTime();
+                // Cute bouncy hover (like breathing + floating)
+                modelGroup.position.y = _baseY + Math.sin(t * 1.2) * 0.04 + Math.sin(t * 2.5) * 0.015;
+                // Gentle sway
+                modelGroup.rotation.y = Math.sin(t * 0.5) * 0.12;
+                // State-based cute movements
+                if (currentState === 'talk') {
+                    // Excited bobbing when talking
+                    modelGroup.position.y += Math.sin(t * 6) * 0.02;
+                    modelGroup.rotation.z = Math.sin(t * 4) * 0.03;
+                    modelGroup.scale.setScalar(scale * (1 + Math.sin(t * 8) * 0.008));
+                } else if (currentState === 'think') {
+                    // Head tilt — curious look
+                    modelGroup.rotation.z = Math.sin(t * 0.8) * 0.08;
+                    modelGroup.rotation.x = -0.05;
+                } else if (currentState === 'listen') {
+                    // Lean forward — attentive
+                    modelGroup.rotation.x = Math.sin(t * 1.5) * 0.04 - 0.03;
+                    modelGroup.scale.setScalar(scale * 1.02); // Slightly bigger when listening
+                } else {
+                    // Idle — peaceful swaying + occasional "look around"
+                    modelGroup.rotation.z = Math.sin(t * 0.3) * 0.04;
+                    modelGroup.rotation.x = 0;
+                    modelGroup.scale.setScalar(scale);
+                    // Cute "look around" every ~6s
+                    const lookCycle = t % 6;
+                    if (lookCycle > 4.5 && lookCycle < 5.5) {
+                        modelGroup.rotation.y += Math.sin((lookCycle - 4.5) * Math.PI) * 0.2;
+                    }
+                }
+            };
+
+            // Setup real animations if available
             if (gltf.animations.length > 0) {
                 mixer = new THREE.AnimationMixer(modelGroup);
                 gltf.animations.forEach(clip => {
                     actions[clip.name.toLowerCase()] = mixer.clipAction(clip);
                 });
                 playAnimation('idle');
-            } else {
-                // No animations in GLB — add procedural idle animation
-                modelGroup.userData.glbModel = true;
-                const _glbClock = new THREE.Clock();
-                modelGroup.userData.animate = () => {
-                    const t = _glbClock.getElapsedTime();
-                    // Gentle breathing + hover
-                    modelGroup.position.y = -0.2 + Math.sin(t * 0.8) * 0.02;
-                    // State-based subtle movements
-                    if (currentState === 'talk') {
-                        modelGroup.rotation.y = Math.sin(t * 3) * 0.04;
-                        modelGroup.scale.y = scale * (1 + Math.sin(t * 8) * 0.005);
-                    } else if (currentState === 'think') {
-                        modelGroup.rotation.z = Math.sin(t * 0.6) * 0.05;
-                    } else if (currentState === 'listen') {
-                        modelGroup.rotation.y = Math.sin(t * 1.5) * 0.03;
-                    } else {
-                        modelGroup.rotation.z = 0;
-                        modelGroup.scale.y = scale;
-                        modelGroup.rotation.y = Math.sin(t * 0.3) * 0.06;
-                    }
-                };
             }
 
             canvas.classList.add('visible');
@@ -3924,15 +3975,95 @@ const SlyAvatar = (() => {
         initialized = false;
     }
 
-    // ═══ LAZY INIT ═══
-    // Wait for splash to finish, then init if device can handle it
-    function lazyBoot() {
-        if (window.DEVICE_CLASS === 'low') return; // Skip 3D on low devices
-        setTimeout(() => init(), 1500); // Wait 1.5s after splash
+    // ═══ SWITCH MODEL (Sly/Murray/Bentley) ═══
+    let _currentModel = 'sly';
+    const MODEL_COLORS = {
+        sly:     { colors: [0x4A4E6A, 0x5A5E7A, 0x3A3E5A, 0x6A6E8A], glow: 0x1F6FFF },  // Blue-gray raccoon
+        murray:  { colors: [0xE8A0C0, 0xD08AA8, 0xC07A98, 0xF0B0D0], glow: 0xFF69B4 },  // Pink hippo
+        bentley: { colors: [0x2E7D32, 0x388E3C, 0x1B5E20, 0x4CAF50], glow: 0x1EFF8E },  // Green turtle
+    };
+    const MODEL_FILES = { sly: 'sly_avatar.glb', murray: 'murray_avatar.glb', bentley: 'bentley_avatar.glb' };
+
+    async function switchModel(agentKey) {
+        // Map agent to character
+        let char = 'sly';
+        if (agentKey === 'murray') char = 'murray';
+        else if (agentKey === 'bentley' || agentKey === 'franklin') char = 'bentley';
+
+        if (char === _currentModel || !initialized) return;
+        _currentModel = char;
+
+        // Remove old model
+        if (modelGroup) {
+            scene.remove(modelGroup);
+            modelGroup.traverse(obj => {
+                if (obj.isMesh) { obj.geometry?.dispose(); [obj.material].flat().forEach(m => m?.dispose()); }
+            });
+            modelGroup = null;
+        }
+
+        const file = MODEL_FILES[char];
+        const colorSet = MODEL_COLORS[char];
+        const dracoLoader2 = new DRACOLoader();
+        dracoLoader2.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+        const loader2 = new GLTFLoader();
+        loader2.setDRACOLoader(dracoLoader2);
+
+        try {
+            const gltf = await loader2.loadAsync(file);
+            modelGroup = gltf.scene;
+            // Colorize with character colors
+            let mi = 0;
+            modelGroup.traverse(obj => {
+                if (obj.isMesh && obj.material) {
+                    const mat = obj.material;
+                    const isWhite = mat.color && mat.color.r > 0.9 && mat.color.g > 0.9 && mat.color.b > 0.9;
+                    if (isWhite || !mat.map) {
+                        mat.color = new THREE.Color(colorSet.colors[mi % colorSet.colors.length]);
+                        mat.roughness = 0.6; mat.metalness = 0.1;
+                    }
+                    mat.emissive = new THREE.Color(colorSet.glow);
+                    mat.emissiveIntensity = 0.05;
+                    mi++;
+                }
+            });
+            // Scale and center
+            const box = new THREE.Box3().setFromObject(modelGroup);
+            const sz = box.getSize(new THREE.Vector3());
+            const sc = 2 / Math.max(sz.x, sz.y, sz.z);
+            modelGroup.scale.setScalar(sc);
+            const ct = box.getCenter(new THREE.Vector3());
+            modelGroup.position.sub(ct.multiplyScalar(sc));
+            modelGroup.position.y -= 0.2;
+            // Cute animation
+            modelGroup.userData.glbModel = true;
+            const _c2 = new THREE.Clock();
+            const _by = modelGroup.position.y;
+            modelGroup.userData.animate = () => {
+                const t = _c2.getElapsedTime();
+                modelGroup.position.y = _by + Math.sin(t * 1.2) * 0.04 + Math.sin(t * 2.5) * 0.015;
+                modelGroup.rotation.y = Math.sin(t * 0.5) * 0.12;
+                if (currentState === 'talk') { modelGroup.position.y += Math.sin(t*6)*0.02; modelGroup.rotation.z = Math.sin(t*4)*0.03; }
+                else if (currentState === 'think') { modelGroup.rotation.z = Math.sin(t*0.8)*0.08; }
+                else if (currentState === 'listen') { modelGroup.rotation.x = Math.sin(t*1.5)*0.04-0.03; }
+                else { modelGroup.rotation.z = Math.sin(t*0.3)*0.04; modelGroup.rotation.x = 0; }
+            };
+            scene.add(modelGroup);
+            // Update rim light color
+            scene.traverse(obj => { if (obj.isPointLight) obj.color = new THREE.Color(colorSet.glow); });
+        } catch {
+            // Model not available — keep current or fallback to placeholder
+        }
     }
 
-    // Expose to global scope for integration with main script
-    window.SlyAvatar = { init, dispose, setState, lazyBoot };
+    // ═══ LAZY INIT ═══
+    function lazyBoot() {
+        if (window.DEVICE_CLASS === 'low') return;
+        setTimeout(() => init(), 1500);
+    }
+
+    // Expose to global scope
+    window.SlyAvatar = { init, dispose, setState, lazyBoot, switchModel };
     lazyBoot();
 })();
 </script>
