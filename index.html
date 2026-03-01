@@ -229,6 +229,7 @@ input{font-family:inherit;border:none;outline:none}
     border-top:1px solid var(--glass-border);
     border-bottom:1px solid var(--glass-border);
     -webkit-overflow-scrolling:touch;
+    position:relative;z-index:5;
 }
 .dock::-webkit-scrollbar{display:none}
 .dock{mask-image:linear-gradient(to right,#000 85%,transparent 100%);-webkit-mask-image:linear-gradient(to right,#000 85%,transparent 100%)}
@@ -258,6 +259,7 @@ input{font-family:inherit;border:none;outline:none}
     padding:8px 12px;padding-bottom:calc(8px + var(--safe-bottom));
     background:var(--bg-glass);backdrop-filter:blur(20px) saturate(180%);
     border-top:1px solid var(--glass-border);
+    position:relative;z-index:5;
 }
 .ptt-btn{
     width:48px;height:48px;min-width:48px;border-radius:50%;
@@ -692,21 +694,21 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 /* Sly en arrière-plan de l'app — même image que splash, semi-transparent */
 #app::before{display:none}
 #slyAppBg{
-    position:fixed;bottom:96px;right:6px;
-    width:90px;height:90px;
+    position:fixed;bottom:120px;right:6px;
+    width:86px;height:86px;
     border-radius:50%;
     border:2.5px solid #1F6FFF;
     box-shadow:
-        0 0 0 4px rgba(31,111,255,0.15),
-        0 0 20px rgba(31,111,255,1),
-        0 0 40px rgba(31,111,255,0.7),
-        0 0 70px rgba(31,111,255,0.35),
-        inset 0 0 20px rgba(31,111,255,0.2);
+        0 0 0 4px rgba(31,111,255,0.12),
+        0 0 18px rgba(31,111,255,0.95),
+        0 0 38px rgba(31,111,255,0.65),
+        0 0 65px rgba(31,111,255,0.3),
+        inset 0 0 18px rgba(31,111,255,0.18);
     background:url('sly_logo_nobg.png') center/85% no-repeat;
-    background-color:rgba(6,10,18,0.6);
+    background-color:rgba(6,10,18,0.55);
     opacity:1;
     pointer-events:none;
-    z-index:10;
+    z-index:2;
     animation:slyBgFloat 4s ease-in-out infinite;
 }
 #slyFloat{display:none}
