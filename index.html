@@ -1225,8 +1225,8 @@ async function speakText(agentKey, fullText) {
     const ttsStart = Date.now();
     const promises = chunks.map(async chunk => {
         const cacheKey = `${modelId}:${chunk}`;
-        const cached = AudioCache.get(cacheKey);
-        if (cached) return cached.slice(0); // cache hit — return copy
+        const cached = await AudioCache.get(cacheKey);
+        if (cached) return cached instanceof ArrayBuffer ? cached.slice(0) : cached; // cache hit — return copy
         try {
             let _ttsUrl, _ttsHeaders, _ttsBody;
             if (window.FISH_KEY) {
@@ -1631,6 +1631,7 @@ async function sendMessage(text) {
     }
 
     isStreaming = true;
+    updateSendBtn();
 
     let agentKey = detectAgent(text);
     // If regex fell back to default → try async LLM classify (non-blocking for UX)
@@ -1776,6 +1777,7 @@ async function sendMessage(text) {
 
     gainXP(tier === 'deep' ? 15 : 10);
     isStreaming = false;
+    updateSendBtn();
     saveState();
 }
 
@@ -2618,7 +2620,19 @@ function loadState() {
 // ═══════ EVENT LISTENERS ═══════
 // SAFE — tous les listeners sont wrappés dans bootPhase2() pour éviter crash si DOM pas prêt
 function updateSendBtn() {
-    // Keep btn always enabled — JS guards the empty send
+    const sendBtn = document.getElementById('sendBtn');
+    const chatInput = document.getElementById('chatInput');
+    const pttBtn = document.getElementById('pttBtn');
+    if (sendBtn) {
+        sendBtn.disabled = isStreaming;
+        sendBtn.style.opacity = isStreaming ? '0.45' : '1';
+        sendBtn.style.cursor = isStreaming ? 'not-allowed' : 'pointer';
+    }
+    if (chatInput) chatInput.style.opacity = isStreaming ? '0.7' : '1';
+    if (pttBtn) {
+        pttBtn.disabled = isStreaming;
+        pttBtn.style.opacity = isStreaming ? '0.45' : '1';
+    }
 }
 
 // Visibility change — toujours safe (document existe)
@@ -3836,20 +3850,71 @@ const sanitize = escapeHTML; // alias — même implémentation
 
 // ═══════ PERFORMANCE BUDGETS ═══════
 // LRU Audio Cache
+// ═══════ AUDIO CACHE — IndexedDB LRU (persist across reloads, ~50MB) ═══════
 const AudioCache = {
-    _cache: new Map(),
-    _maxSize: PERF_CONFIG[DEVICE_CLASS].maxAudioCache,
-    get(key) {
-        const val = this._cache.get(key);
-        if (val) { this._cache.delete(key); this._cache.set(key, val); }
-        return val || null;
+    _db: null,
+    _DB_NAME: 'sly_audio_cache',
+    _STORE: 'blobs',
+    _MAX_ENTRIES: 60, // ~50MB at ~800KB avg per TTS clip
+    _memFallback: new Map(), // in-memory fallback if IDB unavailable
+
+    async _openDB() {
+        if (this._db) return this._db;
+        return new Promise((resolve) => {
+            try {
+                const req = indexedDB.open(this._DB_NAME, 1);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(this._STORE)) {
+                        const store = db.createObjectStore(this._STORE, { keyPath: 'key' });
+                        store.createIndex('ts', 'ts', { unique: false });
+                    }
+                };
+                req.onsuccess = (e) => { this._db = e.target.result; resolve(this._db); };
+                req.onerror = () => resolve(null);
+            } catch { resolve(null); }
+        });
     },
-    set(key, value) {
-        if (this._cache.size >= this._maxSize) {
-            const oldest = this._cache.keys().next().value;
-            this._cache.delete(oldest);
+
+    async get(key) {
+        const db = await this._openDB();
+        if (!db) return this._memFallback.get(key) || null;
+        return new Promise((resolve) => {
+            try {
+                const tx = db.transaction(this._STORE, 'readonly');
+                const req = tx.objectStore(this._STORE).get(key);
+                req.onsuccess = (e) => resolve(e.target.result?.blob || null);
+                req.onerror = () => resolve(null);
+            } catch { resolve(null); }
+        });
+    },
+
+    async set(key, blob) {
+        // Always store in mem fallback for instant access
+        this._memFallback.set(key, blob);
+        if (this._memFallback.size > 20) {
+            const oldest = this._memFallback.keys().next().value;
+            this._memFallback.delete(oldest);
         }
-        this._cache.set(key, value);
+
+        const db = await this._openDB();
+        if (!db) return;
+        try {
+            const tx = db.transaction(this._STORE, 'readwrite');
+            const store = tx.objectStore(this._STORE);
+            store.put({ key, blob, ts: Date.now() });
+            // LRU eviction: keep only _MAX_ENTRIES
+            const countReq = store.count();
+            countReq.onsuccess = (e) => {
+                if (e.target.result > this._MAX_ENTRIES) {
+                    const idxReq = store.index('ts').openCursor();
+                    idxReq.onsuccess = (ev) => {
+                        const cursor = ev.target.result;
+                        if (cursor) { cursor.delete(); }
+                    };
+                }
+            };
+        } catch {}
     }
 };
 
