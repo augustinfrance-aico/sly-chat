@@ -689,6 +689,16 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 .haptic-ring{position:absolute;inset:0;border-radius:inherit;border:2px solid var(--blue);animation:hapticRipple .3s ease forwards;pointer-events:none}
 
 /* Sly floating portrait in chat */
+/* Sly en arrière-plan de l'app — même image que splash, semi-transparent */
+#app::before{
+    content:'';
+    position:fixed;bottom:80px;right:-20px;
+    width:180px;height:180px;
+    background:url('sly_logo_nobg.png') center/contain no-repeat;
+    opacity:0.08;
+    pointer-events:none;z-index:0;
+    filter:drop-shadow(0 0 20px rgba(31,111,255,0.3));
+}
 #slyFloat{display:none}
 @keyframes slyFloatAnim{
   0%,100%{transform:translateY(0) rotate(-2deg)}
@@ -2814,13 +2824,13 @@ addBubble = function(type, agentKey, text, streaming = false) {
                 <span>${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>
             </div>
             <div class="reactions-bar"></div>`;
-        soundReceive();
-        haptic('light');
+        try { soundReceive(); } catch(e) {}
+        try { haptic('light'); } catch(e) {}
     } else {
         div.innerHTML = `<div class="bubble-text">${renderMarkdown(text)}</div>
             <div class="bubble-meta"><span>${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span></div>`;
-        soundSend();
-        haptic('light');
+        try { soundSend(); } catch(e) {}
+        try { haptic('light'); } catch(e) {}
     }
 
     // Long press for reactions
