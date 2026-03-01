@@ -68,15 +68,16 @@ input{font-family:inherit;border:none;outline:none}
 /* Wrap central */
 .sp2-wrap{position:relative;z-index:4;display:flex;flex-direction:column;align-items:center;gap:0;animation:sp2FadeIn 0.8s ease both}
 @keyframes sp2FadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-/* Sly flottant — sans cercle, blend sur la lune */
-.sp2-sly{width:140px;height:auto;display:block;mix-blend-mode:multiply;
-    filter:drop-shadow(0 8px 28px rgba(0,0,0,0.95)) brightness(1.04) contrast(1.1);
+/* Sly — fond blanc supprimé par screen blend */
+.sp2-sly{width:130px;height:auto;display:block;
+    mix-blend-mode:screen;
+    filter:brightness(0.92) contrast(1.15) saturate(1.1);
     animation:sp2Float 3.5s ease-in-out infinite}
 @keyframes sp2Float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.03)}}
-/* Titre "SLY" style Sly Cooper — Orbitron gros, néon blanc bleuté */
+/* Titre "SLY" — Orbitron 40px, néon blanc bleuté */
 .sp2-title{
     margin-top:18px;
-    font-family:'Orbitron',sans-serif;font-size:52px;font-weight:900;letter-spacing:14px;
+    font-family:'Orbitron',sans-serif;font-size:40px;font-weight:900;letter-spacing:14px;
     color:#fff;
     text-shadow:
         0 0 12px rgba(31,111,255,1),
@@ -89,15 +90,15 @@ input{font-family:inherit;border:none;outline:none}
     0%,100%{text-shadow:0 0 12px rgba(31,111,255,1),0 0 30px rgba(31,111,255,0.7),0 0 60px rgba(31,111,255,0.4),0 3px 12px rgba(0,0,0,0.8)}
     50%{text-shadow:0 0 20px rgba(31,111,255,1),0 0 50px rgba(31,111,255,0.9),0 0 90px rgba(122,60,255,0.5),0 3px 12px rgba(0,0,0,0.8)}
 }
-/* "COOPER BUILDING" — blanc → bleu au chargement */
+/* "COOPER BUILDING" — même style que SLY mais plus petit */
 .sp2-sub{
     margin-top:8px;font-family:'Orbitron',sans-serif;
-    font-size:11px;letter-spacing:6px;text-transform:uppercase;
-    color:rgba(255,255,255,0.6);
-    text-shadow:0 1px 6px rgba(0,0,0,0.8);
+    font-size:12px;font-weight:700;letter-spacing:6px;text-transform:uppercase;
+    color:rgba(255,255,255,0.75);
+    text-shadow:0 0 8px rgba(31,111,255,0.6),0 2px 8px rgba(0,0,0,0.7);
     transition:color 2s ease, text-shadow 2s ease;
 }
-.sp2-sub.loaded{color:#1F6FFF;text-shadow:0 0 10px rgba(31,111,255,0.8),0 1px 6px rgba(0,0,0,0.6)}
+.sp2-sub.loaded{color:#6FB1FF;text-shadow:0 0 14px rgba(31,111,255,0.9),0 0 28px rgba(31,111,255,0.5),0 2px 8px rgba(0,0,0,0.7)}
 /* Barre bleue */
 .sp2-bar{margin-top:28px;width:240px;height:3px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden}
 .sp2-bar-fill{height:100%;width:0%;border-radius:3px;
@@ -106,6 +107,7 @@ input{font-family:inherit;border:none;outline:none}
     transition:none}
 /* Boot log */
 #bootLog div{text-shadow:0 1px 6px rgba(0,0,0,0.95),0 0 10px rgba(0,0,0,0.7)}
+@keyframes sp2Ring{0%{transform:translateX(-50%) scale(1);opacity:0.6}100%{transform:translateX(-50%) scale(1.8);opacity:0}}
 @keyframes neonFlicker{0%,19%,21%,23%,100%{opacity:1}20%,22%{opacity:0.75}55%{opacity:0.88}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 
@@ -2242,41 +2244,87 @@ function runSplash() {
             bar.style.width = '100%';
         }, 100);
     }
-    // ── "COOPER BUILDING" blanc → bleu à 40% du chargement ──
-    setTimeout(() => {
-        const sub = document.getElementById('splashSub');
-        if (sub) sub.classList.add('loaded');
-    }, DUR * 0.40);
+    // ── "COOPER BUILDING" blanc → bleu à 40% ──
+    setTimeout(() => { const sub = document.getElementById('splashSub'); if (sub) sub.classList.add('loaded'); }, DUR * 0.40);
 
-    // ── Boot log — agents par pôle ──
+    // ── Pulse ring autour de Sly ──
+    const slyEl = splash.querySelector('.sp2-sly');
+    if (slyEl) {
+        const ring = document.createElement('div');
+        ring.style.cssText = 'position:absolute;width:160px;height:160px;border-radius:50%;border:2px solid rgba(31,111,255,0.4);animation:sp2Ring 1.8s ease-out infinite;pointer-events:none;z-index:3;top:0;left:50%;transform:translateX(-50%)';
+        const ring2 = document.createElement('div');
+        ring2.style.cssText = 'position:absolute;width:160px;height:160px;border-radius:50%;border:1px solid rgba(122,60,255,0.3);animation:sp2Ring 1.8s ease-out 0.9s infinite;pointer-events:none;z-index:3;top:0;left:50%;transform:translateX(-50%)';
+        splash.querySelector('.sp2-wrap').style.position = 'relative';
+        splash.querySelector('.sp2-wrap').appendChild(ring);
+        splash.querySelector('.sp2-wrap').appendChild(ring2);
+    }
+
+    // ── Panel données style SLY-COMMAND ──
+    const panel = document.createElement('div');
+    panel.style.cssText = `
+        position:absolute;bottom:0;left:0;right:0;
+        padding:16px 24px 20px;
+        background:linear-gradient(to top,rgba(0,0,3,0.85) 0%,rgba(0,0,3,0.6) 70%,transparent 100%);
+        font-family:monospace;font-size:11px;line-height:1;
+        z-index:20;pointer-events:none;
+    `;
+
+    // Compteur agents
+    const counter = document.createElement('div');
+    counter.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px';
+    counter.innerHTML = `<span style="color:#00E5FF;letter-spacing:2px;font-size:10px">AGENTS ONLINE</span><span id="agentCount" style="color:#1EFF8E;font-weight:bold;font-size:13px">0</span><span style="color:rgba(255,255,255,0.3)">/</span><span style="color:#1EFF8E;font-size:13px">50</span><span style="flex:1"></span><span style="color:#FF9A3C;font-size:10px" id="splashStatus">INIT...</span>`;
+    panel.appendChild(counter);
+
+    // Log lignes
+    const log = document.createElement('div');
+    log.style.cssText = 'margin-bottom:10px;min-height:80px';
+    panel.appendChild(log);
+
+    splash.appendChild(panel);
+
+    // Séquence boot avec compteur
     const SEQ = [
-        [200,  '#1F6FFF', '> SLY Neural Core — init...'],
-        [600,  '#1EFF8E', '> Groq + Gemini cascade ✓'],
-        [1000, '#6FB1FF', '> Cooper Building — 50 agents...'],
-        [1350, '#B18CFF', '> 🦅 OMEGA — nébuleuse online ✓'],
-        [1700, '#3A8DFF', '> 🦊 SLY  ·  🐢 BENTLEY  ·  🦛 MURRAY ✓'],
-        [2050, '#7A3CFF', '> 🏛️ OLYMPE — 6 méta-agents ✓'],
-        [2400, '#00E5FF', '> 🔭 RECON — CORTEX · SIBYL · SPECTER ✓'],
-        [2750, '#FF9A3C', '> 🔨 FORGE — VOLT · ANVIL · PULSE ✓'],
-        [3100, '#1EFF8E', '> 🚀 DEPLOY — DREYFUS · CLOSER ✓'],
-        [3450, '#1EFF8E', '> 50/50 online · 0€ · MODE AUTONOME ■'],
-        [3750, '#1F6FFF', '> Commandant Augus — accès autorisé ▮'],
+        [150,  '#1F6FFF', 0,  '> INIT',    'SLY Neural Core v4.0'],
+        [500,  '#1EFF8E', 0,  '> NET',     'Groq cascade · Gemini fallback ✓'],
+        [900,  '#6FB1FF', 3,  '> CORE',    'OMEGA · SENTINEL · leaders ✓'],
+        [1250, '#B18CFF', 6,  '> RECON',   'CORTEX · SIBYL · SPECTER · NICHE ✓'],
+        [1600, '#3A8DFF', 12, '> FORGE',   'VOLT · ANVIL · PULSE · PIXEL ✓'],
+        [1950, '#7A3CFF', 20, '> DEPLOY',  'DREYFUS · CLOSER · KAISER · LEDGER ✓'],
+        [2300, '#00E5FF', 30, '> R&D',     'CIPHER · RADAR · TURING · PROTO ✓'],
+        [2650, '#FF9A3C', 40, '> CONTENT', 'FRESCO · PHILOMÈNE · VIRAL · FRANKLIN ✓'],
+        [3000, '#1EFF8E', 48, '> FINAL',   'GLITCH · HUNTER · MERCER · FLUX ✓'],
+        [3400, '#1EFF8E', 50, '> READY',   '50/50 agents · 0€ · MODE AUTONOME ■'],
+        [3800, '#1F6FFF', 50, '> ACCESS',  'Commandant Augus — accès autorisé ▮'],
     ];
 
-    const bootLog = document.createElement('div');
-    bootLog.style.cssText = 'position:absolute;bottom:32px;left:0;right:0;padding:8px 28px;font-family:monospace;font-size:11px;line-height:1.85;z-index:20;text-align:left;pointer-events:none;background:linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 100%);';
-    splash.appendChild(bootLog);
+    // Animer le compteur
+    let currentCount = 0;
+    function animCount(target) {
+        const el = document.getElementById('agentCount');
+        if (!el) return;
+        const step = Math.ceil((target - currentCount) / 8);
+        const iv = setInterval(() => {
+            currentCount = Math.min(currentCount + step, target);
+            el.textContent = currentCount;
+            if (currentCount >= target) clearInterval(iv);
+        }, 40);
+    }
 
-    SEQ.forEach(([ms, color, txt]) => {
+    SEQ.forEach(([ms, color, count, tag, txt]) => {
         setTimeout(() => {
             if (_done) return;
+            // Ligne log
             const d = document.createElement('div');
-            d.textContent = txt;
-            d.style.cssText = `color:${color};opacity:0;transform:translateX(-6px);transition:opacity 0.25s,transform 0.25s;`;
-            bootLog.appendChild(d);
-            requestAnimationFrame(() => { d.style.opacity='1'; d.style.transform='translateX(0)'; });
-            // garde que les 6 dernières lignes visibles
-            while (bootLog.children.length > 6) bootLog.removeChild(bootLog.firstChild);
+            d.style.cssText = `color:${color};opacity:0;margin-bottom:3px;transition:opacity 0.2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis`;
+            d.innerHTML = `<span style="color:rgba(255,255,255,0.35)">${tag}</span> <span>${txt}</span>`;
+            log.appendChild(d);
+            requestAnimationFrame(() => { d.style.opacity = '1'; });
+            while (log.children.length > 5) log.removeChild(log.firstChild);
+            // Compteur
+            if (count > 0) animCount(count);
+            // Status
+            const st = document.getElementById('splashStatus');
+            if (st) st.textContent = tag === '> READY' ? 'ONLINE ✓' : tag === '> ACCESS' ? 'GRANTED ▮' : 'LOADING...';
         }, ms);
     });
 
@@ -4660,7 +4708,8 @@ setTimeout(initThreeJS, 3000);
 })();
 </script>
 
-// === ONBOARDING ===
+// === ONBOARDING — désactivé, chat direct ===
+localStorage.setItem('sly_onboarded','1');
 (function(){
   if(localStorage.getItem('sly_onboarded')) return;
   var ob=document.getElementById('onboarding');
