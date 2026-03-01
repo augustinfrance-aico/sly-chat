@@ -61,8 +61,8 @@ input{font-family:inherit;border:none;outline:none}
 #splash{position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
 #splash.hidden{display:none}
 #splash canvas{display:none}
-/* Fond lune */
-.sp2-bg{position:absolute;inset:0;z-index:0;background:url('moon_bg.webp?v=4') center/cover no-repeat;opacity:0.88}
+/* Fond lune — background-color noir immédiat, image charge par dessus */
+.sp2-bg{position:absolute;inset:0;z-index:0;background-color:#060a12;background-image:url('moon_bg.webp?v=4');background-size:cover;background-position:center;background-repeat:no-repeat;opacity:0.88}
 .sp2-overlay{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse 70% 70% at 50% 40%,transparent 30%,rgba(0,0,6,0.55) 100%)}
 /* Particles étoiles animées */
 .sp2-stars{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
@@ -550,19 +550,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 #avatarCanvas{display:none!important}
 
 /* ═══════ 2D AVATAR FLOATING ═══════ */
-#avatarFloat{
-    position:fixed;bottom:130px;right:10px;
-    width:56px;height:56px;
-    z-index:50;pointer-events:none;
-    opacity:0;transition:opacity 0.6s ease, filter 0.4s ease;
-    border-radius:0;overflow:visible;
-    background:transparent;border:none;
-    box-shadow:none;
-    animation:avatarIdle 4s ease-in-out infinite;
-    cursor:pointer;
-    filter:drop-shadow(0 4px 12px rgba(31,111,255,0.35));
-}
-#avatarFloat.visible{opacity:1;pointer-events:auto}
+#avatarFloat{display:none}
 #avatarFloat img{width:100%;height:100%;object-fit:contain;transition:transform 0.3s ease}
 #avatarFloat:hover img,#avatarFloat:active img{transform:scale(1.12) rotate(5deg)}
 #avatarFloat.talking{
@@ -701,19 +689,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 .haptic-ring{position:absolute;inset:0;border-radius:inherit;border:2px solid var(--blue);animation:hapticRipple .3s ease forwards;pointer-events:none}
 
 /* Sly floating portrait in chat */
-#slyFloat{
-  position:fixed;
-  bottom:130px;
-  right:-10px;
-  width:110px;
-  height:110px;
-  z-index:2;
-  pointer-events:none;
-  opacity:0.15;
-  animation:slyFloatAnim 4s ease-in-out infinite;
-  transition:opacity .5s;
-}
-#slyFloat.active{opacity:0.22}
+#slyFloat{display:none}
 @keyframes slyFloatAnim{
   0%,100%{transform:translateY(0) rotate(-2deg)}
   50%{transform:translateY(-12px) rotate(2deg)}
