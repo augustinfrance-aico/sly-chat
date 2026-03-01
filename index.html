@@ -621,9 +621,54 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 
 /* Reduced motion */
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* ONBOARDING */
+#onboarding{position:fixed;inset:0;z-index:9998;background:var(--bg-deep);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;transition:opacity .5s ease,visibility .5s}
+#onboarding.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.ob-slide{display:none;flex-direction:column;align-items:center;text-align:center;max-width:340px;width:100%}
+.ob-slide.active{display:flex;animation:fadeIn .4s ease}
+.ob-emoji{font-size:72px;margin-bottom:16px;filter:drop-shadow(0 0 20px rgba(31,111,255,0.4))}
+.ob-title{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;margin-bottom:8px;background:linear-gradient(135deg,var(--blue),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.ob-desc{font-size:15px;color:var(--text-dim);line-height:1.6;margin-bottom:24px}
+.ob-agents{display:flex;gap:12px;justify-content:center;margin-bottom:24px;flex-wrap:wrap}
+.ob-agent{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 8px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);min-width:72px}
+.ob-agent-emoji{font-size:28px}.ob-agent-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue)}
+.ob-agent-role{font-size:9px;color:var(--text-dim);text-align:center;line-height:1.3}
+.ob-dots{display:flex;gap:6px;margin-bottom:24px}
+.ob-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2);transition:all .3s}
+.ob-dot.active{background:var(--blue);width:20px;border-radius:4px}
+.ob-next{width:100%;max-width:280px;height:52px;border-radius:26px;background:linear-gradient(135deg,var(--blue),var(--violet));color:white;font-size:15px;font-weight:700;font-family:'Orbitron',monospace;letter-spacing:2px;transition:all .2s;box-shadow:0 4px 20px rgba(31,111,255,0.35)}
+.ob-next:active{transform:scale(0.96)}
+.ob-skip{margin-top:12px;font-size:12px;color:var(--text-dim);cursor:pointer;padding:8px;text-decoration:underline}
+/* PWA */
+#pwaInstall{position:fixed;bottom:calc(80px + var(--safe-bottom));left:50%;transform:translateX(-50%);background:linear-gradient(135deg,rgba(31,111,255,0.2),rgba(122,60,255,0.2));border:1px solid var(--blue);border-radius:16px;padding:12px 20px;display:none;align-items:center;gap:12px;max-width:calc(100vw - 32px);z-index:40;backdrop-filter:blur(16px)}
+#pwaInstall.visible{display:flex}
+.pwa-text{flex:1;font-size:13px;font-weight:600;color:var(--text)}
+.pwa-install-btn{padding:8px 16px;border-radius:10px;background:var(--blue);color:white;font-size:13px;font-weight:700;white-space:nowrap;transition:all .2s}
+.pwa-install-btn:active{transform:scale(0.95)}
+.pwa-dismiss{color:var(--text-dim);font-size:20px;cursor:pointer;padding:0 6px;line-height:1}
+/* TTS indicator */
+.tts-indicator{position:fixed;bottom:calc(68px + var(--safe-bottom));right:12px;z-index:35;font-size:9px;padding:3px 8px;border-radius:6px;background:rgba(31,111,255,0.15);color:var(--blue);border:1px solid rgba(31,111,255,0.2);opacity:0;transition:opacity .3s;pointer-events:none;font-family:monospace}
+.tts-indicator.visible{opacity:1}
 </style>
 </head>
 <body>
+
+<div id="onboarding" class="hidden">
+  <div id="obSlides">
+    <div class="ob-slide active" data-slide="0"><div class="ob-emoji">&#x1F98A;</div><div class="ob-title">SLY-CHAT</div><div class="ob-desc">Ton companion IA — JARVIS x Sly Cooper. 50 agents experts, des voix, de la memoire.</div></div>
+    <div class="ob-slide" data-slide="1"><div class="ob-emoji">&#x1F3E2;</div><div class="ob-title">COOPER BUILDING</div><div class="ob-desc">50 agents specialises. Chacun sa voix, son expertise, son caractere.</div><div class="ob-agents"><div class="ob-agent"><div class="ob-agent-emoji">&#x1F98A;</div><div class="ob-agent-name">SLY</div><div class="ob-agent-role">Tactique</div></div><div class="ob-agent"><div class="ob-agent-emoji">&#x1F422;</div><div class="ob-agent-name">BENTLEY</div><div class="ob-agent-role">Tech</div></div><div class="ob-agent"><div class="ob-agent-emoji">&#x1F99B;</div><div class="ob-agent-name">MURRAY</div><div class="ob-agent-role">Execution</div></div><div class="ob-agent"><div class="ob-agent-emoji">&#x1F9E0;</div><div class="ob-agent-name">CORTEX</div><div class="ob-agent-role">Strategie</div></div></div></div>
+    <div class="ob-slide" data-slide="2"><div class="ob-emoji">&#x1F50A;</div><div class="ob-title">VOICE MODE</div><div class="ob-desc">Maintiens le micro pour parler. SLY repond avec de vraies voix IA clonees.</div></div>
+    <div class="ob-slide" data-slide="3"><div class="ob-emoji">&#x1F9E0;</div><div class="ob-title">MEMOIRE 4 COUCHES</div><div class="ob-desc">SLY se souvient de toi, de tes projets. Intelligence qui grandit avec toi.</div></div>
+    <div class="ob-slide" data-slide="4"><div class="ob-emoji">&#x1F680;</div><div class="ob-title">PRET A DEMARRER</div><div class="ob-desc">Bienvenue dans le Cooper Building. Ton empire commence ici.</div></div>
+  </div>
+  <div class="ob-dots" id="obDots"><div class="ob-dot active"></div><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot"></div></div>
+  <button class="ob-next" id="obNext">SUIVANT &#x2192;</button>
+  <span class="ob-skip" id="obSkip">Passer</span>
+</div>
+<div id="pwaInstall"><div class="pwa-text">&#x1F4F1; Installe SLY-CHAT sur ton ecran d'accueil</div><button class="pwa-install-btn" id="pwaInstallBtn">INSTALLER</button><span class="pwa-dismiss" id="pwaDismiss">&#x00D7;</span></div>
+<div class="tts-indicator" id="ttsIndicator">&#x1F50A; voix</div>
+
 
 <!-- PARTICLES BG -->
 <canvas id="particles"></canvas>
@@ -632,7 +677,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 <div id="splash">
     <div class="splash-bg"></div>
     <canvas id="splashCanvas"></canvas>
-    <div class="splash-logo"><img src="sly_photo_augus.png" alt="Sly Cooper" loading="eager"></div>
+    <div class="splash-logo"><img src="sly_logo_nobg.png" alt="Sly Cooper" loading="eager"></div>
     <div class="splash-title">SLY</div>
     <div class="splash-sub">COOPER BUILDING</div>
     <div class="splash-bar"><div class="splash-bar-fill" id="splashBar"></div></div>
@@ -933,13 +978,14 @@ async function speakText(agentKey, fullText) {
         } catch { return null; }
     });
 
-    const buffers = await Promise.all(promises);
-    for (const buf of buffers) {
-        if (buf) {
-            if (audioQueue.length > 20) audioQueue.shift(); // prevent overflow
-            audioQueue.push(buf);
-        }
+    const validBufs = (await Promise.all(promises)).filter(Boolean);
+    if (validBufs.length === 0) {
+        window._ttsWebSpeechFallback?.(fullText, agentKey);
+        return;
     }
+    for (const buf of validBufs) { if (audioQueue.length > 20) audioQueue.shift(); audioQueue.push(buf); }
+    const _ttsInd = document.getElementById('ttsIndicator');
+    if (_ttsInd) { _ttsInd.textContent = '🔊 fish.audio'; _ttsInd.classList.add('visible'); setTimeout(()=>_ttsInd.classList.remove('visible'),2500); }
     if (!isPlaying) { window.SlyAvatar?.setState('talk'); playNext(); }
 }
 
@@ -4357,5 +4403,25 @@ const SlyAvatar = (() => {
     init();
 })();
 </script>
+
+// === ONBOARDING ===
+(function(){
+  if(localStorage.getItem('sly_onboarded')) return;
+  var ob=document.getElementById('onboarding');
+  if(!ob) return;
+  ob.classList.remove('hidden');
+  var slide=0, slides=ob.querySelectorAll('.ob-slide'), dots=ob.querySelectorAll('.ob-dot');
+  var next=document.getElementById('obNext'), skip=document.getElementById('obSkip');
+  function goTo(n){ slides[slide].classList.remove('active'); dots[slide].classList.remove('active'); slide=n; slides[slide].classList.add('active'); dots[slide].classList.add('active'); next.textContent=slide===slides.length-1?'COMMENCER ✓':'SUIVANT →'; }
+  next.onclick=function(){ if(slide<slides.length-1) goTo(slide+1); else { ob.classList.add('hidden'); localStorage.setItem('sly_onboarded','1'); } };
+  if(skip) skip.onclick=function(){ ob.classList.add('hidden'); localStorage.setItem('sly_onboarded','1'); };
+})();
+// === PWA INSTALL ===
+var _pwaEvt=null;
+window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); _pwaEvt=e; if(!localStorage.getItem('sly_pwa_dismissed')) setTimeout(function(){ var b=document.getElementById('pwaInstall'); if(b) b.classList.add('visible'); },5000); });
+(function(){ var btn=document.getElementById('pwaInstallBtn'); var dis=document.getElementById('pwaDismiss'); if(btn) btn.onclick=async function(){ if(!_pwaEvt) return; _pwaEvt.prompt(); await _pwaEvt.userChoice; document.getElementById('pwaInstall').classList.remove('visible'); _pwaEvt=null; }; if(dis) dis.onclick=function(){ document.getElementById('pwaInstall').classList.remove('visible'); localStorage.setItem('sly_pwa_dismissed','1'); }; })();
+// === TTS WEB SPEECH FALLBACK ===
+window._ttsWebSpeechFallback=function(text,agentKey){ if(!window.speechSynthesis) return; var u=new SpeechSynthesisUtterance(text.slice(0,200)); u.lang='fr-FR'; u.rate=0.95; u.pitch=agentKey==='murray'?0.7:agentKey==='bentley'?1.2:1.0; u.volume=0.9; speechSynthesis.getVoices(); var fv=speechSynthesis.getVoices().find(function(v){return v.lang.startsWith('fr');}); if(fv) u.voice=fv; var ind=document.getElementById('ttsIndicator'); if(ind){ind.textContent='🔊 web speech';ind.classList.add('visible');} u.onend=function(){if(ind)ind.classList.remove('visible');}; window.SlyAvatar&&window.SlyAvatar.setState('talk'); speechSynthesis.speak(u); };
+
 </body>
 </html>
