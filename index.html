@@ -54,27 +54,58 @@ button{font-family:inherit;border:none;cursor:pointer;-webkit-user-select:none;u
 input{font-family:inherit;border:none;outline:none}
 
 /* ═══════ SPLASH ═══════ */
-/* ═══════ SPLASH v3 ═══════ */
+/* ═══════ SPLASH v4 ═══════ */
 #splash{position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
 #splash.hidden{display:none!important}
 #splash canvas{display:none}
-.sp2-bg{position:absolute;inset:0;z-index:0;background:url('moon_bg.webp?v=3') center/cover no-repeat;opacity:0.9}
-.sp2-overlay{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse 70% 70% at 50% 42%,transparent 35%,rgba(0,0,0,0.5) 100%)}
-.sp2-wrap{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;gap:0}
-/* Sly — petit, libre, sans cercle */
-.sp2-sly{width:140px;height:auto;display:block;
-    mix-blend-mode:multiply;
-    filter:drop-shadow(0 8px 28px rgba(0,0,0,0.9)) brightness(1.02) contrast(1.08);
+/* Fond lune */
+.sp2-bg{position:absolute;inset:0;z-index:0;background:url('moon_bg.webp?v=4') center/cover no-repeat;opacity:0.88}
+.sp2-overlay{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse 70% 70% at 50% 40%,transparent 30%,rgba(0,0,6,0.55) 100%)}
+/* Particles étoiles animées */
+.sp2-stars{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+.sp2-star{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;animation:sp2Twinkle var(--d,2s) ease-in-out infinite var(--del,0s)}
+@keyframes sp2Twinkle{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:1;transform:scale(1.6)}}
+/* Wrap central */
+.sp2-wrap{position:relative;z-index:4;display:flex;flex-direction:column;align-items:center;gap:0;animation:sp2FadeIn 0.8s ease both}
+@keyframes sp2FadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+/* Sly flottant — sans cercle, blend sur la lune */
+.sp2-sly{width:140px;height:auto;display:block;mix-blend-mode:multiply;
+    filter:drop-shadow(0 8px 28px rgba(0,0,0,0.95)) brightness(1.04) contrast(1.1);
     animation:sp2Float 3.5s ease-in-out infinite}
-@keyframes sp2Float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-/* Titre */
-.sp2-title{margin-top:16px;font-family:'Orbitron',monospace;font-size:34px;font-weight:900;letter-spacing:10px;color:#fff;text-shadow:0 0 18px rgba(31,111,255,0.85),0 2px 8px rgba(0,0,0,0.7)}
-/* "COOPER BUILDING" — noir au départ, vire au bleu pendant chargement */
-.sp2-sub{margin-top:6px;font-family:'Orbitron',monospace;font-size:10px;letter-spacing:5px;text-transform:uppercase;color:rgba(0,0,0,0.8);transition:color 2.5s ease}
-.sp2-sub.loaded{color:#1F6FFF}
+@keyframes sp2Float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.03)}}
+/* Titre "SLY" style Sly Cooper — Orbitron gros, néon blanc bleuté */
+.sp2-title{
+    margin-top:18px;
+    font-family:'Orbitron',sans-serif;font-size:52px;font-weight:900;letter-spacing:14px;
+    color:#fff;
+    text-shadow:
+        0 0 12px rgba(31,111,255,1),
+        0 0 30px rgba(31,111,255,0.7),
+        0 0 60px rgba(31,111,255,0.4),
+        0 3px 12px rgba(0,0,0,0.8);
+    animation:sp2TitleGlow 2.5s ease-in-out infinite;
+}
+@keyframes sp2TitleGlow{
+    0%,100%{text-shadow:0 0 12px rgba(31,111,255,1),0 0 30px rgba(31,111,255,0.7),0 0 60px rgba(31,111,255,0.4),0 3px 12px rgba(0,0,0,0.8)}
+    50%{text-shadow:0 0 20px rgba(31,111,255,1),0 0 50px rgba(31,111,255,0.9),0 0 90px rgba(122,60,255,0.5),0 3px 12px rgba(0,0,0,0.8)}
+}
+/* "COOPER BUILDING" — blanc → bleu au chargement */
+.sp2-sub{
+    margin-top:8px;font-family:'Orbitron',sans-serif;
+    font-size:11px;letter-spacing:6px;text-transform:uppercase;
+    color:rgba(255,255,255,0.6);
+    text-shadow:0 1px 6px rgba(0,0,0,0.8);
+    transition:color 2s ease, text-shadow 2s ease;
+}
+.sp2-sub.loaded{color:#1F6FFF;text-shadow:0 0 10px rgba(31,111,255,0.8),0 1px 6px rgba(0,0,0,0.6)}
 /* Barre bleue */
-.sp2-bar{margin-top:24px;width:220px;height:3px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden}
-.sp2-bar-fill{height:100%;width:0%;border-radius:3px;background:linear-gradient(90deg,#1F6FFF,#6FB1FF,#00E5FF);box-shadow:0 0 10px #1F6FFF,0 0 20px rgba(31,111,255,0.5);transition:none}
+.sp2-bar{margin-top:28px;width:240px;height:3px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden}
+.sp2-bar-fill{height:100%;width:0%;border-radius:3px;
+    background:linear-gradient(90deg,#1F6FFF,#6FB1FF,#00E5FF);
+    box-shadow:0 0 12px #1F6FFF,0 0 24px rgba(31,111,255,0.6);
+    transition:none}
+/* Boot log */
+#bootLog div{text-shadow:0 1px 6px rgba(0,0,0,0.95),0 0 10px rgba(0,0,0,0.7)}
 @keyframes neonFlicker{0%,19%,21%,23%,100%{opacity:1}20%,22%{opacity:0.75}55%{opacity:0.88}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 
@@ -755,6 +786,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 <div id="splash">
     <div class="sp2-bg"></div>
     <div class="sp2-overlay"></div>
+    <div class="sp2-stars" id="sp2Stars"></div>
     <div class="sp2-wrap">
         <img class="sp2-sly" src="sly_bust.webp" alt="Sly Cooper" loading="eager">
         <div class="sp2-title">SLY</div>
@@ -2162,25 +2194,42 @@ function initParticles() {
 
 // ═══════ SPLASH ═══════
 function runSplash() {
-    const DUR = 4000;
+    const DUR = 5000;
     const splash = document.getElementById('splash');
     const app   = document.getElementById('app');
-    if (!splash || !app) { app && (app.style.display='flex', app.classList.add('visible')); if(typeof bootApp==='function') bootApp(); return; }
+
+    // ── Générer étoiles scintillantes ──
+    const starsEl = document.getElementById('sp2Stars');
+    if (starsEl) {
+        for (let i = 0; i < 40; i++) {
+            const s = document.createElement('div');
+            s.className = 'sp2-star';
+            s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${1.5+Math.random()*3}s;--del:${-Math.random()*3}s;opacity:${0.2+Math.random()*0.8}`;
+            starsEl.appendChild(s);
+        }
+    }
+
+    // ── Fallback immédiat si DOM pas prêt ──
+    if (!splash || !app) {
+        if (app) { app.style.display='flex'; app.classList.add('visible'); }
+        setTimeout(() => { try { bootApp(); } catch(e){} }, 0);
+        return;
+    }
 
     let _done = false;
     function _close() {
         if (_done) return;
         _done = true;
-        // 1. Fermer le splash IMMÉDIATEMENT — rien ne peut bloquer ça
-        splash.style.transition = 'none';
-        splash.style.opacity = '0';
-        splash.style.display = 'none';
-        // 2. Montrer l'app
-        app.style.display = 'flex';
+        // Fermer splash — aucune transition, direct
+        splash.style.cssText = 'display:none!important';
+        // Forcer l'app visible — toutes les façons possibles
+        app.removeAttribute('style');
+        app.style.cssText = 'display:flex!important;flex-direction:column;height:100dvh;position:relative';
         app.classList.add('visible');
-        // 3. Boot en async — chaque call isolé pour ne pas bloquer
-        setTimeout(() => { try { if (typeof bootApp === 'function') bootApp(); } catch(e) { console.warn('bootApp:', e); } }, 0);
-        setTimeout(() => { try { bootPhase2(); } catch(e) { console.warn('bootPhase2:', e); } }, 50);
+        document.body.style.overflow = '';
+        // Boot isolé async
+        setTimeout(() => { try { bootApp(); } catch(e){ console.warn('bootApp err',e); } }, 0);
+        setTimeout(() => { try { bootPhase2(); } catch(e){ console.warn('bootPhase2 err',e); } }, 60);
     }
 
     // ── Barre bleue ──
@@ -2189,15 +2238,15 @@ function runSplash() {
         bar.style.transition = 'none';
         bar.style.width = '0%';
         setTimeout(() => {
-            bar.style.transition = `width ${DUR * 0.88 / 1000}s linear`;
+            bar.style.transition = `width ${DUR * 0.86 / 1000}s linear`;
             bar.style.width = '100%';
-        }, 80);
+        }, 100);
     }
-    // ── "COOPER BUILDING" passe de noir → bleu à mi-chargement ──
+    // ── "COOPER BUILDING" blanc → bleu à 40% du chargement ──
     setTimeout(() => {
         const sub = document.getElementById('splashSub');
         if (sub) sub.classList.add('loaded');
-    }, DUR * 0.45);
+    }, DUR * 0.40);
 
     // ── Boot log — agents par pôle ──
     const SEQ = [
