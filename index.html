@@ -110,12 +110,13 @@ input{font-family:inherit;border:none;outline:none}
     transition:color 2s ease, text-shadow 2s ease;
 }
 .sp2-sub.loaded{color:#6FB1FF;text-shadow:0 0 14px rgba(31,111,255,0.9),0 0 28px rgba(31,111,255,0.5),0 2px 8px rgba(0,0,0,0.7)}
-/* Barre bleue */
+/* Barre bleue — animation CSS pure, pas de JS */
 .sp2-bar{margin-top:24px;width:260px;height:4px;background:rgba(255,255,255,0.15);border-radius:4px;overflow:hidden;box-shadow:0 0 0 1px rgba(31,111,255,0.2)}
 .sp2-bar-fill{height:100%;width:0%;border-radius:4px;
     background:linear-gradient(90deg,#1F6FFF,#6FB1FF,#00E5FF);
     box-shadow:0 0 16px #1F6FFF,0 0 32px rgba(31,111,255,0.7);
-    transition:none}
+    animation:barFill 4.8s linear 0.1s forwards}
+@keyframes barFill{from{width:0%}to{width:100%}}
 /* Boot log */
 #bootLog div{text-shadow:0 1px 6px rgba(0,0,0,0.95),0 0 10px rgba(0,0,0,0.7)}
 @keyframes sp2Ring{0%{transform:translateX(-50%) scale(1);opacity:0.6}100%{transform:translateX(-50%) scale(1.8);opacity:0}}
@@ -810,6 +811,28 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
         <div class="sp2-bar"><div class="sp2-bar-fill" id="splashBar"></div></div>
     </div>
 </div>
+<!-- SPLASH CLOSER — script autonome, indépendant du main script, s'exécute à 5s quoi qu'il arrive -->
+<script>
+(function(){
+    var SPLASH_DUR = 5000;
+    var _splashClosed = false;
+    function closeSplash() {
+        if (_splashClosed) return;
+        _splashClosed = true;
+        var sp = document.getElementById('splash');
+        var ap = document.getElementById('app');
+        if (sp) { sp.style.cssText = 'display:none!important;visibility:hidden!important;pointer-events:none!important'; sp.classList.add('hidden'); }
+        if (ap) { ap.style.cssText = 'display:flex!important;flex-direction:column;height:100dvh;position:relative'; ap.classList.add('visible'); }
+        // Notifie le main script si dispo
+        if (typeof window._splashDone === 'function') window._splashDone();
+    }
+    window._closeSplash = closeSplash;
+    // Fermeture automatique à 5s — garanti, aucune dépendance
+    setTimeout(closeSplash, SPLASH_DUR);
+    // "COOPER BUILDING" → bleu à mi-chemin
+    setTimeout(function(){ var s=document.getElementById('splashSub'); if(s) s.classList.add('loaded'); }, SPLASH_DUR * 0.45);
+})();
+</script>
 
 <!-- 3D AVATAR CANVAS (legacy — hidden) -->
 <canvas id="avatarCanvas"></canvas>
@@ -2210,59 +2233,14 @@ function initParticles() {
 
 // ═══════ SPLASH ═══════
 function runSplash() {
-    var DUR = 5000;
+    // La barre est animée en CSS pur (@keyframes barFill)
+    // La fermeture est gérée par window._closeSplash (script autonome inline)
+    // Ce script gère uniquement : étoiles + log agents + boot app après fermeture
+
     var splash = document.getElementById('splash');
-    var app = document.getElementById('app');
+    if (!splash) { window._splashDone = function(){ try{bootApp();}catch(e){} }; return; }
 
-    // Fermeture garantie — fonction atomique, chaque étape isolée
-    var _done = false;
-    function _close() {
-        if (_done) return;
-        _done = true;
-        // 1. Cacher splash
-        try {
-            splash.style.setProperty('display', 'none', 'important');
-            splash.style.setProperty('visibility', 'hidden', 'important');
-            splash.style.setProperty('pointer-events', 'none', 'important');
-            splash.classList.add('hidden');
-        } catch(e) {}
-        // 2. Montrer app
-        try {
-            app.style.setProperty('display', 'flex', 'important');
-            app.style.flexDirection = 'column';
-            app.style.height = '100dvh';
-            app.style.position = 'relative';
-            app.classList.add('visible');
-        } catch(e) {}
-        // 3. Boot — chaque fonction indépendante, aucune ne bloque les suivantes
-        setTimeout(function(){ try { loadState(); } catch(e){} }, 0);
-        setTimeout(function(){ try { renderDock(); } catch(e){} }, 10);
-        setTimeout(function(){ try { updateXPDisplay(); updateStreak(); } catch(e){} }, 20);
-        setTimeout(function(){ try { initParticles(); } catch(e){} }, 30);
-        setTimeout(function(){ try { initSTT(); scheduleWhisper(); } catch(e){} }, 50);
-        setTimeout(function(){ try { bootPhase2(); } catch(e){} }, 80);
-        // Message de bienvenue Sly
-        setTimeout(function(){
-            try {
-                var h = new Date().getHours();
-                var salut = h<6?'Nuit blanche, Commandant ?':h<12?'Bonjour Commandant.':h<18?'Bon après-midi.':'Bonsoir, Commandant.';
-                var briefs = [
-                    salut+' Le Building t\'attendait. 50 agents prêts. Go.',
-                    salut+' SENTINEL a scanné — tout est propre. On démarre ?',
-                    salut+' Tous les systèmes sont opérationnels. À tes ordres.',
-                ];
-                var brief = briefs[Math.floor(Math.random()*briefs.length)];
-                localStorage.setItem('sly_last_session', Date.now().toString());
-                addBubble('agent', 'sly', brief);
-                if (autoSpeak) try { speakText('sly', brief); } catch(e){}
-            } catch(e) {}
-        }, 400);
-    }
-
-    // Fallback absolu — si splash ou app manquant, on ouvre quand même
-    if (!splash || !app) { try { bootApp(); } catch(e){} return; }
-
-    // Étoiles CSS légères (20 max)
+    // Étoiles (20 max — léger)
     var starsEl = document.getElementById('sp2Stars');
     if (starsEl) {
         for (var i = 0; i < 20; i++) {
@@ -2273,105 +2251,97 @@ function runSplash() {
         }
     }
 
-    // Barre bleue — double RAF pour garantir que le browser a peint avant la transition
-    var bar = document.getElementById('splashBar');
-    if (bar) {
-        bar.style.transition = 'none';
-        bar.style.width = '0%';
-        requestAnimationFrame(function() {
-            requestAnimationFrame(function() {
-                bar.style.transition = 'width ' + (DUR * 0.88 / 1000).toFixed(1) + 's linear';
-                bar.style.width = '100%';
-            });
-        });
-    }
-
-    // "COOPER BUILDING" blanc → bleu à mi-chemin
-    setTimeout(function() {
-        var sub = document.getElementById('splashSub');
-        if (sub) sub.classList.add('loaded');
-    }, DUR * 0.45);
-
     // Panel bas — log agents
     var panel = document.createElement('div');
-    panel.style.cssText = 'position:absolute;bottom:0;left:0;right:0;padding:14px 20px 18px;background:linear-gradient(to top,rgba(0,0,6,0.88) 0%,rgba(0,0,6,0.5) 70%,transparent 100%);z-index:20;pointer-events:none';
+    panel.style.cssText = 'position:absolute;bottom:0;left:0;right:0;padding:14px 20px 18px;background:linear-gradient(to top,rgba(0,0,6,0.9) 0%,rgba(0,0,6,0.5) 70%,transparent 100%);z-index:20;pointer-events:none';
 
-    // Header compteur
     var hdr = document.createElement('div');
     hdr.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px;font-family:monospace;font-size:10px';
     hdr.innerHTML = '<span style="color:#00E5FF;letter-spacing:2px">AGENTS ONLINE</span>'
-        + '<span id="spCount" style="color:#1EFF8E;font-weight:bold;font-size:13px">0</span>'
-        + '<span style="color:rgba(255,255,255,0.3)">/50</span>'
-        + '<span style="flex:1"></span>'
-        + '<span id="spStat" style="color:#FF9A3C">INIT...</span>';
+        +'<span id="spCount" style="color:#1EFF8E;font-weight:bold;font-size:13px">0</span>'
+        +'<span style="color:rgba(255,255,255,0.3)">/50</span>'
+        +'<span style="flex:1"></span>'
+        +'<span id="spStat" style="color:#FF9A3C">INIT...</span>';
     panel.appendChild(hdr);
 
-    // Cards Gang
     var gang = document.createElement('div');
     gang.style.cssText = 'display:flex;gap:8px;margin-bottom:10px';
-    [
-        {e:'🦊', n:'SLY',    r:'TACTIQUE', c:'#3A8DFF', t:600},
-        {e:'🐢', n:'BENTLEY',r:'TECH',     c:'#1EFF8E', t:1400},
-        {e:'🦛', n:'MURRAY', r:'FORCE',    c:'#FF9A3C', t:2200},
+    var gangClosed = false;
+    [{e:'🦊',n:'SLY',r:'TACTIQUE',c:'#3A8DFF',t:500},
+     {e:'🐢',n:'BENTLEY',r:'TECH',c:'#1EFF8E',t:1200},
+     {e:'🦛',n:'MURRAY',r:'FORCE',c:'#FF9A3C',t:2000}
     ].forEach(function(g) {
         var card = document.createElement('div');
         card.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:3px;opacity:0;transition:opacity 0.5s';
         card.innerHTML = '<div style="width:44px;height:44px;border-radius:10px;border:2px solid '+g.c+';box-shadow:0 0 10px '+g.c+'88;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(0,0,0,0.4)">'+g.e+'</div>'
-            + '<div style="font-family:monospace;font-size:9px;font-weight:bold;color:'+g.c+';letter-spacing:1px">'+g.n+'</div>'
-            + '<div style="font-family:monospace;font-size:8px;color:rgba(255,255,255,0.4)">'+g.r+'</div>';
+            +'<div style="font-family:monospace;font-size:9px;font-weight:bold;color:'+g.c+'">'+g.n+'</div>'
+            +'<div style="font-family:monospace;font-size:8px;color:rgba(255,255,255,0.35)">'+g.r+'</div>';
         gang.appendChild(card);
-        setTimeout(function(c){ return function(){ if(!_done) c.style.opacity='1'; }; }(card), g.t);
+        setTimeout(function(c){ return function(){ if(!gangClosed) c.style.opacity='1'; }; }(card), g.t);
     });
     panel.appendChild(gang);
 
-    // Log
     var log = document.createElement('div');
-    log.style.cssText = 'font-family:monospace;font-size:10px;min-height:52px;line-height:1.5';
+    log.style.cssText = 'font-family:monospace;font-size:10px;min-height:48px;line-height:1.6';
     panel.appendChild(log);
     splash.appendChild(panel);
 
-    // Séquence boot
     var SEQ = [
-        [200,  '#1F6FFF', 0,  'INIT',    'SLY Neural Core v4.0'],
-        [700,  '#1EFF8E', 0,  'NET',     'Groq · Gemini fallback ✓'],
-        [1200, '#6FB1FF', 8,  'CORE',    'OMEGA · SENTINEL · Gang ✓'],
-        [1800, '#B18CFF', 18, 'RECON',   'CORTEX · SIBYL · NICHE ✓'],
-        [2300, '#3A8DFF', 28, 'FORGE',   'VOLT · ANVIL · PULSE ✓'],
-        [2800, '#7A3CFF', 38, 'DEPLOY',  'DREYFUS · CLOSER · KAISER ✓'],
-        [3300, '#00E5FF', 46, 'R&D',     'CIPHER · RADAR · TURING ✓'],
-        [3800, '#1EFF8E', 50, 'READY',   '50/50 · MODE AUTONOME ■'],
-        [4300, '#1F6FFF', 50, 'ACCESS',  'Commandant Augus — autorisé ▮'],
+        [150,  '#1F6FFF', 0,  'INIT',   'SLY Neural Core v4.0'],
+        [600,  '#1EFF8E', 0,  'NET',    'Groq · Gemini fallback ✓'],
+        [1100, '#6FB1FF', 8,  'CORE',   'OMEGA · SENTINEL · Gang ✓'],
+        [1700, '#B18CFF', 18, 'RECON',  'CORTEX · SIBYL · NICHE ✓'],
+        [2200, '#3A8DFF', 28, 'FORGE',  'VOLT · ANVIL · PULSE ✓'],
+        [2700, '#7A3CFF', 38, 'DEPLOY', 'DREYFUS · CLOSER · KAISER ✓'],
+        [3200, '#00E5FF', 46, 'R&D',    'CIPHER · RADAR · TURING ✓'],
+        [3700, '#1EFF8E', 50, 'READY',  '50/50 · MODE AUTONOME ■'],
+        [4300, '#1F6FFF', 50, 'ACCESS', 'Commandant Augus — autorisé ▮'],
     ];
-
     var cnt = 0;
     SEQ.forEach(function(item) {
-        var ms=item[0], col=item[1], num=item[2], tag=item[3], txt=item[4];
+        var ms=item[0],col=item[1],num=item[2],tag=item[3],txt=item[4];
         setTimeout(function() {
-            if (_done) return;
-            // log line
+            if (gangClosed) return;
             var d = document.createElement('div');
             d.style.color = col;
-            d.innerHTML = '<span style="color:rgba(255,255,255,0.3)">› '+tag+'</span>  '+txt;
+            d.innerHTML = '<span style="color:rgba(255,255,255,0.3)">›'+tag+'</span> '+txt;
             log.appendChild(d);
             if (log.children.length > 4) log.removeChild(log.firstChild);
-            // compteur
             if (num > cnt) {
-                var target = num, iv = setInterval(function(){
-                    cnt = Math.min(cnt+2, target);
-                    var el = document.getElementById('spCount');
-                    if (el) el.textContent = cnt;
-                    if (cnt >= target) clearInterval(iv);
-                }, 30);
+                cnt = num;
+                var el = document.getElementById('spCount');
+                if (el) el.textContent = cnt;
             }
-            // status
             var st = document.getElementById('spStat');
             if (st) st.textContent = tag==='READY'?'ONLINE ✓':tag==='ACCESS'?'GRANTED ▮':'LOADING...';
         }, ms);
     });
 
-    // Fermeture à DUR ms — double sécurité
-    setTimeout(_close, DUR);
-    setTimeout(function(){ if (!_done) _close(); }, DUR + 2000);
+    // Callback quand le splash autonome ferme
+    window._splashDone = function() {
+        gangClosed = true;
+        setTimeout(function(){ try { loadState(); } catch(e){} }, 0);
+        setTimeout(function(){ try { renderDock(); } catch(e){} }, 20);
+        setTimeout(function(){ try { updateXPDisplay(); updateStreak(); } catch(e){} }, 40);
+        setTimeout(function(){ try { initParticles(); } catch(e){} }, 60);
+        setTimeout(function(){ try { initSTT(); scheduleWhisper(); } catch(e){} }, 80);
+        setTimeout(function(){ try { bootPhase2(); } catch(e){} }, 120);
+        setTimeout(function(){
+            try {
+                var h = new Date().getHours();
+                var salut = h<6?'Nuit blanche, Commandant ?':h<12?'Bonjour Commandant.':h<18?'Bon après-midi.':'Bonsoir, Commandant.';
+                var opts = [
+                    salut+' Le Building t\'attendait. 50 agents prêts. Go.',
+                    salut+' SENTINEL a scanné — tout est propre. On démarre ?',
+                    salut+' Tous les systèmes en ligne. À tes ordres.',
+                ];
+                var msg = opts[Math.floor(Math.random()*opts.length)];
+                localStorage.setItem('sly_last_session', Date.now().toString());
+                addBubble('agent','sly',msg);
+                if (autoSpeak) try { speakText('sly',msg); } catch(e){}
+            } catch(e) {}
+        }, 400);
+    };
 }
 
 // ═══════ BOOT ═══════
