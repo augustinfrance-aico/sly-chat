@@ -478,17 +478,19 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 
 /* ═══════ 3D AVATAR ═══════ */
 #avatarCanvas{
-    position:fixed;bottom:80px;right:10px;
-    width:140px;height:180px;
+    position:fixed;bottom:140px;left:50%;transform:translateX(-50%);
+    width:220px;height:280px;
     z-index:50;pointer-events:none;
     opacity:0;transition:opacity 0.6s ease;
-    border-radius:20px;
+    border-radius:24px;
+    filter:drop-shadow(0 0 20px rgba(31,111,255,0.3));
 }
 #avatarCanvas.visible{opacity:1;pointer-events:auto}
-#avatarCanvas.talking{filter:drop-shadow(0 0 12px var(--blue))}
-#avatarCanvas.listening{filter:drop-shadow(0 0 12px var(--green))}
+#avatarCanvas.talking{filter:drop-shadow(0 0 24px var(--blue)) drop-shadow(0 0 48px rgba(31,111,255,0.2))}
+#avatarCanvas.listening{filter:drop-shadow(0 0 24px var(--green)) drop-shadow(0 0 48px rgba(30,255,142,0.2))}
 .perf-low #avatarCanvas{display:none}
-@media(max-width:360px){#avatarCanvas{width:100px;height:130px;bottom:70px;right:5px}}
+@media(max-width:400px){#avatarCanvas{width:180px;height:230px;bottom:130px}}
+@media(min-width:500px){#avatarCanvas{width:280px;height:350px;bottom:160px}}
 
 /* ═══════ SCROLL-TO-BOTTOM BUTTON ═══════ */
 .scroll-bottom{
