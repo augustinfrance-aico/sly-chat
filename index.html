@@ -6,8 +6,14 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#05070A">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://ga.jspm.io https://cdn.jsdelivr.net https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://sly-bot-production.up.railway.app https://*.groq.com https://*.googleapis.com https://*.fish.audio; img-src 'self' data: blob:; media-src 'self' blob:; worker-src 'self' blob:">
 <title>SLY-CHAT</title>
 <link rel="manifest" href="manifest.json">
+<!-- Three.js Import Map (r183, CDN, zero build tools) -->
+<script async src="https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js" crossorigin="anonymous"></script>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.183.0/examples/jsm/"}}
+</script>
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
@@ -467,6 +473,20 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
     font-family:'Orbitron',monospace;color:#fff;font-size:13px;
 }
 .badge-toast.visible{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ═══════ 3D AVATAR ═══════ */
+#avatarCanvas{
+    position:fixed;bottom:80px;right:10px;
+    width:140px;height:180px;
+    z-index:50;pointer-events:none;
+    opacity:0;transition:opacity 0.6s ease;
+    border-radius:20px;
+}
+#avatarCanvas.visible{opacity:1;pointer-events:auto}
+#avatarCanvas.talking{filter:drop-shadow(0 0 12px var(--blue))}
+#avatarCanvas.listening{filter:drop-shadow(0 0 12px var(--green))}
+.perf-low #avatarCanvas{display:none}
+@media(max-width:360px){#avatarCanvas{width:100px;height:130px;bottom:70px;right:5px}}
 </style>
 </head>
 <body>
@@ -482,6 +502,9 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
     <div class="splash-sub">COOPER BUILDING</div>
     <div class="splash-bar"><div class="splash-bar-fill" id="splashBar"></div></div>
 </div>
+
+<!-- 3D AVATAR CANVAS -->
+<canvas id="avatarCanvas"></canvas>
 
 <!-- APP -->
 <div id="app">
@@ -546,6 +569,7 @@ const DEVICE_CLASS = (() => {
     if (ram <= 4 || cores <= 4) return 'mid';
     return 'high';
 })();
+window.DEVICE_CLASS = DEVICE_CLASS; // Expose for Three.js module
 const PERF_CONFIG = {
     low:  { particles: 0,  animations: 'reduced', maxAudioCache: 3, maxHistory: 15 },
     mid:  { particles: 15, animations: 'normal',  maxAudioCache: 5, maxHistory: 20 },
@@ -762,17 +786,18 @@ async function speakText(agentKey, fullText) {
     for (const buf of buffers) {
         if (buf) audioQueue.push(buf);
     }
-    if (!isPlaying) playNext();
+    if (!isPlaying) { window.SlyAvatar?.setState('talk'); playNext(); }
 }
 
 async function playNext() {
-    if (audioQueue.length === 0) { isPlaying = false; currentSource = null; return; }
+    if (audioQueue.length === 0) { isPlaying = false; currentSource = null; window.SlyAvatar?.setState('idle'); return; }
     isPlaying = true;
     const buf = audioQueue.shift();
     try {
         const audioBuf = await audioCtx.decodeAudioData(buf.slice(0)); // slice for re-use safety
         const source = audioCtx.createBufferSource();
         source.buffer = audioBuf;
+        source.playbackRate.value = voicePitch * voiceSpeed;
         const gain = audioCtx.createGain();
         // Crossfade 50ms
         gain.gain.setValueAtTime(0, audioCtx.currentTime);
@@ -884,8 +909,10 @@ function detectAgent(text) {
     return currentAgent;
 }
 
-// ═══════ PRE-SERIALIZATION ═══════
+// ═══════ PRE-SERIALIZATION (800ms debounce) ═══════
 let prebuiltAgent = 'sly';
+let prebuiltPayload = null;
+let _typingTimer = null;
 function onTyping(text) {
     if (!text.trim()) return;
     const detected = detectAgent(text);
@@ -893,6 +920,26 @@ function onTyping(text) {
         prebuiltAgent = detected;
         highlightDockAgent(detected);
     }
+    // 800ms debounce — pre-build payload for instant send
+    clearTimeout(_typingTimer);
+    _typingTimer = setTimeout(() => {
+        const tier = selectTier(text);
+        const memCtx = Memory.buildContext(text);
+        let sysPrompt = buildSystemPrompt(prebuiltAgent);
+        if (memCtx.layer2) sysPrompt += `\n\nRÉSUMÉ CONVERSATION RÉCENTE: ${memCtx.layer2}`;
+        if (memCtx.layer3) sysPrompt += `\nPROFIL: ${memCtx.layer3}`;
+        if (memCtx.layer4) sysPrompt += `\nMÉMOIRE PERTINENTE: ${memCtx.layer4}`;
+        const maxHist = PERF_CONFIG[DEVICE_CLASS].maxHistory || 20;
+        prebuiltPayload = {
+            tier,
+            agent: prebuiltAgent,
+            messages: [
+                { role: 'system', content: sysPrompt },
+                ...conversationHistory.slice(-Math.min(10, maxHist)),
+                { role: 'user', content: text }
+            ]
+        };
+    }, 800);
 }
 
 // ═══════ SEND MESSAGE ═══════
@@ -928,23 +975,31 @@ async function sendMessage(text) {
     Memory.addMessage('user', text);
 
     // Thinking indicator
+    window.SlyAvatar?.setState('think');
     const thinkingEl = addThinking(agentKey);
 
-    // Build messages with 4-layer memory context
-    const memCtx = Memory.buildContext(text);
-    let sysPrompt = buildSystemPrompt(agentKey);
-    if (memCtx.layer2) sysPrompt += `\n\nRÉSUMÉ CONVERSATION RÉCENTE: ${memCtx.layer2}`;
-    if (memCtx.layer3) sysPrompt += `\nPROFIL: ${memCtx.layer3}`;
-    if (memCtx.layer4) sysPrompt += `\nMÉMOIRE PERTINENTE: ${memCtx.layer4}`;
-    const maxHist = PERF_CONFIG[DEVICE_CLASS].maxHistory || 20;
-    const msgs = [
-        { role: 'system', content: sysPrompt },
-        ...conversationHistory.slice(-Math.min(10, maxHist)),
-        { role: 'user', content: text }
-    ];
-
-    // Select tier
-    const tier = selectTier(text);
+    // Use pre-built payload if available and matching, else build fresh
+    let msgs, tier;
+    if (prebuiltPayload && prebuiltPayload.agent === agentKey) {
+        msgs = prebuiltPayload.messages;
+        // Update last user message with final text
+        msgs[msgs.length - 1] = { role: 'user', content: text };
+        tier = prebuiltPayload.tier;
+        prebuiltPayload = null; // consumed
+    } else {
+        const memCtx = Memory.buildContext(text);
+        let sysPrompt = buildSystemPrompt(agentKey);
+        if (memCtx.layer2) sysPrompt += `\n\nRÉSUMÉ CONVERSATION RÉCENTE: ${memCtx.layer2}`;
+        if (memCtx.layer3) sysPrompt += `\nPROFIL: ${memCtx.layer3}`;
+        if (memCtx.layer4) sysPrompt += `\nMÉMOIRE PERTINENTE: ${memCtx.layer4}`;
+        const maxHist = PERF_CONFIG[DEVICE_CLASS].maxHistory || 20;
+        msgs = [
+            { role: 'system', content: sysPrompt },
+            ...conversationHistory.slice(-Math.min(10, maxHist)),
+            { role: 'user', content: text }
+        ];
+        tier = selectTier(text);
+    }
     let fullResponse = '';
     const _sendStart = Date.now();
 
@@ -1307,6 +1362,16 @@ function openSettings() {
             <span class="settings-label">🔥 Streak</span>
             <span style="font-weight:700">${streak} jours</span>
         </div>
+        <div class="settings-row">
+            <span class="settings-label">🎵 Pitch voix</span>
+            <input type="range" min="0.5" max="2" step="0.1" value="${voicePitch}" style="width:90px;accent-color:var(--blue)" oninput="voicePitch=parseFloat(this.value);localStorage.setItem('sly_voice_pitch',voicePitch);this.nextElementSibling.textContent=voicePitch.toFixed(1)+'x'">
+            <span style="font-size:12px;color:var(--text-dim);min-width:30px">${voicePitch.toFixed(1)}x</span>
+        </div>
+        <div class="settings-row">
+            <span class="settings-label">⏩ Vitesse</span>
+            <input type="range" min="0.5" max="2" step="0.1" value="${voiceSpeed}" style="width:90px;accent-color:var(--violet)" oninput="voiceSpeed=parseFloat(this.value);localStorage.setItem('sly_voice_speed',voiceSpeed);this.nextElementSibling.textContent=voiceSpeed.toFixed(1)+'x'">
+            <span style="font-size:12px;color:var(--text-dim);min-width:30px">${voiceSpeed.toFixed(1)}x</span>
+        </div>
         <div class="settings-row" style="border:none">
             <span class="settings-label">📡 SLY-COMMAND</span>
             <a href="https://augustinfrance-aico.github.io/sly-command/" target="_blank" style="color:var(--blue);font-weight:600;text-decoration:none">Ouvrir →</a>
@@ -1593,12 +1658,14 @@ pttBtn.addEventListener('touchstart', (e) => {
         pttBtn.textContent = '🔴 ENREGISTREMENT...';
         recognition.start();
         trackBadge('vocal_used');
+        window.SlyAvatar?.setState('listen');
     }
 });
 pttBtn.addEventListener('touchend', (e) => {
     e.preventDefault();
     if (recognition && isRecording) {
         recognition.stop();
+        window.SlyAvatar?.setState('think');
     }
 });
 // Mouse fallback
@@ -1610,9 +1677,10 @@ pttBtn.addEventListener('mousedown', () => {
         pttBtn.classList.add('recording');
         pttBtn.textContent = '🔴 ENREGISTREMENT...';
         recognition.start();
+        window.SlyAvatar?.setState('listen');
     }
 });
-pttBtn.addEventListener('mouseup', () => { if (recognition && isRecording) recognition.stop(); });
+pttBtn.addEventListener('mouseup', () => { if (recognition && isRecording) { recognition.stop(); window.SlyAvatar?.setState('think'); } });
 
 document.getElementById('btnSettings').addEventListener('click', openSettings);
 document.getElementById('btnMenu').addEventListener('click', toggleRewindPanel);
@@ -1742,6 +1810,7 @@ playNext = async function() {
         const audioBuf = await audioCtx.decodeAudioData(buf.slice(0));
         const source = audioCtx.createBufferSource();
         source.buffer = audioBuf;
+        source.playbackRate.value = voicePitch * voiceSpeed;
         const gain = audioCtx.createGain();
         gain.gain.setValueAtTime(0, audioCtx.currentTime);
         gain.gain.linearRampToValueAtTime(dreamGain, audioCtx.currentTime + 0.05);
@@ -1772,6 +1841,8 @@ const VOICE_MORPH_PATTERNS = {
 };
 
 let morphedVoice = null;
+let voicePitch = parseFloat(localStorage.getItem('sly_voice_pitch') || '1');   // 0.5 — 2.0
+let voiceSpeed = parseFloat(localStorage.getItem('sly_voice_speed') || '1');   // 0.5 — 2.0
 
 function detectVoiceMorph(text) {
     const t = text.toLowerCase();
@@ -2303,6 +2374,16 @@ openSettings = function() {
             <span class="settings-label">🎨 Mood</span>
             <span style="font-weight:600;text-transform:capitalize;color:var(--blue)">${currentMood || 'day'}</span>
         </div>
+        <div class="settings-row">
+            <span class="settings-label">🎵 Pitch voix</span>
+            <input type="range" min="0.5" max="2" step="0.1" value="${voicePitch}" style="width:90px;accent-color:var(--blue)" oninput="voicePitch=parseFloat(this.value);localStorage.setItem('sly_voice_pitch',voicePitch);this.nextElementSibling.textContent=voicePitch.toFixed(1)+'x'">
+            <span style="font-size:12px;color:var(--text-dim);min-width:30px">${voicePitch.toFixed(1)}x</span>
+        </div>
+        <div class="settings-row">
+            <span class="settings-label">⏩ Vitesse</span>
+            <input type="range" min="0.5" max="2" step="0.1" value="${voiceSpeed}" style="width:90px;accent-color:var(--violet)" oninput="voiceSpeed=parseFloat(this.value);localStorage.setItem('sly_voice_speed',voiceSpeed);this.nextElementSibling.textContent=voiceSpeed.toFixed(1)+'x'">
+            <span style="font-size:12px;color:var(--text-dim);min-width:30px">${voiceSpeed.toFixed(1)}x</span>
+        </div>
         <div class="settings-row" style="border:none">
             <span class="settings-label">📡 SLY-COMMAND</span>
             <a href="https://augustinfrance-aico.github.io/sly-command/" target="_blank" style="color:var(--blue);font-weight:600;text-decoration:none">Ouvrir →</a>
@@ -2456,13 +2537,27 @@ function detectCommand(text) {
     }};
     if (/^\/stats$/i.test(t)) return { command: '/stats', handler: () => {
         const lvl = LEVELS[level-1]?.name || 'Recrue';
-        addBubble('agent', 'datum', `📊 STATS COMMANDANT :\n⭐ XP : ${xp}\n🏆 Niveau : ${lvl} (Niv.${level})\n🔥 Streak : ${streak} jours\n💬 Messages : ${conversationHistory.length}\n🧠 Mémoires : ${Memory.deep.length}\n📝 Résumés : ${Memory.summaries.length}\n📱 Device : ${DEVICE_CLASS}`);
+        const badgeList = Object.keys(_badgeState).map(k => BADGES[k] ? `${BADGES[k].icon} ${BADGES[k].name}` : k).join(', ') || 'Aucun';
+        const badgeCount = Object.keys(_badgeState).length;
+        addBubble('agent', 'datum', `📊 STATS COMMANDANT :\n⭐ XP : ${xp}\n🏆 Niveau : ${lvl} (Niv.${level})\n🔥 Streak : ${streak} jours\n💬 Messages : ${_totalMsgsSent}\n🎯 Agents contactés : ${_agentsSeen.size}\n🏅 Badges : ${badgeCount}/8 — ${badgeList}\n🧠 Mémoires : ${Memory.deep.length}\n📝 Résumés : ${Memory.summaries.length}\n📱 Device : ${DEVICE_CLASS}\n🎵 Pitch : ${voicePitch.toFixed(1)}x | Vitesse : ${voiceSpeed.toFixed(1)}x`);
     }};
     if (/^\/agents$/i.test(t)) return { command: '/agents', handler: () => openAgentModal() };
     if (/^\/dream$/i.test(t)) return { command: '/dream', handler: () => {
         dreamMode = !dreamMode;
-        if (dreamMode) { enableDreamMode(); trackBadge('dream_activated'); }
-        else disableDreamMode?.();
+        if (dreamMode) {
+            document.body.classList.add('dream-mode');
+            dreamGain = 0.6;
+            if (masterGain && audioCtx) masterGain.gain.setValueAtTime(dreamGain, audioCtx.currentTime);
+            if (!document.querySelector('.dream-badge')) {
+                const b = document.createElement('div'); b.className = 'dream-badge'; b.textContent = '🌙 Dream Mode'; document.body.appendChild(b);
+            }
+            trackBadge('dream_activated');
+        } else {
+            document.body.classList.remove('dream-mode');
+            dreamGain = 1;
+            if (masterGain && audioCtx) masterGain.gain.setValueAtTime(1, audioCtx.currentTime);
+            document.querySelector('.dream-badge')?.remove();
+        }
         addBubble('agent', 'sly', dreamMode ? '🌙 Dream Mode activé. Le Building dort...' : '☀️ Dream Mode désactivé. On se réveille !');
     }};
     if (/^\/cooper$/i.test(t) || /clan cooper|cooper gang|les trois|le gang/i.test(t)) return { command: '/cooper', handler: () => {
@@ -2922,6 +3017,304 @@ initSessions().then(() => {});
 runSplash();
 // Phase 2 boot after splash
 setTimeout(bootPhase2, 200);
+</script>
+
+<!-- ═══════ THREE.JS 3D AVATAR MODULE ═══════ -->
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+const SlyAvatar = (() => {
+    const canvas = document.getElementById('avatarCanvas');
+    if (!canvas) return null;
+
+    const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+    let renderer, scene, camera, mixer, clock, animFrameId;
+    let activeAction = null;
+    const actions = {};
+    let initialized = false;
+    let currentState = 'idle'; // idle | talk | listen | think
+
+    // ═══ INIT ═══
+    function init() {
+        if (initialized) return;
+
+        renderer = new THREE.WebGLRenderer({
+            canvas,
+            antialias: !isMobile,
+            alpha: true,
+            premultipliedAlpha: false,
+            powerPreference: 'default'
+        });
+        renderer.setClearColor(0x000000, 0);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(35, canvas.clientWidth / canvas.clientHeight, 0.1, 50);
+        camera.position.set(0, 1.2, 3);
+        camera.lookAt(0, 0.8, 0);
+
+        // Lighting — ambient + directional + rim light blue
+        const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambient);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(2, 3, 2);
+        scene.add(dirLight);
+        const rimLight = new THREE.PointLight(0x1F6FFF, 0.6, 8);
+        rimLight.position.set(-1.5, 1, -1);
+        scene.add(rimLight);
+
+        clock = new THREE.Clock();
+        initialized = true;
+
+        // Try to load GLB model
+        loadModel();
+        animate();
+    }
+
+    // ═══ LOAD MODEL ═══
+    async function loadModel() {
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+        const loader = new GLTFLoader();
+        loader.setDRACOLoader(dracoLoader);
+
+        // Try loading the GLB — fallback to procedural if not found
+        const modelUrl = localStorage.getItem('sly_avatar_url') || 'sly_avatar.glb';
+
+        try {
+            const gltf = await loader.loadAsync(modelUrl);
+            scene.add(gltf.scene);
+
+            // Center and scale
+            const box = new THREE.Box3().setFromObject(gltf.scene);
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scale = 2 / maxDim;
+            gltf.scene.scale.setScalar(scale);
+            const center = box.getCenter(new THREE.Vector3());
+            gltf.scene.position.sub(center.multiplyScalar(scale));
+            gltf.scene.position.y -= 0.2;
+
+            // Setup animations
+            if (gltf.animations.length > 0) {
+                mixer = new THREE.AnimationMixer(gltf.scene);
+                gltf.animations.forEach(clip => {
+                    actions[clip.name.toLowerCase()] = mixer.clipAction(clip);
+                });
+                playAnimation('idle');
+            }
+
+            canvas.classList.add('visible');
+            console.log('[SlyAvatar] Model loaded:', modelUrl, 'Anims:', Object.keys(actions));
+        } catch {
+            // No GLB found — create procedural raccoon placeholder
+            createPlaceholder();
+            canvas.classList.add('visible');
+            console.log('[SlyAvatar] Placeholder active (no GLB found)');
+        }
+    }
+
+    // ═══ PROCEDURAL PLACEHOLDER ═══
+    function createPlaceholder() {
+        const group = new THREE.Group();
+
+        // Body
+        const bodyGeo = new THREE.CapsuleGeometry(0.3, 0.5, 8, 16);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x4a4a5a, roughness: 0.7 });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.y = 0.5;
+        group.add(body);
+
+        // Head
+        const headGeo = new THREE.SphereGeometry(0.28, 16, 16);
+        const headMat = new THREE.MeshStandardMaterial({ color: 0x5a5a6a, roughness: 0.6 });
+        const head = new THREE.Mesh(headGeo, headMat);
+        head.position.y = 1.1;
+        group.add(head);
+
+        // Eyes
+        const eyeGeo = new THREE.SphereGeometry(0.06, 8, 8);
+        const eyeMat = new THREE.MeshStandardMaterial({ color: 0x1F6FFF, emissive: 0x1F6FFF, emissiveIntensity: 0.5 });
+        const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+        eyeL.position.set(-0.1, 1.15, 0.22);
+        group.add(eyeL);
+        const eyeR = eyeL.clone();
+        eyeR.position.x = 0.1;
+        group.add(eyeR);
+
+        // Mask (raccoon eye band)
+        const maskGeo = new THREE.BoxGeometry(0.5, 0.1, 0.15);
+        const maskMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2a });
+        const mask = new THREE.Mesh(maskGeo, maskMat);
+        mask.position.set(0, 1.14, 0.18);
+        group.add(mask);
+
+        // Ears
+        const earGeo = new THREE.ConeGeometry(0.08, 0.15, 8);
+        const earMat = new THREE.MeshStandardMaterial({ color: 0x5a5a6a });
+        const earL = new THREE.Mesh(earGeo, earMat);
+        earL.position.set(-0.18, 1.38, 0);
+        group.add(earL);
+        const earR = earL.clone();
+        earR.position.x = 0.18;
+        group.add(earR);
+
+        // Cane (iconic)
+        const caneGeo = new THREE.CylinderGeometry(0.02, 0.02, 1.2, 8);
+        const caneMat = new THREE.MeshStandardMaterial({ color: 0xB8860B });
+        const cane = new THREE.Mesh(caneGeo, caneMat);
+        cane.position.set(0.45, 0.6, 0);
+        cane.rotation.z = -0.15;
+        group.add(cane);
+        // Cane hook
+        const hookGeo = new THREE.TorusGeometry(0.08, 0.02, 8, 16, Math.PI);
+        const hook = new THREE.Mesh(hookGeo, caneMat);
+        hook.position.set(0.42, 1.2, 0);
+        hook.rotation.z = Math.PI;
+        group.add(hook);
+
+        // Hat
+        const hatBrimGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.03, 16);
+        const hatMat = new THREE.MeshStandardMaterial({ color: 0x1F6FFF, roughness: 0.5 });
+        const hatBrim = new THREE.Mesh(hatBrimGeo, hatMat);
+        hatBrim.position.y = 1.35;
+        group.add(hatBrim);
+        const hatTopGeo = new THREE.CylinderGeometry(0.15, 0.2, 0.15, 16);
+        const hatTop = new THREE.Mesh(hatTopGeo, hatMat);
+        hatTop.position.y = 1.42;
+        group.add(hatTop);
+
+        group.userData.placeholder = true;
+        group.userData.head = head;
+        group.userData.eyeL = eyeL;
+        group.userData.eyeR = eyeR;
+        group.userData.earL = earL;
+        group.userData.earR = earR;
+        scene.add(group);
+
+        // Simple procedural animation
+        const _clock = new THREE.Clock();
+        function animatePlaceholder() {
+            if (!group.parent) return;
+            const t = _clock.getElapsedTime();
+
+            // Idle breathing
+            body.scale.y = 1 + Math.sin(t * 1.5) * 0.02;
+            head.position.y = 1.1 + Math.sin(t * 1.2) * 0.01;
+
+            // State-based
+            if (currentState === 'talk') {
+                // Mouth sim — head bob
+                head.scale.y = 1 + Math.sin(t * 12) * 0.03;
+                head.rotation.y = Math.sin(t * 3) * 0.05;
+            } else if (currentState === 'listen') {
+                // Ears perk up
+                earL.position.y = 1.38 + 0.05;
+                earR.position.y = 1.38 + 0.05;
+                earL.scale.y = 1.3;
+                earR.scale.y = 1.3;
+            } else if (currentState === 'think') {
+                // Head tilt + slight rotation
+                head.rotation.z = Math.sin(t * 0.8) * 0.1;
+                head.rotation.x = -0.08;
+            } else {
+                // Idle — eyes blink
+                head.scale.y = 1;
+                head.rotation.set(0, 0, 0);
+                earL.position.y = 1.38;
+                earR.position.y = 1.38;
+                earL.scale.y = 1;
+                earR.scale.y = 1;
+                // Blink every ~4s
+                const blinkCycle = t % 4;
+                const blinkScale = (blinkCycle > 3.8 && blinkCycle < 3.95) ? 0.1 : 1;
+                eyeL.scale.y = blinkScale;
+                eyeR.scale.y = blinkScale;
+            }
+
+            // Gentle hover
+            group.position.y = Math.sin(t * 0.6) * 0.03;
+            group.rotation.y = Math.sin(t * 0.3) * 0.08;
+        }
+
+        // Store the animator on the group so the main loop can call it
+        group.userData.animate = animatePlaceholder;
+    }
+
+    // ═══ ANIMATION PLAYBACK ═══
+    function playAnimation(name, fadeTime = 0.4) {
+        const to = actions[name];
+        if (!to || to === activeAction) return;
+        if (activeAction) activeAction.fadeOut(fadeTime);
+        to.reset().fadeIn(fadeTime).play();
+        activeAction = to;
+    }
+
+    // ═══ STATE MACHINE ═══
+    function setState(newState) {
+        if (newState === currentState) return;
+        currentState = newState;
+        canvas.classList.remove('talking', 'listening');
+        if (newState === 'talk') canvas.classList.add('talking');
+        if (newState === 'listen') canvas.classList.add('listening');
+
+        // If we have real animations, use them
+        if (Object.keys(actions).length > 0) {
+            const animName = Object.keys(actions).find(k => k.includes(newState)) || 'idle';
+            playAnimation(animName);
+        }
+    }
+
+    // ═══ RENDER LOOP ═══
+    function animate() {
+        animFrameId = requestAnimationFrame(animate);
+
+        // Skip if hidden (perf)
+        if (document.hidden || !canvas.classList.contains('visible')) return;
+
+        const delta = clock.getDelta();
+        if (mixer) mixer.update(delta);
+
+        // Animate placeholder if present
+        scene.traverse(obj => {
+            if (obj.userData?.animate) obj.userData.animate();
+        });
+
+        renderer.render(scene, camera);
+    }
+
+    // ═══ DISPOSE ═══
+    function dispose() {
+        cancelAnimationFrame(animFrameId);
+        if (mixer) { mixer.stopAllAction(); mixer.uncacheRoot(mixer.getRoot()); }
+        scene?.traverse(obj => {
+            if (!obj.isMesh) return;
+            obj.geometry?.dispose();
+            [obj.material].flat().forEach(mat => {
+                Object.values(mat).forEach(v => v?.isTexture && v.dispose());
+                mat.dispose();
+            });
+        });
+        scene?.clear();
+        canvas.classList.remove('visible');
+        initialized = false;
+    }
+
+    // ═══ LAZY INIT ═══
+    // Wait for splash to finish, then init if device can handle it
+    function lazyBoot() {
+        if (window.DEVICE_CLASS === 'low') return; // Skip 3D on low devices
+        setTimeout(() => init(), 1500); // Wait 1.5s after splash
+    }
+
+    // Expose to global scope for integration with main script
+    window.SlyAvatar = { init, dispose, setState, lazyBoot };
+    lazyBoot();
+})();
 </script>
 </body>
 </html>
