@@ -650,6 +650,16 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 /* TTS indicator */
 .tts-indicator{position:fixed;bottom:calc(68px + var(--safe-bottom));right:12px;z-index:35;font-size:9px;padding:3px 8px;border-radius:6px;background:rgba(31,111,255,0.15);color:var(--blue);border:1px solid rgba(31,111,255,0.2);opacity:0;transition:opacity .3s;pointer-events:none;font-family:monospace}
 .tts-indicator.visible{opacity:1}
+
+/* Voice picker in settings */
+.voice-select{width:100%;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.06);color:var(--text);border:1px solid var(--glass-border);font-size:14px;font-family:inherit;appearance:none;-webkit-appearance:none;cursor:pointer}
+.voice-select:focus{border-color:var(--blue);outline:none}
+/* Share streak button */
+.share-streak{padding:8px 16px;border-radius:10px;background:rgba(31,111,255,0.1);color:var(--blue);border:1px solid rgba(31,111,255,0.2);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.share-streak:active{transform:scale(0.95);background:rgba(31,111,255,0.2)}
+/* Haptic feedback visual */
+@keyframes hapticRipple{0%{transform:scale(1);opacity:.4}100%{transform:scale(2.5);opacity:0}}
+.haptic-ring{position:absolute;inset:0;border-radius:inherit;border:2px solid var(--blue);animation:hapticRipple .3s ease forwards;pointer-events:none}
 </style>
 </head>
 <body>
@@ -3024,10 +3034,10 @@ const Memory = {
             !['dans','avec','pour','plus','cette','sont','mais','comme','tout','aussi','être','avoir','fait','très'].includes(k)
         );
         if (unique.length > 0) {
-            this.deep.push({ text: text.slice(0, 200), keywords: unique.slice(0, 10), score: 5, lastUsed: Date.now() });
-            if (this.deep.length > 50) {
+            this.deep.push({ text: text.slice(0, 200), keywords: unique.slice(0, 12), score: 5, lastUsed: Date.now() });
+            if (this.deep.length > 100) {
                 this.deep.sort((a, b) => b.score - a.score);
-                this.deep = this.deep.slice(0, 50);
+                this.deep = this.deep.slice(0, 100);
             }
             this.save();
         }
@@ -4422,6 +4432,73 @@ window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); _
 (function(){ var btn=document.getElementById('pwaInstallBtn'); var dis=document.getElementById('pwaDismiss'); if(btn) btn.onclick=async function(){ if(!_pwaEvt) return; _pwaEvt.prompt(); await _pwaEvt.userChoice; document.getElementById('pwaInstall').classList.remove('visible'); _pwaEvt=null; }; if(dis) dis.onclick=function(){ document.getElementById('pwaInstall').classList.remove('visible'); localStorage.setItem('sly_pwa_dismissed','1'); }; })();
 // === TTS WEB SPEECH FALLBACK ===
 window._ttsWebSpeechFallback=function(text,agentKey){ if(!window.speechSynthesis) return; var u=new SpeechSynthesisUtterance(text.slice(0,200)); u.lang='fr-FR'; u.rate=0.95; u.pitch=agentKey==='murray'?0.7:agentKey==='bentley'?1.2:1.0; u.volume=0.9; speechSynthesis.getVoices(); var fv=speechSynthesis.getVoices().find(function(v){return v.lang.startsWith('fr');}); if(fv) u.voice=fv; var ind=document.getElementById('ttsIndicator'); if(ind){ind.textContent='🔊 web speech';ind.classList.add('visible');} u.onend=function(){if(ind)ind.classList.remove('visible');}; window.SlyAvatar&&window.SlyAvatar.setState('talk'); speechSynthesis.speak(u); };
+
+
+// === DEVICE PERFORMANCE DETECTION ===
+(function detectPerf(){
+  var score = 0;
+  // Memory
+  var mem = navigator.deviceMemory || 4;
+  if (mem >= 8) score += 3;
+  else if (mem >= 4) score += 2;
+  else score += 1;
+  // CPU cores
+  var cores = navigator.hardwareConcurrency || 4;
+  if (cores >= 8) score += 3;
+  else if (cores >= 4) score += 2;
+  else score += 1;
+  // Connection
+  var conn = navigator.connection;
+  if (conn) {
+    if (conn.effectiveType === '4g' || conn.effectiveType === '5g') score += 2;
+    else if (conn.effectiveType === '3g') score += 1;
+  } else score += 2;
+  // Battery (if low battery, reduce)
+  if (navigator.getBattery) {
+    navigator.getBattery().then(function(b){ if(b.level < 0.2 && !b.charging) document.body.classList.add('perf-low'); });
+  }
+  // Apply class
+  if (score <= 3) document.body.classList.add('perf-low');
+  else if (score <= 5) document.body.classList.add('perf-med');
+  else document.body.classList.add('perf-high');
+  // Store for adaptive behavior
+  window._perfScore = score;
+  // Reduce particles on low perf
+  if (score <= 5) window._particleCount = 20;
+  else window._particleCount = 50;
+})();
+
+// === SHARE STREAK ===
+function shareStreak() {
+  const text = streak > 0
+    ? "Je suis sur une serie de " + streak + " jours avec SLY-CHAT — mon companion IA JARVIS x Sly Cooper. Cooper Building en marche! https://augustinfrance-aico.github.io/sly-chat/"
+    : "J'utilise SLY-CHAT — JARVIS x Sly Cooper. 50 agents IA, memoire, voix. https://augustinfrance-aico.github.io/sly-chat/";
+  if (navigator.share) {
+    navigator.share({ title: 'SLY-CHAT', text: text, url: 'https://augustinfrance-aico.github.io/sly-chat/' }).catch(()=>{});
+  } else {
+    navigator.clipboard?.writeText(text);
+    const btn = document.querySelector('.share-streak');
+    if (btn) { btn.textContent = 'Copie!'; setTimeout(()=>{ btn.textContent = 'Partager ' + streak + 'd ' + String.fromCodePoint(0x1F525); },2000); }
+  }
+}
+
+// === SWIPE LEFT/RIGHT to switch agents ===
+(function initSwipe(){
+  var startX = 0, startY = 0;
+  var chatArea = document.getElementById('chatArea');
+  if (!chatArea) return;
+  chatArea.addEventListener('touchstart', function(e){ startX=e.touches[0].clientX; startY=e.touches[0].clientY; }, {passive:true});
+  chatArea.addEventListener('touchend', function(e){
+    var dx = e.changedTouches[0].clientX - startX;
+    var dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy)*2) {
+      var keys = DOCK_DEFAULT;
+      var idx = keys.indexOf(currentAgent);
+      if (dx < 0 && idx < keys.length-1) { currentAgent = keys[idx+1]; highlightDockAgent(currentAgent); showAgentIntro(currentAgent); }
+      else if (dx > 0 && idx > 0) { currentAgent = keys[idx-1]; highlightDockAgent(currentAgent); showAgentIntro(currentAgent); }
+    }
+  }, {passive:true});
+})();
 
 </body>
 </html>
