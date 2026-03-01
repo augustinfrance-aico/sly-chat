@@ -592,7 +592,12 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 .badge-toast.visible{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ═══════ 3D AVATAR CANVAS (legacy) ═══════ */
-#avatarCanvas{display:none!important}
+#avatarCanvas{
+    position:fixed;bottom:110px;right:4px;
+    width:100px;height:100px;
+    pointer-events:none;z-index:3;
+    opacity:0;transition:opacity .5s ease;
+}
 
 /* ═══════ 2D AVATAR FLOATING ═══════ */
 #avatarFloat{display:none!important}
@@ -2006,7 +2011,8 @@ function trackBadge(event, data) {
     }
     if (event === 'cooper_invoked') unlockBadge('the_clan');
     if (event === 'dream_activated') unlockBadge('dream_mode');
-    if (event === 'streak_check' && streak >= 7) unlockBadge('streak_7');
+    if (event === 'streak_check' && streak >= 7)  unlockBadge('streak_7');
+    if (event === 'streak_check' && streak >= 30) unlockBadge('streak_30');
 }
 
 // ═══════ DOCK ═══════
@@ -2674,6 +2680,8 @@ function _bindAppListeners() {
     if (pttBtn) {
         pttBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
+            // Guard : ne pas démarrer STT pendant lecture TTS (évite boucle écho)
+            if (isPlaying) { stopSpeaking(); return; }
             initAudio();
             stopSpeaking();
             if (recognition) {
@@ -4430,17 +4438,17 @@ setTimeout(function() {
 setTimeout(() => { try { checkStorageEstimate(); } catch(e) {} }, 8000);
 </script>
 
-<!-- ═══════ THREE.JS 3D AVATAR MODULE — disabled (GLB not deployed) ═══════ -->
+<!-- ═══════ THREE.JS 3D AVATAR MODULE — ENABLED ═══════ -->
 <script>
-// Three.js désactivé — GLB non déployé, évite blocage CDN
-// Stub pour compatibilité
 async function initThreeJS() {
 try {
-const THREE = null; // disabled
-if (!THREE) { console.log('3D disabled — GLB not deployed'); return; }
-const GLTFLoader = null;
-const DRACOLoader = null;
-if (!GLTFLoader || !DRACOLoader) { return; }
+// Désactiver sur low-end devices
+if (typeof DEVICE_CLASS !== 'undefined' && DEVICE_CLASS === 'low') { console.log('3D disabled — low device'); return; }
+const THREE = await import('three').catch(() => null);
+if (!THREE) { console.log('3D disabled — Three.js import failed'); return; }
+const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js').catch(() => ({ GLTFLoader: null }));
+const { DRACOLoader } = await import('three/addons/loaders/DRACOLoader.js').catch(() => ({ DRACOLoader: null }));
+if (!GLTFLoader) { console.log('3D disabled — GLTFLoader not available'); return; }
 
 const SlyAvatar = (() => {
     const canvas = document.getElementById('avatarCanvas');
@@ -4944,8 +4952,8 @@ setTimeout(initThreeJS, 3000);
 
     const AVATAR_IMAGES = {
         sly: 'sly_avatar_2d.png',
-        murray: 'sly_avatar_2d.png',
-        bentley: 'sly_avatar_2d.png',
+        murray: 'murray.png',
+        bentley: 'bentley.png',
         franklin: 'sly_avatar_2d.png',
     };
 
