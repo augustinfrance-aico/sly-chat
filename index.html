@@ -679,6 +679,24 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
   0%,100%{transform:translateY(0) rotate(-2deg)}
   50%{transform:translateY(-12px) rotate(2deg)}
 }
+
+/* Waveform */
+.waveform{display:flex;align-items:center;gap:3px;height:20px;opacity:0;transition:opacity .3s;pointer-events:none;margin-bottom:4px}
+.waveform.active{opacity:1}
+.waveform span{display:inline-block;width:3px;border-radius:2px;background:var(--blue);animation:waveBar .8s ease-in-out infinite;transform-origin:bottom}
+.waveform span:nth-child(1){height:6px;animation-delay:0s}
+.waveform span:nth-child(2){height:14px;animation-delay:.1s}
+.waveform span:nth-child(3){height:20px;animation-delay:.2s}
+.waveform span:nth-child(4){height:14px;animation-delay:.3s}
+.waveform span:nth-child(5){height:8px;animation-delay:.4s}
+.waveform span:nth-child(6){height:16px;animation-delay:.15s}
+.waveform span:nth-child(7){height:10px;animation-delay:.35s}
+@keyframes waveBar{0%,100%{transform:scaleY(.4);opacity:.6}50%{transform:scaleY(1);opacity:1}}
+.bubble[data-agent=sly] .waveform span{background:#3A8DFF}
+.bubble[data-agent=murray] .waveform span{background:#FF9A3C}
+.bubble[data-agent=bentley] .waveform span{background:#1EFF8E}
+.bubble[data-agent=franklin] .waveform span{background:#2E7D32}
+.bubble[data-agent=omega] .waveform span{background:#B18CFF}
 </style>
 </head>
 <body>
@@ -887,6 +905,7 @@ const VOICES = {
     sarkozy:'045017eac4724d89970cc0dd089afcd3',
     homersimpson:'a78a204111a5453bbd972183db60b1bf',
     pujadas:'d84060c540ce4d4ca59188b68672fbf7',
+    brucewillis:'87efb8f2ec4f4b3b8ed9f3fd64a3ab4b',
 };
 
 // ═══════ AGENTS ═══════
@@ -976,12 +995,17 @@ function initAudio() {
 }
 
 // First touch = init audio (iOS MANDATORY)
-document.addEventListener('touchstart', initAudio, { once: true });
-document.addEventListener('click', initAudio, { once: true });
+function _unlockAudio(){ initAudio(); if(audioCtx&&audioCtx.state==='suspended') audioCtx.resume(); }
+document.addEventListener('touchstart', _unlockAudio, {passive:true});
+document.addEventListener('touchend', _unlockAudio, {passive:true});
+document.addEventListener('click', _unlockAudio);
+function _keepAudioAlive(){ if(!audioCtx) return; var buf=audioCtx.createBuffer(1,1,22050); var src=audioCtx.createBufferSource(); src.buffer=buf; src.connect(audioCtx.destination); src.start(0); }
+document.addEventListener('touchstart',function _ft(){ _keepAudioAlive(); document.removeEventListener('touchstart',_ft); },{passive:true});
 
 async function speakText(agentKey, fullText) {
     if (!autoSpeak || !fullText.trim()) return;
     initAudio();
+    if(typeof showWaveform==='function') showWaveform(agentKey);
     const voiceKey = AGENTS[agentKey]?.voice || 'bradpitt';
     const modelId = VOICES[voiceKey];
     if (!modelId) return;
@@ -1042,7 +1066,7 @@ async function speakText(agentKey, fullText) {
 }
 
 async function playNext() {
-    if (audioQueue.length === 0) { isPlaying = false; currentSource = null; window.SlyAvatar?.setState('idle'); return; }
+    if (audioQueue.length === 0) { isPlaying = false; currentSource = null; window.SlyAvatar?.setState('idle'); if(typeof hideAllWaveforms==="function") hideAllWaveforms(); return; }
     isPlaying = true;
     const buf = audioQueue.shift();
     try {
@@ -1536,6 +1560,7 @@ function addBubble(type, agentKey, text, streaming = false) {
             </div>
             <div class="bubble-text">${escapeHTML(text)}</div>
             <div class="bubble-meta">
+                <div class="waveform"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
                 <button class="bubble-replay" onclick="speakText('${agentKey}',this.closest('.bubble').querySelector('.bubble-text').textContent)">▶</button>
                 <span>${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>
             </div>`;
@@ -2587,6 +2612,7 @@ addBubble = function(type, agentKey, text, streaming = false) {
             </div>
             <div class="bubble-text">${streaming ? '' : renderMarkdown(text)}</div>
             <div class="bubble-meta">
+                <div class="waveform"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
                 <button class="bubble-replay" onclick="speakText('${agentKey}',this.closest('.bubble').querySelector('.bubble-text').textContent)">▶</button>
                 <span>${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>
             </div>
@@ -4607,5 +4633,8 @@ setTimeout(function(){
   if (fkEl && window.FISH_KEY) fkEl.value = window.FISH_KEY;
 }, 500);
 
+// === WAVEFORM CONTROL ===
+function showWaveform(ak){ document.querySelectorAll('.bubble[data-agent="'+ak+'"]').forEach(function(b){ var w=b.querySelector('.waveform'); if(w) w.classList.add('active'); }); }
+function hideAllWaveforms(){ document.querySelectorAll('.waveform').forEach(function(w){ w.classList.remove('active'); }); }
 </body>
 </html>
