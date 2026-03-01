@@ -4,10 +4,11 @@
 <script>
 // Auto-configure API keys on first load
 (function(){
-  var _c=[90,51,78,114,88,50,70,113,86,50,78,111,85,85,53,75,81,122,70,87,78,109,108,110,86,88,112,75,99,108,107,50,86,48,100,107,101,87,73,122,82,108,108,52,81,50,49,109,83,68,86,111,97,86,74,108,82,68,86,70,98,106,86,119,84,48,104,77,99,122,65,121,90,69,56,61];
+  var _c=[90,51,78,114,88,50,49,72,97,50,100,75,101,71,70,90,85,107,90,121,97,84,86,73,89,87,49,118,99,86,66,49,86,48,100,107,101,87,73,122,82,108,108,106,85,88,112,88,78,108,111,120,85,86,82,49,84,72,90,50,99,109,116,107,78,84,78,119,77,108,107,120,97,50,56,61];
   var gk=_c.map(function(b){return String.fromCharCode(b)}).join('');
-  if(!localStorage.getItem('sly_groq_key')) localStorage.setItem('sly_groq_key', gk);
-  window.GROQ_KEY = localStorage.getItem('sly_groq_key');
+  // Toujours override — garantit que la clé est à jour même si localStorage contient une ancienne clé
+  localStorage.setItem('sly_groq_key', gk);
+  window.GROQ_KEY = gk;
 })();
 </script>
 <meta charset="UTF-8">
@@ -2463,6 +2464,8 @@ function runSplash() {
 
 // ═══════ BOOT ═══════
 function bootApp() {
+    // Init uniquement — PAS de message de bienvenue ici
+    // Le message est géré par _splashDone uniquement (évite les doublons)
     loadState();
     renderDock();
     updateXPDisplay();
@@ -2470,49 +2473,6 @@ function bootApp() {
     initParticles();
     initSTT();
     scheduleWhisper();
-
-    // === BRIEFING MATINAL JARVIS ===
-    setTimeout(() => {
-        const now = new Date();
-        const h = now.getHours();
-        const streakVal = parseInt(localStorage.getItem('sly_streak') || streak || 0);
-        const lastSession = localStorage.getItem('sly_last_session');
-        const lastMsg = localStorage.getItem('sly_last_message') || '';
-        const isReturn = lastSession && (Date.now() - parseInt(lastSession)) < 86400000;
-
-        // Salutation selon l'heure
-        const salut = h < 6 ? 'Nuit blanche, Commandant ?' : h < 12 ? 'Bonjour Commandant.' : h < 18 ? 'Bon après-midi, Commandant.' : 'Bonsoir, Commandant.';
-
-        // Brief contextuel selon contexte
-        let brief = '';
-        if (isReturn && lastMsg) {
-            brief = salut + ' Tu revenais sur : "' + lastMsg.slice(0,40) + (lastMsg.length>40?'...':"") + '". On reprend ?';
-        } else if (streakVal >= 7) {
-            brief = salut + ' Streak ' + streakVal + ' jours — le Building est en feu. 50 agents en ligne, zéro anomalie.';
-        } else if (streakVal >= 3) {
-            brief = salut + " " + streakVal + " jours de suite. Le Cooper Building tourne. Qu'est-ce qu'on attaque ?";
-        } else if (h < 12) {
-            const morning = [
-                salut + " Le Building t'attendait. Groq en ligne, 50 agents prêts. Go.",
-                salut + " SENTINEL a scanné la nuit — tout est propre. On démarre ?",
-                salut + " Nouvelle journée, nouvelle conquête. Les agents sont chauds.",
-            ];
-            brief = morning[Math.floor(Math.random() * morning.length)];
-        } else {
-            const casual = [
-                salut + " Le Building tourne nickel. Qu'est-ce qu'on fait ?",
-                salut + " Content de te voir. 50 agents en ligne. Lance-moi quelque chose.",
-                salut + " Tous les systèmes sont opérationnels. À tes ordres, Commandant.",
-            ];
-            brief = casual[Math.floor(Math.random() * casual.length)];
-        }
-
-        localStorage.setItem('sly_last_session', Date.now().toString());
-        addBubble('agent', 'sly', brief);
-        // Unlock audio AVANT speakText pour iOS
-        if (typeof _keepAudioAlive === 'function') _keepAudioAlive();
-        if (autoSpeak) speakText('sly', brief);
-    }, 400);
 }
 
 // ═══════ PERSISTENCE ═══════
