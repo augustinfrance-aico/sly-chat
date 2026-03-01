@@ -4,7 +4,7 @@
 <script>
 // Auto-configure API keys on first load
 (function(){
-  var _c=[90,51,78,114,88,50,49,72,97,50,100,75,101,71,70,90,85,107,90,121,97,84,86,73,89,87,49,118,99,86,66,49,86,48,100,107,101,87,73,122,82,108,108,106,85,88,112,88,78,108,111,120,85,86,82,49,84,72,90,50,99,109,116,107,78,84,78,119,77,108,107,120,97,50,56,61];
+  var _c=[103,115,107,95,97,48,53,53,113,101,77,65,85,101,88,106,77,118,68,52,87,70,107,51,87,71,100,121,98,51,70,89,51,105,70,118,72,83,87,120,85,106,103,78,109,107,115,70,78,85,120,119,98,101,114,72];
   var gk=_c.map(function(b){return String.fromCharCode(b)}).join('');
   // Toujours override — garantit que la clé est à jour même si localStorage contient une ancienne clé
   localStorage.setItem('sly_groq_key', gk);
@@ -25,8 +25,10 @@
 <!-- Three.js Import Map (r183, CDN, zero build tools) -->
 <script async src="https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js" crossorigin="anonymous"></script>
 <script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.183.0/examples/jsm/"}}
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}
 </script>
+<!-- Shim pour Safari < 16.4 qui ne supporte pas importmap -->
+<script>if(!HTMLScriptElement.supports?.('importmap'))document.write('<script src="https://cdn.jsdelivr.net/npm/es-module-shims@1.10.0/dist/es-module-shims.js"><\/script>');</script>
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
@@ -417,87 +419,6 @@ body.mood-dawn{--blue:#FF9A3C;--violet:#FF6B35;--glass-border:rgba(255,154,60,0.
 body.mood-day{/* default palette */}
 body.mood-dusk{--blue:#9B59B6;--violet:#8E44AD;--glass-border:rgba(155,89,182,0.15)}
 body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.15)}
-
-/* ═══════ EMOTION STATES — Agent avatar moods ═══════ */
-/* Murray PUMPED — pulse rapide orange */
-#slyAppBg.emotion-pumped{
-    border-color:#FF9A3C;
-    box-shadow:0 0 0 4px rgba(255,154,60,0.15),0 0 22px rgba(255,154,60,0.9),0 0 45px rgba(255,154,60,0.5);
-    animation:emotionPumped 0.55s ease-in-out infinite,slyBgFloat 4s ease-in-out infinite;
-}
-@keyframes emotionPumped{0%,100%{transform:scale(1) translateY(0)}50%{transform:scale(1.12) translateY(-6px)}}
-/* Franklin MÉDITATIF — slow glow vert sage */
-#slyAppBg.emotion-meditative{
-    border-color:#2E7D32;
-    box-shadow:0 0 0 4px rgba(46,125,50,0.12),0 0 18px rgba(46,125,50,0.7),0 0 40px rgba(46,125,50,0.3);
-    animation:emotionMeditative 4s ease-in-out infinite;
-}
-@keyframes emotionMeditative{0%,100%{opacity:0.75;transform:scale(0.97) translateY(0)}50%{opacity:1;transform:scale(1.02) translateY(-5px)}}
-/* SLY ALERTE — flash bleu rapide */
-#slyAppBg.emotion-alert{
-    border-color:#00E5FF;
-    box-shadow:0 0 0 4px rgba(0,229,255,0.15),0 0 22px rgba(0,229,255,1),0 0 50px rgba(31,111,255,0.6);
-    animation:emotionAlert 0.8s ease-in-out infinite;
-}
-@keyframes emotionAlert{0%,100%{opacity:1;transform:scale(1) translateY(0)}40%{opacity:0.5;transform:scale(1.1) translateY(-4px)}}
-/* Bentley THINK — violet lent */
-#slyAppBg.emotion-think{
-    border-color:#B18CFF;
-    box-shadow:0 0 0 4px rgba(177,140,255,0.12),0 0 18px rgba(122,60,255,0.8),0 0 40px rgba(122,60,255,0.3);
-    animation:emotionThink 3s ease-in-out infinite;
-}
-@keyframes emotionThink{0%,100%{transform:rotate(-2deg) translateY(0);opacity:0.8}50%{transform:rotate(2deg) translateY(-5px);opacity:1}}
-/* OMEGA VISION — cosmique */
-#slyAppBg.emotion-cosmic{
-    border-color:#B18CFF;
-    box-shadow:0 0 0 6px rgba(177,140,255,0.1),0 0 30px rgba(122,60,255,0.9),0 0 70px rgba(31,111,255,0.4);
-    animation:emotionCosmic 5s ease-in-out infinite;
-}
-@keyframes emotionCosmic{0%{transform:scale(1) translateY(0);filter:hue-rotate(0deg)}50%{transform:scale(1.06) translateY(-8px);filter:hue-rotate(30deg)}100%{transform:scale(1) translateY(0);filter:hue-rotate(0deg)}}
-
-/* ═══════ AGENT SELECTOR WHEEL ═══════ */
-#agentWheel{
-    position:fixed;bottom:180px;right:0;width:270px;
-    background:rgba(11,15,20,0.97);
-    border:1px solid var(--glass-border);border-right:none;
-    border-radius:20px 0 0 20px;padding:12px;
-    z-index:45;transform:translateX(100%);
-    transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
-    backdrop-filter:blur(20px);box-shadow:-8px 0 40px rgba(0,0,0,0.6);
-    max-height:60dvh;overflow-y:auto;
-}
-#agentWheel.open{transform:translateX(0)}
-#agentWheel::-webkit-scrollbar{width:3px}
-#agentWheel::-webkit-scrollbar-thumb{background:rgba(31,111,255,0.3);border-radius:2px}
-.aw-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;padding-left:4px}
-.aw-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}
-.aw-agent{
-    display:flex;flex-direction:column;align-items:center;gap:3px;
-    padding:8px 4px;border-radius:10px;
-    background:rgba(255,255,255,0.04);border:1px solid transparent;
-    cursor:pointer;transition:all .15s;
-}
-.aw-agent:active{transform:scale(0.9)}
-.aw-agent.active{border-color:var(--blue);background:rgba(31,111,255,0.12)}
-.aw-emoji{font-size:20px;line-height:1}
-.aw-name{font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-dim);text-align:center}
-.aw-agent.active .aw-name{color:var(--blue)}
-
-/* ═══════ AMICA LIFE — toast agent autonome ═══════ */
-#amicaToast{
-    position:fixed;bottom:calc(88px + var(--safe-bottom));left:50%;transform:translateX(-50%) translateY(20px);
-    background:rgba(11,15,20,0.95);border:1px solid var(--glass-border);
-    border-radius:16px;padding:12px 16px;max-width:calc(100vw - 32px);
-    z-index:44;opacity:0;pointer-events:none;
-    transition:opacity .4s ease,transform .4s ease;
-    backdrop-filter:blur(16px);display:flex;align-items:center;gap:10px;
-}
-#amicaToast.visible{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
-.amica-emoji{font-size:26px;flex-shrink:0}
-.amica-body{flex:1}
-.amica-agent{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue);margin-bottom:2px}
-.amica-text{font-size:13px;color:var(--text);line-height:1.4}
-.amica-close{font-size:16px;color:var(--text-dim);cursor:pointer;padding:2px 4px;flex-shrink:0}
 
 /* ═══════ WAVEFORM VISUALIZER ═══════ */
 .waveform-vis{
@@ -1058,19 +979,6 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 <div class="modal-overlay" id="settingsOverlay"></div>
 <div class="modal" id="settingsModal"></div>
 
-<!-- AGENT WHEEL SELECTOR -->
-<div id="agentWheel"></div>
-
-<!-- AMICA LIFE TOAST -->
-<div id="amicaToast">
-    <div class="amica-emoji" id="amicaEmoji">🦊</div>
-    <div class="amica-body">
-        <div class="amica-agent" id="amicaAgent">SLY</div>
-        <div class="amica-text" id="amicaText"></div>
-    </div>
-    <span class="amica-close" id="amicaClose">✕</span>
-</div>
-
 <!-- CONVERSATION REWIND PANEL -->
 <div class="rewind-backdrop" id="rewindBackdrop"></div>
 <div class="rewind-panel" id="rewindPanel">
@@ -1319,8 +1227,8 @@ async function speakText(agentKey, fullText) {
     const ttsStart = Date.now();
     const promises = chunks.map(async chunk => {
         const cacheKey = `${modelId}:${chunk}`;
-        const cached = AudioCache.get(cacheKey);
-        if (cached) return cached.slice(0); // cache hit — return copy
+        const cached = await AudioCache.get(cacheKey);
+        if (cached) return cached instanceof ArrayBuffer ? cached.slice(0) : cached; // cache hit — return copy
         try {
             let _ttsUrl, _ttsHeaders, _ttsBody;
             if (window.FISH_KEY) {
@@ -1393,7 +1301,7 @@ async function callGroq(messages, model = 'llama-3.3-70b-versatile', maxTokens =
     if (!CircuitBreaker.canAttempt(providerName)) return null;
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
+    const timeout = setTimeout(() => controller.abort(), 10000);
     try {
         let _groqUrl, _groqHeaders;
         if (window.GROQ_KEY) {
@@ -1430,7 +1338,7 @@ async function callGemini(messages, maxTokens = 500) {
         // Direct Gemini API si clé dispo — fonctionne 100% local sans Railway
         if (geminiKey) {
             const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 12000);
+            const timeout = setTimeout(() => controller.abort(), 10000);
             const sysMsg = messages.find(m => m.role === 'system');
             const chatMsgs = messages.filter(m => m.role !== 'system');
             const geminiMsgs = chatMsgs.map(m => ({
@@ -1725,6 +1633,7 @@ async function sendMessage(text) {
     }
 
     isStreaming = true;
+    updateSendBtn();
 
     let agentKey = detectAgent(text);
     // If regex fell back to default → try async LLM classify (non-blocking for UX)
@@ -1870,6 +1779,7 @@ async function sendMessage(text) {
 
     gainXP(tier === 'deep' ? 15 : 10);
     isStreaming = false;
+    updateSendBtn();
     saveState();
 }
 
@@ -1964,10 +1874,6 @@ function addBubble(type, agentKey, text, streaming = false) {
 
     area.appendChild(div);
     area.scrollTop = area.scrollHeight;
-    // Déclencher émotion avatar si agent parle
-    if (type === 'agent' && agentKey && typeof triggerEmotionForAgent === 'function') {
-        triggerEmotionForAgent(agentKey);
-    }
     return div;
 }
 
@@ -1993,10 +1899,19 @@ function addThinking(agentKey) {
         <div class="bubble-header">
             <span class="bubble-emoji">${agent.emoji}</span>
             <span class="bubble-name" style="color:${agent.color}">${agent.name}</span>
+            <span class="thinking-label" style="font-size:10px;color:var(--text-dim);margin-left:4px">réfléchit...</span>
         </div>
         <div class="thinking-dots"><span></span><span></span><span></span></div>`;
     area.appendChild(div);
     area.scrollTop = area.scrollHeight;
+    // After 5s, signal slow response
+    const slowTimer = setTimeout(() => {
+        const label = div.querySelector('.thinking-label');
+        if (label && div.isConnected) label.textContent = 'concentration intense...';
+    }, 5000);
+    div._slowTimer = slowTimer;
+    const _origRemove = div.remove.bind(div);
+    div.remove = () => { clearTimeout(slowTimer); _origRemove(); };
     return div;
 }
 
@@ -2716,7 +2631,19 @@ function loadState() {
 // ═══════ EVENT LISTENERS ═══════
 // SAFE — tous les listeners sont wrappés dans bootPhase2() pour éviter crash si DOM pas prêt
 function updateSendBtn() {
-    // Keep btn always enabled — JS guards the empty send
+    const sendBtn = document.getElementById('sendBtn');
+    const chatInput = document.getElementById('chatInput');
+    const pttBtn = document.getElementById('pttBtn');
+    if (sendBtn) {
+        sendBtn.disabled = isStreaming;
+        sendBtn.style.opacity = isStreaming ? '0.45' : '1';
+        sendBtn.style.cursor = isStreaming ? 'not-allowed' : 'pointer';
+    }
+    if (chatInput) chatInput.style.opacity = isStreaming ? '0.7' : '1';
+    if (pttBtn) {
+        pttBtn.disabled = isStreaming;
+        pttBtn.style.opacity = isStreaming ? '0.45' : '1';
+    }
 }
 
 // Visibility change — toujours safe (document existe)
@@ -3934,20 +3861,71 @@ const sanitize = escapeHTML; // alias — même implémentation
 
 // ═══════ PERFORMANCE BUDGETS ═══════
 // LRU Audio Cache
+// ═══════ AUDIO CACHE — IndexedDB LRU (persist across reloads, ~50MB) ═══════
 const AudioCache = {
-    _cache: new Map(),
-    _maxSize: PERF_CONFIG[DEVICE_CLASS].maxAudioCache,
-    get(key) {
-        const val = this._cache.get(key);
-        if (val) { this._cache.delete(key); this._cache.set(key, val); }
-        return val || null;
+    _db: null,
+    _DB_NAME: 'sly_audio_cache',
+    _STORE: 'blobs',
+    _MAX_ENTRIES: 60, // ~50MB at ~800KB avg per TTS clip
+    _memFallback: new Map(), // in-memory fallback if IDB unavailable
+
+    async _openDB() {
+        if (this._db) return this._db;
+        return new Promise((resolve) => {
+            try {
+                const req = indexedDB.open(this._DB_NAME, 1);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(this._STORE)) {
+                        const store = db.createObjectStore(this._STORE, { keyPath: 'key' });
+                        store.createIndex('ts', 'ts', { unique: false });
+                    }
+                };
+                req.onsuccess = (e) => { this._db = e.target.result; resolve(this._db); };
+                req.onerror = () => resolve(null);
+            } catch { resolve(null); }
+        });
     },
-    set(key, value) {
-        if (this._cache.size >= this._maxSize) {
-            const oldest = this._cache.keys().next().value;
-            this._cache.delete(oldest);
+
+    async get(key) {
+        const db = await this._openDB();
+        if (!db) return this._memFallback.get(key) || null;
+        return new Promise((resolve) => {
+            try {
+                const tx = db.transaction(this._STORE, 'readonly');
+                const req = tx.objectStore(this._STORE).get(key);
+                req.onsuccess = (e) => resolve(e.target.result?.blob || null);
+                req.onerror = () => resolve(null);
+            } catch { resolve(null); }
+        });
+    },
+
+    async set(key, blob) {
+        // Always store in mem fallback for instant access
+        this._memFallback.set(key, blob);
+        if (this._memFallback.size > 20) {
+            const oldest = this._memFallback.keys().next().value;
+            this._memFallback.delete(oldest);
         }
-        this._cache.set(key, value);
+
+        const db = await this._openDB();
+        if (!db) return;
+        try {
+            const tx = db.transaction(this._STORE, 'readwrite');
+            const store = tx.objectStore(this._STORE);
+            store.put({ key, blob, ts: Date.now() });
+            // LRU eviction: keep only _MAX_ENTRIES
+            const countReq = store.count();
+            countReq.onsuccess = (e) => {
+                if (e.target.result > this._MAX_ENTRIES) {
+                    const idxReq = store.index('ts').openCursor();
+                    idxReq.onsuccess = (ev) => {
+                        const cursor = ev.target.result;
+                        if (cursor) { cursor.delete(); }
+                    };
+                }
+            };
+        } catch {}
     }
 };
 
@@ -5213,189 +5191,6 @@ function shareStreak() {
   });
 })();
 
-
-// ═══════════════════════════════════════════
-// EMOTION STATES — avatar mood driven by agent & sentiment
-// ═══════════════════════════════════════════
-const AGENT_EMOTIONS = {
-    murray:  'pumped',
-    franklin:'meditative',
-    sly:     'alert',
-    bentley: 'think',
-    omega:   'cosmic',
-    havoc:   'pumped',
-    dreyfus: 'think',
-    cortex:  'think',
-};
-const EMOTION_TIMEOUT_MS = 8000; // retour idle après 8s
-let _emotionTimer = null;
-
-function setAvatarEmotion(emotion) {
-    const el = document.getElementById('slyAppBg');
-    if (!el) return;
-    el.classList.remove('emotion-pumped','emotion-meditative','emotion-alert','emotion-think','emotion-cosmic');
-    if (emotion) el.classList.add('emotion-' + emotion);
-    clearTimeout(_emotionTimer);
-    if (emotion) {
-        _emotionTimer = setTimeout(() => setAvatarEmotion(null), EMOTION_TIMEOUT_MS);
-    }
-}
-
-// Appeler à chaque réponse agent
-function triggerEmotionForAgent(agentKey) {
-    const emotion = AGENT_EMOTIONS[agentKey] || null;
-    setAvatarEmotion(emotion);
-}
-
-
-
-// ═══════════════════════════════════════════
-// AGENT WHEEL SELECTOR — tap sur #slyAppBg
-// ═══════════════════════════════════════════
-(function initAgentWheel() {
-    const trigger = document.getElementById('slyAppBg');
-    const wheel = document.getElementById('agentWheel');
-    if (!trigger || !wheel) return;
-
-    // Rendre cliquable
-    trigger.style.pointerEvents = 'auto';
-    trigger.style.cursor = 'pointer';
-    trigger.title = 'Changer d\'agent';
-
-    // Build wheel content
-    function buildWheel() {
-        if (!wheel || typeof AGENTS === 'undefined') return;
-        const groups = [
-            { label: '🏴 GANG', keys: ['sly','bentley','murray'] },
-            { label: '⚡ CORE', keys: ['omega','sentinel','cortex','franklin','anvil','glitch','dreyfus'] },
-            { label: '💼 VENTE', keys: ['closer','kaiser','prism','onyx','ledger'] },
-            { label: '🧪 R&D', keys: ['cipher','radar','proto','turing','flux'] },
-            { label: '📱 CONTENU', keys: ['philomene','fresco','viral','orpheus','pixel'] },
-            { label: '💥 MÉTA', keys: ['darwin','shadow','havoc','chronos','atlas','agora'] },
-        ];
-        let html = '';
-        for (const g of groups) {
-            html += `<div class="aw-title">${g.label}</div><div class="aw-grid">`;
-            for (const k of g.keys) {
-                const a = AGENTS[k];
-                if (!a) continue;
-                const isActive = k === currentAgent ? ' active' : '';
-                html += `<div class="aw-agent${isActive}" data-key="${k}" onclick="selectAgentWheel('${k}')">
-                    <div class="aw-emoji">${a.emoji}</div>
-                    <div class="aw-name">${a.name}</div>
-                </div>`;
-            }
-            html += '</div>';
-        }
-        wheel.innerHTML = html;
-    }
-
-    // Toggle wheel
-    let _wheelOpen = false;
-    trigger.addEventListener('click', function(e) {
-        e.stopPropagation();
-        _wheelOpen = !_wheelOpen;
-        if (_wheelOpen) {
-            buildWheel();
-            wheel.classList.add('open');
-        } else {
-            wheel.classList.remove('open');
-        }
-    });
-
-    // Close on outside click
-    document.addEventListener('click', function(e) {
-        if (_wheelOpen && !wheel.contains(e.target) && e.target !== trigger) {
-            _wheelOpen = false;
-            wheel.classList.remove('open');
-        }
-    });
-
-    window.selectAgentWheel = function(key) {
-        if (typeof selectAgent === 'function') selectAgent(key);
-        else if (typeof currentAgent !== 'undefined') { currentAgent = key; }
-        // Update active state
-        wheel.querySelectorAll('.aw-agent').forEach(el => {
-            el.classList.toggle('active', el.dataset.key === key);
-        });
-        triggerEmotionForAgent(key);
-        _wheelOpen = false;
-        wheel.classList.remove('open');
-    };
-})();
-
-
-// ═══════════════════════════════════════════
-// AMICA LIFE — agents autonomes après 2h d'inactivité
-// ═══════════════════════════════════════════
-const AMICA_IDLE_MS = 2 * 60 * 60 * 1000; // 2 heures
-let _amicaTimer = null;
-let _lastUserActivity = Date.now();
-
-function _resetAmicaTimer() {
-    _lastUserActivity = Date.now();
-    clearTimeout(_amicaTimer);
-    _amicaTimer = setTimeout(_amicaFire, AMICA_IDLE_MS);
-}
-
-const AMICA_PROVOCATIONS = [
-    { agent: 'murray', emoji: '🦛', text: 'Hé commandant ! Tu dors ? Le Building tourne sans toi — viens me défier !' },
-    { agent: 'murray', emoji: '🦛', text: 'MURRAY SE TOURNE LES POUCES ! Donne-moi quelque chose à écraser.' },
-    { agent: 'franklin', emoji: '🐢', text: '"Le temps perd celui qui ne le remplit pas." — Sénèque. Je t\'attends, Augus.' },
-    { agent: 'franklin', emoji: '🐢', text: 'Méditation du soir : une seule action concrète vaut mille plans. Que veux-tu démarrer ?' },
-    { agent: 'glitch', emoji: '🎲', text: 'Et si… on pivotait tout le modèle business là maintenant ? J\'ai une idée folle.' },
-    { agent: 'glitch', emoji: '🎲', text: 'Idée surgissant de nulle part : et si SLY-CHAT devenait un OS ? Je suis sérieux.' },
-    { agent: 'sly', emoji: '🦊', text: 'Le Cooper Building ne s\'arrête jamais. Qu\'est-ce qu\'on vole ce soir, Commandant ?' },
-    { agent: 'sly', emoji: '🦊', text: 'Le plan a besoin de toi. Les agents attendent. On reprend ?' },
-    { agent: 'cortex', emoji: '🧠', text: 'J\'ai analysé tes données. Il y a 3 opportunités critiques à saisir cette semaine.' },
-    { agent: 'sibyl', emoji: '🔮', text: 'Vision : dans 48h tu regretteras de ne pas avoir agi ce soir. Agis maintenant.' },
-    { agent: 'sentinel', emoji: '🎯', text: 'Priorité absolue détectée. Le Building est en veille. Toi pas.' },
-];
-
-let _amicaIdx = 0;
-function _amicaFire() {
-    const h = new Date().getHours();
-    if (h >= 23 || h < 7) { // Pas la nuit profonde
-        _amicaTimer = setTimeout(_amicaFire, 30 * 60 * 1000);
-        return;
-    }
-    const pick = AMICA_PROVOCATIONS[_amicaIdx % AMICA_PROVOCATIONS.length];
-    _amicaIdx++;
-    showAmicaToast(pick);
-    // Re-schedule dans 30min si toujours inactif
-    _amicaTimer = setTimeout(_amicaFire, 30 * 60 * 1000);
-}
-
-function showAmicaToast(pick) {
-    const toast = document.getElementById('amicaToast');
-    const emoEl = document.getElementById('amicaEmoji');
-    const agEl = document.getElementById('amicaAgent');
-    const txEl = document.getElementById('amicaText');
-    if (!toast || !txEl) return;
-    emoEl.textContent = pick.emoji;
-    agEl.textContent = pick.agent.toUpperCase();
-    agEl.style.color = (typeof AGENTS !== 'undefined' && AGENTS[pick.agent]) ? AGENTS[pick.agent].color : '#1F6FFF';
-    txEl.textContent = pick.text;
-    toast.classList.add('visible');
-    triggerEmotionForAgent(pick.agent);
-    // Auto-hide 12s
-    clearTimeout(toast._hideTimer);
-    toast._hideTimer = setTimeout(() => toast.classList.remove('visible'), 12000);
-}
-
-// Close button
-document.addEventListener('DOMContentLoaded', function() {
-    const closeBtn = document.getElementById('amicaClose');
-    if (closeBtn) closeBtn.addEventListener('click', () => {
-        document.getElementById('amicaToast')?.classList.remove('visible');
-    });
-    // Track user activity
-    ['click','keydown','touchstart','mousemove'].forEach(ev => {
-        document.addEventListener(ev, _resetAmicaTimer, { passive: true });
-    });
-    _resetAmicaTimer();
-
-});
 
 // === API STATUS BADGE ===
 function updateApiStatusBadge(){
