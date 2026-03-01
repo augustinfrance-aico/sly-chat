@@ -76,12 +76,13 @@ input{font-family:inherit;border:none;outline:none}
     width:130px;height:130px;border-radius:50%;
     overflow:hidden;
     border:2.5px solid rgba(31,111,255,0.7);
-    box-shadow:0 0 20px rgba(31,111,255,0.5),0 0 40px rgba(31,111,255,0.2);
+    box-shadow:0 0 20px rgba(31,111,255,0.5),0 0 40px rgba(31,111,255,0.2),inset 0 0 20px rgba(31,111,255,0.1);
     animation:sp2Float 3.5s ease-in-out infinite;
-    background:#e8edf5;
+    background:transparent;
 }
 .sp2-sly{width:100%;height:100%;display:block;
-    object-fit:cover;object-position:center 10%;}
+    object-fit:cover;object-position:center 10%;
+    mix-blend-mode:screen;}
 @keyframes sp2Float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.03)}}
 /* Titre "SLY" — Orbitron 40px, néon blanc bleuté */
 .sp2-title{
@@ -120,6 +121,14 @@ input{font-family:inherit;border:none;outline:none}
 @keyframes sp2Pulse{0%,100%{opacity:0.5;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
 @keyframes neonFlicker{0%,19%,21%,23%,100%{opacity:1}20%,22%{opacity:0.75}55%{opacity:0.88}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+/* Ships */
+.sp2-ship{position:absolute;z-index:3;pointer-events:none;font-size:14px;opacity:0;animation:sp2ShipFly var(--dur,12s) linear var(--del,0s) infinite}
+@keyframes sp2ShipFly{
+    0%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0.6) rotate(var(--rot))}
+    5%{opacity:0.7}
+    95%{opacity:0.5}
+    100%{opacity:0;transform:translate(var(--ex),var(--ey)) scale(0.9) rotate(var(--rot))}
+}
 
 /* ═══════ APP LAYOUT ═══════ */
 #app{display:none;flex-direction:column;height:100dvh;position:relative}
@@ -2219,6 +2228,25 @@ function runSplash() {
             s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${1.5+Math.random()*3}s;--del:${-Math.random()*3}s;opacity:${0.2+Math.random()*0.8}`;
             starsEl.appendChild(s);
         }
+        // ── Générer vaisseaux traversants ──
+        const ships = ['🚀','✈️','🛸','🛩️'];
+        const trajectories = [
+            {sx:'-10%', sy:'15%', ex:'110%', ey:'10%', rot:'−5deg'},
+            {sx:'110%', sy:'25%', ex:'-10%', ey:'20%', rot:'175deg'},
+            {sx:'-10%', sy:'60%', ex:'110%', ey:'55%', rot:'−3deg'},
+            {sx:'110%', sy:'70%', ex:'-10%', ey:'75%', rot:'177deg'},
+            {sx:'-10%', sy:'40%', ex:'110%', ey:'35%', rot:'−8deg'},
+        ];
+        for (let i = 0; i < 5; i++) {
+            const ship = document.createElement('div');
+            ship.className = 'sp2-ship';
+            const t = trajectories[i];
+            const dur = 8 + Math.random() * 8;
+            const del = i * 1.5 + Math.random() * 2;
+            ship.textContent = ships[i % ships.length];
+            ship.style.cssText = `--sx:${t.sx};--sy:${t.sy};--ex:${t.ex};--ey:${t.ey};--rot:${t.rot};--dur:${dur.toFixed(1)}s;--del:${del.toFixed(1)}s;top:0;left:0;filter:drop-shadow(0 0 4px rgba(31,111,255,0.8))`;
+            starsEl.appendChild(ship);
+        }
     }
 
     // ── Fallback immédiat si DOM pas prêt ──
@@ -2447,115 +2475,128 @@ function loadState() {
 }
 
 // ═══════ EVENT LISTENERS ═══════
+// SAFE — tous les listeners sont wrappés dans bootPhase2() pour éviter crash si DOM pas prêt
 function updateSendBtn() {
-    document.getElementById('sendBtn').disabled = !document.getElementById('chatInput').value.trim();
+    const btn = document.getElementById('sendBtn');
+    const inp = document.getElementById('chatInput');
+    if (btn && inp) btn.disabled = !inp.value.trim();
 }
 
-document.getElementById('chatInput').addEventListener('focus', () => { _unlockAudio(); }, { passive: true });
-document.getElementById('chatInput').addEventListener('input', (e) => {
-    updateSendBtn();
-    onTyping(e.target.value);
-});
-
-document.getElementById('chatInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        const text = e.target.value.trim();
-        if (text) { sendMessage(text); e.target.value = ''; updateSendBtn(); }
-    }
-});
-
-document.getElementById('sendBtn').addEventListener('click', () => {
-    // iOS AudioContext unlock sur tap send — critique pour autoplay
-    _unlockAudio();
-    if (typeof _keepAudioAlive === 'function') _keepAudioAlive();
-    const input = document.getElementById('chatInput');
-    const text = input.value.trim();
-    if (text) { sendMessage(text); input.value = ''; updateSendBtn(); }
-});
-
-// PTT Button
-const pttBtn = document.getElementById('pttBtn');
-let pttTimer = null;
-pttBtn.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    initAudio();
-    stopSpeaking();
-    if (recognition) {
-        isRecording = true;
-        pttBtn.classList.add('recording');
-        pttBtn.textContent = '🔴';
-        recognition.start();
-        trackBadge('vocal_used');
-        window.SlyAvatar?.setState('listen');
-    }
-});
-pttBtn.addEventListener('touchend', (e) => {
-    e.preventDefault();
-    if (recognition && isRecording) {
-        recognition.stop();
-        window.SlyAvatar?.setState('think');
-    }
-});
-// Mouse fallback
-pttBtn.addEventListener('mousedown', () => {
-    initAudio();
-    stopSpeaking();
-    if (recognition) {
-        isRecording = true;
-        pttBtn.classList.add('recording');
-        pttBtn.textContent = '🔴';
-        recognition.start();
-        window.SlyAvatar?.setState('listen');
-    }
-});
-pttBtn.addEventListener('mouseup', () => { if (recognition && isRecording) { recognition.stop(); window.SlyAvatar?.setState('think'); } });
-
-document.getElementById('btnSettings').addEventListener('click', openSettings);
-document.getElementById('btnMenu').addEventListener('click', toggleRewindPanel);
-
-// Visibility change — resume audio
+// Visibility change — toujours safe (document existe)
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden && audioCtx?.state === 'suspended') audioCtx.resume();
 });
 
-// ═══════ SCROLL-TO-BOTTOM BUTTON ═══════
-const _chatArea = document.getElementById('chatArea');
-const _scrollBtn = document.getElementById('scrollBottom');
-
-_chatArea.addEventListener('scroll', () => {
-    const distFromBottom = _chatArea.scrollHeight - _chatArea.scrollTop - _chatArea.clientHeight;
-    if (distFromBottom > 200) {
-        _scrollBtn.classList.add('visible');
-    } else {
-        _scrollBtn.classList.remove('visible');
+function _bindAppListeners() {
+    // chatInput listeners
+    const chatInput = document.getElementById('chatInput');
+    if (chatInput) {
+        chatInput.addEventListener('focus', () => { _unlockAudio(); }, { passive: true });
+        chatInput.addEventListener('input', (e) => {
+            updateSendBtn();
+            onTyping(e.target.value);
+        });
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                const text = e.target.value.trim();
+                if (text) { sendMessage(text); e.target.value = ''; updateSendBtn(); }
+            }
+        });
+        // Typing preview
+        const _typingPreview = document.getElementById('typingPreview');
+        let _typingTimeout = null;
+        chatInput.addEventListener('input', (e) => {
+            if (!_typingPreview) return;
+            const text = e.target.value.trim();
+            if (text.length > 2) {
+                const detected = detectAgent(text);
+                const agent = AGENTS[detected];
+                if (agent) {
+                    _typingPreview.textContent = `${agent.emoji} ${agent.name} va répondre...`;
+                    _typingPreview.classList.add('visible');
+                }
+            } else {
+                _typingPreview.classList.remove('visible');
+            }
+            clearTimeout(_typingTimeout);
+            _typingTimeout = setTimeout(() => _typingPreview.classList.remove('visible'), 3000);
+        });
     }
-});
 
-_scrollBtn.addEventListener('click', () => {
-    _chatArea.scrollTo({ top: _chatArea.scrollHeight, behavior: 'smooth' });
-    _scrollBtn.classList.remove('visible');
-});
-
-// ═══════ TYPING PREVIEW ═══════
-const _typingPreview = document.getElementById('typingPreview');
-let _typingTimeout = null;
-
-document.getElementById('chatInput').addEventListener('input', (e) => {
-    const text = e.target.value.trim();
-    if (text.length > 2) {
-        const detected = detectAgent(text);
-        const agent = AGENTS[detected];
-        if (agent) {
-            _typingPreview.textContent = `${agent.emoji} ${agent.name} va répondre...`;
-            _typingPreview.classList.add('visible');
-        }
-    } else {
-        _typingPreview.classList.remove('visible');
+    // sendBtn
+    const sendBtn = document.getElementById('sendBtn');
+    if (sendBtn) {
+        sendBtn.addEventListener('click', () => {
+            _unlockAudio();
+            if (typeof _keepAudioAlive === 'function') _keepAudioAlive();
+            const input = document.getElementById('chatInput');
+            const text = input?.value.trim();
+            if (text) { sendMessage(text); input.value = ''; updateSendBtn(); }
+        });
     }
-    clearTimeout(_typingTimeout);
-    _typingTimeout = setTimeout(() => _typingPreview.classList.remove('visible'), 3000);
-});
+
+    // PTT Button
+    const pttBtn = document.getElementById('pttBtn');
+    if (pttBtn) {
+        pttBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            initAudio();
+            stopSpeaking();
+            if (recognition) {
+                isRecording = true;
+                pttBtn.classList.add('recording');
+                pttBtn.textContent = '🔴';
+                recognition.start();
+                trackBadge('vocal_used');
+                window.SlyAvatar?.setState('listen');
+            }
+        });
+        pttBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (recognition && isRecording) {
+                recognition.stop();
+                window.SlyAvatar?.setState('think');
+            }
+        });
+        pttBtn.addEventListener('mousedown', () => {
+            initAudio();
+            stopSpeaking();
+            if (recognition) {
+                isRecording = true;
+                pttBtn.classList.add('recording');
+                pttBtn.textContent = '🔴';
+                recognition.start();
+                window.SlyAvatar?.setState('listen');
+            }
+        });
+        pttBtn.addEventListener('mouseup', () => { if (recognition && isRecording) { recognition.stop(); window.SlyAvatar?.setState('think'); } });
+    }
+
+    // Settings + Menu
+    const btnSettings = document.getElementById('btnSettings');
+    if (btnSettings) btnSettings.addEventListener('click', openSettings);
+    const btnMenu = document.getElementById('btnMenu');
+    if (btnMenu) btnMenu.addEventListener('click', toggleRewindPanel);
+
+    // Scroll-to-bottom
+    const _chatArea = document.getElementById('chatArea');
+    const _scrollBtn = document.getElementById('scrollBottom');
+    if (_chatArea && _scrollBtn) {
+        _chatArea.addEventListener('scroll', () => {
+            const distFromBottom = _chatArea.scrollHeight - _chatArea.scrollTop - _chatArea.clientHeight;
+            if (distFromBottom > 200) {
+                _scrollBtn.classList.add('visible');
+            } else {
+                _scrollBtn.classList.remove('visible');
+            }
+        });
+        _scrollBtn.addEventListener('click', () => {
+            _chatArea.scrollTo({ top: _chatArea.scrollHeight, behavior: 'smooth' });
+            _scrollBtn.classList.remove('visible');
+        });
+    }
+}
 
 // ═══════ SERVICE WORKER ═══════
 if ('serviceWorker' in navigator) {
@@ -3277,6 +3318,8 @@ function toggleSounds() {
 
 // ═══════ BOOT PHASE 2 ═══════
 function bootPhase2() {
+    // Bind all app event listeners — safe, après que le DOM app soit visible
+    try { _bindAppListeners(); } catch(e) { console.warn('_bindAppListeners:', e); }
     checkDreamMode();
     updateMoodSkin();
     loadDailyProgress();
