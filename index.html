@@ -69,7 +69,7 @@ input{font-family:inherit;border:none;outline:none}
     filter:brightness(0.35) blur(2px);
 }
 .splash-logo{
-    z-index:2;width:200px;height:200px;
+    z-index:2;width:155px;height:155px;
     border-radius:0;background:transparent;
     backdrop-filter:none;border:none;
     display:flex;align-items:center;justify-content:center;
@@ -2237,14 +2237,29 @@ function runSplash() {
     drawSplash();
 
     // ── Fermeture après SPLASH_DURATION ──
-    setTimeout(() => {
+    // Safety: toujours passer après SPLASH_DURATION
+    const _splashTimer = setTimeout(() => {
         _splashRunning = false;
         if (bootLog) bootLog._done = true;
         splash.classList.add('hidden');
-        document.getElementById('app').classList.add('visible');
+        const app = document.getElementById('app');
+        if (app) app.classList.add('visible');
         localStorage.setItem('sly_splashTime', Date.now().toString());
-        bootApp();
+        if (typeof bootApp === 'function') bootApp();
     }, SPLASH_DURATION);
+
+    // Safety fallback: si 7s passées et app encore cachée → forcer
+    setTimeout(() => {
+        const app = document.getElementById('app');
+        if (app && !app.classList.contains('visible')) {
+            clearTimeout(_splashTimer);
+            _splashRunning = false;
+            if (splash) splash.classList.add('hidden');
+            app.classList.add('visible');
+            if (typeof bootApp === 'function') bootApp();
+            console.warn('⚠️ Splash safety timeout triggered');
+        }
+    }, 7000);
 }
 
 // ═══════ BOOT ═══════
@@ -4039,11 +4054,16 @@ setTimeout(() => { try { bootPhase2(); } catch(e) { console.warn('bootPhase2 err
 setTimeout(() => { checkStorageEstimate(); }, 5000);
 </script>
 
-<!-- ═══════ THREE.JS 3D AVATAR MODULE ═══════ -->
+<!-- ═══════ THREE.JS 3D AVATAR MODULE — lazy loaded ═══════ -->
 <script type="module">
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+// Guard: ne charger Three.js que si l'app est déjà visible (évite blocage splash)
+async function initThreeJS() {
+try {
+const THREE = await import('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js').catch(()=>null);
+if (!THREE) { console.log('Three.js unavailable, skipping 3D'); return; }
+const { GLTFLoader } = await import('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/GLTFLoader.js').catch(()=>({GLTFLoader:null}));
+const { DRACOLoader } = await import('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/DRACOLoader.js').catch(()=>({DRACOLoader:null}));
+if (!GLTFLoader || !DRACOLoader) { console.log('Three.js loaders unavailable'); return; }
 
 const SlyAvatar = (() => {
     const canvas = document.getElementById('avatarCanvas');
@@ -4534,6 +4554,10 @@ const SlyAvatar = (() => {
     // Expose 3D to global scope (legacy — hidden by CSS)
     window.SlyAvatar3D = { init, dispose, setState, lazyBoot, switchModel };
 })();
+} catch(e) { console.log('3D init skipped:', e.message); }
+} // end initThreeJS
+// Lancer Three.js seulement 3s après load (splash terminé)
+setTimeout(initThreeJS, 3000);
 
 // ═══════ 2D AVATAR SYSTEM (replaces 3D) ═══════
 (() => {
