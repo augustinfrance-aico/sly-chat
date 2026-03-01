@@ -60,16 +60,15 @@ input{font-family:inherit;border:none;outline:none}
     filter:brightness(0.35) blur(2px);
 }
 .splash-logo{
-    z-index:2;width:160px;height:160px;
-    border-radius:50%;
-    background:rgba(11,15,20,0.35);
-    backdrop-filter:blur(16px);
+    z-index:2;width:200px;height:200px;
+    border-radius:0;background:transparent;
+    backdrop-filter:none;border:none;
     display:flex;align-items:center;justify-content:center;
-    box-shadow:0 0 60px rgba(31,111,255,0.4),0 0 120px rgba(122,60,255,0.2);
+
     animation:slyBreathe 3s ease-in-out infinite, slyGlow 3s ease-in-out infinite;
-    overflow:hidden;border:2px solid rgba(31,111,255,0.3);
+    overflow:visible;
 }
-.splash-logo img{width:115%;height:115%;object-fit:contain;filter:drop-shadow(0 4px 20px rgba(0,0,0,0.5))}
+.splash-logo img{width:100%;height:100%;object-fit:contain;object-position:top center;filter:drop-shadow(0 0 40px rgba(31,111,255,0.6)) drop-shadow(0 0 80px rgba(122,60,255,0.35))}
 @keyframes slyBreathe{0%,100%{transform:scale(1) translateY(0)}50%{transform:scale(1.05) translateY(-8px)}}
 @keyframes slyGlow{0%,100%{box-shadow:0 0 30px rgba(31,111,255,0.3),0 0 60px rgba(122,60,255,0.15)}50%{box-shadow:0 0 50px rgba(31,111,255,0.6),0 0 100px rgba(122,60,255,0.3),0 0 150px rgba(0,229,255,0.1)}}
 .splash-title{
@@ -79,6 +78,7 @@ input{font-family:inherit;border:none;outline:none}
 }
 .splash-sub{z-index:2;margin-top:6px;font-size:13px;color:var(--text-dim);letter-spacing:3px}
 @keyframes neonFlicker{0%,19%,21%,23%,100%{opacity:1;filter:none}20%,22%{opacity:0.7;filter:brightness(1.2)}55%{opacity:0.85}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 .splash-bar{z-index:2;margin-top:24px;width:220px;height:4px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden}
 .splash-bar-fill{
     height:100%;width:0%;border-radius:4px;
@@ -203,6 +203,7 @@ input{font-family:inherit;border:none;outline:none}
 .dock-agent:active{transform:scale(0.92)}
 .dock-pixel{image-rendering:pixelated;image-rendering:crisp-edges;display:block;margin:0 auto 2px}
 .dock-emoji{font-size:24px;filter:drop-shadow(0 0 1px rgba(0,0,0,0.3))}
+.dock-emoji-sm{font-size:18px;line-height:1}
 .dock-name{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim)}
 .dock-agent.active .dock-name{color:var(--blue)}
 .dock-more{
@@ -631,7 +632,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 <div id="splash">
     <div class="splash-bg"></div>
     <canvas id="splashCanvas"></canvas>
-    <div class="splash-logo"><img src="sly_avatar_2d.png" alt="Sly Cooper" loading="eager"></div>
+    <div class="splash-logo"><img src="sly_photo_augus.png" alt="Sly Cooper" loading="eager"></div>
     <div class="splash-title">SLY</div>
     <div class="splash-sub">COOPER BUILDING</div>
     <div class="splash-bar"><div class="splash-bar-fill" id="splashBar"></div></div>
@@ -1614,18 +1615,18 @@ function renderDock() {
         if (!a) return;
         const el = document.createElement('button');
         el.className = `dock-agent${key === currentAgent ? ' active' : ''}`;
-        // Pixel art canvas instead of emoji
-        const sprite = PIXEL_SPRITES[key];
+        // Sly = pixel art, others = emoji (smaller)
+        const sprite = key === 'sly' ? PIXEL_SPRITES[key] : null;
         if (sprite) {
             const cvs = document.createElement('canvas');
             cvs.width = 32; cvs.height = 32;
-            cvs.style.cssText = 'width:28px;height:28px;image-rendering:pixelated;';
+            cvs.style.cssText = 'width:24px;height:24px;image-rendering:pixelated;';
             cvs.className = 'dock-pixel';
             el.appendChild(cvs);
             requestAnimationFrame(() => drawPixelSprite(cvs, sprite));
         } else {
             const em = document.createElement('span');
-            em.className = 'dock-emoji';
+            em.className = 'dock-emoji dock-emoji-sm';
             em.textContent = a.emoji;
             el.appendChild(em);
         }
@@ -1937,6 +1938,9 @@ function initParticles() {
 
 // ═══════ SPLASH ═══════
 function runSplash() {
+    const isMob = /iPhone|iPad|Android/i.test(navigator.userAgent);
+    const SPLASH_DURATION = isMob ? 8000 : 7500; // 6s mobile, 5.5s desktop — like SLY-COMMAND
+
     // Skip if visited < 2h ago
     const lastVisit = localStorage.getItem('sly_splashTime');
     if (lastVisit && Date.now() - parseInt(lastVisit) < 7200000) {
@@ -1945,41 +1949,96 @@ function runSplash() {
         return bootApp();
     }
 
-    // Splash particles
+    const splash = document.getElementById('splash');
+
+    // ── Neon progress bar (5s ease) ──
+    const bar = document.getElementById('splashBar');
+    if (bar) {
+        bar.style.transition = `width ${SPLASH_DURATION * 0.82 / 1000}s cubic-bezier(0.1, 0.05, 0.25, 1)`;
+        requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
+    }
+
+    // ── Boot log cinématique (agents par pôle) ──
+    const BOOT_SEQ = [
+        [500,  '#1F6FFF', '> Initialisation SLY Neural Core...'],
+        [1100, '#1EFF8E', '> Cascade IA: Groq → Gemini → Cloudflare ✓'],
+        [1800, '#1F6FFF', '> Chargement 50 agents du Cooper Building...'],
+        [2400, '#9CA3AF', '> NÉBULEUSE · OMEGA ✓'],
+        [2900, '#1F6FFF', '> LEADERS · SLY · BENTLEY · MURRAY ✓'],
+        [3400, '#7A3CFF', '> OLYMPE · DARWIN · SHADOW · AGORA · CHRONOS · HAVOC · ATLAS ✓'],
+        [4000, '#1EFF8E', '> PÔLE R — RECON · CORTEX · SIBYL · NICHE · SPECTER · PRISM · DATUM · GLITCH · NEXUS · GAUSS · MIRAGE ✓'],
+        [4700, '#00E5FF', '> PÔLE F — FORGE · VOLT · PHILOMÈNE · ANVIL · FRESCO · VIRAL · PULSE · PIXEL · AURORA · VIRGILE · ORPHEUS · HUNTER · FLUX ✓'],
+        [5400, '#FF9A3C', '> PÔLE D — DEPLOY · DREYFUS · CLOSER · RACOON · KAISER · ONYX · LEDGER · FRANKLIN · JUSTICE · MERCER ✓'],
+        [6100, '#B18CFF', '> R&D LAB · CIPHER · RADAR · PROTO · TURING · ECHO ✓'],
+        [6800, '#1EFF8E', '> 50 agents online · Coût : 0€ · Mode AUTONOME ■'],
+    ];
+
+    // Create boot log container if not exists
+    let bootLog = document.getElementById('bootLog');
+    if (!bootLog) {
+        bootLog = document.createElement('div');
+        bootLog.id = 'bootLog';
+        bootLog.style.cssText = `
+            position:absolute;bottom:80px;left:50%;transform:translateX(-50%);
+            width:min(320px,90vw);max-height:120px;overflow:hidden;
+            font-family:'JetBrains Mono','Fira Code',monospace;font-size:9px;
+            line-height:1.6;z-index:3;text-align:left;
+            opacity:0;animation:fadeIn 0.5s ease 0.3s forwards;
+        `;
+        splash.appendChild(bootLog);
+    }
+
+    BOOT_SEQ.forEach(([delay, color, text]) => {
+        setTimeout(() => {
+            if (!bootLog || bootLog._done) return;
+            const line = document.createElement('div');
+            line.style.color = color;
+            line.style.opacity = '0';
+            line.style.animation = 'fadeIn 0.3s ease forwards';
+            line.textContent = text;
+            bootLog.appendChild(line);
+            bootLog.scrollTop = bootLog.scrollHeight;
+        }, delay);
+    });
+
+    // ── Particles canvas ──
     const c = document.getElementById('splashCanvas');
     const ctx = c.getContext('2d');
     c.width = window.innerWidth; c.height = window.innerHeight;
     const dots = [];
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 50; i++) {
+        const hue = Math.random() < 0.6 ? '31,111,255' : Math.random() < 0.5 ? '122,60,255' : '0,229,255';
         dots.push({
             x: Math.random() * c.width, y: Math.random() * c.height,
-            r: Math.random() * 2 + 0.5, vx: (Math.random() - 0.5) * 1.5, vy: (Math.random() - 0.5) * 1.5,
-            alpha: Math.random() * 0.5 + 0.2
+            r: Math.random() * 2 + 0.5,
+            vx: (Math.random() - 0.5) * 1.2, vy: (Math.random() - 0.5) * 1.2,
+            alpha: Math.random() * 0.4 + 0.15, hue
         });
     }
+    let _splashRunning = true;
     function drawSplash() {
+        if (!_splashRunning) return;
         ctx.clearRect(0, 0, c.width, c.height);
         dots.forEach(d => {
             d.x += d.vx; d.y += d.vy;
             if (d.x < 0 || d.x > c.width) d.vx *= -1;
             if (d.y < 0 || d.y > c.height) d.vy *= -1;
             ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(31,111,255,${d.alpha})`; ctx.fill();
+            ctx.fillStyle = `rgba(${d.hue},${d.alpha})`; ctx.fill();
         });
-        if (!document.getElementById('splash').classList.contains('hidden')) requestAnimationFrame(drawSplash);
+        requestAnimationFrame(drawSplash);
     }
     drawSplash();
 
-    // Progress bar
-    const bar = document.getElementById('splashBar');
-    setTimeout(() => bar.style.width = '60%', 100);
-    setTimeout(() => bar.style.width = '100%', 800);
+    // ── Fermeture après SPLASH_DURATION ──
     setTimeout(() => {
-        document.getElementById('splash').classList.add('hidden');
+        _splashRunning = false;
+        if (bootLog) bootLog._done = true;
+        splash.classList.add('hidden');
         document.getElementById('app').classList.add('visible');
         localStorage.setItem('sly_splashTime', Date.now().toString());
         bootApp();
-    }, 1500);
+    }, SPLASH_DURATION);
 }
 
 // ═══════ BOOT ═══════
