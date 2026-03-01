@@ -807,8 +807,8 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
         _splashClosed = true;
         var sp = document.getElementById('splash');
         var ap = document.getElementById('app');
-        if (sp) { sp.style.cssText = 'display:none!important;visibility:hidden!important;pointer-events:none!important'; sp.classList.add('hidden'); }
-        if (ap) { ap.style.cssText = 'display:flex!important;flex-direction:column;height:100dvh;position:relative'; ap.classList.add('visible'); }
+        if (sp) { sp.style.setProperty('display','none','important'); sp.style.setProperty('visibility','hidden','important'); sp.style.setProperty('pointer-events','none','important'); sp.classList.add('hidden'); }
+        if (ap) { ap.style.setProperty('display','flex','important'); ap.style.flexDirection='column'; ap.style.height='100dvh'; ap.style.position='relative'; ap.classList.add('visible'); }
         // Notifie le main script si dispo
         if (typeof window._splashDone === 'function') window._splashDone();
     }
