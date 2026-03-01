@@ -442,326 +442,18 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 }
 .rewind-new:active{transform:scale(0.97)}
 
-/* ═══════ BADGES ═══════ */
-.badge-toast{
-    position:fixed;top:20%;left:50%;transform:translate(-50%,-50%);
-    z-index:100;text-align:center;
-    animation:badgeUnlock 2s ease forwards;pointer-events:none;
-}
-@keyframes badgeUnlock{
-    0%{opacity:0;transform:translate(-50%,-50%) scale(0.3) rotate(-20deg)}
-    30%{opacity:1;transform:translate(-50%,-50%) scale(1.2) rotate(5deg)}
-    50%{transform:translate(-50%,-50%) scale(1) rotate(0)}
-    80%{opacity:1}100%{opacity:0;transform:translate(-50%,-80%) scale(0.8)}
-}
-.badge-toast-emoji{font-size:60px;filter:drop-shadow(0 0 20px rgba(31,111,255,0.5))}
-.badge-toast-name{font-family:'Orbitron',monospace;font-size:14px;font-weight:900;color:var(--orange);margin-top:8px;letter-spacing:2px}
-.badge-toast-desc{font-size:12px;color:var(--text-dim);margin-top:4px}
-
-.badge-grid{display:flex;flex-wrap:wrap;gap:8px;padding:8px 0}
-.badge-item{
-    width:56px;height:56px;border-radius:12px;
-    display:flex;align-items:center;justify-content:center;
-    font-size:28px;position:relative;transition:all .2s;
-}
-.badge-item.locked{opacity:.2;filter:grayscale(1)}
-.badge-item.unlocked{
-    background:rgba(31,111,255,0.1);border:1px solid rgba(31,111,255,0.2);
-    animation:badgeShine 3s ease-in-out infinite;
-}
-@keyframes badgeShine{0%,100%{box-shadow:0 0 0 rgba(31,111,255,0)}50%{box-shadow:0 0 12px rgba(31,111,255,0.3)}}
-.badge-tooltip{
-    position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);
-    font-size:9px;white-space:nowrap;color:var(--text-dim);
-    background:var(--bg-card);padding:2px 8px;border-radius:6px;
-    opacity:0;transition:opacity .2s;pointer-events:none;
-}
-.badge-item:active .badge-tooltip{opacity:1}
-
-/* ═══════ COALITION MODE ═══════ */
-.coalition-banner{
-    display:flex;align-items:center;gap:8px;
-    padding:8px 12px;margin:8px 0;
-    border-radius:var(--radius-sm);
-    background:linear-gradient(135deg,rgba(31,111,255,0.08),rgba(122,60,255,0.08));
-    border:1px solid rgba(31,111,255,0.12);font-size:12px;color:var(--text-dim);
-}
-.coalition-agents{display:flex;gap:-4px}
-.coalition-avatar{
-    width:28px;height:28px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;
-    font-size:16px;background:var(--bg-card);border:2px solid var(--bg-deep);
-    margin-left:-6px;
-}
-.coalition-avatar:first-child{margin-left:0}
-
-/* ═══════ COMMAND PALETTE ═══════ */
-.cmd-palette{
-    position:fixed;top:15%;left:50%;transform:translateX(-50%);
-    width:90%;max-width:400px;z-index:70;
-    background:var(--bg-card);border-radius:var(--radius);
-    border:1px solid var(--glass-border);
-    box-shadow:0 16px 64px rgba(0,0,0,0.6);
-    animation:cmdSlide .2s ease;
-    display:none;
-}
-.cmd-palette.visible{display:block}
-@keyframes cmdSlide{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-.cmd-input{
-    width:100%;padding:16px;background:transparent;
-    color:var(--text);font-size:16px;
-    border-bottom:1px solid var(--glass-border);
-}
-.cmd-input::placeholder{color:var(--text-dim)}
-.cmd-list{max-height:300px;overflow-y:auto;padding:8px}
-.cmd-item{
-    display:flex;align-items:center;gap:10px;
-    padding:10px 12px;border-radius:var(--radius-sm);
-    cursor:pointer;transition:background .15s;
-}
-.cmd-item:hover,.cmd-item.selected{background:rgba(31,111,255,0.1)}
-.cmd-item-icon{font-size:18px;width:28px;text-align:center}
-.cmd-item-label{flex:1;font-size:14px;font-weight:500}
-.cmd-item-hint{font-size:11px;color:var(--text-dim)}
-
-/* ═══════ SEARCH PANEL ═══════ */
-.search-results{
-    max-height:60dvh;overflow-y:auto;padding:8px 16px;
-}
-.search-result{
-    padding:10px;border-radius:var(--radius-sm);
-    background:rgba(255,255,255,0.03);margin-bottom:6px;
-    cursor:pointer;transition:background .2s;
-}
-.search-result:active{background:rgba(31,111,255,0.1)}
-.search-highlight{background:rgba(31,111,255,0.3);border-radius:2px;padding:0 2px}
-
-/* ═══════ EXPORT MODAL ═══════ */
-.export-options{display:flex;gap:8px;padding:16px 0;flex-wrap:wrap}
-.export-btn{
-    flex:1;min-width:120px;padding:14px;border-radius:var(--radius-sm);
-    background:rgba(255,255,255,0.04);text-align:center;
-    transition:all .2s;cursor:pointer;
-}
-.export-btn:active{background:rgba(31,111,255,0.15);transform:scale(0.97)}
-.export-btn-icon{font-size:24px}
-.export-btn-label{font-size:12px;margin-top:4px;font-weight:600}
-
-/* ═══════ MEMORY INDICATOR ═══════ */
-.memory-dot{
-    width:8px;height:8px;border-radius:50%;
-    background:var(--green);display:inline-block;
-    margin-left:4px;vertical-align:middle;
-}
-.memory-dot.thinking{animation:memPulse 1s ease-in-out infinite}
-@keyframes memPulse{0%,100%{opacity:.3}50%{opacity:1}}
-
-/* ═══════ QUICK REPLIES ═══════ */
-.quick-replies{
-    display:flex;gap:6px;flex-wrap:wrap;
-    padding:4px 12px 8px;
-}
-.quick-reply{
-    padding:6px 14px;border-radius:16px;
-    background:rgba(31,111,255,0.08);border:1px solid rgba(31,111,255,0.15);
-    color:var(--blue);font-size:13px;font-weight:500;
-    white-space:nowrap;transition:all .2s;
-}
-.quick-reply:active{background:rgba(31,111,255,0.2);transform:scale(0.95)}
-
-/* ═══════ AMBIENT CONTROL ═══════ */
-.ambient-btn{
-    position:fixed;bottom:calc(var(--safe-bottom) + 140px);right:12px;
-    width:40px;height:40px;border-radius:50%;z-index:20;
-    background:var(--bg-glass);backdrop-filter:blur(12px);
-    border:1px solid var(--glass-border);
-    display:flex;align-items:center;justify-content:center;
-    font-size:18px;transition:all .2s;opacity:.7;
-}
-.ambient-btn:active{transform:scale(0.9);opacity:1}
-.ambient-btn.active{border-color:var(--blue);opacity:1}
-.ambient-menu{
-    position:fixed;bottom:calc(var(--safe-bottom) + 190px);right:12px;
-    z-index:20;padding:8px;
-    background:var(--bg-card);border-radius:12px;
-    border:1px solid var(--glass-border);
-    box-shadow:0 8px 32px rgba(0,0,0,0.4);
-    display:none;
-}
-.ambient-menu.visible{display:block}
-.ambient-option{
-    padding:8px 16px;border-radius:8px;
-    font-size:13px;display:flex;align-items:center;gap:8px;
-    transition:background .15s;cursor:pointer;white-space:nowrap;
-}
-.ambient-option:active{background:rgba(31,111,255,0.1)}
-.ambient-option.active{color:var(--blue);font-weight:700}
-
-/* ═══════ BOOKMARK ═══════ */
-.bookmark-marker{
-    position:absolute;top:8px;right:8px;
-    width:20px;height:20px;font-size:14px;
-    display:flex;align-items:center;justify-content:center;
-    opacity:.3;transition:opacity .2s;cursor:pointer;
-}
-.bookmark-marker.bookmarked{opacity:1;color:var(--orange)}
-
-/* ═══════ PROACTIVE SUMMARY ═══════ */
-.summary-card{
-    margin:8px 12px;padding:14px;
-    border-radius:var(--radius);
-    background:linear-gradient(135deg,rgba(31,111,255,0.06),rgba(122,60,255,0.06));
-    border:1px solid rgba(31,111,255,0.12);
-    animation:summarySlide .5s ease;
-}
-@keyframes summarySlide{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
-.summary-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.summary-emoji{font-size:20px}
-.summary-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue)}
-.summary-text{font-size:13px;line-height:1.5;color:var(--text)}
-.summary-dismiss{
-    margin-top:8px;text-align:right;
-    font-size:11px;color:var(--text-dim);cursor:pointer;
-}
-
-/* ═══════ SWIPE HINT ═══════ */
-.swipe-hint{
-    position:absolute;top:50%;right:-40px;
-    transform:translateY(-50%);
-    font-size:12px;color:var(--text-dim);
-    opacity:0;transition:opacity .2s;pointer-events:none;
-}
-
-/* ═══════ AGENT MOOD DOTS ═══════ */
-.dock-mood{
-    width:6px;height:6px;border-radius:50%;
-    position:absolute;bottom:2px;right:2px;
-}
-
-/* ═══════ REPLY THREAD ═══════ */
-.reply-ref{
-    padding:4px 10px;margin-bottom:6px;
-    border-left:3px solid var(--blue);
-    background:rgba(31,111,255,0.05);border-radius:0 8px 8px 0;
-    font-size:12px;color:var(--text-dim);
-    max-height:40px;overflow:hidden;cursor:pointer;
-}
-.reply-ref:active{background:rgba(31,111,255,0.1)}
-.reply-ref-name{font-weight:700;color:var(--blue)}
-.reply-btn{
-    font-size:11px;color:var(--text-dim);background:none;
-    padding:2px 6px;border-radius:6px;transition:all .15s;
-}
-.reply-btn:active{color:var(--blue);background:rgba(31,111,255,0.1)}
-.reply-preview{
-    padding:8px 12px;margin:0 12px 4px;
-    background:rgba(31,111,255,0.05);border-radius:8px;
-    border-left:3px solid var(--blue);
-    display:flex;align-items:center;justify-content:space-between;
-    animation:replySlide .2s ease;
-}
-@keyframes replySlide{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.reply-preview-text{font-size:12px;color:var(--text-dim);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.reply-preview-close{font-size:16px;color:var(--text-dim);background:none;padding:4px;cursor:pointer}
-
-/* ═══════ LEADERBOARD ═══════ */
-.leaderboard-item{
-    display:flex;align-items:center;gap:10px;
-    padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);
-}
-.leaderboard-rank{
-    width:28px;height:28px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;
-    font-size:14px;font-weight:900;
-    background:rgba(255,255,255,0.06);
-}
-.leaderboard-rank.top1{background:rgba(255,215,0,0.15);color:#FFD700}
-.leaderboard-rank.top2{background:rgba(192,192,192,0.15);color:#C0C0C0}
-.leaderboard-rank.top3{background:rgba(205,127,50,0.15);color:#CD7F32}
-.leaderboard-info{flex:1}
-.leaderboard-name{font-size:14px;font-weight:700}
-.leaderboard-count{font-size:11px;color:var(--text-dim)}
-.leaderboard-bar{
-    height:4px;border-radius:2px;background:rgba(255,255,255,0.06);
-    margin-top:4px;overflow:hidden;
-}
-.leaderboard-bar-fill{height:100%;border-radius:2px;transition:width .5s ease}
-
-/* ═══════ CUSTOM PROMPT ═══════ */
-.prompt-editor{
-    width:100%;min-height:100px;max-height:200px;
-    padding:12px;background:rgba(0,0,0,0.2);
-    border-radius:8px;border:1px solid var(--glass-border);
-    color:var(--text);font-size:13px;font-family:inherit;
-    resize:vertical;
-}
-.prompt-editor:focus{border-color:var(--blue);outline:none}
-.prompt-preset{
-    padding:8px 12px;border-radius:8px;
-    background:rgba(255,255,255,0.04);font-size:12px;
-    cursor:pointer;transition:all .2s;margin-bottom:4px;
-}
-.prompt-preset:active{background:rgba(31,111,255,0.1)}
-
-/* ═══════ TEMPLATE CARDS ═══════ */
-.template-grid{display:flex;flex-wrap:wrap;gap:10px;padding:16px 12px;justify-content:center}
-.template-card{
-    width:calc(50% - 5px);padding:16px;
-    border-radius:var(--radius);
-    background:linear-gradient(135deg,rgba(31,111,255,0.06),rgba(122,60,255,0.06));
-    border:1px solid rgba(31,111,255,0.12);
-    text-align:center;transition:all .2s;cursor:pointer;
-}
-.template-card:active{transform:scale(0.96);border-color:var(--blue)}
-.template-icon{font-size:28px;margin-bottom:6px}
-.template-title{font-size:13px;font-weight:700;color:var(--text)}
-.template-desc{font-size:11px;color:var(--text-dim);margin-top:3px}
-
-/* ═══════ CONTEXT INDICATOR ═══════ */
-.context-bar{
-    display:flex;align-items:center;gap:6px;
-    padding:2px 12px;font-size:10px;color:var(--text-dim);
-}
-.context-meter{
-    flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.06);
-    overflow:hidden;
-}
-.context-meter-fill{
-    height:100%;border-radius:2px;
-    transition:width .5s ease,background .5s;
-}
-
-/* ═══════ FAVORITE PIN ═══════ */
-.dock-pin{
-    position:absolute;top:-2px;left:-2px;font-size:8px;
-    width:14px;height:14px;border-radius:50%;
-    background:var(--orange);display:flex;
-    align-items:center;justify-content:center;
-    opacity:0;transition:opacity .2s;pointer-events:none;
-}
-.dock-agent.favorite .dock-pin{opacity:1}
-
-/* ═══════ LANGUAGE INDICATOR ═══════ */
-.lang-badge{
-    font-size:9px;padding:1px 5px;border-radius:6px;
-    background:rgba(31,111,255,0.1);color:var(--blue);
-    font-weight:700;margin-left:6px;
-}
-
-/* ═══════ SCHEDULED MSG ═══════ */
-.scheduled-badge{
-    display:flex;align-items:center;gap:4px;
-    padding:4px 10px;margin:4px 12px;
-    border-radius:8px;background:rgba(255,154,60,0.08);
-    border:1px solid rgba(255,154,60,0.15);
-    font-size:12px;color:var(--orange);
-}
-.scheduled-badge .cancel{color:var(--red);background:none;font-size:11px;margin-left:auto;cursor:pointer}
-
 /* ═══════ REDUCED MOTION ═══════ */
 @media(prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}
 }
+/* Device perf low — minimal animations */
+.perf-low *{animation-duration:0.01ms!important;transition-duration:0.01ms!important}
+.perf-low #particles{display:none!important}
+.perf-low .bubble{backdrop-filter:none!important}
+.perf-low .header,.perf-low .dock,.perf-low .input-area{backdrop-filter:none!important}
+/* will-change budget — max 10 elements */
+.chat-area{will-change:scroll-position}
+.bubble{will-change:transform,opacity}
 </style>
 </head>
 <body>
@@ -829,9 +521,93 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
    ═══════════════════════════════════════════ */
 
 // ═══════ CONFIG ═══════
-const GROQ_API_KEY = atob('Z3NrX2NodmNWVzVEc0NBQ1VRV3Mybk9XR2R5YjNGWXp1cVdXRWpuSHNMS3ZRckdzdHZGQ3Vn');
-const GEMINI_API_KEY = atob('QUl6YVN5QjRIM1phdnRVMkJUb1d2ZjJGYTN2a0xkb1l4VHBCMmxj');
-const FISH_API_KEY = atob('ODg4ZGI5YzEwNGE2NDUzYjkwMzYyMDkxYjUwNjI0Zjc=');
+// API keys are SERVER-SIDE ONLY — proxied through SLY backend (Railway)
+// Frontend uses proxy endpoints: /api/groq, /api/tts, /api/gemini, /api/metrics
+const API_BASE = localStorage.getItem('sly_api_base') || 'https://sly-bot-production.up.railway.app';
+
+// ═══════ DEVICE PERFORMANCE DETECTION ═══════
+const DEVICE_CLASS = (() => {
+    const ram = navigator.deviceMemory || 4;
+    const cores = navigator.hardwareConcurrency || 4;
+    if (ram <= 2 || cores <= 2) return 'low';
+    if (ram <= 4 || cores <= 4) return 'mid';
+    return 'high';
+})();
+const PERF_CONFIG = {
+    low:  { particles: 0,  animations: 'reduced', maxAudioCache: 3, maxHistory: 15 },
+    mid:  { particles: 15, animations: 'normal',  maxAudioCache: 5, maxHistory: 20 },
+    high: { particles: 40, animations: 'full',    maxAudioCache: 10, maxHistory: 30 }
+};
+if (DEVICE_CLASS === 'low') document.documentElement.classList.add('perf-low');
+
+// ═══════ METRICS SYSTEM ═══════
+const Metrics = {
+    _buffer: [],
+    _MAX: 200,
+    track(event, data = {}) {
+        this._buffer.push({ e: event, d: data, t: Date.now() });
+        if (this._buffer.length > this._MAX) this._buffer.shift();
+    },
+    trackTTFT(startTime) { this.track('ttft', { ms: Date.now() - startTime }); },
+    trackTTFA(startTime) { this.track('ttfa', { ms: Date.now() - startTime }); },
+    trackAudioInterrupt() { this.track('audio_cut'); },
+    trackError(type, detail) { this.track('err', { type, detail: String(detail).slice(0, 200) }); },
+    trackSession(duration) { this.track('session', { ms: duration }); },
+    trackFallback(from, to) { this.track('fallback', { from, to }); },
+    async flush() {
+        if (this._buffer.length === 0) return;
+        const batch = [...this._buffer];
+        this._buffer = [];
+        try {
+            await fetch(`${API_BASE}/api/metrics`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(batch),
+                keepalive: true
+            });
+        } catch {
+            this._buffer.unshift(...batch.slice(-50));
+        }
+    }
+};
+setInterval(() => Metrics.flush(), 5 * 60 * 1000);
+document.addEventListener('visibilitychange', () => { if (document.hidden) Metrics.flush(); });
+window.addEventListener('error', (e) => Metrics.trackError('uncaught', { msg: e.message, file: e.filename, line: e.lineno }));
+window.addEventListener('unhandledrejection', (e) => Metrics.trackError('promise', { reason: String(e.reason).slice(0, 200) }));
+const _sessionStart = Date.now();
+window.addEventListener('beforeunload', () => Metrics.trackSession(Date.now() - _sessionStart));
+
+// ═══════ CIRCUIT BREAKER ═══════
+const CircuitBreaker = {
+    states: {},  // { providerName: { state, failures, lastAttempt, cooldown } }
+    _get(name) {
+        if (!this.states[name]) this.states[name] = { state: 'closed', failures: 0, lastAttempt: 0, cooldown: 5000 };
+        return this.states[name];
+    },
+    canAttempt(name) {
+        const cb = this._get(name);
+        if (cb.state === 'closed') return true;
+        if (cb.state === 'open' && Date.now() - cb.lastAttempt > cb.cooldown) {
+            cb.state = 'half-open';
+            return true;
+        }
+        return cb.state === 'half-open';
+    },
+    recordSuccess(name) {
+        const cb = this._get(name);
+        cb.state = 'closed'; cb.failures = 0; cb.cooldown = 5000;
+    },
+    recordFailure(name) {
+        const cb = this._get(name);
+        cb.failures++;
+        cb.lastAttempt = Date.now();
+        if (cb.failures >= 3 || cb.state === 'half-open') {
+            cb.state = 'open';
+            cb.cooldown = Math.min(cb.cooldown * 2, 30000);
+        }
+        Metrics.trackError('circuit_break', { provider: name, failures: cb.failures });
+    }
+};
 
 // ═══════ VOICES ═══════
 const VOICES = {
@@ -922,13 +698,17 @@ async function speakText(agentKey, fullText) {
     }
     if (current.trim()) chunks.push(current.trim());
 
-    // Pipeline: fetch all in parallel
+    // Pipeline: fetch all in parallel via PROXY (keys server-side)
+    const ttsStart = Date.now();
     const promises = chunks.map(chunk =>
-        fetch('https://api.fish.audio/v1/tts', {
+        fetch(`${API_BASE}/api/tts`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${FISH_API_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: chunk, reference_id: modelId, format: 'mp3', latency: 'balanced' })
-        }).then(r => r.ok ? r.arrayBuffer() : null).catch(() => null)
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: chunk, voice_id: modelId })
+        }).then(r => {
+            if (r.ok) { Metrics.trackTTFA(ttsStart); return r.arrayBuffer(); }
+            return null;
+        }).catch(() => null)
     );
 
     const buffers = await Promise.all(promises);
@@ -966,41 +746,51 @@ function stopSpeaking() {
     currentSource = null;
 }
 
-// ═══════ LLM CASCADE ═══════
+// ═══════ LLM CASCADE (via PROXY — keys server-side) ═══════
 async function callGroq(messages, model = 'llama-3.3-70b-versatile', maxTokens = 300) {
+    const providerName = `groq-${model.includes('8b') ? 'fast' : 'quality'}`;
+    if (!CircuitBreaker.canAttempt(providerName)) return null;
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
     try {
-        const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        const resp = await fetch(`${API_BASE}/api/groq`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ model, messages, max_tokens: maxTokens, stream: true }),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model, messages, max_tokens: maxTokens }),
             signal: controller.signal
         });
         clearTimeout(timeout);
-        return resp;
-    } catch { clearTimeout(timeout); return null; }
+        if (resp.ok) {
+            CircuitBreaker.recordSuccess(providerName);
+            return resp;
+        }
+        CircuitBreaker.recordFailure(providerName);
+        return null;
+    } catch {
+        clearTimeout(timeout);
+        CircuitBreaker.recordFailure(providerName);
+        return null;
+    }
 }
 
 async function callGemini(messages, maxTokens = 500) {
-    const contents = messages.filter(m => m.role !== 'system').map(m => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.content }]
-    }));
-    const systemInstruction = messages.find(m => m.role === 'system');
-    const body = {
-        contents,
-        generationConfig: { maxOutputTokens: maxTokens }
-    };
-    if (systemInstruction) body.systemInstruction = { parts: [{ text: systemInstruction.content }] };
-
-    const resp = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
-    );
-    if (!resp.ok) return null;
-    const data = await resp.json();
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    if (!CircuitBreaker.canAttempt('gemini')) return null;
+    try {
+        const resp = await fetch(`${API_BASE}/api/gemini`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages, max_tokens: maxTokens })
+        });
+        if (!resp.ok) { CircuitBreaker.recordFailure('gemini'); return null; }
+        const data = await resp.json();
+        CircuitBreaker.recordSuccess('gemini');
+        Metrics.trackFallback('groq', 'gemini');
+        return data?.choices?.[0]?.message?.content || null;
+    } catch {
+        CircuitBreaker.recordFailure('gemini');
+        return null;
+    }
 }
 
 function buildSystemPrompt(agentKey) {
@@ -1061,6 +851,16 @@ function onTyping(text) {
 // ═══════ SEND MESSAGE ═══════
 async function sendMessage(text) {
     if (!text.trim() || isStreaming) return;
+
+    // Check for commands FIRST
+    const cmd = detectCommand(text);
+    if (cmd && cmd.handler) {
+        addBubble('user', null, text);
+        gainXP(25);
+        cmd.handler();
+        return;
+    }
+
     isStreaming = true;
 
     const agentKey = detectAgent(text);
@@ -1071,20 +871,29 @@ async function sendMessage(text) {
     addBubble('user', null, text);
     gainXP(5);
 
+    // Memory: add to buffer + track
+    Memory.addMessage('user', text);
+
     // Thinking indicator
     const thinkingEl = addThinking(agentKey);
 
-    // Build messages
-    const sysPrompt = buildSystemPrompt(agentKey);
+    // Build messages with 4-layer memory context
+    const memCtx = Memory.buildContext(text);
+    let sysPrompt = buildSystemPrompt(agentKey);
+    if (memCtx.layer2) sysPrompt += `\n\nRÉSUMÉ CONVERSATION RÉCENTE: ${memCtx.layer2}`;
+    if (memCtx.layer3) sysPrompt += `\nPROFIL: ${memCtx.layer3}`;
+    if (memCtx.layer4) sysPrompt += `\nMÉMOIRE PERTINENTE: ${memCtx.layer4}`;
+    const maxHist = PERF_CONFIG[DEVICE_CLASS].maxHistory || 20;
     const msgs = [
         { role: 'system', content: sysPrompt },
-        ...conversationHistory.slice(-10),
+        ...conversationHistory.slice(-Math.min(10, maxHist)),
         { role: 'user', content: text }
     ];
 
     // Select tier
     const tier = selectTier(text);
     let fullResponse = '';
+    const _sendStart = Date.now();
 
     try {
         if (tier === 'fast') {
@@ -1123,11 +932,13 @@ async function sendMessage(text) {
         }
     }
 
-    // Save to history
+    // Save to history + memory
     if (fullResponse) {
         conversationHistory.push({ role: 'user', content: text });
         conversationHistory.push({ role: 'assistant', content: fullResponse });
-        if (conversationHistory.length > 30) conversationHistory = conversationHistory.slice(-20);
+        const maxHist2 = PERF_CONFIG[DEVICE_CLASS].maxHistory || 20;
+        if (conversationHistory.length > maxHist2 + 10) conversationHistory = conversationHistory.slice(-maxHist2);
+        Memory.addMessage('assistant', fullResponse);
     }
 
     // TTS
@@ -1141,10 +952,24 @@ async function sendMessage(text) {
 }
 
 async function streamResponse(resp, thinkingEl, agentKey) {
+    // Proxy returns non-streaming JSON response
+    if (!resp.body || !resp.body.getReader) {
+        const data = await resp.json();
+        const text = data?.choices?.[0]?.message?.content || '';
+        Metrics.trackTTFT(_sendStart || Date.now());
+        thinkingEl?.remove();
+        if (text) {
+            const bubbleEl = addBubble('agent', agentKey, text);
+            return text;
+        }
+        return '';
+    }
+
     const reader = resp.body.getReader();
     const decoder = new TextDecoder();
     let full = '';
     let bubbleEl = null;
+    let firstToken = true;
 
     while (true) {
         const { done, value } = await reader.read();
@@ -1156,9 +981,10 @@ async function streamResponse(resp, thinkingEl, agentKey) {
             const data = line.slice(6);
             if (data === '[DONE]') continue;
             try {
-                const json = JSON.parse(data);
-                const token = json.choices?.[0]?.delta?.content;
+                const parsed = JSON.parse(data);
+                const token = parsed.choices?.[0]?.delta?.content;
                 if (token) {
+                    if (firstToken) { Metrics.trackTTFT(_sendStart || Date.now()); firstToken = false; }
                     full += token;
                     if (!bubbleEl) {
                         thinkingEl?.remove();
@@ -1416,9 +1242,18 @@ const WHISPERS = [
 function scheduleWhisper() {
     const delay = 120000 + Math.random() * 180000; // 2-5 min
     setTimeout(() => {
-        if (!isStreaming && Date.now() - lastWhisperTime > 120000) {
-            const w = WHISPERS[Math.floor(Math.random() * WHISPERS.length)];
-            addWhisper(w.text);
+        if (!isStreaming && Date.now() - lastWhisperTime > 180000) {
+            // 50% chance: whisper status, 50% chance: proactive quote
+            if (Math.random() > 0.5 && typeof PROACTIVE_QUOTES !== 'undefined') {
+                const q = pickQuote();
+                if (q) {
+                    const emoji = AGENTS[q.agent]?.emoji || '🦊';
+                    addWhisper(`${emoji} ${q.text}`);
+                }
+            } else {
+                const w = WHISPERS[Math.floor(Math.random() * WHISPERS.length)];
+                addWhisper(w.text);
+            }
             lastWhisperTime = Date.now();
         }
         scheduleWhisper();
@@ -1840,12 +1675,16 @@ speakText = async function(agentKey, fullText) {
     }
     if (current.trim()) chunks.push(current.trim());
 
+    const _ttsStart2 = Date.now();
     const promises = chunks.map(chunk =>
-        fetch('https://api.fish.audio/v1/tts', {
+        fetch(`${API_BASE}/api/tts`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${FISH_API_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: chunk, reference_id: modelId, format: 'mp3', latency: 'balanced' })
-        }).then(r => r.ok ? r.arrayBuffer() : null).catch(() => null)
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: chunk, voice_id: modelId })
+        }).then(r => {
+            if (r.ok) { Metrics.trackTTFA(_ttsStart2); return r.arrayBuffer(); }
+            return null;
+        }).catch(() => null)
     );
 
     const buffers = await Promise.all(promises);
@@ -1909,8 +1748,8 @@ function renderMarkdown(text) {
     // Unordered lists
     html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
     html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
-    // Links
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+    // Links (safe: noopener + only http/https)
+    html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
     // Line breaks
     html = html.replace(/\n/g, '<br>');
     return html;
@@ -2349,131 +2188,6 @@ function toggleSounds() {
     localStorage.setItem('sly_sounds', soundEnabled);
 }
 
-// ═══════ CONVERSATION REWIND ═══════
-let sessions = JSON.parse(localStorage.getItem('sly_sessions') || '[]');
-let currentSessionId = null;
-
-function generateSessionId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
-
-function startNewSession() {
-    // Save current session before starting new
-    if (currentSessionId && conversationHistory.length > 0) {
-        saveSession();
-    }
-    currentSessionId = generateSessionId();
-    conversationHistory = [];
-    document.getElementById('chatArea').innerHTML = '';
-    saveState();
-    closeRewind();
-}
-
-function saveSession() {
-    if (!currentSessionId || conversationHistory.length === 0) return;
-    const existing = sessions.findIndex(s => s.id === currentSessionId);
-    const sessionData = {
-        id: currentSessionId,
-        date: new Date().toISOString(),
-        preview: conversationHistory[0]?.content?.slice(0, 100) || '',
-        lastAgent: currentAgent,
-        messageCount: conversationHistory.length,
-        history: conversationHistory.slice(-40) // Keep last 40 messages per session
-    };
-    if (existing >= 0) sessions[existing] = sessionData;
-    else sessions.unshift(sessionData);
-    // Keep max 20 sessions
-    if (sessions.length > 20) sessions = sessions.slice(0, 20);
-    try { localStorage.setItem('sly_sessions', JSON.stringify(sessions)); } catch {}
-}
-
-function loadSession(sessionId) {
-    const session = sessions.find(s => s.id === sessionId);
-    if (!session) return;
-
-    // Save current first
-    if (currentSessionId && conversationHistory.length > 0) saveSession();
-
-    currentSessionId = session.id;
-    conversationHistory = session.history || [];
-
-    // Rebuild chat
-    const area = document.getElementById('chatArea');
-    area.innerHTML = '';
-    for (const msg of conversationHistory) {
-        if (msg.role === 'user') {
-            addBubble('user', null, msg.content);
-        } else {
-            addBubble('agent', currentAgent, msg.content);
-        }
-    }
-    closeRewind();
-    haptic('medium');
-}
-
-function openRewind() {
-    // Save current session before showing list
-    if (conversationHistory.length > 0) saveSession();
-
-    const panel = document.getElementById('rewindPanel');
-    const backdrop = document.getElementById('rewindBackdrop');
-    const list = document.getElementById('rewindList');
-
-    list.innerHTML = '';
-    if (sessions.length === 0) {
-        list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px">Aucune session sauvegardée.<br>Commence à discuter !</div>';
-    } else {
-        sessions.forEach(s => {
-            const date = new Date(s.date);
-            const timeStr = date.toLocaleDateString('fr-FR', { day:'numeric', month:'short' }) + ' ' + date.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
-            const agent = AGENTS[s.lastAgent] || AGENTS.sly;
-            const isCurrent = s.id === currentSessionId;
-            const el = document.createElement('div');
-            el.className = 'rewind-item';
-            if (isCurrent) el.style.borderLeft = '3px solid var(--blue)';
-            el.innerHTML = `
-                <div class="rewind-item-date">${timeStr} ${isCurrent ? '(en cours)' : ''} · ${s.messageCount || 0} msgs</div>
-                <div class="rewind-item-preview">${s.preview || 'Session vide'}</div>
-                <div class="rewind-item-agent">${agent.emoji} ${agent.name}</div>`;
-            el.onclick = () => loadSession(s.id);
-            list.appendChild(el);
-        });
-    }
-
-    panel.classList.add('open');
-    backdrop.classList.add('open');
-    backdrop.onclick = closeRewind;
-    soundClick();
-}
-
-function closeRewind() {
-    document.getElementById('rewindPanel').classList.remove('open');
-    document.getElementById('rewindBackdrop').classList.remove('open');
-}
-
-// Wire menu button to rewind (was agent modal, now rewind panel)
-document.getElementById('btnMenu').removeEventListener('click', openAgentModal);
-document.getElementById('btnMenu').addEventListener('click', openRewind);
-document.getElementById('rewindNew').addEventListener('click', () => {
-    startNewSession();
-    haptic('medium');
-    soundSend();
-    // Add welcome message
-    const greetings = [
-        "Nouvelle session, nouvelle aventure. Go !",
-        "Clean slate. Qu'est-ce qu'on construit ?",
-        "Session fraîche. Les 50 agents sont prêts.",
-    ];
-    addBubble('agent', 'sly', greetings[Math.floor(Math.random() * greetings.length)]);
-});
-
-// Auto-save session periodically
-setInterval(() => { if (conversationHistory.length > 0) saveSession(); }, 30000);
-
-// Init session on boot
-function initSessions() {
-    sessions = JSON.parse(localStorage.getItem('sly_sessions') || '[]');
-    if (!currentSessionId) currentSessionId = generateSessionId();
-}
-
 // ═══════ BOOT PHASE 2 ═══════
 function bootPhase2() {
     checkDreamMode();
@@ -2481,7 +2195,6 @@ function bootPhase2() {
     loadDailyProgress();
     renderDailyChallenge();
     updateStreakDisplay();
-    initSessions();
     soundEnabled = localStorage.getItem('sly_sounds') !== 'false';
 
     // Load morphed voice
@@ -2498,1511 +2211,263 @@ saveState = function() {
     else localStorage.removeItem('sly_morph');
 };
 
-// ═══════════════════════════════════════════
-//   PHASE 3 — JARVIS FEATURES
-// ═══════════════════════════════════════════
+// ═══════ MEMORY 4-LAYER SYSTEM ═══════
+const Memory = {
+    // Layer 1 — Buffer (RAM, 5 last messages)
+    buffer: [],
+    // Layer 2 — Summaries (compressed every 20 msgs)
+    summaries: JSON.parse(localStorage.getItem('sly_memory_summaries') || '[]'),
+    // Layer 3 — User Profile (strategic, 500 tokens)
+    profile: JSON.parse(localStorage.getItem('sly_memory_profile') || '{"preferences":[],"habits":[],"context":"Augus, fondateur du Cooper Building"}'),
+    // Layer 4 — Deep Memory (keyword-indexed, scored)
+    deep: JSON.parse(localStorage.getItem('sly_memory_deep') || '[]'),
+    _msgCount: 0,
 
-// ═══════ 4-LAYER MEMORY SYSTEM ═══════
-// Layer 1: Buffer (last 20 messages — RAM, already exists as conversationHistory)
-// Layer 2: Summary (compressed summaries per session)
-// Layer 3: Profile (strategic user preferences)
-// Layer 4: Deep Memory (keyword-indexed facts)
+    addMessage(role, content) {
+        this.buffer.push({ role, content, ts: Date.now() });
+        if (this.buffer.length > 5) this.buffer.shift();
+        this._msgCount++;
+        if (this._msgCount >= 20) this.compress();
+    },
 
-const memory = {
-    summaries: [],    // Layer 2
-    profile: {},      // Layer 3
-    facts: [],        // Layer 4
-};
+    async compress() {
+        if (this.buffer.length < 3) return;
+        const toCompress = conversationHistory.slice(-15);
+        if (toCompress.length < 5) return;
 
-function loadMemory() {
-    try {
-        const saved = JSON.parse(localStorage.getItem('sly_memory') || '{}');
-        memory.summaries = saved.summaries || [];
-        memory.profile = saved.profile || { name: 'Augus', interests: [], prefs: {} };
-        memory.facts = saved.facts || [];
-    } catch {}
-}
-
-function saveMemory() {
-    try { localStorage.setItem('sly_memory', JSON.stringify(memory)); } catch {}
-}
-
-// Extract facts from conversation
-function extractFacts(text, role) {
-    const factPatterns = [
-        /je m'appelle (\w+)/i,
-        /mon (?:nom|prénom) (?:est|c'est) (\w+)/i,
-        /j'aime (.+?)(?:\.|$)/i,
-        /je préfère (.+?)(?:\.|$)/i,
-        /je travaille (?:sur|dans|comme) (.+?)(?:\.|$)/i,
-        /mon projet (.+?)(?:\.|$)/i,
-        /je suis (\w+)/i,
-    ];
-
-    if (role === 'user') {
-        for (const pattern of factPatterns) {
-            const match = text.match(pattern);
-            if (match) {
-                const fact = { text: match[0], extracted: match[1], date: new Date().toISOString(), source: 'user' };
-                // Avoid duplicates
-                if (!memory.facts.some(f => f.text === fact.text)) {
-                    memory.facts.push(fact);
-                    if (memory.facts.length > 50) memory.facts.shift();
-                    saveMemory();
-                }
-            }
-        }
-    }
-}
-
-// Summarize session (simple — take first+last messages, compress)
-function summarizeSession(history) {
-    if (history.length < 4) return null;
-    const topics = [];
-    for (const msg of history) {
-        if (msg.role === 'user' && msg.content.length > 10) {
-            topics.push(msg.content.slice(0, 80));
-            if (topics.length >= 3) break;
-        }
-    }
-    return {
-        date: new Date().toISOString(),
-        topics,
-        messageCount: history.length,
-    };
-}
-
-// Build memory context for LLM
-function buildMemoryContext() {
-    let ctx = '';
-    // Layer 3: Profile
-    if (memory.profile.name) ctx += `L'utilisateur s'appelle ${memory.profile.name}. `;
-    if (memory.profile.interests?.length) ctx += `Intérêts : ${memory.profile.interests.join(', ')}. `;
-
-    // Layer 4: Recent facts
-    if (memory.facts.length > 0) {
-        const recentFacts = memory.facts.slice(-5).map(f => f.text).join('; ');
-        ctx += `Faits mémorisés : ${recentFacts}. `;
-    }
-
-    // Layer 2: Recent session summaries
-    if (memory.summaries.length > 0) {
-        const lastSummary = memory.summaries[memory.summaries.length - 1];
-        ctx += `Dernière session : ${lastSummary.topics?.join(', ') || 'N/A'}. `;
-    }
-
-    return ctx;
-}
-
-// Patch buildSystemPrompt to include memory
-const _origBuildSystemPrompt = buildSystemPrompt;
-buildSystemPrompt = function(agentKey) {
-    const base = _origBuildSystemPrompt(agentKey);
-    const memCtx = buildMemoryContext();
-    if (memCtx) return base + '\n\nMÉMOIRE CONTEXTUELLE :\n' + memCtx;
-    return base;
-};
-
-// ═══════ BADGES & ACHIEVEMENTS ═══════
-const BADGES = [
-    { id:'first_msg', emoji:'💬', name:'Premier Mot', desc:'Envoie ton premier message', check: s => s.totalMessages >= 1 },
-    { id:'msg10', emoji:'📝', name:'Bavard', desc:'10 messages envoyés', check: s => s.totalMessages >= 10 },
-    { id:'msg50', emoji:'📜', name:'Romancier', desc:'50 messages envoyés', check: s => s.totalMessages >= 50 },
-    { id:'msg200', emoji:'📚', name:'Bibliothèque', desc:'200 messages', check: s => s.totalMessages >= 200 },
-    { id:'xp500', emoji:'⭐', name:'500 XP', desc:'Atteindre 500 XP', check: s => s.xp >= 500 },
-    { id:'xp2000', emoji:'🌟', name:'2000 XP', desc:'Atteindre 2000 XP', check: s => s.xp >= 2000 },
-    { id:'xp10000', emoji:'💫', name:'10K XP', desc:'Atteindre 10000 XP', check: s => s.xp >= 10000 },
-    { id:'streak3', emoji:'🔥', name:'Trio', desc:'3 jours de streak', check: s => s.streak >= 3 },
-    { id:'streak7', emoji:'💎', name:'Semaine', desc:'7 jours de streak', check: s => s.streak >= 7 },
-    { id:'streak14', emoji:'👑', name:'Empereur', desc:'14 jours de streak', check: s => s.streak >= 14 },
-    { id:'agents5', emoji:'🤝', name:'Réseauteur', desc:'Parle à 5 agents', check: s => s.agentsUsed >= 5 },
-    { id:'agents15', emoji:'🏛️', name:'Architecte', desc:'Parle à 15 agents', check: s => s.agentsUsed >= 15 },
-    { id:'voice5', emoji:'🎤', name:'Vocal', desc:'5 messages vocaux', check: s => s.voiceMessages >= 5 },
-    { id:'morph', emoji:'🎭', name:'Caméléon', desc:'Utilise le Voice Morph', check: s => s.morphUsed >= 1 },
-    { id:'react10', emoji:'💥', name:'Expressif', desc:'10 réactions ajoutées', check: s => s.reactions >= 10 },
-    { id:'daily3', emoji:'🎯', name:'Régulier', desc:'3 défis quotidiens', check: s => s.dailyCompleted >= 3 },
-    { id:'daily10', emoji:'🏆', name:'Champion', desc:'10 défis quotidiens', check: s => s.dailyCompleted >= 10 },
-    { id:'nightowl', emoji:'🦉', name:'Hibou', desc:'Utilise l\'app après 23h', check: s => s.nightUse >= 1 },
-    { id:'early', emoji:'🌅', name:'Lève-tôt', desc:'Utilise l\'app avant 7h', check: s => s.earlyUse >= 1 },
-    { id:'coalition', emoji:'⚔️', name:'Coalition', desc:'Déclenche une réponse multi-agents', check: s => s.coalitions >= 1 },
-];
-
-let badgeStats = {};
-let unlockedBadges = new Set();
-
-function loadBadges() {
-    badgeStats = JSON.parse(localStorage.getItem('sly_badge_stats') || '{}');
-    badgeStats.totalMessages = badgeStats.totalMessages || 0;
-    badgeStats.xp = xp;
-    badgeStats.streak = streak;
-    badgeStats.agentsUsed = badgeStats.agentsUsed || 0;
-    badgeStats.voiceMessages = badgeStats.voiceMessages || 0;
-    badgeStats.morphUsed = badgeStats.morphUsed || 0;
-    badgeStats.reactions = badgeStats.reactions || 0;
-    badgeStats.dailyCompleted = badgeStats.dailyCompleted || 0;
-    badgeStats.nightUse = badgeStats.nightUse || 0;
-    badgeStats.earlyUse = badgeStats.earlyUse || 0;
-    badgeStats.coalitions = badgeStats.coalitions || 0;
-    unlockedBadges = new Set(JSON.parse(localStorage.getItem('sly_badges') || '[]'));
-}
-
-function saveBadges() {
-    badgeStats.xp = xp;
-    badgeStats.streak = streak;
-    localStorage.setItem('sly_badge_stats', JSON.stringify(badgeStats));
-    localStorage.setItem('sly_badges', JSON.stringify([...unlockedBadges]));
-}
-
-function checkBadges() {
-    for (const badge of BADGES) {
-        if (!unlockedBadges.has(badge.id) && badge.check(badgeStats)) {
-            unlockedBadges.add(badge.id);
-            showBadgeToast(badge);
-            gainXP(30);
-        }
-    }
-    saveBadges();
-}
-
-function showBadgeToast(badge) {
-    const div = document.createElement('div');
-    div.className = 'badge-toast';
-    div.innerHTML = `
-        <div class="badge-toast-emoji">${badge.emoji}</div>
-        <div class="badge-toast-name">${badge.name}</div>
-        <div class="badge-toast-desc">${badge.desc}</div>`;
-    document.body.appendChild(div);
-    soundLevelUp();
-    haptic('heavy');
-    setTimeout(() => div.remove(), 2500);
-}
-
-function trackBadgeStat(key, value = 1) {
-    badgeStats[key] = (badgeStats[key] || 0) + value;
-    // Time-based badges
-    const h = new Date().getHours();
-    if (h >= 23) badgeStats.nightUse = 1;
-    if (h < 7) badgeStats.earlyUse = 1;
-    checkBadges();
-}
-
-// ═══════ AGENT COALITION MODE ═══════
-const COALITION_TRIGGERS = [
-    /tous les agents|tout le building|mobilisation|coalition|réunion/i,
-    /avis de|qu'en pensez|demandez aux agents/i,
-    /brainstorm|conclave|débat/i,
-];
-
-function isCoalitionQuery(text) {
-    return COALITION_TRIGGERS.some(p => p.test(text));
-}
-
-async function runCoalition(text) {
-    // Pick 3 relevant agents
-    const primary = detectAgent(text);
-    const pool = AGENT_KEYS.filter(k => k !== primary);
-    const agent2 = pool[Math.floor(Math.random() * pool.length)];
-    const remaining = pool.filter(k => k !== agent2);
-    const agent3 = remaining[Math.floor(Math.random() * remaining.length)];
-    const coalition = [primary, agent2, agent3];
-
-    // Show coalition banner
-    const area = document.getElementById('chatArea');
-    const banner = document.createElement('div');
-    banner.className = 'coalition-banner';
-    banner.innerHTML = `
-        <div class="coalition-agents">${coalition.map(k => `<div class="coalition-avatar">${AGENTS[k].emoji}</div>`).join('')}</div>
-        <span>⚔️ Coalition activée — ${coalition.map(k => AGENTS[k].name).join(' + ')}</span>`;
-    area.appendChild(banner);
-    area.scrollTop = area.scrollHeight;
-    haptic('heavy');
-
-    // Ask each agent sequentially (short responses)
-    for (const agentKey of coalition) {
-        const thinkingEl = addThinking(agentKey);
-        const sysPrompt = buildSystemPrompt(agentKey) + '\nRéponds en 1-2 phrases MAX. Tu fais partie d\'une coalition de 3 agents.';
-        const msgs = [
-            { role: 'system', content: sysPrompt },
-            ...conversationHistory.slice(-6),
-            { role: 'user', content: text }
-        ];
-
+        const summaryPrompt = `Résume cette conversation en 2-3 phrases. Extrais les infos clés (noms, décisions, projets mentionnés). MAX 100 mots:\n\n${toCompress.map(m => `${m.role}: ${m.content}`).join('\n')}`;
         try {
-            const resp = await callGroq(msgs, 'llama-3.1-8b-instant', 100);
-            if (resp && resp.ok) {
-                const response = await streamResponse(resp, thinkingEl, agentKey);
-                conversationHistory.push({ role: 'assistant', content: `[${AGENTS[agentKey].name}] ${response}` });
-                if (autoSpeak && agentKey === coalition[coalition.length - 1]) {
-                    speakText(agentKey, response);
+            const resp = await fetch(`${API_BASE}/api/groq`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: 'llama-3.1-8b-instant',
+                    messages: [{ role: 'user', content: summaryPrompt }],
+                    max_tokens: 150
+                })
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                const summary = data?.choices?.[0]?.message?.content;
+                if (summary) {
+                    this.summaries.push({ text: summary, ts: Date.now() });
+                    if (this.summaries.length > 10) this.summaries.shift();
+                    this.save();
+                    this._extractDeepMemories(summary);
                 }
-            } else { thinkingEl?.remove(); }
-        } catch {
-            thinkingEl?.remove();
-            addBubble('agent', agentKey, `${AGENTS[agentKey].emoji} Pas de signal pour l'instant.`);
-        }
-    }
+            }
+        } catch {}
+        this._msgCount = 0;
+    },
 
-    trackBadgeStat('coalitions');
-    gainXP(25);
-    saveState();
+    _extractDeepMemories(text) {
+        const keywords = text.toLowerCase().match(/\b[a-zà-ÿ]{4,}\b/g) || [];
+        const unique = [...new Set(keywords)].filter(k =>
+            !['dans','avec','pour','plus','cette','sont','mais','comme','tout','aussi','être','avoir','fait','très'].includes(k)
+        );
+        if (unique.length > 0) {
+            this.deep.push({ text: text.slice(0, 200), keywords: unique.slice(0, 10), score: 5, lastUsed: Date.now() });
+            if (this.deep.length > 50) {
+                this.deep.sort((a, b) => b.score - a.score);
+                this.deep = this.deep.slice(0, 50);
+            }
+            this.save();
+        }
+    },
+
+    search(query) {
+        const words = query.toLowerCase().split(/\s+/);
+        return this.deep
+            .map(m => ({ ...m, relevance: m.keywords.filter(k => words.some(w => k.includes(w) || w.includes(k))).length }))
+            .filter(m => m.relevance > 0)
+            .sort((a, b) => b.relevance - a.relevance)
+            .slice(0, 3);
+    },
+
+    buildContext(currentMsg) {
+        const layer1 = this.buffer.slice(-5);
+        const layer2 = this.summaries.length > 0 ? this.summaries[this.summaries.length - 1].text : '';
+        const layer3 = this.profile.context || '';
+        const layer4 = this.search(currentMsg).map(m => m.text).join(' ');
+        return { layer1, layer2, layer3, layer4 };
+    },
+
+    decay() {
+        const now = Date.now();
+        this.deep = this.deep.map(m => {
+            if (now - m.lastUsed > 30 * 86400000) m.score--;
+            return m;
+        }).filter(m => m.score > 0);
+        this.save();
+    },
+
+    save() {
+        try {
+            localStorage.setItem('sly_memory_summaries', JSON.stringify(this.summaries));
+            localStorage.setItem('sly_memory_profile', JSON.stringify(this.profile));
+            localStorage.setItem('sly_memory_deep', JSON.stringify(this.deep));
+        } catch {}
+    }
+};
+// Decay deep memories once per session
+Memory.decay();
+
+// ═══════ COMMAND DETECTION ═══════
+function detectCommand(text) {
+    const t = text.toLowerCase().trim();
+    if (/^\/help$/i.test(t)) return { command: '/help', handler: () => {
+        addBubble('agent', 'sentinel', `🎯 COMMANDES DISPONIBLES :\n/help — Cette aide\n/clear — Effacer le chat\n/stats — Tes statistiques\n/cooper — Mobilisation générale\n/agents — Liste des agents\n/voice [agent] — Changer de voix\n/dream — Toggle Dream Mode\n\nOu parle normalement, je route vers le bon agent !`);
+    }};
+    if (/^\/clear$/i.test(t)) return { command: '/clear', handler: () => {
+        document.getElementById('chatArea').innerHTML = '';
+        conversationHistory = [];
+        Memory.buffer = [];
+        addBubble('agent', 'sly', 'Chat nettoyé. On repart frais, Commandant !');
+    }};
+    if (/^\/stats$/i.test(t)) return { command: '/stats', handler: () => {
+        const lvl = LEVELS[level-1]?.name || 'Recrue';
+        addBubble('agent', 'datum', `📊 STATS COMMANDANT :\n⭐ XP : ${xp}\n🏆 Niveau : ${lvl} (Niv.${level})\n🔥 Streak : ${streak} jours\n💬 Messages : ${conversationHistory.length}\n🧠 Mémoires : ${Memory.deep.length}\n📝 Résumés : ${Memory.summaries.length}\n📱 Device : ${DEVICE_CLASS}`);
+    }};
+    if (/^\/agents$/i.test(t)) return { command: '/agents', handler: () => openAgentModal() };
+    if (/^\/dream$/i.test(t)) return { command: '/dream', handler: () => {
+        dreamMode = !dreamMode;
+        if (dreamMode) enableDreamMode(); else disableDreamMode?.();
+        addBubble('agent', 'sly', dreamMode ? '🌙 Dream Mode activé. Le Building dort...' : '☀️ Dream Mode désactivé. On se réveille !');
+    }};
+    if (/clan cooper|cooper gang|les trois|le gang/i.test(t)) return { command: '/cooper', agents: ['sly','bentley','murray'] };
+    if (/tout le building|mobilisation|50 agents|tous les agents/i.test(t)) return { command: '/cooper-all', agents: 'all' };
+    if (/^\/voice\s+(\w+)/i.test(t)) {
+        const match = t.match(/^\/voice\s+(\w+)/i);
+        return { command: '/voice', handler: () => {
+            const target = match[1].toLowerCase();
+            if (AGENTS[target]) { morphedVoice = AGENTS[target].voice; addBubble('agent', target, `🎭 Voice Morph : je parle maintenant avec la voix de ${AGENTS[target].name} !`); }
+            else addBubble('agent', 'sly', `Agent "${target}" non trouvé.`);
+        }};
+    }
+    return null;
 }
 
-// ═══════ COMMAND PALETTE ═══════
-const COMMANDS = [
-    { icon:'🗑️', label:'Effacer la conversation', hint:'/clear', action: cmdClear },
-    { icon:'👥', label:'Voir tous les agents', hint:'/agents', action: () => { closeCmdPalette(); openAgentModal(); } },
-    { icon:'🎭', label:'Voice Morph', hint:'/voice [nom]', action: cmdVoice },
-    { icon:'📤', label:'Exporter la conversation', hint:'/export', action: cmdExport },
-    { icon:'🔍', label:'Rechercher dans les messages', hint:'/search', action: cmdSearch },
-    { icon:'📂', label:'Sessions précédentes', hint:'/sessions', action: () => { closeCmdPalette(); openRewind(); } },
-    { icon:'🏆', label:'Mes badges', hint:'/badges', action: cmdBadges },
-    { icon:'🧠', label:'Mémoire', hint:'/memory', action: cmdMemory },
-    { icon:'⚔️', label:'Mode Coalition', hint:'/coalition', action: () => { closeCmdPalette(); const input = document.getElementById('chatInput'); input.value = '🔥 Coalition : '; input.focus(); } },
-    { icon:'🌙', label:'Toggle Dream Mode', hint:'/dream', action: cmdDream },
-    { icon:'🔊', label:'Toggle Sons', hint:'/sound', action: () => { toggleSounds(); closeCmdPalette(); } },
-    { icon:'📊', label:'Mes stats', hint:'/stats', action: cmdStats },
+// ═══════ PROACTIVE QUOTES POOL (50+) ═══════
+const PROACTIVE_QUOTES = [
+    { agent: 'franklin', text: "Sénèque : Ce n'est pas parce que les choses sont difficiles que nous n'osons pas." },
+    { agent: 'franklin', text: "Marc Aurèle : L'obstacle devient le chemin." },
+    { agent: 'franklin', text: "Épictète : Ce qui trouble les hommes, ce ne sont pas les choses, mais leurs jugements." },
+    { agent: 'franklin', text: "La fortune favorise les audacieux. — Virgile" },
+    { agent: 'franklin', text: "Sénèque : Nous souffrons plus souvent en imagination qu'en réalité." },
+    { agent: 'omega', text: "Chaque action d'aujourd'hui construit l'empire de demain." },
+    { agent: 'omega', text: "Le Building veille. 50 agents, 0 anomalie." },
+    { agent: 'omega', text: "La patience est la compagne de la sagesse. — Saint Augustin" },
+    { agent: 'cortex', text: "Rappel : vérifie tes KPIs de la semaine." },
+    { agent: 'cortex', text: "Tes données du jour sont prêtes pour analyse." },
+    { agent: 'cortex', text: "Pattern détecté dans tes habitudes — tu es plus productif le matin." },
+    { agent: 'glitch', text: "Et si tu essayais un truc complètement différent aujourd'hui ?" },
+    { agent: 'glitch', text: "L'innovation naît du chaos organisé." },
+    { agent: 'glitch', text: "Disrupte ou sois disrupté." },
+    { agent: 'sentinel', text: "Scan matinal terminé. Aucune anomalie détectée." },
+    { agent: 'sentinel', text: "Tous les systèmes sont nominaux." },
+    { agent: 'sentinel', text: "Routing optimisé. Le Building est synchronisé." },
+    { agent: 'murray', text: "BOUM ! Nouvelle journée, nouvelle conquête !" },
+    { agent: 'murray', text: "On casse tout et on recommence EN MIEUX !" },
+    { agent: 'murray', text: "La force sans la direction est gaspillée. Mais avec toi, boss, on vise juste." },
+    { agent: 'sly', text: "J'ai repéré une opportunité. Tu veux que je creuse ?" },
+    { agent: 'sly', text: "Le flair du renard ne ment jamais." },
+    { agent: 'sly', text: "Un bon cambrioleur ne force pas les serrures — il trouve la porte ouverte." },
+    { agent: 'bentley', text: "J'ai analysé ton workflow. Optimisation possible sur 3 points." },
+    { agent: 'bentley', text: "Calculs en cours... résultat dans 3, 2, 1..." },
+    { agent: 'bentley', text: "La logique est le début de la sagesse, pas sa fin." },
+    { agent: 'dreyfus', text: "Discipline : 1 tâche critique avant midi. Le reste suivra." },
+    { agent: 'dreyfus', text: "La qualité n'est pas un acte. C'est une habitude. — Aristote" },
+    { agent: 'dreyfus', text: "Check-list du jour vérifiée. Tout est en ordre." },
+    { agent: 'anvil', text: "Les tâches en attente ne s'accumulent pas. Exécution immédiate." },
+    { agent: 'anvil', text: "Bug zéro, crash zéro, excuse zéro." },
+    { agent: 'anvil', text: "Quand ça bloque, on casse le mur. Point." },
+    { agent: 'specter', text: "Veille terminée. Rien de suspect sur les réseaux." },
+    { agent: 'specter', text: "Je surveille les ombres pour que tu restes dans la lumière." },
+    { agent: 'niche', text: "Tendance détectée. Potentiel intéressant." },
+    { agent: 'niche', text: "Le marché bouge. Quelque chose se prépare." },
+    { agent: 'closer', text: "Un lead chaud attend ta réponse." },
+    { agent: 'closer', text: "Le closing, c'est pas de la vente. C'est de l'aide." },
+    { agent: 'sibyl', text: "Les étoiles s'alignent pour cette semaine." },
+    { agent: 'sibyl', text: "Projection : si tu maintiens ce rythme, objectif atteint en 12 jours." },
+    { agent: 'pixel', text: "Le design, c'est pas comment ça se voit — c'est comment ça marche." },
+    { agent: 'pixel', text: "Nouvel achievement unlockable aujourd'hui !" },
+    { agent: 'volt', text: "Pipeline stable. Tous les modules répondent." },
+    { agent: 'volt', text: "Optimisation système en cours. Tu ne remarqueras rien — c'est le but." },
+    { agent: 'hunter', text: "J'ai trouvé un raccourci. Intéressé ?" },
+    { agent: 'hunter', text: "Le chemin le plus court n'est pas toujours le plus évident." },
+    { agent: 'datum', text: "Tes métriques de la semaine sont prêtes." },
+    { agent: 'datum', text: "Les données ne mentent pas. Et aujourd'hui, elles sourient." },
+    { agent: 'fresco', text: "Un bon visuel vaut mille mots. J'en ai un pour toi." },
+    { agent: 'philomene', text: "Les mots justes au bon moment changent le monde." },
 ];
+const _usedQuotes = [];
+function pickQuote() {
+    const available = PROACTIVE_QUOTES.map((q, i) => ({ ...q, idx: i }))
+        .filter(q => !_usedQuotes.includes(q.idx));
+    if (available.length === 0) { _usedQuotes.length = 0; return pickQuote(); }
+    const weights = available.map(q => _usedQuotes.includes(q.idx) ? 0 : 3);
+    const total = weights.reduce((a, b) => a + b, 0);
+    let r = Math.random() * total;
+    for (let i = 0; i < available.length; i++) {
+        r -= weights[i];
+        if (r <= 0) {
+            _usedQuotes.push(available[i].idx);
+            if (_usedQuotes.length > 20) _usedQuotes.shift();
+            return available[i];
+        }
+    }
+    return available[0];
+}
 
-let cmdPaletteVisible = false;
-let cmdSelectedIdx = 0;
-let cmdFiltered = [...COMMANDS];
+// ═══════ SANITIZATION ═══════
+function sanitize(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
 
-function openCmdPalette() {
-    let palette = document.getElementById('cmdPalette');
-    if (!palette) {
-        palette = document.createElement('div');
-        palette.className = 'cmd-palette';
-        palette.id = 'cmdPalette';
-        palette.innerHTML = `
-            <input class="cmd-input" id="cmdInput" placeholder="Tapez une commande..." autocomplete="off">
-            <div class="cmd-list" id="cmdList"></div>`;
-        document.body.appendChild(palette);
+// ═══════ PERFORMANCE BUDGETS ═══════
+// LRU Audio Cache
+const AudioCache = {
+    _cache: new Map(),
+    _maxSize: PERF_CONFIG[DEVICE_CLASS].maxAudioCache,
+    get(key) {
+        const val = this._cache.get(key);
+        if (val) { this._cache.delete(key); this._cache.set(key, val); }
+        return val || null;
+    },
+    set(key, value) {
+        if (this._cache.size >= this._maxSize) {
+            const oldest = this._cache.keys().next().value;
+            this._cache.delete(oldest);
+        }
+        this._cache.set(key, value);
+    }
+};
 
-        const cmdInput = document.getElementById('cmdInput');
-        cmdInput.addEventListener('input', (e) => filterCommands(e.target.value));
-        cmdInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeCmdPalette();
-            else if (e.key === 'ArrowDown') { cmdSelectedIdx = Math.min(cmdSelectedIdx + 1, cmdFiltered.length - 1); renderCmdList(); }
-            else if (e.key === 'ArrowUp') { cmdSelectedIdx = Math.max(cmdSelectedIdx - 1, 0); renderCmdList(); }
-            else if (e.key === 'Enter' && cmdFiltered[cmdSelectedIdx]) { cmdFiltered[cmdSelectedIdx].action(); }
+// Battery-aware performance
+if (navigator.getBattery) {
+    navigator.getBattery().then(battery => {
+        battery.addEventListener('levelchange', () => {
+            if (battery.level < 0.2) document.documentElement.classList.add('perf-low');
+            if (battery.level < 0.1) document.documentElement.style.setProperty('--particle-count', '0');
         });
-    }
-
-    cmdFiltered = [...COMMANDS];
-    cmdSelectedIdx = 0;
-    palette.classList.add('visible');
-    cmdPaletteVisible = true;
-    renderCmdList();
-    setTimeout(() => document.getElementById('cmdInput').focus(), 50);
-    soundClick();
+    }).catch(() => {});
 }
 
-function closeCmdPalette() {
-    document.getElementById('cmdPalette')?.classList.remove('visible');
-    cmdPaletteVisible = false;
-    const cmdInput = document.getElementById('cmdInput');
-    if (cmdInput) cmdInput.value = '';
-}
-
-function filterCommands(query) {
-    const q = query.toLowerCase().replace(/^\//, '');
-    cmdFiltered = COMMANDS.filter(c => c.label.toLowerCase().includes(q) || c.hint.toLowerCase().includes(q));
-    cmdSelectedIdx = 0;
-    renderCmdList();
-}
-
-function renderCmdList() {
-    const list = document.getElementById('cmdList');
-    if (!list) return;
-    list.innerHTML = cmdFiltered.map((c, i) => `
-        <div class="cmd-item${i === cmdSelectedIdx ? ' selected' : ''}" onclick="COMMANDS.find(x=>x.hint==='${c.hint}')?.action()">
-            <span class="cmd-item-icon">${c.icon}</span>
-            <span class="cmd-item-label">${c.label}</span>
-            <span class="cmd-item-hint">${c.hint}</span>
-        </div>`).join('');
-}
-
-// Command actions
-function cmdClear() {
-    closeCmdPalette();
-    // Save summary before clearing
-    if (conversationHistory.length >= 4) {
-        const summary = summarizeSession(conversationHistory);
-        if (summary) {
-            memory.summaries.push(summary);
-            if (memory.summaries.length > 10) memory.summaries.shift();
-            saveMemory();
-        }
-    }
-    document.getElementById('chatArea').innerHTML = '';
-    conversationHistory = [];
-    saveState();
-    addBubble('agent', 'sly', "Conversation effacée. On repart à zéro !");
-    haptic('medium');
-}
-
-function cmdVoice() {
-    closeCmdPalette();
-    const voices = Object.keys(VOICES).join(', ');
-    addBubble('agent', 'sly', `🎭 Voix disponibles : ${voices}\n\nTape "parle comme [nom]" pour changer.`);
-}
-
-function cmdExport() {
-    closeCmdPalette();
-    const modal = document.getElementById('settingsModal');
-    const overlay = document.getElementById('settingsOverlay');
-
-    modal.innerHTML = `
-        <div class="modal-title">EXPORTER</div>
-        <div class="export-options">
-            <button class="export-btn" onclick="exportAsText()">
-                <div class="export-btn-icon">📄</div>
-                <div class="export-btn-label">Texte</div>
-            </button>
-            <button class="export-btn" onclick="exportAsJSON()">
-                <div class="export-btn-icon">📊</div>
-                <div class="export-btn-label">JSON</div>
-            </button>
-            <button class="export-btn" onclick="shareConversation()">
-                <div class="export-btn-icon">📤</div>
-                <div class="export-btn-label">Partager</div>
-            </button>
-        </div>`;
-    modal.classList.add('visible');
-    overlay.classList.add('visible');
-    overlay.onclick = closeSettings;
-}
-
-function exportAsText() {
-    const text = conversationHistory.map(m => `${m.role === 'user' ? 'Augus' : 'Agent'}: ${m.content}`).join('\n\n');
-    const blob = new Blob([text], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `sly-chat-${Date.now()}.txt`; a.click();
-    URL.revokeObjectURL(url);
-    closeSettings();
-    haptic('success');
-}
-
-function exportAsJSON() {
-    const data = { exported: new Date().toISOString(), messages: conversationHistory, stats: { xp, level, streak } };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `sly-chat-${Date.now()}.json`; a.click();
-    URL.revokeObjectURL(url);
-    closeSettings();
-    haptic('success');
-}
-
-function shareConversation() {
-    const text = conversationHistory.slice(-10).map(m => `${m.role === 'user' ? '👤' : '🤖'} ${m.content}`).join('\n');
-    if (navigator.share) {
-        navigator.share({ title: 'SLY-CHAT', text }).catch(() => {});
+// Visibility-based optimization
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        if (audioCtx?.state === 'running') audioCtx.suspend();
     } else {
-        navigator.clipboard?.writeText(text);
-        addBubble('agent', 'sly', "Conversation copiée dans le presse-papiers !");
-    }
-    closeSettings();
-    haptic('success');
-}
-
-function cmdSearch() {
-    closeCmdPalette();
-    const modal = document.getElementById('settingsModal');
-    const overlay = document.getElementById('settingsOverlay');
-
-    modal.innerHTML = `
-        <div class="modal-title">🔍 RECHERCHER</div>
-        <input class="input-field" id="searchInput" placeholder="Rechercher dans les messages..." style="margin-bottom:12px" autocomplete="off">
-        <div class="search-results" id="searchResults"></div>`;
-    modal.classList.add('visible');
-    overlay.classList.add('visible');
-    overlay.onclick = closeSettings;
-
-    const searchInput = document.getElementById('searchInput');
-    setTimeout(() => searchInput.focus(), 100);
-    searchInput.addEventListener('input', (e) => {
-        const q = e.target.value.toLowerCase().trim();
-        const results = document.getElementById('searchResults');
-        if (q.length < 2) { results.innerHTML = ''; return; }
-
-        // Search in all sessions + current
-        let matches = [];
-        for (const msg of conversationHistory) {
-            if (msg.content.toLowerCase().includes(q)) {
-                matches.push({ content: msg.content, role: msg.role, session: 'current' });
-            }
-        }
-        for (const session of sessions) {
-            for (const msg of (session.history || [])) {
-                if (msg.content.toLowerCase().includes(q)) {
-                    matches.push({ content: msg.content, role: msg.role, session: new Date(session.date).toLocaleDateString('fr-FR') });
-                }
-            }
-        }
-
-        results.innerHTML = matches.length === 0
-            ? '<div style="text-align:center;padding:20px;color:var(--text-dim)">Aucun résultat</div>'
-            : matches.slice(0, 20).map(m => {
-                const highlighted = m.content.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), '<span class="search-highlight">$1</span>');
-                return `<div class="search-result">
-                    <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">${m.role === 'user' ? '👤 Toi' : '🤖 Agent'} · ${m.session}</div>
-                    <div style="font-size:13px">${highlighted.slice(0, 200)}${m.content.length > 200 ? '...' : ''}</div>
-                </div>`;
-            }).join('');
-    });
-}
-
-function cmdBadges() {
-    closeCmdPalette();
-    const modal = document.getElementById('settingsModal');
-    const overlay = document.getElementById('settingsOverlay');
-
-    modal.innerHTML = `
-        <div class="modal-title">🏆 BADGES (${unlockedBadges.size}/${BADGES.length})</div>
-        <div class="badge-grid">
-            ${BADGES.map(b => `
-                <div class="badge-item ${unlockedBadges.has(b.id) ? 'unlocked' : 'locked'}">
-                    ${b.emoji}
-                    <div class="badge-tooltip">${b.name}</div>
-                </div>`).join('')}
-        </div>
-        <div style="margin-top:16px;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px">
-            ${BADGES.filter(b => !unlockedBadges.has(b.id)).slice(0, 3).map(b =>
-                `<div style="font-size:12px;color:var(--text-dim);padding:4px 0">${b.emoji} <strong>${b.name}</strong> — ${b.desc}</div>`
-            ).join('')}
-        </div>`;
-    modal.classList.add('visible');
-    overlay.classList.add('visible');
-    overlay.onclick = closeSettings;
-}
-
-function cmdMemory() {
-    closeCmdPalette();
-    const modal = document.getElementById('settingsModal');
-    const overlay = document.getElementById('settingsOverlay');
-
-    modal.innerHTML = `
-        <div class="modal-title">🧠 MÉMOIRE</div>
-        <div class="settings-row">
-            <span class="settings-label">📝 Faits mémorisés</span>
-            <span style="font-weight:700">${memory.facts.length}</span>
-        </div>
-        <div class="settings-row">
-            <span class="settings-label">📂 Sessions résumées</span>
-            <span style="font-weight:700">${memory.summaries.length}</span>
-        </div>
-        <div class="settings-row">
-            <span class="settings-label">👤 Profil</span>
-            <span style="font-weight:700">${memory.profile.name || 'Non défini'}</span>
-        </div>
-        ${memory.facts.length > 0 ? `
-        <div style="margin-top:12px">
-            <div style="font-size:11px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Derniers faits</div>
-            ${memory.facts.slice(-5).map(f =>
-                `<div style="font-size:12px;padding:6px;background:rgba(255,255,255,0.03);border-radius:6px;margin-bottom:4px">"${f.text.slice(0, 80)}"</div>`
-            ).join('')}
-        </div>` : ''}
-        <button onclick="memory.facts=[];memory.summaries=[];saveMemory();cmdMemory()" style="margin-top:16px;width:100%;padding:12px;border-radius:8px;background:rgba(255,59,92,0.1);color:var(--red);font-weight:700;font-size:13px">🗑️ Effacer la mémoire</button>`;
-    modal.classList.add('visible');
-    overlay.classList.add('visible');
-    overlay.onclick = closeSettings;
-}
-
-function cmdDream() {
-    closeCmdPalette();
-    dreamMode = !dreamMode;
-    document.body.classList.toggle('dream-mode', dreamMode);
-    if (dreamMode) {
-        dreamGain = 0.6;
-        if (!document.querySelector('.dream-badge')) {
-            const badge = document.createElement('div');
-            badge.className = 'dream-badge';
-            badge.textContent = '🌙 Dream Mode';
-            document.body.appendChild(badge);
-        }
-    } else {
-        dreamGain = 1;
-        document.querySelector('.dream-badge')?.remove();
-    }
-    if (masterGain) masterGain.gain.setValueAtTime(dreamGain, audioCtx.currentTime);
-    addBubble('agent', 'sly', dreamMode ? "🌙 Dream Mode activé. Bonne nuit, Commandant." : "☀️ Dream Mode désactivé. On repart en pleine lumière !");
-    haptic('medium');
-}
-
-function cmdStats() {
-    closeCmdPalette();
-    const modal = document.getElementById('settingsModal');
-    const overlay = document.getElementById('settingsOverlay');
-    const totalMsgs = badgeStats.totalMessages || 0;
-    const sessCount = sessions.length;
-
-    modal.innerHTML = `
-        <div class="modal-title">📊 STATISTIQUES</div>
-        <div class="settings-row"><span class="settings-label">💬 Messages envoyés</span><span style="font-weight:700">${totalMsgs}</span></div>
-        <div class="settings-row"><span class="settings-label">⭐ XP Total</span><span style="font-weight:700;color:var(--orange)">${xp}</span></div>
-        <div class="settings-row"><span class="settings-label">🎖️ Niveau</span><span style="font-weight:700">${LEVELS[level-1]?.name || 'Recrue'} (Niv.${level})</span></div>
-        <div class="settings-row"><span class="settings-label">🔥 Streak</span><span style="font-weight:700">${streak} jours</span></div>
-        <div class="settings-row"><span class="settings-label">📂 Sessions</span><span style="font-weight:700">${sessCount}</span></div>
-        <div class="settings-row"><span class="settings-label">🏆 Badges</span><span style="font-weight:700">${unlockedBadges.size}/${BADGES.length}</span></div>
-        <div class="settings-row"><span class="settings-label">🧠 Faits mémorisés</span><span style="font-weight:700">${memory.facts.length}</span></div>
-        <div class="settings-row" style="border:none"><span class="settings-label">🎯 Défis complétés</span><span style="font-weight:700">${badgeStats.dailyCompleted || 0}</span></div>`;
-    modal.classList.add('visible');
-    overlay.classList.add('visible');
-    overlay.onclick = closeSettings;
-}
-
-// ═══════ WIRE COMMAND PALETTE ═══════
-// Detect / at start of input
-document.getElementById('chatInput').addEventListener('input', function(e) {
-    const val = this.value;
-    if (val === '/') {
-        openCmdPalette();
-        this.value = '';
+        if (audioCtx?.state === 'suspended') audioCtx.resume();
     }
 });
-
-// Close palette on outside click
-document.addEventListener('click', (e) => {
-    if (cmdPaletteVisible && !e.target.closest('.cmd-palette')) {
-        closeCmdPalette();
-    }
-});
-
-// ═══════ PATCH SEND MESSAGE (Phase 3) ═══════
-const _p2SendMessage = sendMessage;
-sendMessage = async function(text) {
-    // Check coalition trigger
-    if (isCoalitionQuery(text)) {
-        isStreaming = true;
-        addBubble('user', null, text);
-        gainXP(5);
-        await runCoalition(text);
-        isStreaming = false;
-        saveState();
-        return;
-    }
-
-    // Track badge stats
-    trackBadgeStat('totalMessages');
-
-    // Extract memory facts
-    extractFacts(text, 'user');
-
-    // Call Phase 2 sendMessage
-    await _p2SendMessage(text);
-
-    // Check badges after response
-    setTimeout(() => checkBadges(), 500);
-};
-
-// Track agent usage for badges when detecting
-const _origDetectAgent = detectAgent;
-detectAgent = function(text) {
-    const result = _origDetectAgent(text);
-    // Track unique agents used
-    const allUsed = new Set(JSON.parse(localStorage.getItem('sly_all_agents') || '[]'));
-    allUsed.add(result);
-    localStorage.setItem('sly_all_agents', JSON.stringify([...allUsed]));
-    badgeStats.agentsUsed = allUsed.size;
-    return result;
-};
-
-// Track voice messages for badges
-const pttBtnPhase3 = document.getElementById('pttBtn');
-pttBtnPhase3.addEventListener('touchstart', () => trackBadgeStat('voiceMessages'), { capture: true });
-
-// Track daily completed for badges
-const _origTrackDaily = trackDaily;
-trackDaily = function(type, value = 1) {
-    const wasDone = dailyProgress.completed;
-    _origTrackDaily(type, value);
-    if (!wasDone && dailyProgress.completed) {
-        trackBadgeStat('dailyCompleted');
-    }
-};
-
-// ═══════ BOOT PHASE 3 ═══════
-function bootPhase3() {
-    loadMemory();
-    loadBadges();
-    checkBadges();
-}
-
-// ═══════════════════════════════════════════
-//   PHASE 3+ — ADVANCED JARVIS FEATURES
-// ═══════════════════════════════════════════
-
-// ═══════ QUICK REPLIES ═══════
-const QUICK_REPLY_SETS = {
-    default: ["Quoi de neuf ?", "Donne-moi un résumé", "Une idée folle ?", "Stratégie du jour"],
-    sly: ["Plan d'action ?", "On vole quoi ?", "Tactique secrète", "Cooper Gang !"],
-    cortex: ["Analyse ça", "Les chiffres ?", "Data du jour", "Compare"],
-    franklin: ["Citation du jour", "Sagesse", "Sénèque dirait quoi ?", "Philosophe"],
-    glitch: ["Idée folle", "Disruption !", "Et si on faisait l'inverse ?", "Random go"],
-    anvil: ["Debug ça", "Fix rapide", "Crash report", "Force brute"],
-    closer: ["Pitch moi", "Deal en cours ?", "Stratégie vente", "Closing tips"],
-};
-
-function showQuickReplies(agentKey) {
-    // Remove existing
-    document.querySelectorAll('.quick-replies').forEach(e => e.remove());
-
-    const replies = QUICK_REPLY_SETS[agentKey] || QUICK_REPLY_SETS.default;
-    const container = document.createElement('div');
-    container.className = 'quick-replies';
-    replies.forEach(r => {
-        const btn = document.createElement('button');
-        btn.className = 'quick-reply';
-        btn.textContent = r;
-        btn.onclick = () => {
-            container.remove();
-            document.getElementById('chatInput').value = r;
-            sendMessage(r);
-            document.getElementById('chatInput').value = '';
-        };
-        container.appendChild(btn);
-    });
-
-    const area = document.getElementById('chatArea');
-    area.appendChild(container);
-    area.scrollTop = area.scrollHeight;
-
-    // Auto-remove after 30s
-    setTimeout(() => container.remove(), 30000);
-}
-
-// Patch sendMessage to show quick replies after response
-const _p3SendMessage = sendMessage;
-sendMessage = async function(text) {
-    await _p3SendMessage(text);
-    // Show quick replies after a short delay
-    if (!isStreaming) {
-        setTimeout(() => showQuickReplies(currentAgent), 500);
-    }
-};
-
-// ═══════ AMBIENT SOUNDSCAPE ═══════
-let ambientOsc = null;
-let ambientGain = null;
-let ambientNoiseNode = null;
-let currentAmbient = null;
-
-const AMBIENT_PRESETS = {
-    rain: { label: '🌧️ Pluie', freq: 200, type: 'noise', vol: 0.03, filter: 800 },
-    space: { label: '🌌 Space', freq: 80, type: 'sine', vol: 0.02, lfo: 0.1 },
-    focus: { label: '🎯 Focus', freq: 432, type: 'sine', vol: 0.015, lfo: 0.05 },
-    night: { label: '🌙 Night', freq: 120, type: 'triangle', vol: 0.02, lfo: 0.08 },
-};
-
-function createNoiseNode() {
-    if (!audioCtx) return null;
-    const bufSize = 2 * audioCtx.sampleRate;
-    const noiseBuffer = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
-    const output = noiseBuffer.getChannelData(0);
-    for (let i = 0; i < bufSize; i++) output[i] = Math.random() * 2 - 1;
-    const node = audioCtx.createBufferSource();
-    node.buffer = noiseBuffer;
-    node.loop = true;
-    return node;
-}
-
-function startAmbient(presetKey) {
-    stopAmbient();
-    initAudio();
-    const preset = AMBIENT_PRESETS[presetKey];
-    if (!preset) return;
-
-    currentAmbient = presetKey;
-    ambientGain = audioCtx.createGain();
-    ambientGain.gain.setValueAtTime(0, audioCtx.currentTime);
-    ambientGain.gain.linearRampToValueAtTime(preset.vol * dreamGain, audioCtx.currentTime + 2);
-
-    if (preset.type === 'noise') {
-        ambientNoiseNode = createNoiseNode();
-        const filter = audioCtx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.value = preset.filter || 1000;
-        ambientNoiseNode.connect(filter).connect(ambientGain).connect(audioCtx.destination);
-        ambientNoiseNode.start();
-    } else {
-        ambientOsc = audioCtx.createOscillator();
-        ambientOsc.type = preset.type;
-        ambientOsc.frequency.setValueAtTime(preset.freq, audioCtx.currentTime);
-        if (preset.lfo) {
-            const lfo = audioCtx.createOscillator();
-            const lfoGain = audioCtx.createGain();
-            lfo.frequency.value = preset.lfo;
-            lfoGain.gain.value = preset.freq * 0.02;
-            lfo.connect(lfoGain).connect(ambientOsc.frequency);
-            lfo.start();
-        }
-        ambientOsc.connect(ambientGain).connect(audioCtx.destination);
-        ambientOsc.start();
-    }
-
-    document.querySelector('.ambient-btn')?.classList.add('active');
-    localStorage.setItem('sly_ambient', presetKey);
-}
-
-function stopAmbient() {
-    if (ambientOsc) { try { ambientOsc.stop(); } catch {} ambientOsc = null; }
-    if (ambientNoiseNode) { try { ambientNoiseNode.stop(); } catch {} ambientNoiseNode = null; }
-    if (ambientGain) { ambientGain.disconnect(); ambientGain = null; }
-    currentAmbient = null;
-    document.querySelector('.ambient-btn')?.classList.remove('active');
-    localStorage.removeItem('sly_ambient');
-}
-
-function toggleAmbientMenu() {
-    let menu = document.querySelector('.ambient-menu');
-    if (!menu) {
-        menu = document.createElement('div');
-        menu.className = 'ambient-menu';
-        let html = '';
-        for (const [key, preset] of Object.entries(AMBIENT_PRESETS)) {
-            html += `<div class="ambient-option ${currentAmbient === key ? 'active' : ''}" onclick="toggleAmbient('${key}')">${preset.label}</div>`;
-        }
-        html += `<div class="ambient-option" onclick="stopAmbient();this.closest('.ambient-menu').classList.remove('visible')">❌ Off</div>`;
-        menu.innerHTML = html;
-        document.body.appendChild(menu);
-    }
-    menu.classList.toggle('visible');
-    // Update active states
-    menu.querySelectorAll('.ambient-option').forEach(opt => {
-        const key = opt.getAttribute('onclick')?.match(/'(\w+)'/)?.[1];
-        if (key) opt.classList.toggle('active', currentAmbient === key);
-    });
-}
-
-function toggleAmbient(key) {
-    if (currentAmbient === key) stopAmbient();
-    else startAmbient(key);
-    document.querySelector('.ambient-menu')?.classList.remove('visible');
-}
-
-// Add ambient button to DOM
-function addAmbientButton() {
-    const btn = document.createElement('button');
-    btn.className = 'ambient-btn';
-    btn.textContent = '🎵';
-    btn.onclick = toggleAmbientMenu;
-    document.body.appendChild(btn);
-}
-
-// ═══════ CONVERSATION BOOKMARKS ═══════
-let bookmarks = JSON.parse(localStorage.getItem('sly_bookmarks') || '[]');
-
-function toggleBookmark(bubbleEl, msgIndex) {
-    const marker = bubbleEl.querySelector('.bookmark-marker');
-    const isBookmarked = marker?.classList.contains('bookmarked');
-
-    if (isBookmarked) {
-        bookmarks = bookmarks.filter(b => b.index !== msgIndex);
-        marker?.classList.remove('bookmarked');
-        marker.textContent = '🔖';
-    } else {
-        const text = bubbleEl.querySelector('.bubble-text')?.textContent || '';
-        bookmarks.push({ index: msgIndex, text: text.slice(0, 100), date: new Date().toISOString() });
-        marker?.classList.add('bookmarked');
-        marker.textContent = '⭐';
-        haptic('light');
-    }
-    localStorage.setItem('sly_bookmarks', JSON.stringify(bookmarks));
-}
-
-// Patch addBubble to include bookmark marker
-const _p3AddBubble = addBubble;
-let msgCounter = 0;
-addBubble = function(type, agentKey, text, streaming = false) {
-    const el = _p3AddBubble(type, agentKey, text, streaming);
-    if (type === 'agent' && agentKey) {
-        const idx = msgCounter++;
-        const marker = document.createElement('div');
-        marker.className = 'bookmark-marker';
-        marker.textContent = '🔖';
-        marker.onclick = (e) => { e.stopPropagation(); toggleBookmark(el, idx); };
-        el.style.position = 'relative';
-        el.appendChild(marker);
-    }
-    return el;
-};
-
-// ═══════ PROACTIVE MORNING SUMMARY ═══════
-function checkMorningSummary() {
-    const today = new Date().toDateString();
-    const lastSummary = localStorage.getItem('sly_last_summary');
-    const h = new Date().getHours();
-
-    if (lastSummary === today || h < 6 || h > 10) return;
-    if (memory.summaries.length === 0 && memory.facts.length === 0) return;
-
-    localStorage.setItem('sly_last_summary', today);
-
-    const area = document.getElementById('chatArea');
-    const card = document.createElement('div');
-    card.className = 'summary-card';
-
-    let summaryText = '☀️ ';
-    if (streak > 0) summaryText += `Streak : ${streak} jours ! `;
-    if (memory.summaries.length > 0) {
-        const last = memory.summaries[memory.summaries.length - 1];
-        summaryText += `Hier on a discuté de : ${last.topics?.join(', ') || 'divers sujets'}. `;
-    }
-    summaryText += `XP : ${xp} (${LEVELS[level-1]?.name || 'Recrue'}). `;
-    summaryText += `${unlockedBadges.size}/${BADGES.length} badges débloqués. `;
-    summaryText += 'Prêt pour une nouvelle journée, Commandant ?';
-
-    card.innerHTML = `
-        <div class="summary-header">
-            <span class="summary-emoji">🦊</span>
-            <span class="summary-title">BRIEF MATINAL — SLY</span>
-        </div>
-        <div class="summary-text">${summaryText}</div>
-        <div class="summary-dismiss" onclick="this.closest('.summary-card').remove()">Fermer ×</div>`;
-
-    // Insert after daily challenge
-    const dailyEl = document.getElementById('dailyChallenge');
-    if (dailyEl) dailyEl.after(card);
-    else area.parentElement.insertBefore(card, area);
-}
-
-// ═══════ SWIPE GESTURES ON BUBBLES ═══════
-function initSwipeGestures() {
-    const area = document.getElementById('chatArea');
-    let startX = 0, startY = 0, swiping = false, swipeBubble = null;
-
-    area.addEventListener('touchstart', (e) => {
-        const bubble = e.target.closest('.bubble.agent');
-        if (!bubble) return;
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-        swiping = true;
-        swipeBubble = bubble;
-    }, { passive: true });
-
-    area.addEventListener('touchmove', (e) => {
-        if (!swiping || !swipeBubble) return;
-        const dx = e.touches[0].clientX - startX;
-        const dy = e.touches[0].clientY - startY;
-        if (Math.abs(dy) > Math.abs(dx)) { swiping = false; return; } // Vertical scroll
-        if (Math.abs(dx) > 30) {
-            swipeBubble.style.transform = `translateX(${dx * 0.3}px)`;
-            swipeBubble.style.opacity = 1 - Math.abs(dx) / 500;
-        }
-    }, { passive: true });
-
-    area.addEventListener('touchend', (e) => {
-        if (!swiping || !swipeBubble) return;
-        const dx = e.changedTouches[0].clientX - startX;
-        swipeBubble.style.transform = '';
-        swipeBubble.style.opacity = '';
-
-        if (dx > 80) {
-            // Swipe right = like/reaction
-            addReaction(swipeBubble, '🔥');
-            haptic('light');
-        } else if (dx < -80) {
-            // Swipe left = replay audio
-            const text = swipeBubble.querySelector('.bubble-text')?.textContent;
-            const name = swipeBubble.querySelector('.bubble-name')?.textContent?.toLowerCase();
-            const agentKey = AGENT_KEYS.find(k => AGENTS[k].name === name?.toUpperCase()) || currentAgent;
-            if (text) speakText(agentKey, text);
-            haptic('medium');
-        }
-
-        swiping = false;
-        swipeBubble = null;
-    }, { passive: true });
-}
-
-// ═══════ AGENT MOOD INDICATOR ═══════
-function getAgentMood(agentKey) {
-    const interactions = JSON.parse(localStorage.getItem('sly_agent_interactions') || '{}');
-    const lastUse = interactions[agentKey];
-    if (!lastUse) return 'idle';
-    const daysSince = (Date.now() - lastUse) / 86400000;
-    if (daysSince < 1) return 'active';
-    if (daysSince < 3) return 'neutral';
-    if (daysSince < 7) return 'bored';
-    return 'idle';
-}
-
-function trackAgentInteraction(agentKey) {
-    const interactions = JSON.parse(localStorage.getItem('sly_agent_interactions') || '{}');
-    interactions[agentKey] = Date.now();
-    localStorage.setItem('sly_agent_interactions', JSON.stringify(interactions));
-}
-
-// Patch renderDock to show mood dots
-const _origRenderDock = renderDock;
-renderDock = function() {
-    _origRenderDock();
-    // Add mood dots
-    const agents = document.querySelectorAll('.dock-agent');
-    DOCK_DEFAULT.forEach((key, i) => {
-        if (!agents[i]) return;
-        agents[i].style.position = 'relative';
-        const mood = getAgentMood(key);
-        const colors = { active: 'var(--green)', neutral: 'var(--orange)', bored: 'var(--text-dim)', idle: 'transparent' };
-        const dot = document.createElement('div');
-        dot.className = 'dock-mood';
-        dot.style.background = colors[mood] || 'transparent';
-        agents[i].appendChild(dot);
-    });
-};
-
-// Patch detectAgent to track interactions
-const _p3DetectAgent = detectAgent;
-detectAgent = function(text) {
-    const result = _p3DetectAgent(text);
-    trackAgentInteraction(result);
-    return result;
-};
-
-// ═══════ BOOT PHASE 3+ ═══════
-function bootPhase3Plus() {
-    addAmbientButton();
-    initSwipeGestures();
-    checkMorningSummary();
-    renderDock(); // Re-render with mood dots
-
-    // Restore ambient if was active
-    const savedAmbient = localStorage.getItem('sly_ambient');
-    if (savedAmbient) {
-        // Delay to allow AudioContext to be created by user gesture
-        document.addEventListener('touchstart', () => startAmbient(savedAmbient), { once: true });
-        document.addEventListener('click', () => startAmbient(savedAmbient), { once: true });
-    }
-}
-
-// ═══════════════════════════════════════════
-//   PHASE 4 — PRO FEATURES
-// ═══════════════════════════════════════════
-
-// ═══════ REPLY TO MESSAGE ═══════
-let replyingTo = null;
-
-function setReplyTo(bubbleEl) {
-    const text = bubbleEl.querySelector('.bubble-text')?.textContent || '';
-    const name = bubbleEl.querySelector('.bubble-name')?.textContent || 'Agent';
-    replyingTo = { text: text.slice(0, 100), name, element: bubbleEl };
-
-    // Show reply preview above input
-    let preview = document.querySelector('.reply-preview');
-    if (!preview) {
-        preview = document.createElement('div');
-        preview.className = 'reply-preview';
-        const inputArea = document.querySelector('.input-area');
-        inputArea.parentElement.insertBefore(preview, inputArea);
-    }
-    preview.innerHTML = `
-        <span class="reply-preview-text">↩ <strong>${name}</strong>: ${escapeHTML(replyingTo.text)}</span>
-        <button class="reply-preview-close" onclick="cancelReply()">×</button>`;
-    document.getElementById('chatInput').focus();
-    haptic('light');
-}
-
-function cancelReply() {
-    replyingTo = null;
-    document.querySelector('.reply-preview')?.remove();
-}
-
-// Patch addBubble to include reply button and show reply refs
-const _p4AddBubble = addBubble;
-addBubble = function(type, agentKey, text, streaming = false) {
-    const el = _p4AddBubble(type, agentKey, text, streaming);
-
-    // Add reply button to agent bubbles
-    if (type === 'agent' && agentKey) {
-        const meta = el.querySelector('.bubble-meta');
-        if (meta) {
-            const replyBtn = document.createElement('button');
-            replyBtn.className = 'reply-btn';
-            replyBtn.textContent = '↩ Répondre';
-            replyBtn.onclick = (e) => { e.stopPropagation(); setReplyTo(el); };
-            meta.appendChild(replyBtn);
-        }
-    }
-
-    // If replying, add reply reference to new bubble
-    if (replyingTo && type === 'user') {
-        const ref = document.createElement('div');
-        ref.className = 'reply-ref';
-        ref.innerHTML = `<span class="reply-ref-name">${replyingTo.name}</span> ${escapeHTML(replyingTo.text.slice(0, 60))}...`;
-        ref.onclick = () => replyingTo?.element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.insertBefore(ref, el.firstChild);
-        cancelReply();
-    }
-
-    return el;
-};
-
-// ═══════ AGENT LEADERBOARD ═══════
-function getAgentLeaderboard() {
-    const interactions = JSON.parse(localStorage.getItem('sly_agent_interactions') || '{}');
-    const counts = {};
-    // Count from conversation history across all sessions
-    const allHistory = [...conversationHistory];
-    for (const session of sessions) {
-        if (session.history) allHistory.push(...session.history);
-    }
-    for (const msg of allHistory) {
-        if (msg.role === 'assistant') {
-            const match = msg.content.match(/^\[(\w+)\]/);
-            if (match) {
-                const name = match[1].toLowerCase();
-                counts[name] = (counts[name] || 0) + 1;
-            }
-        }
-    }
-    // Also count from agent interactions timestamps
-    for (const key of AGENT_KEYS) {
-        if (interactions[key] && !counts[key]) counts[key] = 1;
-    }
-    // Sort by count
-    return Object.entries(counts)
-        .map(([key, count]) => ({ key, count, agent: AGENTS[key] }))
-        .filter(e => e.agent)
-        .sort((a, b) => b.count - a.count);
-}
-
-// Add leaderboard to commands
-COMMANDS.push({
-    icon: '📈', label: 'Agent Leaderboard', hint: '/leaderboard',
-    action: function() {
-        closeCmdPalette();
-        const modal = document.getElementById('settingsModal');
-        const overlay = document.getElementById('settingsOverlay');
-        const leaderboard = getAgentLeaderboard();
-        const maxCount = leaderboard[0]?.count || 1;
-
-        modal.innerHTML = `
-            <div class="modal-title">📈 AGENT LEADERBOARD</div>
-            ${leaderboard.length === 0 ? '<div style="text-align:center;padding:20px;color:var(--text-dim)">Pas encore de données. Parle aux agents !</div>' :
-            leaderboard.slice(0, 10).map((e, i) => `
-                <div class="leaderboard-item">
-                    <div class="leaderboard-rank ${i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : ''}">${i < 3 ? ['🥇','🥈','🥉'][i] : i + 1}</div>
-                    <span style="font-size:22px">${e.agent.emoji}</span>
-                    <div class="leaderboard-info">
-                        <div class="leaderboard-name" style="color:${e.agent.color}">${e.agent.name}</div>
-                        <div class="leaderboard-count">${e.count} interactions</div>
-                        <div class="leaderboard-bar"><div class="leaderboard-bar-fill" style="width:${(e.count/maxCount)*100}%;background:${e.agent.color}"></div></div>
-                    </div>
-                </div>`).join('')}`;
-        modal.classList.add('visible');
-        overlay.classList.add('visible');
-        overlay.onclick = closeSettings;
-    }
-});
-
-// ═══════ KEYBOARD SHORTCUTS ═══════
-document.addEventListener('keydown', (e) => {
-    // Ctrl/Cmd + K = command palette
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        if (cmdPaletteVisible) closeCmdPalette();
-        else openCmdPalette();
-    }
-    // Escape = close everything
-    if (e.key === 'Escape') {
-        closeCmdPalette();
-        closeAgentModal();
-        closeSettings();
-        closeRewind();
-        cancelReply();
-        document.querySelector('.ambient-menu')?.classList.remove('visible');
-    }
-    // Ctrl + Shift + A = agent modal
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'A') {
-        e.preventDefault();
-        openAgentModal();
-    }
-    // Ctrl + Shift + E = export
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'E') {
-        e.preventDefault();
-        cmdExport();
-    }
-    // Ctrl + Shift + S = search
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'S') {
-        e.preventDefault();
-        cmdSearch();
-    }
-});
-
-// ═══════ SYSTEM PROMPT CUSTOMIZATION ═══════
-let customSystemPrompt = localStorage.getItem('sly_custom_prompt') || '';
-
-const PROMPT_PRESETS = [
-    { label: '🎓 Mode Expert', prompt: 'Réponds avec un niveau technique élevé, détails et nuances.' },
-    { label: '🧒 Mode Simple', prompt: 'Explique comme si j\'avais 10 ans, très simple et imagé.' },
-    { label: '😂 Mode Humour', prompt: 'Sois drôle et fais des blagues à chaque réponse. Humour subtil de Sly Cooper.' },
-    { label: '⚡ Mode Concis', prompt: 'Réponds en maximum 2 phrases. Ultra-concis.' },
-    { label: '📝 Mode Détaillé', prompt: 'Donne des réponses longues et complètes avec des exemples concrets.' },
-    { label: '🏴‍☠️ Mode Pirate', prompt: 'Réponds comme un pirate, avec le vocabulaire et l\'attitude d\'un corsaire.' },
-];
-
-// Add to commands
-COMMANDS.push({
-    icon: '⚙️', label: 'Personnaliser le prompt', hint: '/prompt',
-    action: function() {
-        closeCmdPalette();
-        const modal = document.getElementById('settingsModal');
-        const overlay = document.getElementById('settingsOverlay');
-
-        modal.innerHTML = `
-            <div class="modal-title">⚙️ SYSTEM PROMPT</div>
-            <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px">Ajoute des instructions personnalisées pour tous les agents.</div>
-            <textarea class="prompt-editor" id="promptEditor" placeholder="Ex: Réponds toujours en anglais...">${escapeHTML(customSystemPrompt)}</textarea>
-            <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-                ${PROMPT_PRESETS.map(p => `<button class="prompt-preset" onclick="document.getElementById('promptEditor').value='${p.prompt}'">${p.label}</button>`).join('')}
-            </div>
-            <div style="display:flex;gap:8px;margin-top:16px">
-                <button onclick="saveCustomPrompt()" style="flex:1;padding:12px;border-radius:8px;background:var(--blue);color:white;font-weight:700">Sauvegarder</button>
-                <button onclick="clearCustomPrompt()" style="padding:12px;border-radius:8px;background:rgba(255,59,92,0.1);color:var(--red);font-weight:700">Reset</button>
-            </div>`;
-        modal.classList.add('visible');
-        overlay.classList.add('visible');
-        overlay.onclick = closeSettings;
-    }
-});
-
-function saveCustomPrompt() {
-    customSystemPrompt = document.getElementById('promptEditor')?.value || '';
-    localStorage.setItem('sly_custom_prompt', customSystemPrompt);
-    closeSettings();
-    addBubble('agent', 'sly', customSystemPrompt ? `⚙️ Prompt custom activé : "${customSystemPrompt.slice(0, 50)}..."` : "⚙️ Prompt custom désactivé.");
-    haptic('success');
-}
-
-function clearCustomPrompt() {
-    customSystemPrompt = '';
-    localStorage.removeItem('sly_custom_prompt');
-    document.getElementById('promptEditor').value = '';
-    haptic('light');
-}
-
-// Patch buildSystemPrompt to include custom prompt
-const _p4BuildSystemPrompt = buildSystemPrompt;
-buildSystemPrompt = function(agentKey) {
-    let prompt = _p4BuildSystemPrompt(agentKey);
-    if (customSystemPrompt) prompt += '\n\nINSTRUCTIONS UTILISATEUR :\n' + customSystemPrompt;
-    return prompt;
-};
-
-// ═══════ IMAGE/FILE SHARING (base64) ═══════
-function addFileInput() {
-    const inputRow = document.querySelector('.input-row');
-    if (!inputRow || document.getElementById('fileBtn')) return;
-
-    const fileBtn = document.createElement('button');
-    fileBtn.id = 'fileBtn';
-    fileBtn.className = 'btn-icon';
-    fileBtn.style.cssText = 'width:40px;height:40px;font-size:18px;flex-shrink:0';
-    fileBtn.textContent = '📎';
-    fileBtn.onclick = () => document.getElementById('fileInput')?.click();
-
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.id = 'fileInput';
-    fileInput.accept = 'image/*';
-    fileInput.style.display = 'none';
-    fileInput.onchange = handleFileSelect;
-
-    inputRow.insertBefore(fileBtn, inputRow.firstChild);
-    inputRow.appendChild(fileInput);
-}
-
-function handleFileSelect(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-        addBubble('agent', 'sly', "Je ne peux lire que des images pour l'instant.");
-        return;
-    }
-
-    if (file.size > 2 * 1024 * 1024) {
-        addBubble('agent', 'sly', "Image trop lourde (max 2MB). Compresse-la d'abord.");
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-        const dataUrl = ev.target.result;
-        // Show image in chat
-        const area = document.getElementById('chatArea');
-        const div = document.createElement('div');
-        div.className = 'bubble user';
-        div.innerHTML = `
-            <img src="${dataUrl}" style="max-width:100%;border-radius:12px;max-height:300px;object-fit:contain" alt="Image partagée">
-            <div class="bubble-meta"><span>${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span></div>`;
-        area.appendChild(div);
-        area.scrollTop = area.scrollHeight;
-
-        // Send description request to LLM
-        sendMessage(`[Image partagée : ${file.name}, ${(file.size/1024).toFixed(0)}KB] Décris ce que tu vois et donne ton avis.`);
-    };
-    reader.readAsDataURL(file);
-    e.target.value = ''; // Reset
-}
-
-// ═══════ BOOKMARKS IN COMMANDS ═══════
-COMMANDS.push({
-    icon: '⭐', label: 'Mes signets', hint: '/bookmarks',
-    action: function() {
-        closeCmdPalette();
-        const modal = document.getElementById('settingsModal');
-        const overlay = document.getElementById('settingsOverlay');
-
-        modal.innerHTML = `
-            <div class="modal-title">⭐ SIGNETS</div>
-            ${bookmarks.length === 0 ?
-                '<div style="text-align:center;padding:20px;color:var(--text-dim)">Aucun signet. Tape sur 🔖 dans une bulle pour en ajouter.</div>' :
-                bookmarks.map((b, i) => `
-                    <div class="settings-row" style="align-items:flex-start">
-                        <div style="flex:1">
-                            <div style="font-size:11px;color:var(--text-dim)">${new Date(b.date).toLocaleDateString('fr-FR')}</div>
-                            <div style="font-size:13px;margin-top:2px">${escapeHTML(b.text)}</div>
-                        </div>
-                        <button onclick="bookmarks.splice(${i},1);localStorage.setItem('sly_bookmarks',JSON.stringify(bookmarks));COMMANDS.find(c=>c.hint==='/bookmarks').action()" style="color:var(--red);background:none;font-size:14px">✕</button>
-                    </div>`).join('')}`;
-        modal.classList.add('visible');
-        overlay.classList.add('visible');
-        overlay.onclick = closeSettings;
-    }
-});
-
-// ═══════ BOOT PHASE 4 ═══════
-function bootPhase4() {
-    addFileInput();
-    customSystemPrompt = localStorage.getItem('sly_custom_prompt') || '';
-}
-
-// ═══════════════════════════════════════════
-//   PHASE 5 — UX POLISH
-// ═══════════════════════════════════════════
-
-// ═══════ MULTI-LANGUAGE AUTO-DETECT ═══════
-function detectLanguage(text) {
-    const enWords = /\b(the|is|are|was|were|have|has|do|does|will|would|can|could|should|this|that|it|for|with|from|what|how|why|when|where|who|which|there|here|not|but|and|or|about|just|some|any|all|more|other)\b/gi;
-    const matches = text.match(enWords) || [];
-    const ratio = matches.length / text.split(/\s+/).length;
-    return ratio > 0.2 ? 'en' : 'fr';
-}
-
-// Patch buildSystemPrompt for language
-const _p5BuildSystemPrompt = buildSystemPrompt;
-buildSystemPrompt = function(agentKey) {
-    let prompt = _p5BuildSystemPrompt(agentKey);
-    // Language injection happens at send time
-    return prompt;
-};
-
-let detectedLang = 'fr';
-
-// ═══════ CONVERSATION TEMPLATES ═══════
-const TEMPLATES = [
-    { icon: '💡', title: 'Brainstorm', desc: 'Idées et créativité', prompt: 'Lance un brainstorm sur' },
-    { icon: '🔍', title: 'Audit', desc: 'Analyse et diagnostic', prompt: 'Fais un audit complet de' },
-    { icon: '📋', title: 'Planification', desc: 'Plan d\'action', prompt: 'Crée un plan d\'action pour' },
-    { icon: '💬', title: 'Chat libre', desc: 'Discussion ouverte', prompt: '' },
-];
-
-function showTemplates() {
-    const area = document.getElementById('chatArea');
-    const grid = document.createElement('div');
-    grid.className = 'template-grid';
-    grid.id = 'templateGrid';
-
-    TEMPLATES.forEach(t => {
-        const card = document.createElement('div');
-        card.className = 'template-card';
-        card.innerHTML = `
-            <div class="template-icon">${t.icon}</div>
-            <div class="template-title">${t.title}</div>
-            <div class="template-desc">${t.desc}</div>`;
-        card.onclick = () => {
-            grid.remove();
-            if (t.prompt) {
-                document.getElementById('chatInput').value = t.prompt + ' ';
-                document.getElementById('chatInput').focus();
-            }
-            haptic('light');
-            soundClick();
-        };
-        grid.appendChild(card);
-    });
-
-    area.appendChild(grid);
-    area.scrollTop = area.scrollHeight;
-}
-
-// ═══════ AGENT FAVORITES / PINNED ═══════
-let favoriteAgents = new Set(JSON.parse(localStorage.getItem('sly_favorites') || '[]'));
-
-function toggleFavorite(agentKey) {
-    if (favoriteAgents.has(agentKey)) favoriteAgents.delete(agentKey);
-    else favoriteAgents.add(agentKey);
-    localStorage.setItem('sly_favorites', JSON.stringify([...favoriteAgents]));
-    renderDock();
-    haptic('light');
-}
-
-// Patch renderDock to prioritize favorites
-const _p5RenderDock = renderDock;
-renderDock = function() {
-    const dock = document.getElementById('dock');
-    dock.innerHTML = '';
-
-    // Favorites first, then defaults
-    const favs = [...favoriteAgents].filter(k => AGENTS[k]);
-    const nonFavs = DOCK_DEFAULT.filter(k => !favoriteAgents.has(k));
-    const ordered = [...favs, ...nonFavs].slice(0, 10);
-
-    ordered.forEach(key => {
-        const a = AGENTS[key];
-        if (!a) return;
-        const el = document.createElement('button');
-        el.className = `dock-agent${key === currentAgent ? ' active' : ''}${favoriteAgents.has(key) ? ' favorite' : ''}`;
-        el.style.position = 'relative';
-        el.innerHTML = `
-            <div class="dock-pin">📌</div>
-            <span class="dock-emoji">${a.emoji}</span>
-            <span class="dock-name">${a.name}</span>`;
-        el.onclick = () => { currentAgent = key; highlightDockAgent(key); };
-        // Long press to toggle favorite
-        let lt;
-        el.addEventListener('touchstart', () => { lt = setTimeout(() => { toggleFavorite(key); }, 600); });
-        el.addEventListener('touchend', () => clearTimeout(lt));
-        el.addEventListener('touchmove', () => clearTimeout(lt));
-
-        // Mood dot
-        const mood = getAgentMood(key);
-        const colors = { active: 'var(--green)', neutral: 'var(--orange)', bored: 'var(--text-dim)', idle: 'transparent' };
-        const dot = document.createElement('div');
-        dot.className = 'dock-mood';
-        dot.style.background = colors[mood] || 'transparent';
-        el.appendChild(dot);
-
-        dock.appendChild(el);
-    });
-
-    // More button
-    const more = document.createElement('button');
-    more.className = 'dock-more';
-    more.textContent = '+';
-    more.onclick = openAgentModal;
-    dock.appendChild(more);
-};
-
-// ═══════ CONTEXT WINDOW INDICATOR ═══════
-function updateContextIndicator() {
-    let bar = document.getElementById('contextBar');
-    if (!bar) {
-        bar = document.createElement('div');
-        bar.className = 'context-bar';
-        bar.id = 'contextBar';
-        bar.innerHTML = `
-            <span>CTX</span>
-            <div class="context-meter"><div class="context-meter-fill" id="contextFill"></div></div>
-            <span id="contextLabel">0%</span>`;
-        const xpBar = document.querySelector('.xp-bar');
-        if (xpBar) xpBar.after(bar);
-    }
-
-    // Estimate: each message ~50 tokens, max ~4000 tokens context
-    const maxTokens = 4000;
-    const usedTokens = conversationHistory.reduce((sum, m) => sum + Math.ceil(m.content.length / 4), 0);
-    const pct = Math.min(100, Math.round((usedTokens / maxTokens) * 100));
-
-    const fill = document.getElementById('contextFill');
-    const label = document.getElementById('contextLabel');
-    if (fill) {
-        fill.style.width = pct + '%';
-        fill.style.background = pct > 80 ? 'var(--red)' : pct > 50 ? 'var(--orange)' : 'var(--blue)';
-    }
-    if (label) label.textContent = pct + '%';
-}
-
-// ═══════ MESSAGE SCHEDULING ═══════
-let scheduledMessages = [];
-
-function scheduleMessage(text, delayMinutes) {
-    const id = Date.now();
-    const sendAt = Date.now() + delayMinutes * 60000;
-    scheduledMessages.push({ id, text, sendAt });
-
-    // Show badge
-    const area = document.getElementById('chatArea');
-    const badge = document.createElement('div');
-    badge.className = 'scheduled-badge';
-    badge.id = `scheduled-${id}`;
-    badge.innerHTML = `⏰ "${text.slice(0, 40)}..." dans ${delayMinutes}min <button class="cancel" onclick="cancelScheduled(${id})">Annuler</button>`;
-    area.appendChild(badge);
-    area.scrollTop = area.scrollHeight;
-
-    setTimeout(() => {
-        const msg = scheduledMessages.find(m => m.id === id);
-        if (msg) {
-            scheduledMessages = scheduledMessages.filter(m => m.id !== id);
-            document.getElementById(`scheduled-${id}`)?.remove();
-            sendMessage(msg.text);
-        }
-    }, delayMinutes * 60000);
-
-    haptic('success');
-}
-
-function cancelScheduled(id) {
-    scheduledMessages = scheduledMessages.filter(m => m.id !== id);
-    document.getElementById(`scheduled-${id}`)?.remove();
-    haptic('light');
-}
-
-// Add schedule to commands
-COMMANDS.push({
-    icon: '⏰', label: 'Message programmé', hint: '/schedule',
-    action: function() {
-        closeCmdPalette();
-        addBubble('agent', 'sly', '⏰ Tape ton message puis ajoute "dans Xmin" à la fin.\nEx: "Rappelle-moi de checker les stats dans 5min"');
-    }
-});
-
-// Detect scheduled messages in input
-const _p5SendMessage = sendMessage;
-sendMessage = async function(text) {
-    // Auto-detect language
-    detectedLang = detectLanguage(text);
-
-    // Check for schedule pattern
-    const schedMatch = text.match(/(.+?)\s+dans\s+(\d+)\s*min/i);
-    if (schedMatch && parseInt(schedMatch[2]) > 0) {
-        scheduleMessage(schedMatch[1].trim(), parseInt(schedMatch[2]));
-        return;
-    }
-
-    await _p5SendMessage(text);
-    updateContextIndicator();
-};
-
-// ═══════ BOOT PHASE 5 ═══════
-function bootPhase5() {
-    updateContextIndicator();
-    // Show templates if first ever session (no history)
-    if (conversationHistory.length === 0 && sessions.length <= 1) {
-        setTimeout(showTemplates, 1000);
-    }
-}
 
 // ═══════ LAUNCH ═══════
 runSplash();
+// Phase 2 boot after splash
 setTimeout(bootPhase2, 200);
-setTimeout(bootPhase3, 400);
-setTimeout(bootPhase3Plus, 600);
-setTimeout(bootPhase4, 800);
-setTimeout(bootPhase5, 1000);
 </script>
 </body>
 </html>
