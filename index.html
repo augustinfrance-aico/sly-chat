@@ -61,7 +61,7 @@ input{font-family:inherit;border:none;outline:none}
     transition:opacity .6s ease,visibility .6s;
     overflow:hidden;
 }
-#splash.hidden{opacity:0;visibility:hidden;pointer-events:none}
+#splash.hidden{opacity:0;visibility:hidden;pointer-events:none;display:none!important}
 #splash canvas{position:absolute;inset:0;z-index:0}
 .splash-bg{
     position:absolute;inset:0;z-index:0;
@@ -2184,7 +2184,7 @@ function initParticles() {
 // ═══════ SPLASH ═══════
 function runSplash() {
     const isMob = /iPhone|iPad|Android/i.test(navigator.userAgent);
-    const SPLASH_DURATION = isMob ? 5000 : 4800; // 5s mobile pour lire la seq complète
+    const SPLASH_DURATION = isMob ? 4200 : 4000; // 4s — seq finit à 3.5s
 
     const splash = document.getElementById('splash');
 
@@ -2197,19 +2197,17 @@ function runSplash() {
 
     // ── Boot log cinématique (agents par pôle) ──
     const BOOT_SEQ = [
-        [200,  '#1F6FFF', '> SLY Neural Core — init...'],
-        [600,  '#1EFF8E', '> Groq 6-model stack ✓  Gemini fallback ✓'],
-        [1000, '#1F6FFF', '> Chargement 50 agents du Cooper Building...'],
-        [1400, '#B18CFF', '> 🦅 NÉBULEUSE — OMEGA online ✓'],
-        [1750, '#1F6FFF', '> 🦊 COOPER GANG — SLY · BENTLEY · MURRAY ✓'],
-        [2100, '#7A3CFF', '> 🏛️ OLYMPE — 6 méta-agents online ✓'],
-        [2450, '#00E5FF', '> 🔭 PÔLE R RECON — 10 agents ✓'],
-        [2800, '#FF9A3C', '> 🔨 PÔLE F FORGE — 12 agents ✓'],
-        [3150, '#1EFF8E', '> 🚀 PÔLE D DEPLOY — 9 agents ✓'],
-        [3500, '#B18CFF', '> 🧪 R&D LAB — CIPHER · RADAR · PROTO · TURING · ECHO ✓'],
-        [3900, '#1EFF8E', '> 50/50 agents online · Coût : 0€ · Mode AUTONOME ■'],
-        [4200, '#9CA3AF', '> Mémoire neuronale : injection contexte ✓'],
-        [4400, '#1F6FFF', '> Bienvenue Commandant Augus ▮'],
+        [150,  '#1F6FFF', '> SLY Neural Core — init...'],
+        [500,  '#1EFF8E', '> Groq + Gemini cascade ✓'],
+        [900,  '#1F6FFF', '> Cooper Building — 50 agents...'],
+        [1200, '#B18CFF', '> 🦅 OMEGA online ✓'],
+        [1500, '#3A8DFF', '> 🦊 SLY  ·  🐢 BENTLEY  ·  🦛 MURRAY ✓'],
+        [1850, '#7A3CFF', '> 🏛️ OLYMPE — DARWIN · SHADOW · HAVOC ✓'],
+        [2200, '#00E5FF', '> 🔭 RECON — CORTEX · SIBYL · SPECTER ✓'],
+        [2550, '#FF9A3C', '> 🔨 FORGE — VOLT · ANVIL · PULSE ✓'],
+        [2900, '#1EFF8E', '> 🚀 DEPLOY — DREYFUS · CLOSER · RACOON ✓'],
+        [3200, '#1EFF8E', '> 50/50 online · 0€ · AUTONOME ■'],
+        [3500, '#1F6FFF', '> Bienvenue Commandant Augus ▮'],
     ];
 
     // Create boot log container if not exists
@@ -2218,11 +2216,11 @@ function runSplash() {
         bootLog = document.createElement('div');
         bootLog.id = 'bootLog';
         bootLog.style.cssText = `
-            position:absolute;bottom:80px;left:50%;transform:translateX(-50%);
-            width:min(320px,90vw);max-height:120px;overflow:hidden;
-            font-family:'JetBrains Mono','Fira Code',monospace;font-size:9px;
-            line-height:1.6;z-index:3;text-align:left;
-            opacity:0;animation:fadeIn 0.5s ease 0.3s forwards;
+            position:absolute;bottom:100px;left:50%;transform:translateX(-50%);
+            width:min(340px,92vw);max-height:160px;overflow:hidden;
+            font-family:'JetBrains Mono','Fira Code',monospace;font-size:10px;
+            line-height:1.8;z-index:10;text-align:left;
+            opacity:0;animation:fadeIn 0.4s ease 0.1s forwards;
         `;
         splash.appendChild(bootLog);
     }
@@ -2270,30 +2268,31 @@ function runSplash() {
     drawSplash();
 
     // ── Fermeture après SPLASH_DURATION ──
-    // Safety: toujours passer après SPLASH_DURATION
-    const _splashTimer = setTimeout(() => {
+    function _closeSplash() {
+        if (_splashRunning === false) return; // déjà fermé
         _splashRunning = false;
         if (bootLog) bootLog._done = true;
+        // Fermeture immédiate sans transition pour éviter tout blocage
+        splash.style.transition = 'none';
+        splash.style.display = 'none';
         splash.classList.add('hidden');
         const app = document.getElementById('app');
-        if (app) app.classList.add('visible');
+        if (app) { app.style.display = 'flex'; app.classList.add('visible'); }
         localStorage.setItem('sly_splashTime', Date.now().toString());
         if (typeof bootApp === 'function') bootApp();
-    }, SPLASH_DURATION);
+    }
 
-    // Safety fallback: si 6s passées et app encore cachée → forcer
+    const _splashTimer = setTimeout(_closeSplash, SPLASH_DURATION);
+
+    // Safety fallback: si 5s passées et app encore cachée → forcer
     setTimeout(() => {
         const app = document.getElementById('app');
         if (app && !app.classList.contains('visible')) {
             clearTimeout(_splashTimer);
-            _splashRunning = false;
-            if (splash) splash.style.display = 'none';
-            app.style.display = 'flex';
-            app.classList.add('visible');
-            if (typeof bootApp === 'function') bootApp();
+            _closeSplash();
             console.warn('⚠️ Splash safety timeout triggered');
         }
-    }, 6000);
+    }, 5000);
 }
 
 // ═══════ BOOT ═══════
