@@ -71,18 +71,19 @@ input{font-family:inherit;border:none;outline:none}
 /* Wrap central */
 .sp2-wrap{position:relative;z-index:4;display:flex;flex-direction:column;align-items:center;gap:0;animation:sp2FadeIn 0.8s ease both}
 @keyframes sp2FadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-/* Conteneur médaillon Sly */
+/* Conteneur médaillon Sly — fond transparent, rond bleu lumineux */
 .sp2-sly-wrap{
     width:130px;height:130px;border-radius:50%;
-    overflow:hidden;
-    border:2.5px solid rgba(31,111,255,0.7);
-    box-shadow:0 0 20px rgba(31,111,255,0.5),0 0 40px rgba(31,111,255,0.2),inset 0 0 20px rgba(31,111,255,0.1);
+    overflow:visible;
+    border:2.5px solid rgba(31,111,255,0.8);
+    box-shadow:0 0 24px rgba(31,111,255,0.6),0 0 48px rgba(31,111,255,0.3),0 0 80px rgba(31,111,255,0.15);
     animation:sp2Float 3.5s ease-in-out infinite;
     background:transparent;
+    display:flex;align-items:center;justify-content:center;
 }
-.sp2-sly{width:100%;height:100%;display:block;
-    object-fit:cover;object-position:center 10%;
-    mix-blend-mode:screen;}
+.sp2-sly{width:110%;height:110%;display:block;
+    object-fit:contain;object-position:center center;
+    filter:drop-shadow(0 0 12px rgba(31,111,255,0.5)) drop-shadow(0 0 4px rgba(0,229,255,0.3));}
 @keyframes sp2Float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.03)}}
 /* Titre "SLY" — Orbitron 40px, néon blanc bleuté */
 .sp2-title{
@@ -121,14 +122,8 @@ input{font-family:inherit;border:none;outline:none}
 @keyframes sp2Pulse{0%,100%{opacity:0.5;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
 @keyframes neonFlicker{0%,19%,21%,23%,100%{opacity:1}20%,22%{opacity:0.75}55%{opacity:0.88}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-/* Ships */
-.sp2-ship{position:absolute;z-index:3;pointer-events:none;font-size:14px;opacity:0;animation:sp2ShipFly var(--dur,12s) linear var(--del,0s) infinite}
-@keyframes sp2ShipFly{
-    0%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0.6) rotate(var(--rot))}
-    5%{opacity:0.7}
-    95%{opacity:0.5}
-    100%{opacity:0;transform:translate(var(--ex),var(--ey)) scale(0.9) rotate(var(--rot))}
-}
+/* Ships — animés en JS (requestAnimationFrame) */
+.sp2-ship{position:absolute;z-index:3;pointer-events:none;font-size:16px;opacity:0;transition:opacity 0.4s;will-change:transform}
 
 /* ═══════ APP LAYOUT ═══════ */
 #app{display:none;flex-direction:column;height:100dvh;position:relative}
@@ -809,7 +804,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
     <div class="sp2-overlay"></div>
     <div class="sp2-stars" id="sp2Stars"></div>
     <div class="sp2-wrap">
-        <div class="sp2-sly-wrap"><img class="sp2-sly" src="sly_bust.webp" alt="Sly" loading="eager"></div>
+        <div class="sp2-sly-wrap"><img class="sp2-sly" src="sly_logo_nobg.png?v=5" alt="Sly" loading="eager"></div>
         <div class="sp2-title">SLY</div>
         <div class="sp2-sub" id="splashSub">COOPER BUILDING</div>
         <div class="sp2-bar"><div class="sp2-bar-fill" id="splashBar"></div></div>
@@ -2228,25 +2223,46 @@ function runSplash() {
             s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${1.5+Math.random()*3}s;--del:${-Math.random()*3}s;opacity:${0.2+Math.random()*0.8}`;
             starsEl.appendChild(s);
         }
-        // ── Générer vaisseaux traversants ──
-        const ships = ['🚀','✈️','🛸','🛩️'];
-        const trajectories = [
-            {sx:'-10%', sy:'15%', ex:'110%', ey:'10%', rot:'−5deg'},
-            {sx:'110%', sy:'25%', ex:'-10%', ey:'20%', rot:'175deg'},
-            {sx:'-10%', sy:'60%', ex:'110%', ey:'55%', rot:'−3deg'},
-            {sx:'110%', sy:'70%', ex:'-10%', ey:'75%', rot:'177deg'},
-            {sx:'-10%', sy:'40%', ex:'110%', ey:'35%', rot:'−8deg'},
+        // ── Générer vaisseaux traversants (JS RAF) ──
+        const shipEmojis = ['🚀','🛸','✈️','🛩️','🚀'];
+        const W = window.innerWidth, H = window.innerHeight;
+        const shipDefs = [
+            {y:0.15, rtl:false}, {y:0.28, rtl:true},
+            {y:0.50, rtl:false}, {y:0.68, rtl:true}, {y:0.82, rtl:false}
         ];
-        for (let i = 0; i < 5; i++) {
-            const ship = document.createElement('div');
-            ship.className = 'sp2-ship';
-            const t = trajectories[i];
-            const dur = 8 + Math.random() * 8;
-            const del = i * 1.5 + Math.random() * 2;
-            ship.textContent = ships[i % ships.length];
-            ship.style.cssText = `--sx:${t.sx};--sy:${t.sy};--ex:${t.ex};--ey:${t.ey};--rot:${t.rot};--dur:${dur.toFixed(1)}s;--del:${del.toFixed(1)}s;top:0;left:0;filter:drop-shadow(0 0 4px rgba(31,111,255,0.8))`;
-            starsEl.appendChild(ship);
-        }
+        shipDefs.forEach((def, i) => {
+            const el = document.createElement('div');
+            el.className = 'sp2-ship';
+            el.textContent = shipEmojis[i];
+            el.style.top = (def.y * 100) + '%';
+            el.style.filter = 'drop-shadow(0 0 4px rgba(31,111,255,0.9))';
+            el.style.fontSize = (12 + Math.random() * 8) + 'px';
+            starsEl.appendChild(el);
+            const speed = 60 + Math.random() * 60; // px/s
+            let x = def.rtl ? W + 40 : -40;
+            const targetX = def.rtl ? -80 : W + 80;
+            const startDelay = i * 1200 + Math.random() * 800;
+            setTimeout(() => {
+                el.style.opacity = '0.7';
+                let last = null;
+                function step(ts) {
+                    if (!last) last = ts;
+                    const dt = (ts - last) / 1000;
+                    last = ts;
+                    x += def.rtl ? -speed * dt : speed * dt;
+                    el.style.transform = `translateX(${x}px) scaleX(${def.rtl ? -1 : 1})`;
+                    if (def.rtl ? x > -80 : x < W + 80) {
+                        requestAnimationFrame(step);
+                    } else {
+                        // Restart
+                        x = def.rtl ? W + 40 : -40;
+                        setTimeout(() => requestAnimationFrame(step), 2000 + Math.random() * 3000);
+                    }
+                }
+                el.style.transform = `translateX(${x}px) scaleX(${def.rtl ? -1 : 1})`;
+                requestAnimationFrame(step);
+            }, startDelay);
+        });
     }
 
     // ── Fallback immédiat si DOM pas prêt ──
@@ -2322,7 +2338,7 @@ function runSplash() {
     const gang = document.createElement('div');
     gang.style.cssText = 'display:flex;gap:10px;margin-bottom:12px;justify-content:flex-start';
     const gangData = [
-        { img:'sly_bust.webp',   name:'SLY',     role:'TACTIQUE',   color:'#3A8DFF', delay:800  },
+        { img:'sly_logo_nobg.png', name:'SLY',    role:'TACTIQUE',   color:'#3A8DFF', delay:800  },
         { img:'bentley.png',     name:'BENTLEY',  role:'TECH',       color:'#1EFF8E', delay:1600 },
         { img:'murray.png',      name:'MURRAY',   role:'FORCE',      color:'#FF9A3C', delay:2400 },
     ];
@@ -2596,6 +2612,9 @@ function _bindAppListeners() {
             _scrollBtn.classList.remove('visible');
         });
     }
+
+    // Rewind panel listeners
+    try { _bindRewindListeners(); } catch(e) { console.warn('_bindRewindListeners:', e); }
 }
 
 // ═══════ SERVICE WORKER ═══════
@@ -3962,8 +3981,12 @@ function renderRewindList() {
     });
 }
 
-document.getElementById('rewindBackdrop').addEventListener('click', toggleRewindPanel);
-document.getElementById('rewindNew').addEventListener('click', async () => {
+// rewindBackdrop + rewindNew → dans _bindAppListeners() pour éviter crash global
+function _bindRewindListeners() {
+    const rb = document.getElementById('rewindBackdrop');
+    if (rb) rb.addEventListener('click', toggleRewindPanel);
+    const rn = document.getElementById('rewindNew');
+    if (rn) rn.addEventListener('click', async () => {
     await Sessions.saveCurrent();
     await Sessions.create('Nouvelle conversation');
     conversationHistory = [];
@@ -3977,7 +4000,8 @@ document.getElementById('rewindNew').addEventListener('click', async () => {
         "Fresh start ! Je t'écoute, boss.",
     ];
     addBubble('agent', 'sly', greetings[Math.floor(Math.random() * greetings.length)]);
-});
+    }); // fin rewindNew
+} // fin _bindRewindListeners
 
 // Auto-save session periodically (IndexedDB)
 setInterval(() => Sessions.saveCurrent(), 30000);
