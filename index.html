@@ -2214,24 +2214,49 @@ function runSplash() {
     var splash = document.getElementById('splash');
     var app = document.getElementById('app');
 
-    // Fermeture garantie — fonction atomique
+    // Fermeture garantie — fonction atomique, chaque étape isolée
     var _done = false;
     function _close() {
         if (_done) return;
         _done = true;
-        // Cacher splash
-        splash.style.setProperty('display', 'none', 'important');
-        splash.style.setProperty('visibility', 'hidden', 'important');
-        splash.style.setProperty('pointer-events', 'none', 'important');
-        splash.classList.add('hidden');
-        // Montrer app
-        app.style.setProperty('display', 'flex', 'important');
-        app.style.flexDirection = 'column';
-        app.style.height = '100dvh';
-        app.style.position = 'relative';
-        app.classList.add('visible');
-        try { bootApp(); } catch(e) { console.warn(e); }
-        setTimeout(function(){ try { bootPhase2(); } catch(e){} }, 100);
+        // 1. Cacher splash
+        try {
+            splash.style.setProperty('display', 'none', 'important');
+            splash.style.setProperty('visibility', 'hidden', 'important');
+            splash.style.setProperty('pointer-events', 'none', 'important');
+            splash.classList.add('hidden');
+        } catch(e) {}
+        // 2. Montrer app
+        try {
+            app.style.setProperty('display', 'flex', 'important');
+            app.style.flexDirection = 'column';
+            app.style.height = '100dvh';
+            app.style.position = 'relative';
+            app.classList.add('visible');
+        } catch(e) {}
+        // 3. Boot — chaque fonction indépendante, aucune ne bloque les suivantes
+        setTimeout(function(){ try { loadState(); } catch(e){} }, 0);
+        setTimeout(function(){ try { renderDock(); } catch(e){} }, 10);
+        setTimeout(function(){ try { updateXPDisplay(); updateStreak(); } catch(e){} }, 20);
+        setTimeout(function(){ try { initParticles(); } catch(e){} }, 30);
+        setTimeout(function(){ try { initSTT(); scheduleWhisper(); } catch(e){} }, 50);
+        setTimeout(function(){ try { bootPhase2(); } catch(e){} }, 80);
+        // Message de bienvenue Sly
+        setTimeout(function(){
+            try {
+                var h = new Date().getHours();
+                var salut = h<6?'Nuit blanche, Commandant ?':h<12?'Bonjour Commandant.':h<18?'Bon après-midi.':'Bonsoir, Commandant.';
+                var briefs = [
+                    salut+' Le Building t\'attendait. 50 agents prêts. Go.',
+                    salut+' SENTINEL a scanné — tout est propre. On démarre ?',
+                    salut+' Tous les systèmes sont opérationnels. À tes ordres.',
+                ];
+                var brief = briefs[Math.floor(Math.random()*briefs.length)];
+                localStorage.setItem('sly_last_session', Date.now().toString());
+                addBubble('agent', 'sly', brief);
+                if (autoSpeak) try { speakText('sly', brief); } catch(e){}
+            } catch(e) {}
+        }, 400);
     }
 
     // Fallback absolu — si splash ou app manquant, on ouvre quand même
@@ -2248,15 +2273,17 @@ function runSplash() {
         }
     }
 
-    // Barre bleue — transition CSS pure, démarre immédiatement
+    // Barre bleue — double RAF pour garantir que le browser a peint avant la transition
     var bar = document.getElementById('splashBar');
     if (bar) {
-        bar.style.width = '0%';
         bar.style.transition = 'none';
-        // Force reflow avant d'appliquer la transition
-        bar.getBoundingClientRect();
-        bar.style.transition = 'width ' + (DUR * 0.9 / 1000).toFixed(1) + 's linear';
-        bar.style.width = '100%';
+        bar.style.width = '0%';
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                bar.style.transition = 'width ' + (DUR * 0.88 / 1000).toFixed(1) + 's linear';
+                bar.style.width = '100%';
+            });
+        });
     }
 
     // "COOPER BUILDING" blanc → bleu à mi-chemin
@@ -3177,8 +3204,8 @@ addWhisper = function(text) {
 };
 
 // ═══════ PATCH PTT (Phase 2 tracking) ═══════
-const _origPttTouch = pttBtn.ontouchstart;
-pttBtn.addEventListener('touchstart', () => trackDaily('ptt_used'), { capture: true });
+// pttBtn résolu au moment du bind, pas au parse global
+(function(){ var _p = document.getElementById('pttBtn'); if(_p) _p.addEventListener('touchstart', () => trackDaily('ptt_used'), { capture: true }); })();
 
 // ═══════ PATCH REACTION TRACKING ═══════
 const _origAddReaction = addReaction;
