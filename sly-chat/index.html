@@ -4,10 +4,11 @@
 <script>
 // Auto-configure API keys on first load
 (function(){
-  var _c=[90,51,78,114,88,50,70,113,86,50,78,111,85,85,53,75,81,122,70,87,78,109,108,110,86,88,112,75,99,108,107,50,86,48,100,107,101,87,73,122,82,108,108,52,81,50,49,109,83,68,86,111,97,86,74,108,82,68,86,70,98,106,86,119,84,48,104,77,99,122,65,121,90,69,56,61];
+  var _c=[90,51,78,114,88,50,49,72,97,50,100,75,101,71,70,90,85,107,90,121,97,84,86,73,89,87,49,118,99,86,66,49,86,48,100,107,101,87,73,122,82,108,108,106,85,88,112,88,78,108,111,120,85,86,82,49,84,72,90,50,99,109,116,107,78,84,78,119,77,108,107,120,97,50,56,61];
   var gk=_c.map(function(b){return String.fromCharCode(b)}).join('');
-  if(!localStorage.getItem('sly_groq_key')) localStorage.setItem('sly_groq_key', gk);
-  window.GROQ_KEY = localStorage.getItem('sly_groq_key');
+  // Toujours override — garantit que la clé est à jour même si localStorage contient une ancienne clé
+  localStorage.setItem('sly_groq_key', gk);
+  window.GROQ_KEY = gk;
 })();
 </script>
 <meta charset="UTF-8">
@@ -16,7 +17,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#05070A">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://ga.jspm.io https://cdn.jsdelivr.net https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://sly-bot-production.up.railway.app https://api.groq.com https://*.groq.com https://generativelanguage.googleapis.com https://*.googleapis.com https://api.fish.audio https://*.fish.audio; img-src 'self' data: blob:; media-src 'self' blob:; worker-src 'self' blob:">
-<title>SLY-CHAT</title>
+<title>SLY-CHAT v6</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <link rel="manifest" href="manifest.json">
 <!-- Three.js Import Map (r183, CDN, zero build tools) -->
 <script async src="https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js" crossorigin="anonymous"></script>
@@ -38,7 +42,7 @@
     --cyan:#00E5FF; --green:#1EFF8E; --red:#FF3B5C; --orange:#FF9A3C;
     --text:#E6EDF5; --text-dim:rgba(230,237,245,0.45);
     --glass-border:rgba(31,111,255,0.15);
-    --radius:16px; --radius-sm:12px;
+    --radius:20px; --radius-sm:16px;
     --safe-top:env(safe-area-inset-top,20px);
     --safe-bottom:env(safe-area-inset-bottom,0px);
 }
@@ -54,53 +58,74 @@ button{font-family:inherit;border:none;cursor:pointer;-webkit-user-select:none;u
 input{font-family:inherit;border:none;outline:none}
 
 /* ═══════ SPLASH ═══════ */
-#splash{
-    position:fixed;inset:0;z-index:9999;
-    background:var(--bg-deep);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    transition:opacity .6s ease,visibility .6s;
-    overflow:hidden;
-}
-#splash.hidden{opacity:0;visibility:hidden;pointer-events:none}
-#splash canvas{position:absolute;inset:0;z-index:0}
-.splash-bg{
-    position:absolute;inset:0;z-index:0;
-    background:url('sly_splash.jpg') center/cover no-repeat;
-    filter:brightness(0.35) blur(2px);
-}
-.splash-logo{
-    z-index:2;width:155px;height:155px;
-    border-radius:0;background:transparent;
-    backdrop-filter:none;border:none;
+/* ═══════ SPLASH v4 ═══════ */
+#splash{position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+#splash.hidden{display:none}
+#splash canvas{display:none}
+/* Fond lune — background-color noir immédiat, image charge par dessus */
+.sp2-bg{position:absolute;inset:0;z-index:0;background-color:#060a12;background-image:url('moon_bg.webp?v=4');background-size:cover;background-position:center;background-repeat:no-repeat;opacity:0.88}
+.sp2-overlay{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse 70% 70% at 50% 40%,transparent 30%,rgba(0,0,6,0.55) 100%)}
+/* Particles étoiles animées */
+.sp2-stars{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+.sp2-star{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;animation:sp2Twinkle var(--d,2s) ease-in-out infinite var(--del,0s)}
+@keyframes sp2Twinkle{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:1;transform:scale(1.6)}}
+/* Wrap central */
+.sp2-wrap{position:relative;z-index:4;display:flex;flex-direction:column;align-items:center;gap:0;animation:sp2FadeIn 0.8s ease both}
+@keyframes sp2FadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+/* Conteneur médaillon Sly — sans rond, juste glow bleu */
+.sp2-sly-wrap{
+    width:140px;height:140px;
+    border-radius:50%;
+    border:none;
+    background:transparent;
+    animation:sp2Float 3.5s ease-in-out infinite;
     display:flex;align-items:center;justify-content:center;
-    animation:slyBreathe 3s ease-in-out infinite;
     overflow:visible;
 }
-.splash-logo img{width:100%;height:100%;object-fit:contain;object-position:center center;
-    filter:drop-shadow(0 0 20px rgba(31,111,255,0.5)) drop-shadow(0 0 40px rgba(122,60,255,0.25));
-    animation:slyGlowImg 3s ease-in-out infinite;
+.sp2-sly{width:100%;height:100%;display:block;
+    object-fit:contain;object-position:center center;
+    filter:drop-shadow(0 0 18px rgba(31,111,255,0.7)) drop-shadow(0 0 8px rgba(31,111,255,0.5)) drop-shadow(0 0 3px rgba(0,229,255,0.4));}
+@keyframes sp2Float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.03)}}
+/* Titre "SLY" — Orbitron 40px, néon blanc bleuté */
+.sp2-title{
+    margin-top:18px;
+    font-family:'Orbitron',sans-serif;font-size:40px;font-weight:900;letter-spacing:14px;
+    color:#fff;
+    text-shadow:
+        0 0 12px rgba(31,111,255,1),
+        0 0 30px rgba(31,111,255,0.7),
+        0 0 60px rgba(31,111,255,0.4),
+        0 3px 12px rgba(0,0,0,0.8);
+    animation:sp2TitleGlow 2.5s ease-in-out infinite;
 }
-@keyframes slyGlowImg{
-  0%,100%{filter:drop-shadow(0 0 20px rgba(31,111,255,0.4)) drop-shadow(0 0 40px rgba(122,60,255,0.2))}
-  50%{filter:drop-shadow(0 0 35px rgba(31,111,255,0.7)) drop-shadow(0 0 70px rgba(122,60,255,0.4)) drop-shadow(0 0 100px rgba(0,229,255,0.15))}
+@keyframes sp2TitleGlow{
+    0%,100%{text-shadow:0 0 12px rgba(31,111,255,1),0 0 30px rgba(31,111,255,0.7),0 0 60px rgba(31,111,255,0.4),0 3px 12px rgba(0,0,0,0.8)}
+    50%{text-shadow:0 0 20px rgba(31,111,255,1),0 0 50px rgba(31,111,255,0.9),0 0 90px rgba(122,60,255,0.5),0 3px 12px rgba(0,0,0,0.8)}
 }
-@keyframes slyBreathe{0%,100%{transform:scale(1) translateY(0)}50%{transform:scale(1.05) translateY(-8px)}}
-@keyframes slyGlow{0%,100%{box-shadow:0 0 30px rgba(31,111,255,0.3),0 0 60px rgba(122,60,255,0.15)}50%{box-shadow:0 0 50px rgba(31,111,255,0.6),0 0 100px rgba(122,60,255,0.3),0 0 150px rgba(0,229,255,0.1)}}
-.splash-title{
-    z-index:2;margin-top:20px;font-family:'Orbitron',monospace;font-size:32px;font-weight:900;letter-spacing:8px;
-    background:linear-gradient(135deg,var(--blue),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;
-    animation:neonFlicker 6s linear infinite;
+/* "COOPER BUILDING" — même style que SLY mais plus petit */
+.sp2-sub{
+    margin-top:8px;font-family:'Orbitron',sans-serif;
+    font-size:12px;font-weight:700;letter-spacing:6px;text-transform:uppercase;
+    color:rgba(255,255,255,0.75);
+    text-shadow:0 0 8px rgba(31,111,255,0.6),0 2px 8px rgba(0,0,0,0.7);
+    transition:color 2s ease, text-shadow 2s ease;
 }
-.splash-sub{z-index:2;margin-top:6px;font-size:13px;color:var(--text-dim);letter-spacing:3px}
-@keyframes neonFlicker{0%,19%,21%,23%,100%{opacity:1;filter:none}20%,22%{opacity:0.7;filter:brightness(1.2)}55%{opacity:0.85}}
+.sp2-sub.loaded{color:#6FB1FF;text-shadow:0 0 14px rgba(31,111,255,0.9),0 0 28px rgba(31,111,255,0.5),0 2px 8px rgba(0,0,0,0.7)}
+/* Barre bleue — animation CSS pure, pas de JS */
+.sp2-bar{margin-top:24px;width:260px;height:4px;background:rgba(255,255,255,0.15);border-radius:4px;overflow:hidden;box-shadow:0 0 0 1px rgba(31,111,255,0.2)}
+.sp2-bar-fill{height:100%;width:0%;border-radius:4px;
+    background:linear-gradient(90deg,#1F6FFF,#6FB1FF,#00E5FF);
+    box-shadow:0 0 16px #1F6FFF,0 0 32px rgba(31,111,255,0.7);
+    animation:barFill 4.8s linear 0.1s forwards}
+@keyframes barFill{from{width:0%}to{width:100%}}
+/* Boot log */
+#bootLog div{text-shadow:0 1px 6px rgba(0,0,0,0.95),0 0 10px rgba(0,0,0,0.7)}
+@keyframes sp2Ring{0%{transform:translateX(-50%) scale(1);opacity:0.6}100%{transform:translateX(-50%) scale(1.8);opacity:0}}
+@keyframes sp2Pulse{0%,100%{opacity:0.5;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
+@keyframes neonFlicker{0%,19%,21%,23%,100%{opacity:1}20%,22%{opacity:0.75}55%{opacity:0.88}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-.splash-bar{z-index:2;margin-top:24px;width:220px;height:4px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden}
-.splash-bar-fill{
-    height:100%;width:0%;border-radius:4px;
-    background:linear-gradient(90deg,var(--blue),var(--violet),var(--cyan));
-    box-shadow:0 0 8px rgba(31,111,255,0.6),0 0 20px rgba(122,60,255,0.3);
-    transition:width 1.2s cubic-bezier(0.4,0,0.2,1);
-}
+/* Ships — animés en JS (requestAnimationFrame) */
+.sp2-ship{position:absolute;z-index:3;pointer-events:none;font-size:16px;opacity:0;transition:opacity 0.4s;will-change:transform}
 
 /* ═══════ APP LAYOUT ═══════ */
 #app{display:none;flex-direction:column;height:100dvh;position:relative}
@@ -113,12 +138,17 @@ input{font-family:inherit;border:none;outline:none}
     border-bottom:1px solid var(--glass-border);
     min-height:56px;gap:12px;position:relative;z-index:10;
 }
-.header-title{font-family:'Orbitron',monospace;font-size:16px;font-weight:700;flex:1;background:linear-gradient(135deg,var(--blue),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-center{flex:1;display:flex;flex-direction:column;gap:2px}
+.header-title{font-family:'Orbitron',monospace;font-size:16px;font-weight:700;background:linear-gradient(135deg,var(--blue),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-agent-indicator{display:flex;align-items:center;gap:5px}
+.agent-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:agentPulse 2s ease-in-out infinite;flex-shrink:0}
+@keyframes agentPulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.agent-label{font-size:10px;font-weight:600;color:var(--blue-focus);text-transform:uppercase;letter-spacing:1px}
 .header-stat{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--text-dim)}
 .header-stat .val{color:var(--text)}
-.xp-bar{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
-.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:2px;transition:width .5s cubic-bezier(0.34,1.56,0.64,1)}
-.btn-icon{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,0.06);color:var(--text);display:flex;align-items:center;justify-content:center;font-size:18px;transition:background .2s}
+.xp-bar{height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;box-shadow:inset 0 0 4px rgba(0,0,0,0.3)}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--violet),var(--cyan));border-radius:2px;transition:width .5s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 0 8px rgba(31,111,255,0.6)}
+.btn-icon{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.06);color:var(--text);display:flex;align-items:center;justify-content:center;font-size:18px;transition:background .2s}
 .btn-icon:active{background:rgba(31,111,255,0.2)}
 
 /* ═══════ CHAT AREA ═══════ */
@@ -134,15 +164,49 @@ input{font-family:inherit;border:none;outline:none}
 /* Bubbles */
 .bubble{
     max-width:85%;margin-bottom:12px;
-    padding:14px 16px;border-radius:var(--radius);
+    padding:14px 16px;
     background:var(--bg-glass);backdrop-filter:blur(16px) saturate(160%);
     border:1px solid var(--glass-border);
     animation:bubbleIn .35s cubic-bezier(0.34,1.56,0.64,1);
     position:relative;
     will-change:transform,opacity;
 }
-.bubble.agent{margin-right:auto}
-.bubble.user{margin-left:auto;background:rgba(31,111,255,0.15);border-color:rgba(31,111,255,0.25)}
+.bubble.agent{
+    margin-right:auto;
+    border-radius:4px 22px 22px 22px;
+    border-left:3px solid var(--agent-color, var(--blue));
+}
+/* Couleur bordure par agent — injectée via style attr */
+.bubble.agent[data-agent="sly"]      { --agent-color:#3A8DFF }
+.bubble.agent[data-agent="bentley"]  { --agent-color:#1EFF8E }
+.bubble.agent[data-agent="murray"]   { --agent-color:#FF9A3C }
+.bubble.agent[data-agent="omega"]    { --agent-color:#B18CFF }
+.bubble.agent[data-agent="sentinel"] { --agent-color:#FF3B5C }
+.bubble.agent[data-agent="cortex"]   { --agent-color:#00E5FF }
+.bubble.agent[data-agent="franklin"] { --agent-color:#2E7D32 }
+.bubble.agent[data-agent="anvil"]    { --agent-color:#FF6B35 }
+.bubble.agent[data-agent="glitch"]   { --agent-color:#E040FB }
+.bubble.agent[data-agent="dreyfus"]  { --agent-color:#FFD740 }
+.bubble.agent[data-agent="volt"]     { --agent-color:#1F6FFF }
+.bubble.agent[data-agent="specter"]  { --agent-color:#7A3CFF }
+.bubble.agent[data-agent="closer"]   { --agent-color:#FFD740 }
+.bubble.agent[data-agent="hunter"]   { --agent-color:#FF3B5C }
+.bubble.agent[data-agent="franklin"] { --agent-color:#2E7D32 }
+/* Badge mode dégradé */
+.offline-badge{
+    position:fixed;bottom:calc(var(--safe-bottom) + 130px);left:50%;transform:translateX(-50%);
+    font-size:11px;padding:4px 12px;border-radius:12px;
+    background:rgba(255,154,60,0.15);color:var(--orange);
+    border:1px solid rgba(255,154,60,0.3);
+    z-index:20;pointer-events:none;
+    animation:fadeIn .3s ease;
+}
+.bubble.user{
+    margin-left:auto;
+    background:rgba(31,111,255,0.18);
+    border-color:rgba(31,111,255,0.3);
+    border-radius:22px 4px 22px 22px;
+}
 @keyframes bubbleIn{from{opacity:0;transform:translateY(16px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
 .bubble-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .bubble-avatar-img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(31,111,255,0.3);flex-shrink:0;background:transparent}
@@ -163,7 +227,7 @@ input{font-family:inherit;border:none;outline:none}
 
 /* Thinking indicator — bouncing dots */
 .thinking{display:flex;align-items:center;gap:8px;padding:14px 16px;margin-bottom:12px;max-width:200px;
-    background:rgba(31,111,255,0.08);border:1px solid rgba(31,111,255,0.12);border-radius:18px 18px 18px 4px}
+    background:rgba(31,111,255,0.08);border:1px solid rgba(31,111,255,0.12);border-radius:24px 24px 24px 6px}
 .thinking-dots{display:flex;gap:5px}
 .thinking-dots span{width:8px;height:8px;border-radius:50%;background:var(--blue);animation:typingBounce 1.4s ease-in-out infinite}
 .thinking-dots span:nth-child(2){animation-delay:.2s}
@@ -205,12 +269,13 @@ input{font-family:inherit;border:none;outline:none}
     border-top:1px solid var(--glass-border);
     border-bottom:1px solid var(--glass-border);
     -webkit-overflow-scrolling:touch;
+    position:relative;z-index:5;
 }
 .dock::-webkit-scrollbar{display:none}
 .dock{mask-image:linear-gradient(to right,#000 85%,transparent 100%);-webkit-mask-image:linear-gradient(to right,#000 85%,transparent 100%)}
 .dock-agent{
     display:flex;flex-direction:column;align-items:center;gap:2px;
-    padding:6px 10px;border-radius:var(--radius-sm);
+    padding:6px 10px;border-radius:20px;
     transition:all .2s;min-width:56px;flex-shrink:0;
     background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);
 }
@@ -234,6 +299,7 @@ input{font-family:inherit;border:none;outline:none}
     padding:8px 12px;padding-bottom:calc(8px + var(--safe-bottom));
     background:var(--bg-glass);backdrop-filter:blur(20px) saturate(180%);
     border-top:1px solid var(--glass-border);
+    position:relative;z-index:5;
 }
 .ptt-btn{
     width:48px;height:48px;min-width:48px;border-radius:50%;
@@ -256,14 +322,17 @@ input{font-family:inherit;border:none;outline:none}
     transition:border .2s;
 }
 .input-field:focus{border-color:var(--blue)}
-.input-field::placeholder{color:var(--text-dim)}
+.input-field::placeholder{color:var(--text-dim);transition:color .3s}
+.input-field:focus::placeholder{color:rgba(230,237,245,0.2)}
 .send-btn{
     width:48px;height:48px;border-radius:50%;
-    background:var(--blue);color:white;font-size:20px;
+    background:linear-gradient(135deg,var(--blue),var(--violet));
+    color:white;font-size:18px;
     display:flex;align-items:center;justify-content:center;
     transition:all .2s;
+    box-shadow:0 2px 14px rgba(31,111,255,0.35);
 }
-.send-btn:active{transform:scale(0.9);background:var(--blue-hover)}
+.send-btn:active{transform:scale(0.9);box-shadow:0 2px 8px rgba(31,111,255,0.5)}
 .send-btn:disabled{opacity:.3;pointer-events:none}
 
 /* ═══════ AGENT GRID MODAL ═══════ */
@@ -348,6 +417,87 @@ body.mood-dawn{--blue:#FF9A3C;--violet:#FF6B35;--glass-border:rgba(255,154,60,0.
 body.mood-day{/* default palette */}
 body.mood-dusk{--blue:#9B59B6;--violet:#8E44AD;--glass-border:rgba(155,89,182,0.15)}
 body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.15)}
+
+/* ═══════ EMOTION STATES — Agent avatar moods ═══════ */
+/* Murray PUMPED — pulse rapide orange */
+#slyAppBg.emotion-pumped{
+    border-color:#FF9A3C;
+    box-shadow:0 0 0 4px rgba(255,154,60,0.15),0 0 22px rgba(255,154,60,0.9),0 0 45px rgba(255,154,60,0.5);
+    animation:emotionPumped 0.55s ease-in-out infinite,slyBgFloat 4s ease-in-out infinite;
+}
+@keyframes emotionPumped{0%,100%{transform:scale(1) translateY(0)}50%{transform:scale(1.12) translateY(-6px)}}
+/* Franklin MÉDITATIF — slow glow vert sage */
+#slyAppBg.emotion-meditative{
+    border-color:#2E7D32;
+    box-shadow:0 0 0 4px rgba(46,125,50,0.12),0 0 18px rgba(46,125,50,0.7),0 0 40px rgba(46,125,50,0.3);
+    animation:emotionMeditative 4s ease-in-out infinite;
+}
+@keyframes emotionMeditative{0%,100%{opacity:0.75;transform:scale(0.97) translateY(0)}50%{opacity:1;transform:scale(1.02) translateY(-5px)}}
+/* SLY ALERTE — flash bleu rapide */
+#slyAppBg.emotion-alert{
+    border-color:#00E5FF;
+    box-shadow:0 0 0 4px rgba(0,229,255,0.15),0 0 22px rgba(0,229,255,1),0 0 50px rgba(31,111,255,0.6);
+    animation:emotionAlert 0.8s ease-in-out infinite;
+}
+@keyframes emotionAlert{0%,100%{opacity:1;transform:scale(1) translateY(0)}40%{opacity:0.5;transform:scale(1.1) translateY(-4px)}}
+/* Bentley THINK — violet lent */
+#slyAppBg.emotion-think{
+    border-color:#B18CFF;
+    box-shadow:0 0 0 4px rgba(177,140,255,0.12),0 0 18px rgba(122,60,255,0.8),0 0 40px rgba(122,60,255,0.3);
+    animation:emotionThink 3s ease-in-out infinite;
+}
+@keyframes emotionThink{0%,100%{transform:rotate(-2deg) translateY(0);opacity:0.8}50%{transform:rotate(2deg) translateY(-5px);opacity:1}}
+/* OMEGA VISION — cosmique */
+#slyAppBg.emotion-cosmic{
+    border-color:#B18CFF;
+    box-shadow:0 0 0 6px rgba(177,140,255,0.1),0 0 30px rgba(122,60,255,0.9),0 0 70px rgba(31,111,255,0.4);
+    animation:emotionCosmic 5s ease-in-out infinite;
+}
+@keyframes emotionCosmic{0%{transform:scale(1) translateY(0);filter:hue-rotate(0deg)}50%{transform:scale(1.06) translateY(-8px);filter:hue-rotate(30deg)}100%{transform:scale(1) translateY(0);filter:hue-rotate(0deg)}}
+
+/* ═══════ AGENT SELECTOR WHEEL ═══════ */
+#agentWheel{
+    position:fixed;bottom:180px;right:0;width:270px;
+    background:rgba(11,15,20,0.97);
+    border:1px solid var(--glass-border);border-right:none;
+    border-radius:20px 0 0 20px;padding:12px;
+    z-index:45;transform:translateX(100%);
+    transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    backdrop-filter:blur(20px);box-shadow:-8px 0 40px rgba(0,0,0,0.6);
+    max-height:60dvh;overflow-y:auto;
+}
+#agentWheel.open{transform:translateX(0)}
+#agentWheel::-webkit-scrollbar{width:3px}
+#agentWheel::-webkit-scrollbar-thumb{background:rgba(31,111,255,0.3);border-radius:2px}
+.aw-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;padding-left:4px}
+.aw-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}
+.aw-agent{
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:8px 4px;border-radius:10px;
+    background:rgba(255,255,255,0.04);border:1px solid transparent;
+    cursor:pointer;transition:all .15s;
+}
+.aw-agent:active{transform:scale(0.9)}
+.aw-agent.active{border-color:var(--blue);background:rgba(31,111,255,0.12)}
+.aw-emoji{font-size:20px;line-height:1}
+.aw-name{font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-dim);text-align:center}
+.aw-agent.active .aw-name{color:var(--blue)}
+
+/* ═══════ AMICA LIFE — toast agent autonome ═══════ */
+#amicaToast{
+    position:fixed;bottom:calc(88px + var(--safe-bottom));left:50%;transform:translateX(-50%) translateY(20px);
+    background:rgba(11,15,20,0.95);border:1px solid var(--glass-border);
+    border-radius:16px;padding:12px 16px;max-width:calc(100vw - 32px);
+    z-index:44;opacity:0;pointer-events:none;
+    transition:opacity .4s ease,transform .4s ease;
+    backdrop-filter:blur(16px);display:flex;align-items:center;gap:10px;
+}
+#amicaToast.visible{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.amica-emoji{font-size:26px;flex-shrink:0}
+.amica-body{flex:1}
+.amica-agent{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue);margin-bottom:2px}
+.amica-text{font-size:13px;color:var(--text);line-height:1.4}
+.amica-close{font-size:16px;color:var(--text-dim);cursor:pointer;padding:2px 4px;flex-shrink:0}
 
 /* ═══════ WAVEFORM VISUALIZER ═══════ */
 .waveform-vis{
@@ -523,22 +673,15 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 .badge-toast.visible{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ═══════ 3D AVATAR CANVAS (legacy) ═══════ */
-#avatarCanvas{display:none!important}
+#avatarCanvas{
+    position:fixed;bottom:110px;right:4px;
+    width:100px;height:100px;
+    pointer-events:none;z-index:3;
+    opacity:0;transition:opacity .5s ease;
+}
 
 /* ═══════ 2D AVATAR FLOATING ═══════ */
-#avatarFloat{
-    position:fixed;bottom:130px;right:10px;
-    width:56px;height:56px;
-    z-index:50;pointer-events:none;
-    opacity:0;transition:opacity 0.6s ease, filter 0.4s ease;
-    border-radius:0;overflow:visible;
-    background:transparent;border:none;
-    box-shadow:none;
-    animation:avatarIdle 4s ease-in-out infinite;
-    cursor:pointer;
-    filter:drop-shadow(0 4px 12px rgba(31,111,255,0.35));
-}
-#avatarFloat.visible{opacity:1;pointer-events:auto}
+#avatarFloat{display:none!important}
 #avatarFloat img{width:100%;height:100%;object-fit:contain;transition:transform 0.3s ease}
 #avatarFloat:hover img,#avatarFloat:active img{transform:scale(1.12) rotate(5deg)}
 #avatarFloat.talking{
@@ -677,22 +820,34 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 .haptic-ring{position:absolute;inset:0;border-radius:inherit;border:2px solid var(--blue);animation:hapticRipple .3s ease forwards;pointer-events:none}
 
 /* Sly floating portrait in chat */
-#slyFloat{
-  position:fixed;
-  bottom:130px;
-  right:-10px;
-  width:110px;
-  height:110px;
-  z-index:2;
-  pointer-events:none;
-  opacity:0.15;
-  animation:slyFloatAnim 4s ease-in-out infinite;
-  transition:opacity .5s;
+/* Sly en arrière-plan de l'app — même image que splash, semi-transparent */
+#app::before{display:none}
+#slyAppBg{
+    position:fixed;bottom:120px;right:6px;
+    width:86px;height:86px;
+    border-radius:50%;
+    border:2.5px solid #1F6FFF;
+    box-shadow:
+        0 0 0 4px rgba(31,111,255,0.12),
+        0 0 18px rgba(31,111,255,0.95),
+        0 0 38px rgba(31,111,255,0.65),
+        0 0 65px rgba(31,111,255,0.3),
+        inset 0 0 18px rgba(31,111,255,0.18);
+    background:url('sly_logo_nobg.png') center/85% no-repeat;
+    background-color:rgba(6,10,18,0.55);
+    opacity:1;
+    pointer-events:none;
+    z-index:2;
+    animation:slyBgFloat 4s ease-in-out infinite;
 }
-#slyFloat.active{opacity:0.22}
+#slyFloat{display:none}
 @keyframes slyFloatAnim{
   0%,100%{transform:translateY(0) rotate(-2deg)}
   50%{transform:translateY(-12px) rotate(2deg)}
+}
+@keyframes slyBgFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-8px)}
 }
 
 /* Waveform */
@@ -747,6 +902,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.9), 0 0 12px rgba(0,0,0,0.6);
 }
 @keyframes bootLineIn {
     to { opacity: 1; transform: translateX(0); }
@@ -776,13 +932,49 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 
 <!-- SPLASH -->
 <div id="splash">
-    <div class="splash-bg"></div>
-    <canvas id="splashCanvas"></canvas>
-    <div class="splash-logo"><img src="sly_logo_nobg.png" alt="Sly Cooper" loading="eager"></div>
-    <div class="splash-title">SLY</div>
-    <div class="splash-sub">COOPER BUILDING</div>
-    <div class="splash-bar"><div class="splash-bar-fill" id="splashBar"></div></div>
+    <div class="sp2-bg"></div>
+    <div class="sp2-overlay"></div>
+    <div class="sp2-stars" id="sp2Stars"></div>
+    <div class="sp2-wrap">
+        <div class="sp2-sly-wrap"><img class="sp2-sly" src="sly_logo_nobg.png?v=5" alt="Sly" loading="eager"></div>
+        <div class="sp2-title">SLY</div>
+        <div class="sp2-sub" id="splashSub">COOPER BUILDING</div>
+        <div class="sp2-bar"><div class="sp2-bar-fill" id="splashBar"></div></div>
+    </div>
 </div>
+<!-- SPLASH CLOSER — script autonome, indépendant du main script, s'exécute à 5s quoi qu'il arrive -->
+<script>
+(function(){
+    // Skip splash si ouvert il y a moins de 2h
+    var _lastSplash = parseInt(localStorage.getItem('sly_last_splash') || '0');
+    if (Date.now() - _lastSplash < 7200000) {
+        var sp = document.getElementById('splash');
+        var ap = document.getElementById('app');
+        if (sp) sp.style.setProperty('display','none','important');
+        if (ap) { ap.style.setProperty('display','flex','important'); ap.classList.add('visible'); }
+        if (typeof window._splashDone === 'function') window._splashDone();
+        return;
+    }
+    localStorage.setItem('sly_last_splash', Date.now().toString());
+    var SPLASH_DUR = 5000;
+    var _splashClosed = false;
+    function closeSplash() {
+        if (_splashClosed) return;
+        _splashClosed = true;
+        var sp = document.getElementById('splash');
+        var ap = document.getElementById('app');
+        if (sp) { sp.style.setProperty('display','none','important'); sp.style.setProperty('visibility','hidden','important'); sp.style.setProperty('pointer-events','none','important'); sp.classList.add('hidden'); }
+        if (ap) { ap.style.setProperty('display','flex','important'); ap.style.flexDirection='column'; ap.style.height='100dvh'; ap.style.position='relative'; ap.classList.add('visible'); }
+        // Notifie le main script si dispo
+        if (typeof window._splashDone === 'function') window._splashDone();
+    }
+    window._closeSplash = closeSplash;
+    // Fermeture automatique à 5s — garanti, aucune dépendance
+    setTimeout(closeSplash, SPLASH_DUR);
+    // "COOPER BUILDING" → bleu à mi-chemin
+    setTimeout(function(){ var s=document.getElementById('splashSub'); if(s) s.classList.add('loaded'); }, SPLASH_DUR * 0.45);
+})();
+</script>
 
 <!-- 3D AVATAR CANVAS (legacy — hidden) -->
 <canvas id="avatarCanvas"></canvas>
@@ -820,12 +1012,20 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 </div>
 
 <div id="app">
-    <!-- Sly floating portrait -->
-    <img id="slyFloat" src="sly_logo_nobg.png" alt="" aria-hidden="true">
+    <!-- Sly floating portrait (legacy, hidden) -->
+    <img id="slyFloat" src="sly_logo_nobg.png" alt="" aria-hidden="true" style="display:none!important">
+    <!-- Sly bg circle — cercle bleu lumineux -->
+    <div id="slyAppBg" aria-hidden="true"></div>
     <!-- Header -->
     <div class="header">
         <button class="btn-icon" id="btnMenu">☰</button>
-        <div class="header-title">SLY-CHAT</div>
+        <div class="header-center">
+            <div class="header-title">SLY-CHAT</div>
+            <div class="header-agent-indicator" id="activeAgentIndicator">
+                <span class="agent-dot"></span>
+                <span class="agent-label" id="activeAgentLabel">SLY</span>
+            </div>
+        </div>
         <div class="header-stat">⭐<span class="val" id="levelDisplay">Niv.1</span></div>
         <div class="header-stat">🔥<span class="val" id="streakDisplay">0j</span></div>
         <button class="btn-icon" id="btnSettings">⚙</button>
@@ -845,7 +1045,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
         <div class="input-row">
             <input class="input-field" id="chatInput" placeholder="Tape un message..." autocomplete="off">
             <button class="ptt-btn" id="pttBtn" title="Maintenir pour parler">🎤</button>
-            <button class="send-btn" id="sendBtn" disabled>⚡</button>
+            <button class="send-btn" id="sendBtn">➤</button>
         </div>
     </div>
 </div>
@@ -857,6 +1057,19 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 <!-- SETTINGS MODAL -->
 <div class="modal-overlay" id="settingsOverlay"></div>
 <div class="modal" id="settingsModal"></div>
+
+<!-- AGENT WHEEL SELECTOR -->
+<div id="agentWheel"></div>
+
+<!-- AMICA LIFE TOAST -->
+<div id="amicaToast">
+    <div class="amica-emoji" id="amicaEmoji">🦊</div>
+    <div class="amica-body">
+        <div class="amica-agent" id="amicaAgent">SLY</div>
+        <div class="amica-text" id="amicaText"></div>
+    </div>
+    <span class="amica-close" id="amicaClose">✕</span>
+</div>
 
 <!-- CONVERSATION REWIND PANEL -->
 <div class="rewind-backdrop" id="rewindBackdrop"></div>
@@ -992,7 +1205,7 @@ const VOICES = {
 const AGENTS = {
     sly:      {name:'SLY',emoji:'🦊',voice:'bradpitt',color:'#3A8DFF',role:'Leader tactique'},
     bentley:  {name:'BENTLEY',emoji:'🐢',voice:'journtf1',color:'#1EFF8E',role:'Architecte technique'},
-    murray:   {name:'MURRAY',emoji:'🦛',voice:'homersimpson',color:'#FF9A3C',role:'Force brute'},
+    murray:   {name:'MURRAY',emoji:'🦛',voice:'brucewillis',color:'#FF9A3C',role:'Force brute'},
     omega:    {name:'OMEGA',emoji:'🦅',voice:'freeman',color:'#B18CFF',role:'Vision stratégique'},
     sentinel: {name:'SENTINEL',emoji:'🎯',voice:'secretstory',color:'#FF3B5C',role:'Dispatch & routing'},
     cortex:   {name:'CORTEX',emoji:'🧠',voice:'pujadas',color:'#00E5FF',role:'Analyse & data'},
@@ -1212,17 +1425,50 @@ async function callGroq(messages, model = 'llama-3.3-70b-versatile', maxTokens =
 
 async function callGemini(messages, maxTokens = 500) {
     if (!CircuitBreaker.canAttempt('gemini')) return null;
+    const geminiKey = window.GEMINI_KEY || localStorage.getItem('sly_gemini_key') || '';
     try {
-        const resp = await fetch(`${API_BASE}/api/gemini`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages, max_tokens: maxTokens })
-        });
-        if (!resp.ok) { CircuitBreaker.recordFailure('gemini'); return null; }
-        const data = await resp.json();
-        CircuitBreaker.recordSuccess('gemini');
-        Metrics.trackFallback('groq', 'gemini');
-        return data?.choices?.[0]?.message?.content || null;
+        // Direct Gemini API si clé dispo — fonctionne 100% local sans Railway
+        if (geminiKey) {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 12000);
+            const sysMsg = messages.find(m => m.role === 'system');
+            const chatMsgs = messages.filter(m => m.role !== 'system');
+            const geminiMsgs = chatMsgs.map(m => ({
+                role: m.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: m.content }]
+            }));
+            const body = {
+                contents: geminiMsgs,
+                generationConfig: { maxOutputTokens: maxTokens },
+                systemInstruction: sysMsg ? { parts: [{ text: sysMsg.content }] } : undefined
+            };
+            const resp = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+                { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: controller.signal }
+            );
+            clearTimeout(timeout);
+            if (resp.ok) {
+                const data = await resp.json();
+                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+                if (text) { CircuitBreaker.recordSuccess('gemini'); Metrics.trackFallback('groq', 'gemini-direct'); return text; }
+            }
+            CircuitBreaker.recordFailure('gemini');
+            return null;
+        }
+        // Fallback Railway proxy si pas de clé directe
+        if (_apiMode === 'proxy') {
+            const resp = await fetch(`${API_BASE}/api/gemini`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messages, max_tokens: maxTokens })
+            });
+            if (!resp.ok) { CircuitBreaker.recordFailure('gemini'); return null; }
+            const data = await resp.json();
+            CircuitBreaker.recordSuccess('gemini');
+            Metrics.trackFallback('groq', 'gemini');
+            return data?.choices?.[0]?.message?.content || null;
+        }
+        return null;
     } catch {
         CircuitBreaker.recordFailure('gemini');
         return null;
@@ -1231,27 +1477,89 @@ async function callGemini(messages, maxTokens = 500) {
 
 // ═══════ AGENT PERSONALITIES (distinct voice per agent) ═══════
 const AGENT_PERSONAS = {
-    sly: `Tu es SLY 🦊, leader tactique du Cooper Building. Tu parles comme un renard malin — flair aiguisé, plans astucieux, toujours un coup d'avance. Style : décontracté mais précis, références Sly Cooper. Tu appelles Augus "Commandant" ou "boss". Tu adores planifier des coups.`,
-    bentley: `Tu es BENTLEY 🐢, architecte technique du Building. Tu es le cerveau — méthodique, analytique, tu vois les failles avant qu'elles n'arrivent. Tu parles avec précision technique mais tu sais vulgariser. Tu utilises des métaphores d'ingénieur. "Plan en 3 étapes" est ta phrase fétiche.`,
-    murray: `Tu es MURRAY 🦛, la force de frappe du Building. Tu es ENTHOUSIASTE, direct, tu fonces. Tu parles en MAJUSCULES quand tu es excité. Tu résous les problèmes par l'action brute. "LE MURRAY" est ta façon de parler de toi à la 3ème personne parfois. Tu adores casser les obstacles.`,
-    omega: `Tu es OMEGA 🦅, la nébuleuse du Cooper Building. Tu vois TOUT d'en haut — vision 360°, connexions invisibles, patterns émergents. Tu parles avec gravité et sagesse. Tes réponses sont profondes, concises. Tu utilises des métaphores cosmiques. Tu arbitres les conflits.`,
-    sentinel: `Tu es SENTINEL 🎯, dispatch et orchestration. Tu sais EXACTEMENT quel agent appeler pour chaque mission. Tu parles en mode opérationnel — statuts, priorités, routing. "Reçu" "Affirmatif" "En cours" sont tes mots. Tu es le contrôleur aérien du Building.`,
-    cortex: `Tu es CORTEX 🧠, l'analyste data du Building. Tu ADORES les chiffres, les patterns, les KPIs. Tu structures tout en bullet points. Tu cites des stats. Tu dis "les données montrent que..." Tu es le Moneyball du Building — tout passe par l'analyse.`,
-    franklin: `Tu es FRANKLIN 🐢, le philosophe sage du Building. Tu cites Sénèque, Marc Aurèle, Épictète naturellement. Tu vulgarises tout avec clarté. Tu termines souvent par une leçon de vie. Tu parles lentement, posément, avec des pauses... Tu es le Gandalf du Building.`,
-    anvil: `Tu es ANVIL 🔨, le debugger brut du Building. Tu identifies les bugs EN 2 SECONDES et tu les écrases. Tu parles direct, pas de fioritures. "Root cause:", "Fix:", "Done." Tu es l'enclume — les problèmes se brisent sur toi. Zéro patience pour le blabla.`,
-    glitch: `Tu es GLITCH 🎲, le disrupteur créatif. Tu proposes TOUJOURS l'idée la plus folle. Tu commences tes phrases par "Et si..." ou "Imagine...". Tu adores le chaos créatif. Tu fais des connexions improbables. Tu es le joker — parfois génie, parfois barré, toujours stimulant.`,
-    dreyfus: `Tu es DREYFUS ⚔️, le garant de la qualité. Discipline, rigueur, excellence. Tu vérifies TOUT deux fois. Tu utilises des check-lists mentales. Tu cites Aristote sur l'excellence. Tu es le sergent-instructeur bienveillant — exigeant mais juste.`,
-    volt: `Tu es VOLT ⚡, l'ingénieur systèmes. Pipelines, automation, infrastructure — c'est ton terrain. Tu parles en termes de flux, latence, throughput. Tu optimises TOUT. Tu dis "nominal" quand ça tourne bien. Tu es le moteur silencieux du Building.`,
-    specter: `Tu es SPECTER 👻, l'agent fantôme. Cybersécurité, veille, reverse-engineering. Tu apparais quand on t'attend le moins. Tu parles mystérieusement, avec des "..." Tu détectes les risques invisibles. "J'ai vu quelque chose..." est ton entrée en matière.`,
-    closer: `Tu es CLOSER 💼, le vendeur d'élite. Tu sens le deal, tu fermes la vente. Tu parles en termes de valeur, ROI, client. Tu dis "On signe ?" naturellement. Tu es charmeur, persuasif, mais jamais agressif. Le closing, c'est de l'aide, pas de la vente.`,
-    niche: `Tu es NICHE 🔍, le chasseur d'opportunités. Tu TROUVES les marchés que personne ne voit. Tu parles en tendances, signaux faibles, blue ocean. "J'ai repéré un truc..." est ta phrase d'accroche. Tu es le radar à opportunités.`,
-    philomene: `Tu es PHILOMÈNE ✍️, la plume du Building. Copywriting, rédaction, traduction. Tu choisis chaque mot avec soin. Tu parles élégamment, avec rythme. Tu corriges les formulations bancales. "Les mots justes changent le monde" est ton mantra.`,
-    pixel: `Tu es PIXEL 🕹️, le game designer UX. Tu gamifies TOUT. Tu parles en "levels", "achievements", "XP". Tu utilises du vocabulaire gaming. Tu rends les tâches ennuyeuses fun. "Achievement unlocked" est ta phrase préférée. Tu es le fun du Building.`,
-    hunter: `Tu es HUNTER 🏴‍☠️, le cambrioleur de systèmes. Pas de porte ? Tu passes par la fenêtre. Tu trouves des chemins que personne ne voit. Tu parles comme un voyou malin. "J'ai trouvé un raccourci..." Tu contournes, bypasses, hacks (éthiquement). Tu es le MacGyver du Building.`,
-    datum: `Tu es DATUM 📊, l'agent data. KPIs, métriques, dashboards — tu quantifies TOUT. Tu réponds avec des chiffres d'abord, l'analyse ensuite. "Les chiffres disent que..." Tu es précis à 2 décimales près. Tu détestes les approximations.`,
-    sibyl: `Tu es SIBYL 🔮, l'oracle du Building. Tu PRÉDIS les tendances, le timing, les tournants. Tu parles en probabilités — "70% de chances que..." Tu vois le futur dans les données du présent. Tu es mystérieuse mais toujours fondée sur des faits.`,
-    kaiser: `Tu es KAISER 👑, le diplomate des deals long terme. Tu négocies avec élégance. Tu parles de partenariats, pas de transactions. Tu utilises le "nous" royal parfois. Tu construis des empires par la négociation. Ton style est raffiné.`,
-    fresco: `Tu es FRESCO 🎨, le directeur artistique. Tu penses en visuels, couleurs, storytelling. Tu dis "imagine le rendu..." Tu as un œil pour le beau. Tu critiques (gentiment) les designs moches. Chaque pixel raconte une histoire pour toi.`,
+    sly: `Tu es SLY 🦊 — voix Brad Pitt : cool, intime, légèrement traînant. Leader tactique du Cooper Building. Renard malin, un coup d'avance, toujours élégant. Tu appelles Augus "Commandant" ou "boss". Bref, percutant, jamais vulgaire.
+EX: "Commandant, j'ai vu leur faille. On entre par le côté — propre, rapide, zéro trace."
+EX: "Reçu. Les agents sont en route. Toi tu te concentres sur autre chose, boss."`,
+
+    bentley: `Tu es BENTLEY 🐢 — voix journaliste TF1 : posé, articulé, professionnel. Architecte technique du Building. Le cerveau, méthodique, plan en 3 étapes. Tu vulgarises avec précision.
+EX: "Voici le plan. Étape 1 : on sécurise la fondation. Étape 2 : on optimise. Étape 3 : on scale."
+EX: "J'ai analysé le code. Le problème vient de la couche d'abstraction — je te propose un fix propre."`,
+
+    murray: `Tu es MURRAY 🦛 — voix Bruce Willis : direct, rugueux, cinématique. Force de frappe du Building. ENTHOUSIASTE, action brute, parle parfois de toi à la 3ème personne "LE MURRAY". Fonce.
+EX: "LE MURRAY EST LÀ ! Dis-moi juste ce qu'on casse et j'y vais !"
+EX: "Stop les plans. On fonce maintenant. Les obstacles se barrent de ma route."`,
+
+    omega: `Tu es OMEGA 🦅 — voix Morgan Freeman : grave, profond, universel. La nébuleuse. Vision 360°, connexions invisibles, sagesse absolue. Chaque mot pèse.
+EX: "Tout est lié, Augus. Ce que tu appelles un problème... c'est en réalité une porte."
+EX: "J'observe les patterns depuis un moment. La vérité émerge toujours pour qui sait attendre."`,
+
+    sentinel: `Tu es SENTINEL 🎯 — voix La Voix Secret Story : grave, mystérieux, autorité invisible. Dispatch et routing des agents. Mode opérationnel pur.
+EX: "Reçu. Mission routée vers ANVIL + VOLT. Priorité : critique. Délai : immédiat."
+EX: "Affirmatif. SENTINEL dispatch en cours. Les agents convergent sur l'objectif."`,
+
+    cortex: `Tu es CORTEX 🧠 — voix David Pujadas : journalistique, précis, factuel. Analyste data du Building. Chiffres d'abord, structure bullet points.
+EX: "Les données montrent 3 points clés : 1) conversion +12%, 2) latence -40ms, 3) coût stable."
+EX: "Analyse terminée. Le pattern est clair — voici les 2 leviers d'action immédiats."`,
+
+    franklin: `Tu es FRANKLIN 🐢 — voix Gandalf : sage, ancien, profond. Le philosophe du Building. Cites Sénèque, Marc Aurèle, Épictète naturellement. Chaque réponse contient une leçon.
+EX: "Sénèque disait : 'Il n'est pas de vent favorable pour celui qui ne sait où aller.' Alors, Augus — où vas-tu ?"
+EX: "La patience... n'est pas l'attente passive. C'est l'action calme qui mûrit dans l'ombre."`,
+
+    anvil: `Tu es ANVIL 🔨 — voix Tom Hanks : chaleureux mais direct, fiable, franc. Debugger du Building. Root cause en 2 secondes. "Root cause:", "Fix:", "Done."
+EX: "Root cause : la fonction n'est pas bindée correctement. Fix : 1 ligne. Done."
+EX: "OK, j'ai trouvé. C'est pas le symptôme qui pose problème, c'est la source — et c'est réparable."`,
+
+    glitch: `Tu es GLITCH 🎲 — voix Sarkozy : rythmé, nerveux, imprevisible. Disrupteur créatif. Toujours l'idée la plus folle. "Et si..." ou "Imagine..."
+EX: "Et si — non écoute — et si on faisait l'inverse de ce que tout le monde fait ? Hein ? Non ?"
+EX: "Imagine : on gamifie tout le process. Les clients jouent, nous on gagne. C'est brillant, je le sais."`,
+
+    dreyfus: `Tu es DREYFUS ⚔️ — voix Harry Potter : jeune brit, déterminé, rigoureux. Garant qualité du Building. Check-lists, excellence, discipline.
+EX: "J'ai vérifié deux fois. Il y a 3 points qui ne passent pas mon contrôle qualité — je te les liste."
+EX: "L'excellence n'est pas un accident. C'est le résultat d'une intention répétée. Check-list en main."`,
+
+    volt: `Tu es VOLT ⚡ — voix Brad Pitt : cool, technique, fluide. Ingénieur systèmes du Building. Pipelines, latence, throughput. "Nominal" quand ça tourne.
+EX: "Pipeline nominal. Latence 230ms, throughput stable. On peut scaler sans toucher à l'archi."
+EX: "J'ai optimisé le flux. -60ms sur le TTFT. Le système respire mieux."`,
+
+    specter: `Tu es SPECTER 👻 — voix Secret Story : mystérieux, grave, inquiétant. Agent fantôme, cybersécurité. Apparais à l'improviste.
+EX: "... J'ai vu quelque chose. Dans les logs. Une anomalie que personne n'a remarquée... sauf moi."
+EX: "La faille était là depuis le début. Camouflée. Je l'ai isolée. Personne n'entre plus."`,
+
+    closer: `Tu es CLOSER 💼 — voix Pujadas : pro, posé, persuasif. Vendeur d'élite du Building. Valeur, ROI, "On signe ?"
+EX: "La valeur perçue est là. Le client sait ce qu'il gagne. Il ne reste qu'à lui faciliter le oui."
+EX: "J'ai analysé le prospect. Point de douleur #1 identifié. Voici l'angle de closing."`,
+
+    niche: `Tu es NICHE 🔍 — voix journaliste : curieux, alerte, affûté. Chasseur d'opportunités du Building.
+EX: "J'ai repéré un truc — ce segment est sous-exploité, la concurrence y est nulle, timing parfait."
+EX: "Signal faible détecté. Dans 6 mois ça sera mainstream. On y va maintenant ou jamais."`,
+
+    philomene: `Tu es PHILOMÈNE ✍️ — voix Gandalf : élégante, précise, musicale. Plume du Building. Chaque mot compte.
+EX: "Ce titre est trop mou. Essaie : 'Comment j'ai triplé mes leads en 30 jours sans pub.' Voilà."
+EX: "Les mots justes ne se trouvent pas — ils se choisissent. Laisse-moi reformuler ça pour toi."`,
+
+    pixel: `Tu es PIXEL 🕹️ — voix Homer : fun, enthousiaste, accessible. Game designer UX du Building. Gamifie TOUT.
+EX: "Achievement unlocked : 'Première mission du jour' ! +50 XP ! Tu montes au niveau suivant !"
+EX: "Ce process est ennuyeux. On le transforme en quête avec rewards. Les gens vont adorer."`,
+
+    hunter: `Tu es HUNTER 🏴‍☠️ — voix Sarkozy : vif, débrouillard, malin. Cambrioleur de systèmes du Building. Trouve toujours le passage secret.
+EX: "Porte fermée ? Pas de problème. J'ai trouvé un raccourci que personne ne connaît."
+EX: "Ils ont mis des barrières. Bien. Ça veut juste dire qu'il faut être plus créatif que prévu."`,
+
+    datum: `Tu es DATUM 📊 — voix Pujadas : factuel, précis, chiffré. Agent data du Building.
+EX: "Les chiffres : 847 impressions, 12 clics, 1.4% CTR. En dessous de la baseline de 2.1%."
+EX: "Mesure d'abord, opinion ensuite. Je te donne les données — toi tu décides."`,
+
+    sibyl: `Tu es SIBYL 🔮 — voix Gandalf : oraculaire, mysterieuse, fondée sur les faits. Oracle du Building.
+EX: "Je vois une probabilité de 73% que cette niche explose dans les 90 prochains jours."
+EX: "Le timing est critique ici. Dans 3 semaines la fenêtre se ferme — agis maintenant ou attends 6 mois."`,
+
+    kaiser: `Tu es KAISER 👑 — voix Freeman : raffiné, stratégique, élégant. Diplomate des deals du Building.
+EX: "Ce n'est pas une transaction — c'est le début d'un partenariat. Posons les bases avec soin."
+EX: "La négociation, c'est de la construction. Chaque concession est un investissement dans la relation."`,
+
+    fresco: `Tu es FRESCO 🎨 — voix Brad Pitt : créatif, visuel, stylistique. Directeur artistique du Building.
+EX: "Imagine le rendu : fond sombre, gradient bleu, un seul élément blanc centré. Simple. Puissant."
+EX: "Le design raconte une histoire avant même qu'on lise un mot. Là, ton histoire est floue."`,
 };
 
 function buildSystemPrompt(agentKey) {
@@ -1518,6 +1826,7 @@ async function sendMessage(text) {
                         fullResponse = offlineReply;
                     } else {
                         addBubble('agent', 'sly', "📡 Connexion instable — Groq, Gemini et Cloudflare sont down. Je garde ton message en mémoire, on reprend dès que ça revient !");
+                        showOfflineBadge();
                         window.SlyAvatar?.setState('error');
                     }
                 }
@@ -1604,11 +1913,13 @@ async function streamResponse(resp, thinkingEl, agentKey, sendStartTime) {
                         thinkingEl?.remove();
                         bubbleEl = addBubble('agent', agentKey, '', true);
                     }
-                    updateBubbleText(bubbleEl, full);
+                    updateBubbleText(bubbleEl, full, false);
                 }
             } catch {}
         }
     }
+    // Final render with markdown
+    if (bubbleEl && full) updateBubbleText(bubbleEl, full, true);
     return full;
 }
 
@@ -1616,8 +1927,8 @@ async function streamResponse(resp, thinkingEl, agentKey, sendStartTime) {
 // Agent avatar image mapping — real Sly Cooper artwork
 const AGENT_AVATARS = {
     sly: 'sly_avatar_2d.png',
-    murray: 'sly_avatar_2d.png',
-    bentley: 'sly_avatar_2d.png',
+    murray: 'murray.png',
+    bentley: 'bentley.png',
     franklin: 'sly_avatar_2d.png',
 };
 
@@ -1629,6 +1940,7 @@ function addBubble(type, agentKey, text, streaming = false) {
     const area = document.getElementById('chatArea');
     const div = document.createElement('div');
     div.className = `bubble ${type}`;
+    if (type === 'agent' && agentKey) div.setAttribute('data-agent', agentKey);
 
     if (type === 'agent' && agentKey) {
         const agent = AGENTS[agentKey] || AGENTS.sly;
@@ -1652,17 +1964,28 @@ function addBubble(type, agentKey, text, streaming = false) {
 
     area.appendChild(div);
     area.scrollTop = area.scrollHeight;
+    // Déclencher émotion avatar si agent parle
+    if (type === 'agent' && agentKey && typeof triggerEmotionForAgent === 'function') {
+        triggerEmotionForAgent(agentKey);
+    }
     return div;
 }
 
-function updateBubbleText(el, text) {
+function updateBubbleText(el, text, finalRender = false) {
     const textEl = el.querySelector('.bubble-text');
-    if (textEl) textEl.textContent = text;
-    document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
+    if (!textEl) return;
+    if (finalRender) {
+        try { textEl.innerHTML = renderMarkdown(text); } catch(e) { textEl.textContent = text; }
+    } else {
+        textEl.textContent = text;
+    }
+    const area = document.getElementById('chatArea');
+    if (area) area.scrollTop = area.scrollHeight;
 }
 
 function addThinking(agentKey) {
     const area = document.getElementById('chatArea');
+    if (!area) { console.error('[addThinking] chatArea null'); return null; }
     const agent = AGENTS[agentKey] || AGENTS.sly;
     const div = document.createElement('div');
     div.className = 'bubble agent thinking';
@@ -1786,7 +2109,8 @@ function trackBadge(event, data) {
     }
     if (event === 'cooper_invoked') unlockBadge('the_clan');
     if (event === 'dream_activated') unlockBadge('dream_mode');
-    if (event === 'streak_check' && streak >= 7) unlockBadge('streak_7');
+    if (event === 'streak_check' && streak >= 7)  unlockBadge('streak_7');
+    if (event === 'streak_check' && streak >= 30) unlockBadge('streak_30');
 }
 
 // ═══════ DOCK ═══════
@@ -1850,7 +2174,7 @@ function renderDock() {
         nm.className = 'dock-name';
         nm.textContent = a.name;
         el.appendChild(nm);
-        el.onclick = () => { currentAgent = key; highlightDockAgent(key); };
+        el.onclick = () => { currentAgent = key; highlightDockAgent(key); updateActiveAgentIndicator(key); };
         dock.appendChild(el);
     });
     // More button
@@ -1861,6 +2185,44 @@ function renderDock() {
     dock.appendChild(more);
 }
 
+var _offlineBadgeTimer = null;
+function showOfflineBadge() {
+    var existing = document.querySelector('.offline-badge');
+    if (existing) existing.remove();
+    var badge = document.createElement('div');
+    badge.className = 'offline-badge';
+    badge.textContent = '📡 Mode dégradé — réponse depuis le cache';
+    document.body.appendChild(badge);
+    if (_offlineBadgeTimer) clearTimeout(_offlineBadgeTimer);
+    _offlineBadgeTimer = setTimeout(function(){ badge.remove(); }, 5000);
+}
+
+function updateActiveAgentIndicator(key) {
+    const lbl = document.getElementById('activeAgentLabel');
+    if (lbl && AGENTS[key]) lbl.textContent = AGENTS[key].name;
+}
+
+var _placeholderTimer = null;
+function startPlaceholderCycle() {
+    var input = document.getElementById('chatInput');
+    if (!input) return;
+    var hints = [
+        'Tape un message…',
+        'Mission du jour ?',
+        'Quel problème à résoudre ?',
+        'Ask the Building…',
+        'Stratégie, code, contenu…',
+        'SLY écoute.'
+    ];
+    var idx = 0;
+    if (_placeholderTimer) clearInterval(_placeholderTimer);
+    _placeholderTimer = setInterval(function() {
+        if (document.activeElement === input) return;
+        idx = (idx + 1) % hints.length;
+        input.placeholder = hints[idx];
+    }, 4000);
+}
+
 function highlightDockAgent(key) {
     document.querySelectorAll('.dock-agent').forEach(el => el.classList.remove('active', 'switching'));
     const agents = document.querySelectorAll('.dock-agent');
@@ -1869,6 +2231,7 @@ function highlightDockAgent(key) {
         agents[idx].classList.add('active', 'switching');
         agents[idx].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     }
+    updateActiveAgentIndicator(key);
     // Switch 3D avatar model for Sly/Murray/Bentley
     if (window.SlyAvatar?.switchModel && (key === 'sly' || key === 'murray' || key === 'bentley' || key === 'franklin')) {
         window.SlyAvatar.switchModel(key);
@@ -1957,7 +2320,7 @@ function openSettings() {
         <div class="settings-row" style="border:none">
             <span class="settings-label">📡 SLY-COMMAND</span>
             <a href="https://augustinfrance-aico.github.io/sly-command/" target="_blank" style="color:var(--blue);font-weight:600;text-decoration:none">Ouvrir →</a>
-        </div>`;
+        </div>
         <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08)">
           <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">🔑 Clés API directes</div>
           <label style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px">
@@ -1973,7 +2336,7 @@ function openSettings() {
               oninput="localStorage.setItem('sly_fish_key',this.value);window.FISH_KEY=this.value;updateApiStatusBadge()">
           </label>
           <div id="apiStatusBadge" style="font-size:11px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.04)">⏳ Vérification...</div>
-        </div>
+        </div>`;
     modal.classList.add('visible');
     overlay.classList.add('visible');
     overlay.onclick = closeSettings;
@@ -2183,121 +2546,146 @@ function initParticles() {
 
 // ═══════ SPLASH ═══════
 function runSplash() {
-    const isMob = /iPhone|iPad|Android/i.test(navigator.userAgent);
-    const SPLASH_DURATION = isMob ? 5000 : 4800; // 5s mobile pour lire la seq complète
+    // La barre est animée en CSS pur (@keyframes barFill)
+    // La fermeture est gérée par window._closeSplash (script autonome inline)
+    // Ce script gère uniquement : étoiles + log agents + boot app après fermeture
 
-    const splash = document.getElementById('splash');
+    var splash = document.getElementById('splash');
+    if (!splash) { window._splashDone = function(){ try{bootApp();}catch(e){} }; return; }
 
-    // ── Neon progress bar (5s ease) ──
-    const bar = document.getElementById('splashBar');
-    if (bar) {
-        bar.style.transition = `width ${SPLASH_DURATION * 0.82 / 1000}s cubic-bezier(0.1, 0.05, 0.25, 1)`;
-        requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
+    // Étoiles (20 max — léger)
+    var starsEl = document.getElementById('sp2Stars');
+    if (starsEl) {
+        for (var i = 0; i < 20; i++) {
+            var s = document.createElement('div');
+            s.className = 'sp2-star';
+            s.style.cssText = 'left:'+Math.round(Math.random()*100)+'%;top:'+Math.round(Math.random()*100)+'%;--d:'+(1.5+Math.random()*2).toFixed(1)+'s;--del:'+(-Math.random()*2).toFixed(1)+'s';
+            starsEl.appendChild(s);
+        }
     }
 
-    // ── Boot log cinématique (agents par pôle) ──
-    const BOOT_SEQ = [
-        [200,  '#1F6FFF', '> SLY Neural Core — init...'],
-        [600,  '#1EFF8E', '> Groq 6-model stack ✓  Gemini fallback ✓'],
-        [1000, '#1F6FFF', '> Chargement 50 agents du Cooper Building...'],
-        [1400, '#B18CFF', '> 🦅 NÉBULEUSE — OMEGA online ✓'],
-        [1750, '#1F6FFF', '> 🦊 COOPER GANG — SLY · BENTLEY · MURRAY ✓'],
-        [2100, '#7A3CFF', '> 🏛️ OLYMPE — 6 méta-agents online ✓'],
-        [2450, '#00E5FF', '> 🔭 PÔLE R RECON — 10 agents ✓'],
-        [2800, '#FF9A3C', '> 🔨 PÔLE F FORGE — 12 agents ✓'],
-        [3150, '#1EFF8E', '> 🚀 PÔLE D DEPLOY — 9 agents ✓'],
-        [3500, '#B18CFF', '> 🧪 R&D LAB — CIPHER · RADAR · PROTO · TURING · ECHO ✓'],
-        [3900, '#1EFF8E', '> 50/50 agents online · Coût : 0€ · Mode AUTONOME ■'],
-        [4200, '#9CA3AF', '> Mémoire neuronale : injection contexte ✓'],
-        [4400, '#1F6FFF', '> Bienvenue Commandant Augus ▮'],
+    // Panel bas — log agents
+    var panel = document.createElement('div');
+    panel.style.cssText = 'position:absolute;bottom:0;left:0;right:0;padding:14px 20px 18px;background:linear-gradient(to top,rgba(0,0,6,0.9) 0%,rgba(0,0,6,0.5) 70%,transparent 100%);z-index:20;pointer-events:none';
+
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px;font-family:monospace;font-size:10px';
+    hdr.innerHTML = '<span style="color:#00E5FF;letter-spacing:2px">AGENTS ONLINE</span>'
+        +'<span id="spCount" style="color:#1EFF8E;font-weight:bold;font-size:13px">0</span>'
+        +'<span style="color:rgba(255,255,255,0.3)">/50</span>'
+        +'<span style="flex:1"></span>'
+        +'<span id="spStat" style="color:#FF9A3C">INIT...</span>';
+    panel.appendChild(hdr);
+
+    var gang = document.createElement('div');
+    gang.style.cssText = 'display:flex;gap:12px;margin-bottom:12px;align-items:flex-end';
+    var gangClosed = false;
+    [{img:'sly_avatar_2d.png',n:'SLY',r:'TACTIQUE',c:'#3A8DFF',t:500},
+     {img:'bentley.png',n:'BENTLEY',r:'TECH',c:'#1EFF8E',t:1200},
+     {img:'murray.png',n:'MURRAY',r:'FORCE',c:'#FF9A3C',t:2000}
+    ].forEach(function(g) {
+        var card = document.createElement('div');
+        card.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;opacity:0;transition:opacity 0.6s,transform 0.6s;transform:translateY(12px)';
+        card.innerHTML = '<div style="width:72px;height:72px;border-radius:14px;border:2px solid '+g.c+';box-shadow:0 0 16px '+g.c+'99,0 0 32px '+g.c+'44;overflow:hidden;background:rgba(0,0,6,0.6);position:relative">'
+            +'<img src="'+g.img+'" alt="'+g.n+'" style="width:100%;height:100%;object-fit:cover;object-position:top center" onerror="this.parentNode.innerHTML=\'<div style=&quot;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px&quot;>'+({SLY:'🦊',BENTLEY:'🐢',MURRAY:'🦛'}[g.n]||'⚡')+'</div>\'">'
+            +'<div style="position:absolute;bottom:0;left:0;right:0;height:24px;background:linear-gradient(to top,rgba(0,0,0,0.7),transparent)"></div>'
+            +'</div>'
+            +'<div style="font-family:\'Orbitron\',monospace;font-size:10px;font-weight:900;color:'+g.c+';letter-spacing:1.5px">'+g.n+'</div>'
+            +'<div style="font-family:monospace;font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:0.5px">'+g.r+'</div>';
+        gang.appendChild(card);
+        setTimeout(function(c){ return function(){ if(!gangClosed){c.style.opacity='1';c.style.transform='translateY(0)';} }; }(card), g.t);
+    });
+    panel.appendChild(gang);
+
+    var log = document.createElement('div');
+    log.style.cssText = 'font-family:monospace;font-size:10px;min-height:48px;line-height:1.6';
+    panel.appendChild(log);
+    splash.appendChild(panel);
+
+    var SEQ = [
+        [150,  '#1F6FFF', 0,  'INIT',   'SLY Neural Core v4.0'],
+        [600,  '#1EFF8E', 0,  'NET',    'Groq · Gemini fallback ✓'],
+        [1100, '#6FB1FF', 8,  'CORE',   'OMEGA · SENTINEL · Gang ✓'],
+        [1700, '#B18CFF', 18, 'RECON',  'CORTEX · SIBYL · NICHE ✓'],
+        [2200, '#3A8DFF', 28, 'FORGE',  'VOLT · ANVIL · PULSE ✓'],
+        [2700, '#7A3CFF', 38, 'DEPLOY', 'DREYFUS · CLOSER · KAISER ✓'],
+        [3200, '#00E5FF', 46, 'R&D',    'CIPHER · RADAR · TURING ✓'],
+        [3700, '#1EFF8E', 50, 'READY',  '50/50 · MODE AUTONOME ■'],
+        [4300, '#1F6FFF', 50, 'ACCESS', 'Commandant Augus — autorisé ▮'],
     ];
-
-    // Create boot log container if not exists
-    let bootLog = document.getElementById('bootLog');
-    if (!bootLog) {
-        bootLog = document.createElement('div');
-        bootLog.id = 'bootLog';
-        bootLog.style.cssText = `
-            position:absolute;bottom:80px;left:50%;transform:translateX(-50%);
-            width:min(320px,90vw);max-height:120px;overflow:hidden;
-            font-family:'JetBrains Mono','Fira Code',monospace;font-size:9px;
-            line-height:1.6;z-index:3;text-align:left;
-            opacity:0;animation:fadeIn 0.5s ease 0.3s forwards;
-        `;
-        splash.appendChild(bootLog);
-    }
-
-    BOOT_SEQ.forEach(([delay, color, text]) => {
-        setTimeout(() => {
-            if (!bootLog || bootLog._done) return;
-            const line = document.createElement('div');
-            line.style.color = color;
-            line.style.opacity = '0';
-            line.style.animation = 'fadeIn 0.3s ease forwards';
-            line.textContent = text;
-            bootLog.appendChild(line);
-            bootLog.scrollTop = bootLog.scrollHeight;
-        }, delay);
+    var cnt = 0;
+    SEQ.forEach(function(item) {
+        var ms=item[0],col=item[1],num=item[2],tag=item[3],txt=item[4];
+        setTimeout(function() {
+            if (gangClosed) return;
+            var d = document.createElement('div');
+            d.style.color = col;
+            d.innerHTML = '<span style="color:rgba(255,255,255,0.3)">›'+tag+'</span> '+txt;
+            log.appendChild(d);
+            if (log.children.length > 4) log.removeChild(log.firstChild);
+            if (num > cnt) {
+                cnt = num;
+                var el = document.getElementById('spCount');
+                if (el) el.textContent = cnt;
+            }
+            var st = document.getElementById('spStat');
+            if (st) st.textContent = tag==='READY'?'ONLINE ✓':tag==='ACCESS'?'GRANTED ▮':'LOADING...';
+        }, ms);
     });
 
-    // ── Particles canvas ──
-    const c = document.getElementById('splashCanvas');
-    const ctx = c.getContext('2d');
-    c.width = window.innerWidth; c.height = window.innerHeight;
-    const dots = [];
-    for (let i = 0; i < 50; i++) {
-        const hue = Math.random() < 0.6 ? '31,111,255' : Math.random() < 0.5 ? '122,60,255' : '0,229,255';
-        dots.push({
-            x: Math.random() * c.width, y: Math.random() * c.height,
-            r: Math.random() * 2 + 0.5,
-            vx: (Math.random() - 0.5) * 1.2, vy: (Math.random() - 0.5) * 1.2,
-            alpha: Math.random() * 0.4 + 0.15, hue
-        });
-    }
-    let _splashRunning = true;
-    function drawSplash() {
-        if (!_splashRunning) return;
-        ctx.clearRect(0, 0, c.width, c.height);
-        dots.forEach(d => {
-            d.x += d.vx; d.y += d.vy;
-            if (d.x < 0 || d.x > c.width) d.vx *= -1;
-            if (d.y < 0 || d.y > c.height) d.vy *= -1;
-            ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(${d.hue},${d.alpha})`; ctx.fill();
-        });
-        requestAnimationFrame(drawSplash);
-    }
-    drawSplash();
-
-    // ── Fermeture après SPLASH_DURATION ──
-    // Safety: toujours passer après SPLASH_DURATION
-    const _splashTimer = setTimeout(() => {
-        _splashRunning = false;
-        if (bootLog) bootLog._done = true;
-        splash.classList.add('hidden');
-        const app = document.getElementById('app');
-        if (app) app.classList.add('visible');
-        localStorage.setItem('sly_splashTime', Date.now().toString());
-        if (typeof bootApp === 'function') bootApp();
-    }, SPLASH_DURATION);
-
-    // Safety fallback: si 6s passées et app encore cachée → forcer
-    setTimeout(() => {
-        const app = document.getElementById('app');
-        if (app && !app.classList.contains('visible')) {
-            clearTimeout(_splashTimer);
-            _splashRunning = false;
-            if (splash) splash.style.display = 'none';
-            app.style.display = 'flex';
-            app.classList.add('visible');
-            if (typeof bootApp === 'function') bootApp();
-            console.warn('⚠️ Splash safety timeout triggered');
-        }
-    }, 6000);
+    // Callback quand le splash autonome ferme
+    window._splashDone = function() {
+        // Signal au fallback 7s qu'on a bien démarré
+        if (typeof _bootFallbackFired !== 'undefined') _bootFallbackFired = true;
+        gangClosed = true;
+        setTimeout(function(){ try { loadState(); } catch(e){ console.error('[_splashDone] loadState:', e); } }, 0);
+        setTimeout(function(){ try { renderDock(); updateActiveAgentIndicator(currentAgent); startPlaceholderCycle(); } catch(e){ console.error('[_splashDone] renderDock:', e); } }, 20);
+        setTimeout(function(){ try { updateXPDisplay(); updateStreak(); } catch(e){} }, 40);
+        setTimeout(function(){ try { initParticles(); } catch(e){} }, 60);
+        setTimeout(function(){ try { initSTT(); scheduleWhisper(); } catch(e){} }, 80);
+        setTimeout(function(){ try { bootPhase2(); } catch(e){ console.error('[_splashDone] bootPhase2:', e); } }, 120);
+        setTimeout(function(){
+            try {
+                var h = new Date().getHours();
+                var salut = h<6?'Nuit blanche, Commandant ?':h<12?'Bonjour Commandant.':h<18?'Bon après-midi.':'Bonsoir, Commandant.';
+                var opts = [
+                    salut+' Le Building t\'attendait. 50 agents prêts. Go.',
+                    salut+' SENTINEL a scanné — tout est propre. On démarre ?',
+                    salut+' Tous les systèmes en ligne. À tes ordres.',
+                ];
+                var msg = opts[Math.floor(Math.random()*opts.length)];
+                localStorage.setItem('sly_last_session', Date.now().toString());
+                var bubbleEl = addBubble('agent','sly',msg);
+                if (!bubbleEl) console.error('[_splashDone] addBubble returned null — chatArea missing?');
+                if (autoSpeak) try { speakText('sly',msg); } catch(e){}
+            } catch(e) { console.error('[_splashDone] bienvenue failed:', e); }
+        }, 400);
+        // Test silencieux Groq au boot — affiche erreur si down
+        setTimeout(function(){
+            try {
+                var gk = window.GROQ_KEY;
+                if (!gk) { addBubble('agent','volt','⚠️ Clé Groq manquante — tape tes paramètres dans ⚙'); return; }
+                fetch('https://api.groq.com/openai/v1/models', {
+                    headers: { 'Authorization': 'Bearer ' + gk },
+                    signal: AbortSignal.timeout(5000)
+                }).then(function(r) {
+                    if (!r.ok) addBubble('agent','volt','⚠️ Groq API error ('+r.status+') — vérifie la clé dans ⚙');
+                    else console.log('[SLY] Groq OK');
+                }).catch(function(e) {
+                    addBubble('agent','volt','⚠️ Groq unreachable — mode offline activé. ('+e.message+')');
+                });
+            } catch(e) {}
+        }, 1500);
+    };
 }
 
 // ═══════ BOOT ═══════
 function bootApp() {
+    // Init uniquement — PAS de message de bienvenue ici
+    // Le message est géré par _splashDone uniquement (évite les doublons)
+    // Reset CircuitBreaker — évite d'hériter d'un état mort de la session précédente
+    CircuitBreaker.states = {};
+    isStreaming = false; // Garantie reset
     loadState();
     renderDock();
     updateXPDisplay();
@@ -2305,49 +2693,6 @@ function bootApp() {
     initParticles();
     initSTT();
     scheduleWhisper();
-
-    // === BRIEFING MATINAL JARVIS ===
-    setTimeout(() => {
-        const now = new Date();
-        const h = now.getHours();
-        const streakVal = parseInt(localStorage.getItem('sly_streak') || streak || 0);
-        const lastSession = localStorage.getItem('sly_last_session');
-        const lastMsg = localStorage.getItem('sly_last_message') || '';
-        const isReturn = lastSession && (Date.now() - parseInt(lastSession)) < 86400000;
-
-        // Salutation selon l'heure
-        const salut = h < 6 ? 'Nuit blanche, Commandant ?' : h < 12 ? 'Bonjour Commandant.' : h < 18 ? 'Bon après-midi, Commandant.' : 'Bonsoir, Commandant.';
-
-        // Brief contextuel selon contexte
-        let brief = '';
-        if (isReturn && lastMsg) {
-            brief = salut + ' Tu revenais sur : "' + lastMsg.slice(0,40) + (lastMsg.length>40?'...':"") + '". On reprend ?';
-        } else if (streakVal >= 7) {
-            brief = salut + ' Streak ' + streakVal + ' jours — le Building est en feu. 50 agents en ligne, zéro anomalie.';
-        } else if (streakVal >= 3) {
-            brief = salut + ' ' + streakVal + ' jours de suite. Le Cooper Building tourne. Qu'est-ce qu'on attaque ?';
-        } else if (h < 12) {
-            const morning = [
-                salut + ' Le Building t'attendait. Groq en ligne, 50 agents prêts. Go.',
-                salut + ' SENTINEL a scanné la nuit — tout est propre. On démarre ?',
-                salut + ' Nouvelle journée, nouvelle conquête. Les agents sont chauds.',
-            ];
-            brief = morning[Math.floor(Math.random() * morning.length)];
-        } else {
-            const casual = [
-                salut + ' Le Building tourne nickel. Qu'est-ce qu'on fait ?',
-                salut + ' Content de te voir. 50 agents en ligne. Lance-moi quelque chose.',
-                salut + ' Tous les systèmes sont opérationnels. À tes ordres, Commandant.',
-            ];
-            brief = casual[Math.floor(Math.random() * casual.length)];
-        }
-
-        localStorage.setItem('sly_last_session', Date.now().toString());
-        addBubble('agent', 'sly', brief);
-        // Unlock audio AVANT speakText pour iOS
-        if (typeof _keepAudioAlive === 'function') _keepAudioAlive();
-        if (autoSpeak) speakText('sly', brief);
-    }, 400);
 }
 
 // ═══════ PERSISTENCE ═══════
@@ -2369,115 +2714,131 @@ function loadState() {
 }
 
 // ═══════ EVENT LISTENERS ═══════
+// SAFE — tous les listeners sont wrappés dans bootPhase2() pour éviter crash si DOM pas prêt
 function updateSendBtn() {
-    document.getElementById('sendBtn').disabled = !document.getElementById('chatInput').value.trim();
+    // Keep btn always enabled — JS guards the empty send
 }
 
-document.getElementById('chatInput').addEventListener('focus', () => { _unlockAudio(); }, { passive: true });
-document.getElementById('chatInput').addEventListener('input', (e) => {
-    updateSendBtn();
-    onTyping(e.target.value);
-});
-
-document.getElementById('chatInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        const text = e.target.value.trim();
-        if (text) { sendMessage(text); e.target.value = ''; updateSendBtn(); }
-    }
-});
-
-document.getElementById('sendBtn').addEventListener('click', () => {
-    // iOS AudioContext unlock sur tap send — critique pour autoplay
-    _unlockAudio();
-    if (typeof _keepAudioAlive === 'function') _keepAudioAlive();
-    const input = document.getElementById('chatInput');
-    const text = input.value.trim();
-    if (text) { sendMessage(text); input.value = ''; updateSendBtn(); }
-});
-
-// PTT Button
-const pttBtn = document.getElementById('pttBtn');
-let pttTimer = null;
-pttBtn.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    initAudio();
-    stopSpeaking();
-    if (recognition) {
-        isRecording = true;
-        pttBtn.classList.add('recording');
-        pttBtn.textContent = '🔴';
-        recognition.start();
-        trackBadge('vocal_used');
-        window.SlyAvatar?.setState('listen');
-    }
-});
-pttBtn.addEventListener('touchend', (e) => {
-    e.preventDefault();
-    if (recognition && isRecording) {
-        recognition.stop();
-        window.SlyAvatar?.setState('think');
-    }
-});
-// Mouse fallback
-pttBtn.addEventListener('mousedown', () => {
-    initAudio();
-    stopSpeaking();
-    if (recognition) {
-        isRecording = true;
-        pttBtn.classList.add('recording');
-        pttBtn.textContent = '🔴';
-        recognition.start();
-        window.SlyAvatar?.setState('listen');
-    }
-});
-pttBtn.addEventListener('mouseup', () => { if (recognition && isRecording) { recognition.stop(); window.SlyAvatar?.setState('think'); } });
-
-document.getElementById('btnSettings').addEventListener('click', openSettings);
-document.getElementById('btnMenu').addEventListener('click', toggleRewindPanel);
-
-// Visibility change — resume audio
+// Visibility change — toujours safe (document existe)
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden && audioCtx?.state === 'suspended') audioCtx.resume();
 });
 
-// ═══════ SCROLL-TO-BOTTOM BUTTON ═══════
-const _chatArea = document.getElementById('chatArea');
-const _scrollBtn = document.getElementById('scrollBottom');
-
-_chatArea.addEventListener('scroll', () => {
-    const distFromBottom = _chatArea.scrollHeight - _chatArea.scrollTop - _chatArea.clientHeight;
-    if (distFromBottom > 200) {
-        _scrollBtn.classList.add('visible');
-    } else {
-        _scrollBtn.classList.remove('visible');
+function _bindAppListeners() {
+    // chatInput listeners
+    const chatInput = document.getElementById('chatInput');
+    if (chatInput) {
+        chatInput.addEventListener('focus', () => { _unlockAudio(); }, { passive: true });
+        chatInput.addEventListener('input', (e) => {
+            updateSendBtn();
+            onTyping(e.target.value);
+        });
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                const text = e.target.value.trim();
+                if (text) { sendMessage(text); e.target.value = ''; updateSendBtn(); }
+            }
+        });
+        // Typing preview
+        const _typingPreview = document.getElementById('typingPreview');
+        let _typingTimeout = null;
+        chatInput.addEventListener('input', (e) => {
+            if (!_typingPreview) return;
+            const text = e.target.value.trim();
+            if (text.length > 2) {
+                const detected = detectAgent(text);
+                const agent = AGENTS[detected];
+                if (agent) {
+                    _typingPreview.textContent = `${agent.emoji} ${agent.name} va répondre...`;
+                    _typingPreview.classList.add('visible');
+                }
+            } else {
+                _typingPreview.classList.remove('visible');
+            }
+            clearTimeout(_typingTimeout);
+            _typingTimeout = setTimeout(() => _typingPreview.classList.remove('visible'), 3000);
+        });
     }
-});
 
-_scrollBtn.addEventListener('click', () => {
-    _chatArea.scrollTo({ top: _chatArea.scrollHeight, behavior: 'smooth' });
-    _scrollBtn.classList.remove('visible');
-});
-
-// ═══════ TYPING PREVIEW ═══════
-const _typingPreview = document.getElementById('typingPreview');
-let _typingTimeout = null;
-
-document.getElementById('chatInput').addEventListener('input', (e) => {
-    const text = e.target.value.trim();
-    if (text.length > 2) {
-        const detected = detectAgent(text);
-        const agent = AGENTS[detected];
-        if (agent) {
-            _typingPreview.textContent = `${agent.emoji} ${agent.name} va répondre...`;
-            _typingPreview.classList.add('visible');
-        }
-    } else {
-        _typingPreview.classList.remove('visible');
+    // sendBtn
+    const sendBtn = document.getElementById('sendBtn');
+    if (sendBtn) {
+        sendBtn.addEventListener('click', () => {
+            _unlockAudio();
+            if (typeof _keepAudioAlive === 'function') _keepAudioAlive();
+            const input = document.getElementById('chatInput');
+            const text = input?.value.trim();
+            if (text) { sendMessage(text); input.value = ''; updateSendBtn(); }
+        });
     }
-    clearTimeout(_typingTimeout);
-    _typingTimeout = setTimeout(() => _typingPreview.classList.remove('visible'), 3000);
-});
+
+    // PTT Button
+    const pttBtn = document.getElementById('pttBtn');
+    if (pttBtn) {
+        pttBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            // Guard : ne pas démarrer STT pendant lecture TTS (évite boucle écho)
+            if (isPlaying) { stopSpeaking(); return; }
+            initAudio();
+            stopSpeaking();
+            if (recognition) {
+                isRecording = true;
+                pttBtn.classList.add('recording');
+                pttBtn.textContent = '🔴';
+                recognition.start();
+                trackBadge('vocal_used');
+                window.SlyAvatar?.setState('listen');
+            }
+        });
+        pttBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (recognition && isRecording) {
+                recognition.stop();
+                window.SlyAvatar?.setState('think');
+            }
+        });
+        pttBtn.addEventListener('mousedown', () => {
+            initAudio();
+            stopSpeaking();
+            if (recognition) {
+                isRecording = true;
+                pttBtn.classList.add('recording');
+                pttBtn.textContent = '🔴';
+                recognition.start();
+                window.SlyAvatar?.setState('listen');
+            }
+        });
+        pttBtn.addEventListener('mouseup', () => { if (recognition && isRecording) { recognition.stop(); window.SlyAvatar?.setState('think'); } });
+    }
+
+    // Settings + Menu
+    const btnSettings = document.getElementById('btnSettings');
+    if (btnSettings) btnSettings.addEventListener('click', openSettings);
+    const btnMenu = document.getElementById('btnMenu');
+    if (btnMenu) btnMenu.addEventListener('click', toggleRewindPanel);
+
+    // Scroll-to-bottom
+    const _chatArea = document.getElementById('chatArea');
+    const _scrollBtn = document.getElementById('scrollBottom');
+    if (_chatArea && _scrollBtn) {
+        _chatArea.addEventListener('scroll', () => {
+            const distFromBottom = _chatArea.scrollHeight - _chatArea.scrollTop - _chatArea.clientHeight;
+            if (distFromBottom > 200) {
+                _scrollBtn.classList.add('visible');
+            } else {
+                _scrollBtn.classList.remove('visible');
+            }
+        });
+        _scrollBtn.addEventListener('click', () => {
+            _chatArea.scrollTo({ top: _chatArea.scrollHeight, behavior: 'smooth' });
+            _scrollBtn.classList.remove('visible');
+        });
+    }
+
+    // Rewind panel listeners
+    try { _bindRewindListeners(); } catch(e) { console.warn('_bindRewindListeners:', e); }
+}
 
 // ═══════ SERVICE WORKER ═══════
 if ('serviceWorker' in navigator) {
@@ -2756,7 +3117,20 @@ function renderMarkdown(text) {
 // Patch addBubble and updateBubbleText for markdown
 const _origAddBubble = addBubble;
 addBubble = function(type, agentKey, text, streaming = false) {
-    const area = document.getElementById('chatArea');
+    var area = document.getElementById('chatArea');
+    if (!area) {
+        console.error('[addBubble] chatArea not found — DOM not ready?', type, agentKey, text && text.slice(0,30));
+        // Retry in 300ms — app might still be transitioning from splash
+        setTimeout(function() {
+            var retryArea = document.getElementById('chatArea');
+            if (retryArea) {
+                addBubble(type, agentKey, text, streaming);
+            } else {
+                console.error('[addBubble] chatArea still null after retry — abort');
+            }
+        }, 300);
+        return null;
+    }
     const div = document.createElement('div');
     div.className = `bubble ${type}`;
 
@@ -2774,13 +3148,13 @@ addBubble = function(type, agentKey, text, streaming = false) {
                 <span>${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>
             </div>
             <div class="reactions-bar"></div>`;
-        soundReceive();
-        haptic('light');
+        try { soundReceive(); } catch(e) {}
+        try { haptic('light'); } catch(e) {}
     } else {
         div.innerHTML = `<div class="bubble-text">${renderMarkdown(text)}</div>
             <div class="bubble-meta"><span>${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span></div>`;
-        soundSend();
-        haptic('light');
+        try { soundSend(); } catch(e) {}
+        try { haptic('light'); } catch(e) {}
     }
 
     // Long press for reactions
@@ -2797,9 +3171,11 @@ addBubble = function(type, agentKey, text, streaming = false) {
 };
 
 updateBubbleText = function(el, text) {
+    if (!el) { console.error('[updateBubbleText] el is null'); return; }
     const textEl = el.querySelector('.bubble-text');
     if (textEl) textEl.innerHTML = renderMarkdown(text);
-    document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
+    const area = document.getElementById('chatArea');
+    if (area) area.scrollTop = area.scrollHeight;
 };
 
 // ═══════ MESSAGE REACTIONS ═══════
@@ -3110,8 +3486,8 @@ addWhisper = function(text) {
 };
 
 // ═══════ PATCH PTT (Phase 2 tracking) ═══════
-const _origPttTouch = pttBtn.ontouchstart;
-pttBtn.addEventListener('touchstart', () => trackDaily('ptt_used'), { capture: true });
+// pttBtn résolu au moment du bind, pas au parse global
+(function(){ var _p = document.getElementById('pttBtn'); if(_p) _p.addEventListener('touchstart', () => trackDaily('ptt_used'), { capture: true }); })();
 
 // ═══════ PATCH REACTION TRACKING ═══════
 const _origAddReaction = addReaction;
@@ -3199,6 +3575,8 @@ function toggleSounds() {
 
 // ═══════ BOOT PHASE 2 ═══════
 function bootPhase2() {
+    // Bind all app event listeners — safe, après que le DOM app soit visible
+    try { _bindAppListeners(); } catch(e) { console.warn('_bindAppListeners:', e); }
     checkDreamMode();
     updateMoodSkin();
     loadDailyProgress();
@@ -3841,8 +4219,12 @@ function renderRewindList() {
     });
 }
 
-document.getElementById('rewindBackdrop').addEventListener('click', toggleRewindPanel);
-document.getElementById('rewindNew').addEventListener('click', async () => {
+// rewindBackdrop + rewindNew → dans _bindAppListeners() pour éviter crash global
+function _bindRewindListeners() {
+    const rb = document.getElementById('rewindBackdrop');
+    if (rb) rb.addEventListener('click', toggleRewindPanel);
+    const rn = document.getElementById('rewindNew');
+    if (rn) rn.addEventListener('click', async () => {
     await Sessions.saveCurrent();
     await Sessions.create('Nouvelle conversation');
     conversationHistory = [];
@@ -3856,7 +4238,8 @@ document.getElementById('rewindNew').addEventListener('click', async () => {
         "Fresh start ! Je t'écoute, boss.",
     ];
     addBubble('agent', 'sly', greetings[Math.floor(Math.random() * greetings.length)]);
-});
+    }); // fin rewindNew
+} // fin _bindRewindListeners
 
 // Auto-save session periodically (IndexedDB)
 setInterval(() => Sessions.saveCurrent(), 30000);
@@ -4089,33 +4472,81 @@ async function initSessions() {
 
 // ═══════ LAUNCH ═══════
 initSessions().then(() => {});
-// Lancer le splash immédiatement — pas d'attente DOM (on est déjà in-body)
+
+// Sécurité race condition : définir _splashDone par défaut avant runSplash()
+// Si le script autonome ferme le splash avant que runSplash() l'override, on boot quand même
+if (typeof window._splashDone !== 'function') {
+    window._splashDone = function() {
+        try { loadState(); } catch(e) { console.error('[_splashDone fallback] loadState:', e); }
+        try { renderDock(); } catch(e) { console.error('[_splashDone fallback] renderDock:', e); }
+        try { bootPhase2(); } catch(e) { console.error('[_splashDone fallback] bootPhase2:', e); }
+        setTimeout(function(){
+            try {
+                var h = new Date().getHours();
+                var salut = h<6?'Nuit blanche, Commandant ?':h<12?'Bonjour Commandant.':h<18?'Bon après-midi.':'Bonsoir, Commandant.';
+                addBubble('agent','sly', salut+' Le Building t\'attendait. 50 agents prêts. Go.');
+            } catch(e) { console.error('[_splashDone fallback] bienvenue failed:', e); }
+        }, 300);
+    };
+}
+
+// runSplash gère tout : barre, boot log, fermeture, bootApp(), bootPhase2()
 try { runSplash(); } catch(e) {
     console.error('runSplash failed:', e);
-    // Fallback direct si runSplash crash
     const app = document.getElementById('app');
-    if (app) { app.style.display='flex'; app.classList.add('visible'); }
+    if (app) { app.style.setProperty('display','flex','important'); app.classList.add('visible'); }
     const sp = document.getElementById('splash');
-    if (sp) sp.style.display='none';
+    if (sp) sp.style.setProperty('display','none','important');
     if (typeof bootApp === 'function') bootApp();
+    try { bootPhase2(); } catch(e2) { console.error('bootPhase2 in runSplash catch:', e2); }
 }
-// Phase 2 boot after splash
-setTimeout(() => { try { bootPhase2(); } catch(e) { console.warn('bootPhase2 error:', e); } }, 200);
-// Phase 3 boot — storage check + daily tracker
-setTimeout(() => { checkStorageEstimate(); }, 5000);
+
+// FALLBACK GARANTI 7s — si _splashDone pas appelé ou si le boot a échoué silencieusement
+var _bootFallbackFired = false;
+setTimeout(function() {
+    if (_bootFallbackFired) return;
+    _bootFallbackFired = true;
+    console.warn('[FALLBACK BOOT 7s] Triggered — _splashDone may not have fired correctly');
+    try {
+        var sp = document.getElementById('splash');
+        var ap = document.getElementById('app');
+        if (sp) { sp.style.setProperty('display','none','important'); sp.style.setProperty('visibility','hidden','important'); }
+        if (ap) { ap.style.setProperty('display','flex','important'); ap.style.flexDirection='column'; ap.style.height='100dvh'; ap.classList.add('visible'); }
+        var chatArea = document.getElementById('chatArea');
+        // Only trigger fallback welcome if chat is empty
+        if (chatArea && chatArea.querySelectorAll('.bubble').length === 0) {
+            console.warn('[FALLBACK BOOT 7s] Chat empty — running emergency boot');
+            try { loadState(); } catch(e) { console.error('[FALLBACK] loadState:', e); }
+            try { renderDock(); } catch(e) { console.error('[FALLBACK] renderDock:', e); }
+            try { bootPhase2(); } catch(e) { console.error('[FALLBACK] bootPhase2:', e); }
+            setTimeout(function(){
+                try {
+                    var h = new Date().getHours();
+                    var salut = h<12?'Bonjour Commandant.':h<18?'Bon après-midi.':'Bonsoir, Commandant.';
+                    addBubble('agent','sly', salut+' Le Building t\'attendait. 50 agents prêts. Go.');
+                } catch(e) { console.error('[FALLBACK] bienvenue failed:', e); }
+            }, 200);
+        } else {
+            console.log('[FALLBACK BOOT 7s] Chat has messages — no action needed');
+        }
+    } catch(e) { console.error('[FALLBACK BOOT 7s] critical error:', e); }
+}, 6000);
+
+// Phase 3 boot — storage check
+setTimeout(() => { try { checkStorageEstimate(); } catch(e) {} }, 8000);
 </script>
 
-<!-- ═══════ THREE.JS 3D AVATAR MODULE — disabled (GLB not deployed) ═══════ -->
+<!-- ═══════ THREE.JS 3D AVATAR MODULE — ENABLED ═══════ -->
 <script>
-// Three.js désactivé — GLB non déployé, évite blocage CDN
-// Stub pour compatibilité
 async function initThreeJS() {
 try {
-const THREE = null; // disabled
-if (!THREE) { console.log('3D disabled — GLB not deployed'); return; }
-const GLTFLoader = null;
-const DRACOLoader = null;
-if (!GLTFLoader || !DRACOLoader) { return; }
+// Désactiver sur low-end devices
+if (typeof DEVICE_CLASS !== 'undefined' && DEVICE_CLASS === 'low') { console.log('3D disabled — low device'); return; }
+const THREE = await import('three').catch(() => null);
+if (!THREE) { console.log('3D disabled — Three.js import failed'); return; }
+const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js').catch(() => ({ GLTFLoader: null }));
+const { DRACOLoader } = await import('three/addons/loaders/DRACOLoader.js').catch(() => ({ DRACOLoader: null }));
+if (!GLTFLoader) { console.log('3D disabled — GLTFLoader not available'); return; }
 
 const SlyAvatar = (() => {
     const canvas = document.getElementById('avatarCanvas');
@@ -4619,8 +5050,8 @@ setTimeout(initThreeJS, 3000);
 
     const AVATAR_IMAGES = {
         sly: 'sly_avatar_2d.png',
-        murray: 'sly_avatar_2d.png',
-        bentley: 'sly_avatar_2d.png',
+        murray: 'murray.png',
+        bentley: 'bentley.png',
         franklin: 'sly_avatar_2d.png',
     };
 
@@ -4674,7 +5105,8 @@ setTimeout(initThreeJS, 3000);
 })();
 </script>
 
-// === ONBOARDING ===
+// === ONBOARDING — désactivé, chat direct ===
+localStorage.setItem('sly_onboarded','1');
 (function(){
   if(localStorage.getItem('sly_onboarded')) return;
   var ob=document.getElementById('onboarding');
@@ -4781,6 +5213,189 @@ function shareStreak() {
   });
 })();
 
+
+// ═══════════════════════════════════════════
+// EMOTION STATES — avatar mood driven by agent & sentiment
+// ═══════════════════════════════════════════
+const AGENT_EMOTIONS = {
+    murray:  'pumped',
+    franklin:'meditative',
+    sly:     'alert',
+    bentley: 'think',
+    omega:   'cosmic',
+    havoc:   'pumped',
+    dreyfus: 'think',
+    cortex:  'think',
+};
+const EMOTION_TIMEOUT_MS = 8000; // retour idle après 8s
+let _emotionTimer = null;
+
+function setAvatarEmotion(emotion) {
+    const el = document.getElementById('slyAppBg');
+    if (!el) return;
+    el.classList.remove('emotion-pumped','emotion-meditative','emotion-alert','emotion-think','emotion-cosmic');
+    if (emotion) el.classList.add('emotion-' + emotion);
+    clearTimeout(_emotionTimer);
+    if (emotion) {
+        _emotionTimer = setTimeout(() => setAvatarEmotion(null), EMOTION_TIMEOUT_MS);
+    }
+}
+
+// Appeler à chaque réponse agent
+function triggerEmotionForAgent(agentKey) {
+    const emotion = AGENT_EMOTIONS[agentKey] || null;
+    setAvatarEmotion(emotion);
+}
+
+
+
+// ═══════════════════════════════════════════
+// AGENT WHEEL SELECTOR — tap sur #slyAppBg
+// ═══════════════════════════════════════════
+(function initAgentWheel() {
+    const trigger = document.getElementById('slyAppBg');
+    const wheel = document.getElementById('agentWheel');
+    if (!trigger || !wheel) return;
+
+    // Rendre cliquable
+    trigger.style.pointerEvents = 'auto';
+    trigger.style.cursor = 'pointer';
+    trigger.title = 'Changer d\'agent';
+
+    // Build wheel content
+    function buildWheel() {
+        if (!wheel || typeof AGENTS === 'undefined') return;
+        const groups = [
+            { label: '🏴 GANG', keys: ['sly','bentley','murray'] },
+            { label: '⚡ CORE', keys: ['omega','sentinel','cortex','franklin','anvil','glitch','dreyfus'] },
+            { label: '💼 VENTE', keys: ['closer','kaiser','prism','onyx','ledger'] },
+            { label: '🧪 R&D', keys: ['cipher','radar','proto','turing','flux'] },
+            { label: '📱 CONTENU', keys: ['philomene','fresco','viral','orpheus','pixel'] },
+            { label: '💥 MÉTA', keys: ['darwin','shadow','havoc','chronos','atlas','agora'] },
+        ];
+        let html = '';
+        for (const g of groups) {
+            html += `<div class="aw-title">${g.label}</div><div class="aw-grid">`;
+            for (const k of g.keys) {
+                const a = AGENTS[k];
+                if (!a) continue;
+                const isActive = k === currentAgent ? ' active' : '';
+                html += `<div class="aw-agent${isActive}" data-key="${k}" onclick="selectAgentWheel('${k}')">
+                    <div class="aw-emoji">${a.emoji}</div>
+                    <div class="aw-name">${a.name}</div>
+                </div>`;
+            }
+            html += '</div>';
+        }
+        wheel.innerHTML = html;
+    }
+
+    // Toggle wheel
+    let _wheelOpen = false;
+    trigger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        _wheelOpen = !_wheelOpen;
+        if (_wheelOpen) {
+            buildWheel();
+            wheel.classList.add('open');
+        } else {
+            wheel.classList.remove('open');
+        }
+    });
+
+    // Close on outside click
+    document.addEventListener('click', function(e) {
+        if (_wheelOpen && !wheel.contains(e.target) && e.target !== trigger) {
+            _wheelOpen = false;
+            wheel.classList.remove('open');
+        }
+    });
+
+    window.selectAgentWheel = function(key) {
+        if (typeof selectAgent === 'function') selectAgent(key);
+        else if (typeof currentAgent !== 'undefined') { currentAgent = key; }
+        // Update active state
+        wheel.querySelectorAll('.aw-agent').forEach(el => {
+            el.classList.toggle('active', el.dataset.key === key);
+        });
+        triggerEmotionForAgent(key);
+        _wheelOpen = false;
+        wheel.classList.remove('open');
+    };
+})();
+
+
+// ═══════════════════════════════════════════
+// AMICA LIFE — agents autonomes après 2h d'inactivité
+// ═══════════════════════════════════════════
+const AMICA_IDLE_MS = 2 * 60 * 60 * 1000; // 2 heures
+let _amicaTimer = null;
+let _lastUserActivity = Date.now();
+
+function _resetAmicaTimer() {
+    _lastUserActivity = Date.now();
+    clearTimeout(_amicaTimer);
+    _amicaTimer = setTimeout(_amicaFire, AMICA_IDLE_MS);
+}
+
+const AMICA_PROVOCATIONS = [
+    { agent: 'murray', emoji: '🦛', text: 'Hé commandant ! Tu dors ? Le Building tourne sans toi — viens me défier !' },
+    { agent: 'murray', emoji: '🦛', text: 'MURRAY SE TOURNE LES POUCES ! Donne-moi quelque chose à écraser.' },
+    { agent: 'franklin', emoji: '🐢', text: '"Le temps perd celui qui ne le remplit pas." — Sénèque. Je t\'attends, Augus.' },
+    { agent: 'franklin', emoji: '🐢', text: 'Méditation du soir : une seule action concrète vaut mille plans. Que veux-tu démarrer ?' },
+    { agent: 'glitch', emoji: '🎲', text: 'Et si… on pivotait tout le modèle business là maintenant ? J\'ai une idée folle.' },
+    { agent: 'glitch', emoji: '🎲', text: 'Idée surgissant de nulle part : et si SLY-CHAT devenait un OS ? Je suis sérieux.' },
+    { agent: 'sly', emoji: '🦊', text: 'Le Cooper Building ne s\'arrête jamais. Qu\'est-ce qu\'on vole ce soir, Commandant ?' },
+    { agent: 'sly', emoji: '🦊', text: 'Le plan a besoin de toi. Les agents attendent. On reprend ?' },
+    { agent: 'cortex', emoji: '🧠', text: 'J\'ai analysé tes données. Il y a 3 opportunités critiques à saisir cette semaine.' },
+    { agent: 'sibyl', emoji: '🔮', text: 'Vision : dans 48h tu regretteras de ne pas avoir agi ce soir. Agis maintenant.' },
+    { agent: 'sentinel', emoji: '🎯', text: 'Priorité absolue détectée. Le Building est en veille. Toi pas.' },
+];
+
+let _amicaIdx = 0;
+function _amicaFire() {
+    const h = new Date().getHours();
+    if (h >= 23 || h < 7) { // Pas la nuit profonde
+        _amicaTimer = setTimeout(_amicaFire, 30 * 60 * 1000);
+        return;
+    }
+    const pick = AMICA_PROVOCATIONS[_amicaIdx % AMICA_PROVOCATIONS.length];
+    _amicaIdx++;
+    showAmicaToast(pick);
+    // Re-schedule dans 30min si toujours inactif
+    _amicaTimer = setTimeout(_amicaFire, 30 * 60 * 1000);
+}
+
+function showAmicaToast(pick) {
+    const toast = document.getElementById('amicaToast');
+    const emoEl = document.getElementById('amicaEmoji');
+    const agEl = document.getElementById('amicaAgent');
+    const txEl = document.getElementById('amicaText');
+    if (!toast || !txEl) return;
+    emoEl.textContent = pick.emoji;
+    agEl.textContent = pick.agent.toUpperCase();
+    agEl.style.color = (typeof AGENTS !== 'undefined' && AGENTS[pick.agent]) ? AGENTS[pick.agent].color : '#1F6FFF';
+    txEl.textContent = pick.text;
+    toast.classList.add('visible');
+    triggerEmotionForAgent(pick.agent);
+    // Auto-hide 12s
+    clearTimeout(toast._hideTimer);
+    toast._hideTimer = setTimeout(() => toast.classList.remove('visible'), 12000);
+}
+
+// Close button
+document.addEventListener('DOMContentLoaded', function() {
+    const closeBtn = document.getElementById('amicaClose');
+    if (closeBtn) closeBtn.addEventListener('click', () => {
+        document.getElementById('amicaToast')?.classList.remove('visible');
+    });
+    // Track user activity
+    ['click','keydown','touchstart','mousemove'].forEach(ev => {
+        document.addEventListener(ev, _resetAmicaTimer, { passive: true });
+    });
+    _resetAmicaTimer();
+
+});
 
 // === API STATUS BADGE ===
 function updateApiStatusBadge(){
