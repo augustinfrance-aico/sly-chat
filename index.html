@@ -69,15 +69,21 @@ input{font-family:inherit;border:none;outline:none}
     filter:brightness(0.35) blur(2px);
 }
 .splash-logo{
-    z-index:2;width:240px;height:240px;
+    z-index:2;width:200px;height:200px;
     border-radius:0;background:transparent;
     backdrop-filter:none;border:none;
     display:flex;align-items:center;justify-content:center;
-
-    animation:slyBreathe 3s ease-in-out infinite, slyGlow 3s ease-in-out infinite;
+    animation:slyBreathe 3s ease-in-out infinite;
     overflow:visible;
 }
-.splash-logo img{width:100%;height:100%;object-fit:contain;object-position:center center}
+.splash-logo img{width:100%;height:100%;object-fit:contain;object-position:center center;
+    filter:drop-shadow(0 0 20px rgba(31,111,255,0.5)) drop-shadow(0 0 40px rgba(122,60,255,0.25));
+    animation:slyGlowImg 3s ease-in-out infinite;
+}
+@keyframes slyGlowImg{
+  0%,100%{filter:drop-shadow(0 0 20px rgba(31,111,255,0.4)) drop-shadow(0 0 40px rgba(122,60,255,0.2))}
+  50%{filter:drop-shadow(0 0 35px rgba(31,111,255,0.7)) drop-shadow(0 0 70px rgba(122,60,255,0.4)) drop-shadow(0 0 100px rgba(0,229,255,0.15))}
+}
 @keyframes slyBreathe{0%,100%{transform:scale(1) translateY(0)}50%{transform:scale(1.05) translateY(-8px)}}
 @keyframes slyGlow{0%,100%{box-shadow:0 0 30px rgba(31,111,255,0.3),0 0 60px rgba(122,60,255,0.15)}50%{box-shadow:0 0 50px rgba(31,111,255,0.6),0 0 100px rgba(122,60,255,0.3),0 0 150px rgba(0,229,255,0.1)}}
 .splash-title{
@@ -2147,7 +2153,7 @@ function initParticles() {
 // ═══════ SPLASH ═══════
 function runSplash() {
     const isMob = /iPhone|iPad|Android/i.test(navigator.userAgent);
-    const SPLASH_DURATION = isMob ? 8000 : 7500; // 6s mobile, 5.5s desktop — like SLY-COMMAND
+    const SPLASH_DURATION = isMob ? 4500 : 4000; // 4.5s mobile, 4s desktop
 
     const splash = document.getElementById('splash');
 
@@ -4028,7 +4034,7 @@ async function initSessions() {
 initSessions().then(() => {});
 runSplash();
 // Phase 2 boot after splash
-setTimeout(bootPhase2, 200);
+setTimeout(() => { try { bootPhase2(); } catch(e) { console.warn('bootPhase2 error:', e); } }, 200);
 // Phase 3 boot — storage check + daily tracker
 setTimeout(() => { checkStorageEstimate(); }, 5000);
 </script>
