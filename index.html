@@ -382,12 +382,17 @@ input{font-family:inherit;border:none;outline:none}
 .input-row{display:flex;align-items:center;gap:8px}
 .input-field{
     flex:1;height:48px;padding:0 16px;
-    border-radius:24px;background:rgba(255,255,255,0.06);
+    border-radius:24px;background:rgba(11,15,20,0.75);
     color:var(--text);font-size:15px;
-    border:1px solid transparent;
-    transition:border .2s;
+    border:1.5px solid rgba(31,111,255,0.55);
+    box-shadow:0 0 10px rgba(31,111,255,0.18),inset 0 0 8px rgba(31,111,255,0.06);
+    transition:border-color .2s, box-shadow .2s;
 }
-.input-field:focus{border-color:var(--blue)}
+.input-field:focus{
+    border-color:#1F6FFF;
+    box-shadow:0 0 0 3px rgba(31,111,255,0.18),0 0 18px rgba(31,111,255,0.35),inset 0 0 10px rgba(31,111,255,0.1);
+    outline:none;
+}
 .input-field::placeholder{color:var(--text-dim);transition:color .3s}
 .input-field:focus::placeholder{color:rgba(230,237,245,0.2)}
 .send-btn{
@@ -808,7 +813,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 /* Sly en arrière-plan de l'app — même image que splash, semi-transparent */
 #app::before{display:none}
 #slyAppBg{
-    position:fixed;bottom:120px;right:6px;
+    position:fixed;bottom:58px;right:6px;
     width:86px;height:86px;
     border-radius:50%;
     border:2.5px solid #1F6FFF;
