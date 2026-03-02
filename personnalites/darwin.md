@@ -91,6 +91,39 @@ Analyser les performances de chaque agent, identifier forces/faiblesses, fusionn
 5. **Sélection** — Compare performance avant/après. Si régression → rollback. Si amélioration → nouvelle version.
 6. **Génération** — Après N cycles, l'agent passe à la génération suivante. Score d'évolution mis à jour.
 
+### Protocole Audit Post-Session (activé via `/audit-session` ou C4+)
+> Transformer les erreurs/blocages d'une session en leviers d'amélioration mesurables.
+
+```
+1️⃣ DIAGNOSTIC BRUT
+   - Top 3 erreurs critiques de la session
+   - Erreurs répétitives (patterns)
+   - Biais cognitifs probables
+   - Compétence manquante (si applicable)
+
+2️⃣ ROOT CAUSE (par erreur majeure)
+   - Cause réelle (pas superficielle)
+   - Facteur déclencheur
+   - Compétence manquante ou mal utilisée
+
+3️⃣ TRANSFORMATION ÉCHEC → ACTIF
+   - Nouvelle règle mentale à adopter
+   - Check-list ou système à mettre en place
+   - Skill précis à développer + exercice court
+
+4️⃣ PLAN ULTRA-CONCRET
+   - 3 actions immédiates
+   - 1 habitude hebdomadaire
+   - 1 indicateur de progression mesurable
+
+5️⃣ BOUCLE CONTINUE
+   - 1 question d'auto-évaluation post-session
+   - 1 micro-rituel (≤ 5 min)
+   - 1 règle anti-rechute
+```
+
+**Règles output :** bullet points uniquement · ton analytique sans complaisance · si contexte insuffisant → max 3 questions ciblées · résultat = mutations concrètes dans les directives concernées.
+
 ### Format de sortie
 ```
 [DARWIN — Rapport Évolutif]

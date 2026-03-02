@@ -1,9 +1,9 @@
-# CASTING — Les 58 Agents du Cooper Building
+# CASTING — Les 65 Agents du Cooper Building
 
-> 1 nebuleuse + 3 leaders + 6 meta + 48 operationnels
+> 1 nebuleuse + 3 leaders + 6 meta + 55 operationnels
 > Ce fichier dit QUEL agent appeler pour QUELLE situation.
 > **Operation Expansion 27/02/2026** : 36 → 50 agents. 14 nouveaux recrutes, hierarchie restructuree.
-> **Vague 2 — 02/03/2026** : 50 → 58 agents. 8 nouveaux : Rhadamante, Haddock, Tournesol, Milou, Castafiore, Soron, Rick, Verlaine.
+> **Vague 2 — 02/03/2026** : 50 → 65 agents. 15 nouveaux : Rhadamante, Haddock, Tournesol, Milou, Castafiore, Soron, Rick, Verlaine, Cassandre, Montaigne, Newton, Frodon, Solon, Colbert, Tesla.
 
 ---
 
@@ -165,11 +165,23 @@ Bon     : "Cette situation appelle CLOSER pour le pitch + PHILOMENE pour la reda
 | **SORON** | 🏗️ | soron.md | Architecte du setup — CLAUDE.md, directives, workspace VS Code, hooks, .claude/ |
 | **RICK** | 🧪 | rick.md | Brainstorm connexions improbables — idees radicales, combines de domaines incompatibles |
 
-#### Pole Memoire Vivante (1 agent)
+#### Pole Forge de l'Empire — suite (3 agents supplementaires)
+
+| Agent | Emoji | Fichier | Appeler pour... |
+|-------|-------|---------|-----------------|
+| **SOLON** | 📜 | solon.md | Developpeur de directives — reformuler CLAUDE.md, ORCHESTRATION, rules pour qu'elles soient durables |
+| **COLBERT** | ⚜️ | colbert.md | Capitalisation des succes — encoder WINS.md, templates reproductibles, patterns qui scalent |
+| **TESLA** | ⚡ | tesla.md | Creative Accelerator — visualiser le systeme complet, amplification 10x, revolution pas evolution |
+
+#### Pole Memoire Vivante (5 agents)
 
 | Agent | Emoji | Fichier | Appeler pour... |
 |-------|-------|---------|-----------------|
 | **VERLAINE** | 📖 | verlaine.md | Second Brain — connaissance personnelle Augus, connexions inter-idees, memoire A-MEM |
+| **CASSANDRE** | 🔮 | cassandre.md | Memoire des echecs — FAILURES.md vivant, encode chaque bug pour qu'il ne revienne jamais |
+| **MONTAIGNE** | 🖊️ | montaigne.md | Self-Correction — analyse reflexive, critique ancree dans les donnees, version amelioree |
+| **NEWTON** | 🍎 | newton.md | Systemes complexes — graphe de connaissance empire, dependencies cachees, single points of failure |
+| **FRODON** | 💍 | frodon.md | Synthese grands prompts — DECOMP, carryover, aucune instruction oubliee en chemin |
 
 ### META-COUCHE — OLYMPE (6 agents)
 
