@@ -880,7 +880,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 (function(){
     var SPLASH_DUR = 5000;
     var _lastSplash = parseInt(localStorage.getItem('sly_last_splash') || '0');
-    var _skipSplash = (Date.now() - _lastSplash) < 7200000;
+    var _skipSplash = false; // SPLASH TOUJOURS AFFICHÉ — désactivé temporairement pour tests
     var _fired = false;
 
     // Attend que _doBootApp soit défini, puis fire après `delay` ms
