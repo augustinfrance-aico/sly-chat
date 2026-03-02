@@ -1518,22 +1518,30 @@ const CircuitBreaker = {
     }
 };
 
-// ═══════ VOICES ═══════
+// ═══════ VOICES — 13 voix clonées FishAudio ═══════
 const VOICES = {
-    freeman:'3ad4d432023c47ee9e6c7805b973630a',
-    bradpitt:'fc9802c61ad1461fa75fd0ec26c6b764',
-    tomhanks:'42a3d5dec46c42b5846e84979292e013',
-    harrypotter:'42cbd05f78814d6f8b47d90a3cb37f0b',
-    gandalf:'0e73b5c5ff5740cd8d85571454ef28ae',
-    secretstory:'7a077671da5949589da605a31bcde05e',
-    journtf1:'92f1ae1e852840ba85c420c20ea084de',
-    sarkozy:'045017eac4724d89970cc0dd089afcd3',
-    homersimpson:'a78a204111a5453bbd972183db60b1bf',
-    pujadas:'d84060c540ce4d4ca59188b68672fbf7',
-    brucewillis:'87efb8f2ec4f4b3b8ed9f3fd64a3ab4b',
-    galadriel:'a288bdc744da4ad194921adad6863175',   // Clémence — voix FR profonde noble (Galadriel-style)
-    mariealice:'6cd316460ab543b0b5048a7908852c1e',   // Marie Alice V3 — narratrice FR Desperate Housewives
+    freeman:'3ad4d432023c47ee9e6c7805b973630a',      // Morgan Freeman — grave, cosmique
+    bradpitt:'fc9802c61ad1461fa75fd0ec26c6b764',      // Brad Pitt — cool, furtif
+    tomhanks:'42a3d5dec46c42b5846e84979292e013',      // Tom Hanks — chaleureux
+    harrypotter:'42cbd05f78814d6f8b47d90a3cb37f0b',   // Harry Potter — jeune brit
+    gandalf:'0e73b5c5ff5740cd8d85571454ef28ae',       // Gandalf — sage, ancien
+    secretstory:'7a077671da5949589da605a31bcde05e',   // Voix Secret Story — mystère
+    journtf1:'92f1ae1e852840ba85c420c20ea084de',      // Journaliste TF1 — pro
+    sarkozy:'045017eac4724d89970cc0dd089afcd3',       // Sarkozy — nerveux, rythmé
+    homersimpson:'a78a204111a5453bbd972183db60b1bf',  // Homer Simpson FR — fun
+    pujadas:'d84060c540ce4d4ca59188b68672fbf7',       // David Pujadas — JT
+    brucewillis:'87efb8f2ec4f4b3b8ed9f3fd64a3ab4b',   // Bruce Willis — dur, cinéma
+    galadriel:'a288bdc744da4ad194921adad6863175',     // Clémence / Galadriel — noble FR
+    mariealice:'6cd316460ab543b0b5048a7908852c1e',    // Marie Alice — narratrice FR
 };
+// Pool des 13 voix pour les agents secondaires (distribution stable par hash)
+const _VOICE_POOL = Object.keys(VOICES);
+function _voiceForAgent(agentKey) {
+    // Hash simple du nom → index stable dans le pool
+    let h = 0;
+    for (let i = 0; i < agentKey.length; i++) h = (h * 31 + agentKey.charCodeAt(i)) & 0xffff;
+    return _VOICE_POOL[h % _VOICE_POOL.length];
+}
 
 // ═══════ AGENTS ═══════
 const AGENTS = {
@@ -1657,8 +1665,8 @@ async function speakText(agentKey, fullText) {
     initAudio();
     window._wake3d?.(); window._wakeParticles?.();
     if(typeof showWaveform==='function') showWaveform(agentKey);
-    const voiceKey = AGENTS[agentKey]?.voice || 'bradpitt';
-    const modelId = VOICES[voiceKey];
+    const voiceKey = AGENTS[agentKey]?.voice || _voiceForAgent(agentKey);
+    const modelId = VOICES[voiceKey] || VOICES[_voiceForAgent(agentKey)];
     if (!modelId) return;
 
     // Split into sentences (max 290 chars each)
