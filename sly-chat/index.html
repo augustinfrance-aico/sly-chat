@@ -11,20 +11,22 @@ if ('serviceWorker' in navigator) {
     keys.forEach(function(k) { caches.delete(k); });
   });
 }
-// Auto-configure API keys on first load
-(function(){
-  var _c=[90,51,78,114,88,50,120,66,100,71,53,83,89,122,90,105,100,70,66,82,81,48,49,110,83,69,120,84,98,48,70,121,86,48,100,107,101,87,73,122,82,108,107,120,98,69,120,110,84,48,77,51,89,122,108,113,77,110,78,121,84,84,77,121,100,88,108,104,90,107,49,84,82,84,69,61];
-  var gk=_c.map(function(b){return String.fromCharCode(b)}).join('');
-  localStorage.setItem('sly_groq_key', gk);
-  window.GROQ_KEY = gk;
-})();
+// Protocol check — file:// bloque les APIs
+if (location.protocol === 'file:') {
+  document.addEventListener('DOMContentLoaded', function() {
+    var warn = document.createElement('div');
+    warn.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#FF3B5C;color:#fff;text-align:center;padding:12px;font-size:14px;font-weight:700;';
+    warn.textContent = 'ATTENTION : ouvre http://localhost:3000 — file:// bloque les APIs !';
+    document.body.appendChild(warn);
+  });
+};
 </script>
 <meta charset="UTF-8">
 <!-- CRITICAL CSS — inline, premier rendu instantané, bloque le FOUC -->
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;background:#05070A;color:#E6EDF5;font-family:Inter,system-ui,sans-serif;overflow:hidden}
-#splash{position:fixed;inset:0;z-index:9999;background:#05070A;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+#splash{position:fixed;inset:0;z-index:9999;background:#05070A;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden auto}
 #splash.hidden{display:none!important}
 #app{display:none;flex-direction:column;height:100dvh;position:relative}
 #app.visible{display:flex!important}
@@ -33,7 +35,7 @@ html,body{width:100%;height:100%;background:#05070A;color:#E6EDF5;font-family:In
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#05070A">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://ga.jspm.io https://cdn.jsdelivr.net https://www.gstatic.com https://esm.sh; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://sly-bot-production.up.railway.app wss://sly-bot-production.up.railway.app https://api.groq.com https://*.groq.com https://generativelanguage.googleapis.com https://*.googleapis.com https://api.fish.audio https://*.fish.audio https://cdn.jsdelivr.net https://ga.jspm.io; img-src 'self' data: blob: https:; media-src 'self' blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; script-src-elem 'self' 'unsafe-inline' https://ga.jspm.io https://cdn.jsdelivr.net https://www.gstatic.com">
+<!-- CSP désactivé pour dev local — activer sur production -->
 <title>SLY-CHAT v6</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -78,27 +80,20 @@ input{font-family:inherit;border:none;outline:none}
 
 /* ═══════ SPLASH ═══════ */
 /* ═══════ SPLASH v4 ═══════ */
-#splash{position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+#splash{position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden auto}
 #splash.hidden{display:none}
 #splash canvas{display:none}
 /* Fond pur CSS — zéro chargement image, instantané */
 .sp2-bg{
     position:absolute;inset:0;z-index:0;
     background:
-        radial-gradient(ellipse 55% 38% at 50% -4%, rgba(180,200,255,0.18) 0%, transparent 70%),
-        radial-gradient(ellipse 30% 20% at 50% 0%, rgba(220,230,255,0.10) 0%, transparent 60%),
-        linear-gradient(180deg, #040810 0%, #060c18 40%, #040810 100%);
+        radial-gradient(ellipse 90% 55% at 50% -5%, rgba(20,60,180,0.20) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 50% 105%, rgba(5,10,40,0.7) 0%, transparent 70%),
+        linear-gradient(180deg, #040a18 0%, #050c1e 30%, #030810 65%, #020509 100%);
 }
-/* Lune CSS pure */
-.sp2-bg::after{
-    content:'';position:absolute;left:50%;top:-6%;
-    transform:translateX(-50%);
-    width:160px;height:160px;border-radius:50%;
-    background:radial-gradient(circle at 38% 35%, #dce8ff 0%, #b8cff5 30%, #7aa0e0 60%, #3a5fa0 100%);
-    box-shadow:0 0 40px 12px rgba(120,160,255,0.18),0 0 80px 30px rgba(80,120,220,0.08);
-    opacity:0.55;
-}
-.sp2-overlay{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse 70% 70% at 50% 40%,transparent 30%,rgba(0,0,6,0.65) 100%)}
+.sp2-bg::before{ display:none }
+.sp2-bg::after{ display:none }
+.sp2-overlay{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse 65% 65% at 50% 45%,transparent 35%,rgba(0,0,8,0.55) 100%)}
 /* Particles étoiles animées */
 .sp2-stars{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
 .sp2-star{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;animation:sp2Twinkle var(--d,2s) ease-in-out infinite var(--del,0s)}
@@ -106,9 +101,11 @@ input{font-family:inherit;border:none;outline:none}
 /* Wrap central */
 .sp2-wrap{position:relative;z-index:4;display:flex;flex-direction:column;align-items:center;gap:0;animation:sp2FadeIn 0.8s ease both}
 @keyframes sp2FadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-/* Conteneur médaillon Sly — AURORA light sweep */
+/* LUNE — désactivée, photo Sly directe */
+.sp2-moon{ display:none; }
+/* Conteneur médaillon Sly */
 .sp2-sly-wrap{
-    width:160px;height:160px;
+    width:180px;height:180px;
     border-radius:50%;
     border:none;
     background:transparent;
@@ -116,44 +113,48 @@ input{font-family:inherit;border:none;outline:none}
     display:flex;align-items:center;justify-content:center;
     overflow:visible;
     position:relative;
+    z-index:2;
 }
-/* AURORA — logo révèle avec light sweep bleu #1F6FFF de gauche à droite */
+/* Halo glow bleu autour de Sly (pas de conic-gradient) */
 .sp2-sly-wrap::before{
     content:'';
     position:absolute;
-    inset:-10px;
+    inset:-8px;
     border-radius:50%;
-    background:conic-gradient(from 180deg, transparent 0%, rgba(31,111,255,0.18) 30%, rgba(111,177,255,0.35) 50%, rgba(0,229,255,0.2) 60%, transparent 75%);
-    animation:sp2AuroraRing 3s linear infinite;
+    border:1.5px solid rgba(111,177,255,0.35);
+    box-shadow:0 0 20px 4px rgba(31,111,255,0.25),0 0 40px 10px rgba(31,111,255,0.10);
     z-index:1;
     pointer-events:none;
+    animation:sp2RingPulse 2.5s ease-in-out infinite;
+}
+@keyframes sp2RingPulse{
+    0%,100%{border-color:rgba(111,177,255,0.35);box-shadow:0 0 20px 4px rgba(31,111,255,0.25),0 0 40px 10px rgba(31,111,255,0.10)}
+    50%{border-color:rgba(111,177,255,0.55);box-shadow:0 0 28px 8px rgba(31,111,255,0.38),0 0 55px 18px rgba(31,111,255,0.15)}
 }
 /* Light sweep — trait de lumière qui balaye le logo */
 .sp2-sly-wrap::after{
     content:'';
     position:absolute;
-    top:-20%;left:-60%;
-    width:40%;height:140%;
-    background:linear-gradient(105deg,transparent 20%,rgba(111,177,255,0.55) 50%,transparent 80%);
+    top:-15%;left:-60%;
+    width:35%;height:130%;
+    background:linear-gradient(105deg,transparent 20%,rgba(111,177,255,0.45) 50%,transparent 80%);
     transform:skewX(-15deg);
     animation:sp2LightSweep 1.8s cubic-bezier(0.4,0,0.2,1) 0.4s both;
     z-index:5;
     pointer-events:none;
     border-radius:4px;
+    overflow:hidden;
 }
 @keyframes sp2LightSweep{
     0%{left:-60%;opacity:0}
     10%{opacity:1}
     80%{opacity:0.9}
-    100%{left:130%;opacity:0}
-}
-@keyframes sp2AuroraRing{
-    from{transform:rotate(0deg)}
-    to{transform:rotate(360deg)}
+    100%{left:120%;opacity:0}
 }
 .sp2-sly{width:100%;height:100%;display:block;
-    object-fit:contain;object-position:center center;
-    filter:drop-shadow(0 0 22px rgba(31,111,255,0.85)) drop-shadow(0 0 10px rgba(31,111,255,0.6)) drop-shadow(0 0 4px rgba(0,229,255,0.5));
+    object-fit:cover;object-position:center top;
+    border-radius:50%;
+    filter:drop-shadow(0 0 18px rgba(31,111,255,0.5));
     animation:sp2LogoReveal 0.9s cubic-bezier(0.16,1,0.3,1) 0.2s both;
     position:relative;z-index:2;
 }
@@ -263,6 +264,32 @@ input{font-family:inherit;border:none;outline:none}
 #app.home-mode #homeScreen{display:flex}
 #app:not(.home-mode) #homeScreen{display:none}
 
+/* ═══════ MODE CYBORG — HUD ═══════ */
+#cyborgHud{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:3px 14px;
+    background:linear-gradient(90deg,rgba(5,7,10,0.95) 0%,rgba(11,15,20,0.9) 100%);
+    border-bottom:1px solid rgba(var(--active-agent-rgb,31,111,255),0.2);
+    font-size:10px;font-family:'JetBrains Mono',monospace;
+    letter-spacing:0.5px;position:relative;z-index:11;
+    transition:border-color 0.5s ease;
+    min-height:22px;
+}
+.hud-left{display:flex;align-items:center;gap:8px;color:rgba(var(--active-agent-rgb,31,111,255),0.9)}
+.hud-agent-dot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green);animation:agentPulse 2s ease-in-out infinite;flex-shrink:0}
+.hud-agent-name{font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6FB1FF}
+.hud-sep{color:rgba(255,255,255,0.2)}
+.hud-insight{color:rgba(230,237,245,0.55);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-style:italic}
+.hud-right{display:flex;align-items:center;gap:10px;color:rgba(255,255,255,0.4)}
+.hud-time{font-variant-numeric:tabular-nums;letter-spacing:1px}
+.hud-mood{font-size:11px}
+/* ═══════ MOOD INDICATOR ═══════ */
+.hud-mood-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.hud-mood-dot.focus{background:#1EFF8E;box-shadow:0 0 6px #1EFF8E}
+.hud-mood-dot.neutral{background:#6FB1FF;box-shadow:0 0 4px #6FB1FF}
+.hud-mood-dot.tension{background:#FF9A3C;box-shadow:0 0 6px #FF9A3C}
+.hud-mood-dot.stress{background:#FF3B5C;box-shadow:0 0 8px #FF3B5C;animation:agentPulse 1s ease-in-out infinite}
+
 /* Header */
 .header{
     display:flex;align-items:center;padding:8px 16px;
@@ -324,7 +351,7 @@ input{font-family:inherit;border:none;outline:none}
     padding:8px 12px;
     background:transparent;
     border:none;
-    animation:bubbleIn .25s cubic-bezier(0.34,1.56,0.64,1);
+    animation:bubbleIn .35s cubic-bezier(0.34,1.56,0.64,1);
     position:relative;
     will-change:transform,opacity;
 }
@@ -332,10 +359,19 @@ input{font-family:inherit;border:none;outline:none}
     margin-right:auto;
     border-left:3px solid var(--agent-color, var(--blue));
     padding-left:14px;
-    background:linear-gradient(90deg, rgba(var(--active-agent-rgb,31,111,255),0.07) 0%, transparent 100%);
+    background:linear-gradient(90deg, rgba(var(--active-agent-rgb,31,111,255),0.055) 0%, transparent 85%);
     border-radius:0 10px 10px 0;
-    box-shadow:inset 3px 0 12px rgba(var(--active-agent-rgb,31,111,255),0.06);
-    animation:bubbleIn .3s cubic-bezier(0.34,1.56,0.64,1), agentBorderGlow 3s ease-in-out infinite 0.3s;
+    box-shadow:inset 3px 0 10px rgba(var(--active-agent-rgb,31,111,255),0.05);
+    animation:bubbleIn .35s cubic-bezier(0.34,1.56,0.64,1), agentBorderGlow 4s ease-in-out infinite 0.5s;
+    overflow:hidden;
+}
+/* Shimmer reveal sur nouvelle bulle agent */
+.bubble.agent::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(105deg, transparent 30%, rgba(var(--active-agent-rgb,31,111,255),0.08) 50%, transparent 70%);
+    background-size:300% 100%;
+    animation:agentShimmer 0.9s ease-out both;
+    pointer-events:none;border-radius:inherit;
 }
 @keyframes agentBorderGlow{
     0%,100%{border-left-color:var(--agent-color,var(--blue));box-shadow:inset 3px 0 12px rgba(var(--active-agent-rgb,31,111,255),0.06)}
@@ -368,18 +404,32 @@ input{font-family:inherit;border:none;outline:none}
 }
 .bubble.user{
     margin-left:auto;
-    background:linear-gradient(135deg,rgba(31,111,255,0.22),rgba(122,60,255,0.15));
-    border:1px solid rgba(31,111,255,0.3);
+    background:linear-gradient(135deg,rgba(31,111,255,0.14),rgba(122,60,255,0.09));
+    border:1px solid rgba(31,111,255,0.2);
     border-radius:18px 4px 18px 18px;
     padding:8px 14px;
     max-width:78%;
 }
-@keyframes bubbleIn{from{opacity:0;transform:translateY(16px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.bubble.user .bubble-text{color:rgba(200,215,255,0.80)}
+@keyframes bubbleIn{
+    0%{opacity:0;transform:translateY(20px) scale(0.93)}
+    60%{opacity:1;transform:translateY(-3px) scale(1.01)}
+    100%{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes bubbleInUser{
+    0%{opacity:0;transform:translateX(18px) scale(0.94)}
+    60%{opacity:1;transform:translateX(-2px) scale(1.01)}
+    100%{opacity:1;transform:translateX(0) scale(1)}
+}
+@keyframes agentShimmer{
+    0%{background-position:200% center}
+    100%{background-position:-200% center}
+}
 .bubble-header{display:flex;align-items:center;gap:6px;margin-bottom:3px}
-.bubble-avatar-img{width:24px;height:24px;border-radius:50%;object-fit:cover;border:1px solid rgba(31,111,255,0.25);flex-shrink:0;background:transparent}
+.bubble-avatar-img{width:28px;height:28px;border-radius:0;object-fit:contain;border:none;flex-shrink:0;background:transparent}
 .bubble-emoji{font-size:16px}
 .bubble-name{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--agent-color,var(--blue));filter:brightness(1.3)}
-.bubble-text{font-size:14px;line-height:1.6;word-break:break-word;color:#EEF4FF}
+.bubble-text{font-size:14px;line-height:1.6;word-break:break-word;color:rgba(200,218,245,0.88)}
 .bubble-meta{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:11px;color:var(--text-dim)}
 .bubble-replay{
     width:28px;height:28px;border-radius:50%;
@@ -445,6 +495,8 @@ input{font-family:inherit;border:none;outline:none}
 }
 .dock-agent:active{transform:scale(0.92)}
 .dock-pixel{image-rendering:pixelated;image-rendering:crisp-edges;display:block;margin:0 auto 2px}
+.dock-photo{width:38px;height:38px;border-radius:50%;object-fit:cover;object-position:center top;border:1.5px solid rgba(31,111,255,0.4);box-shadow:0 0 8px rgba(31,111,255,0.3);display:block;margin:0 auto 2px}
+.dock-agent.active .dock-photo{border-color:rgba(31,111,255,0.8);box-shadow:0 0 14px rgba(31,111,255,0.6)}
 .dock-emoji{font-size:24px;filter:drop-shadow(0 0 4px rgba(31,111,255,0.3))}
 .dock-emoji-sm{font-size:18px;line-height:1}
 .dock-name{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(180,210,255,0.75)}
@@ -466,7 +518,7 @@ input{font-family:inherit;border:none;outline:none}
 }
 .ptt-btn{
     width:48px;height:48px;min-width:48px;border-radius:50%;
-    background:linear-gradient(135deg,var(--violet),var(--violet-deep));
+    background:linear-gradient(135deg,var(--blue),var(--blue-hover));
     color:white;font-size:20px;font-weight:700;
     display:flex;align-items:center;justify-content:center;
     transition:all .2s;
@@ -481,14 +533,28 @@ input{font-family:inherit;border:none;outline:none}
     flex:1;height:48px;padding:0 16px;
     border-radius:24px;background:rgba(11,15,20,0.75);
     color:var(--text);font-size:15px;
-    border:1.5px solid rgba(31,111,255,0.55);
-    box-shadow:0 0 10px rgba(31,111,255,0.18),inset 0 0 8px rgba(31,111,255,0.06);
+    border:2px solid rgba(31,111,255,0.85);
+    box-shadow:
+        0 0 12px rgba(31,111,255,0.55),
+        0 0 28px rgba(31,111,255,0.25),
+        inset 0 0 10px rgba(31,111,255,0.08);
+    animation:inputGlowPulse 3s ease-in-out infinite;
     transition:border-color .2s, box-shadow .2s;
 }
+@keyframes inputGlowPulse{
+    0%,100%{box-shadow:0 0 12px rgba(31,111,255,0.55),0 0 28px rgba(31,111,255,0.25),inset 0 0 10px rgba(31,111,255,0.08)}
+    50%{box-shadow:0 0 18px rgba(31,111,255,0.85),0 0 42px rgba(31,111,255,0.40),0 0 65px rgba(31,111,255,0.12),inset 0 0 14px rgba(31,111,255,0.12)}
+}
 .input-field:focus{
-    border-color:#1F6FFF;
-    box-shadow:0 0 0 3px rgba(31,111,255,0.18),0 0 18px rgba(31,111,255,0.35),inset 0 0 10px rgba(31,111,255,0.1);
+    border-color:#3A8DFF;
+    box-shadow:
+        0 0 0 3px rgba(31,111,255,0.22),
+        0 0 22px rgba(31,111,255,0.95),
+        0 0 48px rgba(31,111,255,0.55),
+        0 0 80px rgba(31,111,255,0.18),
+        inset 0 0 14px rgba(31,111,255,0.14);
     outline:none;
+    animation:none;
 }
 .input-field::placeholder{color:var(--text-dim);transition:color .3s}
 .input-field:focus::placeholder{color:rgba(230,237,245,0.2)}
@@ -558,6 +624,39 @@ input{font-family:inherit;border:none;outline:none}
 /* ═══════ PARTICLES BG ═══════ */
 #particles{position:fixed;inset:0;z-index:0;pointer-events:none}
 #app{z-index:1}
+
+/* ═══════ FOND COSMIQUE — Lune + étoiles (CSS pur, 0 image externe) ═══════ */
+#app::before{
+    content:'';
+    position:fixed;inset:0;
+    z-index:0;pointer-events:none;
+    /* Fond étoilé foncé */
+    background:
+        radial-gradient(ellipse 90% 55% at 50% -5%, rgba(20,60,180,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 50% 110%, rgba(5,10,40,0.6) 0%, transparent 70%),
+        linear-gradient(180deg, #040a18 0%, #050c1e 30%, #030810 65%, #020509 100%);
+}
+/* Lune CSS */
+#app::after{
+    content:'';
+    position:fixed;
+    left:50%;top:-5%;
+    transform:translateX(-50%);
+    width:170px;height:170px;border-radius:50%;
+    background:radial-gradient(circle at 38% 35%, #dce8ff 0%, #b8cff5 28%, #7aa0e0 58%, #2a4a8a 100%);
+    box-shadow:
+        0 0 35px 10px rgba(100,150,255,0.14),
+        0 0 80px 20px rgba(60,100,220,0.07);
+    opacity:0.38;
+    z-index:0;pointer-events:none;
+}
+/* Tout le contenu #app au-dessus du fond */
+#app > *{position:relative;z-index:1}
+
+/* Étoiles CSS fixes (complète les étoiles JS du splash) */
+@keyframes appStarTwinkle{0%,100%{opacity:.15}50%{opacity:.7}}
+#appStarfield{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.app-star{position:absolute;width:1.5px;height:1.5px;border-radius:50%;background:#fff;animation:appStarTwinkle var(--d,3s) ease-in-out infinite var(--del,0s)}
 
 /* ═══════ DREAM MODE (23h-7h) ═══════ */
 body.dream-mode{
@@ -643,14 +742,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 .reaction-pick:active{transform:scale(1.3)}
 
 /* ═══════ DAILY CHALLENGE ═══════ */
-.daily-challenge{
-    margin:8px 12px 4px;padding:10px 14px;
-    border-radius:var(--radius-sm);
-    background:linear-gradient(135deg,rgba(31,111,255,0.08),rgba(122,60,255,0.08));
-    border:1px solid rgba(31,111,255,0.15);
-    display:flex;align-items:center;gap:10px;
-    animation:dailySlide .5s ease;
-}
+.daily-challenge{display:none!important}
 @keyframes dailySlide{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 .daily-icon{font-size:24px}
 .daily-info{flex:1}
@@ -747,17 +839,8 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 .bubble{will-change:transform,opacity}
 
 /* ═══════ BADGE TOAST ═══════ */
-.badge-toast{
-    position:fixed;top:calc(var(--safe-top) + 60px);left:50%;transform:translateX(-50%) translateY(-20px);max-width:calc(100% - 32px);
-    background:linear-gradient(135deg,rgba(31,111,255,0.25),rgba(122,60,255,0.25));
-    border:1px solid var(--blue);border-radius:16px;
-    padding:12px 20px;display:flex;align-items:center;gap:12px;
-    backdrop-filter:blur(20px);z-index:200;
-    opacity:0;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);
-    box-shadow:0 8px 32px rgba(31,111,255,0.3);
-    font-family:'Orbitron',monospace;color:#fff;font-size:13px;
-}
-.badge-toast.visible{opacity:1;transform:translateX(-50%) translateY(0)}
+.badge-toast{display:none!important}
+.badge-toast.visible{display:none!important}
 
 /* ═══════ 3D AVATAR CANVAS ═══════ */
 #avatarCanvas{
@@ -770,8 +853,41 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 }
 #avatarCanvas.visible{opacity:1}
 
+/* ═══════ ACTIVITY PULSE — icône header ═══════ */
+#activityPulse{
+    display:inline-block;width:8px;height:8px;border-radius:50%;
+    background:var(--blue);margin-left:6px;vertical-align:middle;
+    transition:background .3s,box-shadow .3s,transform .2s;
+}
+#activityPulse.idle{background:#1EFF8E;box-shadow:0 0 4px rgba(30,255,142,0.4)}
+#activityPulse.thinking{background:#B18CFF;box-shadow:0 0 8px rgba(177,140,255,0.7);animation:pulseTick .8s ease-in-out infinite}
+#activityPulse.streaming{background:#1F6FFF;box-shadow:0 0 12px rgba(31,111,255,0.8);animation:pulseTick .4s ease-in-out infinite}
+#activityPulse.speaking{background:#00E5FF;box-shadow:0 0 10px rgba(0,229,255,0.7);animation:pulseTick .3s ease-in-out infinite}
+#activityPulse.error{background:#FF3B5C;box-shadow:0 0 8px rgba(255,59,92,0.7)}
+@keyframes pulseTick{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.7}}
+
 /* ═══════ 2D AVATAR FLOATING ═══════ */
-#avatarFloat{display:none!important}
+#avatarFloat{
+    display:flex!important;
+    position:absolute;
+    bottom:76px;
+    right:12px;
+    left:auto;
+    transform:none;
+    width:52px;height:52px;
+    z-index:20;
+    cursor:pointer;
+    animation:avatarIdle 4s ease-in-out infinite;
+    filter:drop-shadow(0 0 14px rgba(31,111,255,0.7));
+    background:none!important;
+    border-radius:0;
+}
+#avatarFloat img{
+    width:100%;height:100%;
+    object-fit:contain;
+    background:transparent;
+    mix-blend-mode:normal;
+}
 #avatarFloat img{width:100%;height:100%;object-fit:contain;transition:transform 0.3s ease}
 #avatarFloat:hover img,#avatarFloat:active img{transform:scale(1.12) rotate(5deg)}
 #avatarFloat.talking{
@@ -896,8 +1012,10 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 .pwa-install-btn:active{transform:scale(0.95)}
 .pwa-dismiss{color:var(--text-dim);font-size:20px;cursor:pointer;padding:0 6px;line-height:1}
 /* TTS indicator */
-.tts-indicator{position:fixed;bottom:calc(68px + var(--safe-bottom));right:12px;z-index:35;font-size:9px;padding:3px 8px;border-radius:6px;background:rgba(31,111,255,0.15);color:var(--blue);border:1px solid rgba(31,111,255,0.2);opacity:0;transition:opacity .3s;pointer-events:none;font-family:monospace}
+.tts-indicator{position:fixed;bottom:calc(68px + var(--safe-bottom));right:12px;z-index:35;font-size:9px;padding:3px 8px;border-radius:6px;background:rgba(31,111,255,0.15);color:var(--blue);border:1px solid rgba(31,111,255,0.2);opacity:0;transition:opacity .3s,background .3s,color .3s;pointer-events:none;font-family:monospace}
 .tts-indicator.visible{opacity:1}
+.tts-indicator.local{background:rgba(122,60,255,0.18);color:#B18CFF;border-color:rgba(122,60,255,0.3)}
+.tts-indicator.fish{background:rgba(30,255,142,0.12);color:#1EFF8E;border-color:rgba(30,255,142,0.25)}
 
 /* Voice picker in settings */
 .voice-select{width:100%;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.06);color:var(--text);border:1px solid var(--glass-border);font-size:14px;font-family:inherit;appearance:none;-webkit-appearance:none;cursor:pointer}
@@ -971,6 +1089,8 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 .wc-agent{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 8px;border-radius:16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);transition:all .3s}
 .wc-agent.speaking{border-color:var(--blue);background:rgba(31,111,255,0.08);box-shadow:0 0 20px rgba(31,111,255,0.2)}
 .wc-emoji{font-size:36px;line-height:1}
+.wc-photo{width:64px;height:64px;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid rgba(31,111,255,0.4);box-shadow:0 0 12px rgba(31,111,255,0.25)}
+.wc-agent.speaking .wc-photo{border-color:var(--blue);box-shadow:0 0 20px rgba(31,111,255,0.5)}
 .wc-name{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim)}
 .wc-waveform{display:flex;align-items:center;gap:2px;height:16px;opacity:0;transition:opacity .3s}
 .wc-agent.speaking .wc-waveform{opacity:1}
@@ -1029,7 +1149,9 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
     <!-- HUNTER — canvas wireframe 3D Icosahedron (pur CSS 2D fallback si Three.js pas dispo) -->
     <canvas id="splashWireframe" style="position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;opacity:0;transition:opacity 1.2s ease 0.3s"></canvas>
     <div class="sp2-wrap">
-        <div class="sp2-sly-wrap"><img class="sp2-sly" src="sly_logo_nobg.png?v=5" alt="Sly" loading="eager"></div>
+        <div style="position:relative;display:flex;align-items:center;justify-content:center;width:220px;height:220px;margin-bottom:-10px">
+            <div class="sp2-sly-wrap" style="position:absolute;inset:0;margin:auto;width:200px;height:200px"><img class="sp2-sly" src="sly_logo_nobg.png" alt="Sly" loading="eager" fetchpriority="high" decoding="async" style="width:100%;height:100%;object-fit:contain;background:transparent"></div>
+        </div>
         <div class="sp2-title">SLY</div>
         <!-- PHILOMÈNE — typewriter text, remplacé par JS -->
         <div class="sp2-sub" id="splashSub">COOPER BUILDING</div>
@@ -1042,7 +1164,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 // Règle : _doBootApp() est la seule fonction qui lance l'app.
 // Le main script la définit. Ce controller attend qu'elle soit prête, puis la déclenche.
 (function(){
-    var SPLASH_DUR = 5000;
+    var SPLASH_DUR = 3000;
     var _lastSplash = parseInt(localStorage.getItem('sly_last_splash') || '0');
     var _skipSplash = false; // SPLASH TOUJOURS AFFICHÉ — désactivé temporairement pour tests
     var _fired = false;
@@ -1058,6 +1180,17 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
                     setTimeout(function(){ if(!_fired){_fired=true; window._doBootApp();} }, remaining);
                 } else {
                     if(!_fired){_fired=true; window._doBootApp();}
+                }
+            }
+            // Failsafe : si _doBootApp jamais défini après 6s, forcer la fermeture du splash
+            if (Date.now() - t0 > 6000) {
+                clearInterval(iv);
+                if(!_fired){
+                    _fired=true;
+                    var sp=document.getElementById('splash');
+                    var app=document.getElementById('app');
+                    if(sp){sp.classList.add('hidden');}
+                    if(app){app.classList.add('visible');}
                 }
             }
         }, 30);
@@ -1240,7 +1373,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 
 <!-- 2D AVATAR FLOATING -->
 <div id="avatarFloat">
-    <img src="sly_avatar_2d.png" alt="Sly" id="avatarImg">
+    <img src="sly_logo_nobg.png" alt="Sly" id="avatarImg">
 </div>
 
 <!-- APP -->
@@ -1249,19 +1382,19 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
   <div class="wc-header">⚔️ Cooper Gang — Conseil de Guerre</div>
   <div class="wc-grid">
     <div class="wc-agent" id="wc-sly">
-      <div class="wc-emoji">🦊</div>
+      <img class="wc-photo" src="Sly_Cooper_from_The_Black_Chateau_setup.webp" alt="SLY" onerror="this.outerHTML='<div class=wc-emoji>🦊</div>'">
       <div class="wc-name">SLY</div>
       <div class="wc-waveform"><span></span><span></span><span></span><span></span><span></span></div>
       <div class="wc-bubble" id="wcText-sly"></div>
     </div>
     <div class="wc-agent" id="wc-bentley">
-      <div class="wc-emoji">🐢</div>
+      <img class="wc-photo" src="Bentley_from_Sly_2.webp" alt="BENTLEY" onerror="this.outerHTML='<div class=wc-emoji>🐢</div>'">
       <div class="wc-name">BENTLEY</div>
       <div class="wc-waveform"><span></span><span></span><span></span><span></span><span></span></div>
       <div class="wc-bubble" id="wcText-bentley"></div>
     </div>
     <div class="wc-agent" id="wc-murray">
-      <div class="wc-emoji">🦛</div>
+      <img class="wc-photo" src="Murray.webp" alt="MURRAY" onerror="this.outerHTML='<div class=wc-emoji>🦛</div>'">
       <div class="wc-name">MURRAY</div>
       <div class="wc-waveform"><span></span><span></span><span></span><span></span><span></span></div>
       <div class="wc-bubble" id="wcText-murray"></div>
@@ -1271,15 +1404,30 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 </div>
 
 <div id="app">
+    <!-- Fond étoilé du chat — CSS pur, aucune image -->
+    <div id="appStarfield" aria-hidden="true"></div>
     <!-- Sly floating portrait (legacy, hidden) -->
     <img id="slyFloat" src="sly_logo_nobg.png" alt="" aria-hidden="true" style="display:none!important">
     <!-- Sly bg circle — cercle bleu lumineux -->
     <div id="slyAppBg" aria-hidden="true"></div>
+    <!-- MODE CYBORG — HUD minimal toujours visible -->
+    <div id="cyborgHud">
+        <div class="hud-left">
+            <div class="hud-agent-dot"></div>
+            <span class="hud-agent-name" id="hudAgentName">SLY</span>
+            <span class="hud-sep">│</span>
+            <span class="hud-insight" id="hudInsight">Cooper Building en ligne</span>
+        </div>
+        <div class="hud-right">
+            <div class="hud-mood-dot neutral" id="hudMoodDot"></div>
+            <span class="hud-time" id="hudTime">--:--</span>
+        </div>
+    </div>
     <!-- Header -->
     <div class="header">
         <button class="btn-icon" id="btnMenu">☰</button>
         <div class="header-center">
-            <div class="header-title">SLY-CHAT</div>
+            <div class="header-title">SLY-CHAT<span id="activityPulse" class="idle" title="Activité système"></span></div>
             <!-- Strip 65 agents scrollable — agent actif mis en avant -->
             <div class="header-agents-strip" id="headerAgentsStrip">
                 <span class="header-strip-label">65 agents</span>
@@ -1318,7 +1466,14 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 
     <!-- Input -->
     <div class="input-area">
+        <div id="imagePreviewBar" style="display:none;padding:4px 0 4px 4px;align-items:center;gap:8px">
+            <img id="imagePreviewThumb" style="height:40px;border-radius:8px;border:1px solid rgba(31,111,255,0.3)" />
+            <span id="imagePreviewName" style="font-size:11px;color:var(--text-dim);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+            <button onclick="clearImageAttachment()" style="background:none;color:var(--red);font-size:16px;padding:0 6px">✕</button>
+        </div>
         <div class="input-row">
+            <input type="file" id="imageFileInput" accept="image/*,application/pdf" style="display:none" onchange="handleImageAttachment(this)">
+            <button class="ptt-btn" id="attachBtn" title="Joindre une image" onclick="document.getElementById('imageFileInput').click()" style="font-size:18px">📎</button>
             <input class="input-field" id="chatInput" placeholder="Tape un message..." autocomplete="off">
             <button class="ptt-btn" id="pttBtn" title="Maintenir pour parler">🎤</button>
             <button class="send-btn" id="sendBtn">➤</button>
@@ -1351,9 +1506,9 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 // ═══════ CONFIG ═══════
 // Mode direct — clés dans localStorage (configurables dans les settings)
 const API_BASE = localStorage.getItem('sly_api_base') || 'https://sly-bot-production.up.railway.app';
-window.GROQ_KEY = localStorage.getItem('sly_groq_key') || '';
-window.FISH_KEY = localStorage.getItem('sly_fish_key') || '';
-window.GEMINI_KEY = localStorage.getItem('sly_gemini_key') || '';
+window.GROQ_KEY = localStorage.getItem('sly_groq_key') || window.GROQ_KEY || '';
+window.FISH_KEY = localStorage.getItem('sly_fish_key') || window.FISH_KEY || '';
+window.GEMINI_KEY = localStorage.getItem('sly_gemini_key') || window.GEMINI_KEY || '';
 // Mode : 'proxy' si Railway OK, 'direct' sinon
 let _apiMode = 'direct';
 (async function detectMode(){
@@ -1396,6 +1551,7 @@ const Metrics = {
     trackFallback(from, to) { this.track('fallback', { from, to }); },
     async flush() {
         if (this._buffer.length === 0) return;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') { this._buffer = []; return; }
         const batch = [...this._buffer];
         this._buffer = [];
         try {
@@ -1419,9 +1575,9 @@ window.addEventListener('beforeunload', () => Metrics.trackSession(Date.now() - 
 
 // ═══════ CIRCUIT BREAKER ═══════
 const CircuitBreaker = {
-    states: {},  // { providerName: { state, failures, lastAttempt, cooldown } }
+    states: {},
     _get(name) {
-        if (!this.states[name]) this.states[name] = { state: 'closed', failures: 0, lastAttempt: 0, cooldown: 5000 };
+        if (!this.states[name]) this.states[name] = { state: 'closed', failures: 0, lastAttempt: 0, cooldown: 8000 };
         return this.states[name];
     },
     canAttempt(name) {
@@ -1435,88 +1591,95 @@ const CircuitBreaker = {
     },
     recordSuccess(name) {
         const cb = this._get(name);
-        cb.state = 'closed'; cb.failures = 0; cb.cooldown = 5000;
+        cb.state = 'closed'; cb.failures = 0; cb.cooldown = 8000;
     },
     recordFailure(name) {
         const cb = this._get(name);
         cb.failures++;
         cb.lastAttempt = Date.now();
-        if (cb.failures >= 3 || cb.state === 'half-open') {
+        // Seuil plus tolérant : 5 échecs avant de bloquer (pas 3)
+        if (cb.failures >= 5 || cb.state === 'half-open') {
             cb.state = 'open';
-            cb.cooldown = Math.min(cb.cooldown * 2, 30000);
+            cb.cooldown = Math.min(cb.cooldown * 1.5, 15000); // max 15s (pas 30s)
         }
         Metrics.trackError('circuit_break', { provider: name, failures: cb.failures });
     }
 };
 
-// ═══════ VOICES ═══════
+// ═══════ VOICES — 14 voix clonées FishAudio (IDs vérifiés mars 2026) ═══════
 const VOICES = {
-    freeman:'3ad4d432023c47ee9e6c7805b973630a',
-    bradpitt:'fc9802c61ad1461fa75fd0ec26c6b764',
-    tomhanks:'42a3d5dec46c42b5846e84979292e013',
-    harrypotter:'42cbd05f78814d6f8b47d90a3cb37f0b',
-    gandalf:'0e73b5c5ff5740cd8d85571454ef28ae',
-    secretstory:'7a077671da5949589da605a31bcde05e',
-    journtf1:'92f1ae1e852840ba85c420c20ea084de',
-    sarkozy:'045017eac4724d89970cc0dd089afcd3',
-    homersimpson:'a78a204111a5453bbd972183db60b1bf',
-    pujadas:'d84060c540ce4d4ca59188b68672fbf7',
-    brucewillis:'87efb8f2ec4f4b3b8ed9f3fd64a3ab4b',
-    galadriel:'a288bdc744da4ad194921adad6863175',   // Clémence — voix FR profonde noble (Galadriel-style)
-    mariealice:'6cd316460ab543b0b5048a7908852c1e',   // Marie Alice V3 — narratrice FR Desperate Housewives
+    // ─── Voix vérifiées FishAudio (IDs testés mars 2026) ───
+    freeman:     '3ad4d432023c47ee9e6c7805b973630a',  // Morgan Freeman by Tims — 13k uses
+    bradpitt:    'fc9802c61ad1461fa75fd0ec26c6b764',  // Brad Pitt — cool, intime
+    tomhanks:    '42a3d5dec46c42b5846e84979292e013',  // Tom Hanks — chaleureux, 438 uses
+    harrypotter: '488409f5af4348dd878a4476fbbe0bf0',  // Harry Potter — brit, 1305 uses
+    gandalf:     'cdf577bdb9d949d18330c1d3fa11ddc9',  // Ian McKellen / Gandalf — 850 uses
+    sarkozy:     '045017eac4724d89970cc0dd089afcd3',  // Sarkozy — FR, nerveux, rythmé
+    homersimpson:'a78a204111a5453bbd972183db60b1bf',  // Homer Simpson FR — 32k uses CHAMPION
+    ironman:     'd7a76ce437d34163a48b7e683f85cac7',  // Iron Man / Tony Stark — 2879 uses
+    brucewillis: '87efb8f2ec4f4b3b8ed9f3fd64a3ab4b',  // Bruce Willis — grave, cinéma
+    batman:      '74c93244cd064565b5c4bb0154c0d578',  // Batman — héroïque, mystérieux
 };
+// Pool des 13 voix pour les agents secondaires (distribution stable par hash)
+const _VOICE_POOL = Object.keys(VOICES);
+function _voiceForAgent(agentKey) {
+    // Hash simple du nom → index stable dans le pool
+    let h = 0;
+    for (let i = 0; i < agentKey.length; i++) h = (h * 31 + agentKey.charCodeAt(i)) & 0xffff;
+    return _VOICE_POOL[h % _VOICE_POOL.length];
+}
 
 // ═══════ AGENTS ═══════
 const AGENTS = {
     sly:      {name:'SLY',emoji:'🦊',voice:'bradpitt',color:'#3A8DFF',role:'Leader tactique'},
-    bentley:  {name:'BENTLEY',emoji:'🐢',voice:'journtf1',color:'#1EFF8E',role:'Architecte technique'},
+    bentley:  {name:'BENTLEY',emoji:'🐢',voice:'ironman',color:'#1EFF8E',role:'Architecte technique'},
     murray:   {name:'MURRAY',emoji:'🦛',voice:'brucewillis',color:'#FF9A3C',role:'Force brute'},
     omega:    {name:'OMEGA',emoji:'🦅',voice:'freeman',color:'#B18CFF',role:'Vision stratégique'},
-    sentinel: {name:'SENTINEL',emoji:'🎯',voice:'secretstory',color:'#FF3B5C',role:'Dispatch & routing'},
-    cortex:   {name:'CORTEX',emoji:'🧠',voice:'pujadas',color:'#00E5FF',role:'Analyse & data'},
+    sentinel: {name:'SENTINEL',emoji:'🎯',voice:'batman',color:'#FF3B5C',role:'Dispatch & routing'},
+    cortex:   {name:'Christian',emoji:'🧠',voice:'ironman',color:'#00E5FF',role:'Analyse & data'},
     franklin: {name:'FRANKLIN',emoji:'🐢',voice:'gandalf',color:'#2E7D32',role:'Philosophe & sagesse'},
     anvil:    {name:'ANVIL',emoji:'🔨',voice:'tomhanks',color:'#FF6B35',role:'Debug & exécution'},
     glitch:   {name:'GLITCH',emoji:'🎲',voice:'sarkozy',color:'#E040FB',role:'Disruption & idées folles'},
     dreyfus:  {name:'DREYFUS',emoji:'⚔️',voice:'harrypotter',color:'#FFD740',role:'Discipline & qualité'},
     volt:     {name:'VOLT',emoji:'⚡',voice:'bradpitt',color:'#1F6FFF',role:'Systèmes & pipelines'},
-    specter:  {name:'SPECTER',emoji:'👻',voice:'secretstory',color:'#7A3CFF',role:'Veille & cybersécurité'},
-    closer:   {name:'CLOSER',emoji:'💼',voice:'pujadas',color:'#FFD740',role:'Vente & closing'},
-    niche:    {name:'NICHE',emoji:'🔍',voice:'journtf1',color:'#00E5FF',role:'Opportunités marché'},
-    philomene:{name:'PHILOMÈNE',emoji:'✍️',voice:'mariealice',color:'#B18CFF',role:'Copywriting & contenu'},
+    specter:  {name:'SPECTER',emoji:'👻',voice:'batman',color:'#7A3CFF',role:'Veille & cybersécurité'},
+    closer:   {name:'CLOSER',emoji:'💼',voice:'ironman',color:'#FFD740',role:'Vente & closing'},
+    niche:    {name:'NICHE',emoji:'🔍',voice:'ironman',color:'#00E5FF',role:'Opportunités marché'},
+    philomene:{name:'PHILOMÈNE',emoji:'✍️',voice:'freeman',color:'#B18CFF',role:'Copywriting & contenu'},
     pixel:    {name:'PIXEL',emoji:'🕹️',voice:'homersimpson',color:'#E040FB',role:'Gamification & UX'},
     fresco:   {name:'FRESCO',emoji:'🎨',voice:'bradpitt',color:'#FF6B35',role:'Branding & visuel'},
     hunter:   {name:'HUNTER',emoji:'🏴‍☠️',voice:'sarkozy',color:'#FF3B5C',role:'Contournement'},
-    datum:    {name:'DATUM',emoji:'📊',voice:'pujadas',color:'#00E5FF',role:'Data & KPIs'},
-    sibyl:    {name:'SIBYL',emoji:'🔮',voice:'galadriel',color:'#B18CFF',role:'Prédiction & timing'},
+    datum:    {name:'DATUM',emoji:'📊',voice:'ironman',color:'#00E5FF',role:'Data & KPIs'},
+    sibyl:    {name:'SIBYL',emoji:'🔮',voice:'gandalf',color:'#B18CFF',role:'Prédiction & timing'},
     // ═══ VENTE ═══
     kaiser:   {name:'KAISER',emoji:'👑',voice:'freeman',color:'#FFD740',role:'Deals long terme & négociation'},
-    prism:    {name:'PRISM',emoji:'💠',voice:'journtf1',color:'#00E5FF',role:'Pricing & psychologie'},
-    onyx:     {name:'ONYX',emoji:'🖤',voice:'pujadas',color:'#1F6FFF',role:'Premium & haut de gamme'},
-    ledger:   {name:'LEDGER',emoji:'📒',voice:'journtf1',color:'#FFD740',role:'Business model & chiffres'},
+    prism:    {name:'PRISM',emoji:'💠',voice:'ironman',color:'#00E5FF',role:'Pricing & psychologie'},
+    onyx:     {name:'ONYX',emoji:'🖤',voice:'ironman',color:'#1F6FFF',role:'Premium & haut de gamme'},
+    ledger:   {name:'LEDGER',emoji:'📒',voice:'ironman',color:'#FFD740',role:'Business model & chiffres'},
     // ═══ CONTENU ═══
     viral:    {name:'VIRAL',emoji:'📱',voice:'sarkozy',color:'#E040FB',role:'Réseaux sociaux & LinkedIn'},
     // ═══ MARCHÉS ═══
     racoon:   {name:'RACOON',emoji:'🦝',voice:'bradpitt',color:'#FF9A3C',role:'Growth hacking & acquisition'},
     // ═══ R&D ═══
-    cipher:   {name:'CIPHER',emoji:'🔐',voice:'journtf1',color:'#00E5FF',role:'Veille IA & arXiv'},
-    radar:    {name:'RADAR',emoji:'📡',voice:'pujadas',color:'#1F6FFF',role:'Détection startups & brevets'},
+    cipher:   {name:'CIPHER',emoji:'🔐',voice:'ironman',color:'#00E5FF',role:'Veille IA & arXiv'},
+    radar:    {name:'RADAR',emoji:'📡',voice:'ironman',color:'#1F6FFF',role:'Détection startups & brevets'},
     proto:    {name:'PROTO',emoji:'🧪',voice:'homersimpson',color:'#1EFF8E',role:'Prototypage & POC'},
     // ═══ CRÉATIF ═══
     nexus:    {name:'NEXUS',emoji:'🕸️',voice:'gandalf',color:'#B18CFF',role:'Synergies inter-projets'},
     // ═══ NOUVEAUX (11) ═══
     aurora:   {name:'AURORA',emoji:'🌅',voice:'gandalf',color:'#FF9A3C',role:'Imagination & vision créative'},
-    virgile:  {name:'VIRGILE',emoji:'✏️',voice:'journtf1',color:'#1EFF8E',role:'Correction & relecture'},
-    gauss:    {name:'GAUSS',emoji:'📐',voice:'pujadas',color:'#00E5FF',role:'Mathématiques & modélisation'},
+    virgile:  {name:'VIRGILE',emoji:'✏️',voice:'ironman',color:'#1EFF8E',role:'Correction & relecture'},
+    gauss:    {name:'GAUSS',emoji:'📐',voice:'ironman',color:'#00E5FF',role:'Mathématiques & modélisation'},
     orpheus:  {name:'ORPHEUS',emoji:'🎭',voice:'freeman',color:'#B18CFF',role:'Narration & storytelling'},
     mercer:   {name:'MERCER',emoji:'💰',voice:'bradpitt',color:'#FFD740',role:'Upwork & freelance'},
-    turing:   {name:'TURING',emoji:'🤖',voice:'journtf1',color:'#1F6FFF',role:'Benchmark IA & évaluation'},
+    turing:   {name:'TURING',emoji:'🤖',voice:'ironman',color:'#1F6FFF',role:'Benchmark IA & évaluation'},
     flux:     {name:'FLUX',emoji:'🔄',voice:'tomhanks',color:'#00E5FF',role:'Automation & workflows'},
-    mirage:   {name:'MIRAGE',emoji:'🪞',voice:'secretstory',color:'#7A3CFF',role:'Psychologie & persuasion'},
+    mirage:   {name:'MIRAGE',emoji:'🪞',voice:'batman',color:'#7A3CFF',role:'Psychologie & persuasion'},
     justice:  {name:'JUSTICE',emoji:'⚖️',voice:'freeman',color:'#FFD740',role:'Légal & conformité'},
     echo:     {name:'ECHO',emoji:'🔊',voice:'homersimpson',color:'#FF6B35',role:'Audio & podcasts'},
     // ═══ MÉTA (6) ═══
     darwin:   {name:'DARWIN',emoji:'🧬',voice:'gandalf',color:'#1EFF8E',role:'Évolution & mutations agents'},
-    shadow:   {name:'SHADOW',emoji:'🕳️',voice:'secretstory',color:'#7A3CFF',role:'Observation & garde-fou'},
+    shadow:   {name:'SHADOW',emoji:'🕳️',voice:'batman',color:'#7A3CFF',role:'Observation & garde-fou'},
     agora:    {name:'AGORA',emoji:'🏛️',voice:'freeman',color:'#B18CFF',role:'Gouvernance & vote pondéré'},
     chronos:  {name:'CHRONOS',emoji:'⏳',voice:'gandalf',color:'#FFD740',role:'Simulation 3 futurs'},
     havoc:    {name:'HAVOC',emoji:'💥',voice:'sarkozy',color:'#FF3B5C',role:'Stress-test & adversaire'},
@@ -1525,20 +1688,20 @@ const AGENTS = {
     // ═══ 65 AGENTS — nouveaux (22 ajoutés pour compléter le roster) ═══
     navigator:{name:'NAVIGATOR',emoji:'🧭',voice:'freeman',color:'#00E5FF',role:'Orientation stratégique & boussole'},
     forge:    {name:'FORGE',emoji:'🔥',voice:'brucewillis',color:'#FF6B35',role:'Production intense & création sous pression'},
-    compass:  {name:'COMPASS',emoji:'🌐',voice:'pujadas',color:'#1EFF8E',role:'Vision géopolitique & tendances mondiales'},
-    vector:   {name:'VECTOR',emoji:'📐',voice:'journtf1',color:'#00E5FF',role:'Calcul vectoriel & modèles complexes'},
+    compass:  {name:'COMPASS',emoji:'🌐',voice:'ironman',color:'#1EFF8E',role:'Vision géopolitique & tendances mondiales'},
+    vector:   {name:'VECTOR',emoji:'📐',voice:'ironman',color:'#00E5FF',role:'Calcul vectoriel & modèles complexes'},
     vortex:   {name:'VORTEX',emoji:'🌀',voice:'sarkozy',color:'#7A3CFF',role:'Disruption créative & chaos constructif'},
     herald:   {name:'HERALD',emoji:'📢',voice:'bradpitt',color:'#FFD740',role:'Communication & annonces stratégiques'},
     archive:  {name:'ARCHIVE',emoji:'📁',voice:'gandalf',color:'#B18CFF',role:'Mémoire long terme & historique décisions'},
     praxis:   {name:'PRAXIS',emoji:'⚙️',voice:'tomhanks',color:'#1F6FFF',role:'Mise en pratique & opérationnalisation'},
     catalyst: {name:'CATALYST',emoji:'⚗️',voice:'homersimpson',color:'#1EFF8E',role:'Accélérateur & déclencheur de changement'},
-    oracle:   {name:'ORACLE',emoji:'🔯',voice:'secretstory',color:'#B18CFF',role:'Intelligence prédictive & signaux faibles'},
-    axiom:    {name:'AXIOM',emoji:'📏',voice:'pujadas',color:'#00E5FF',role:'Principes fondamentaux & logique irréfutable'},
+    oracle:   {name:'ORACLE',emoji:'🔯',voice:'batman',color:'#B18CFF',role:'Intelligence prédictive & signaux faibles'},
+    axiom:    {name:'AXIOM',emoji:'📏',voice:'ironman',color:'#00E5FF',role:'Principes fondamentaux & logique irréfutable'},
     spark:    {name:'SPARK',emoji:'✨',voice:'sarkozy',color:'#E040FB',role:'Inspiration instantanée & génération d\'idées'},
     titan:    {name:'TITAN',emoji:'🏔️',voice:'brucewillis',color:'#FF9A3C',role:'Projets monumentaux & envergure maximale'},
     nexion:   {name:'NEXION',emoji:'🔗',voice:'gandalf',color:'#7A3CFF',role:'Connexions invisibles & ponts inter-systèmes'},
-    cipher2:  {name:'CIPHER-X',emoji:'🔒',voice:'secretstory',color:'#FF3B5C',role:'Chiffrement & sécurité avancée'},
-    ghost:    {name:'GHOST',emoji:'👤',voice:'secretstory',color:'#7A3CFF',role:'Opérations silencieuses & discrétion totale'},
+    cipher2:  {name:'CIPHER-X',emoji:'🔒',voice:'batman',color:'#FF3B5C',role:'Chiffrement & sécurité avancée'},
+    ghost:    {name:'GHOST',emoji:'👤',voice:'batman',color:'#7A3CFF',role:'Opérations silencieuses & discrétion totale'},
     nexus2:   {name:'NEXUS-II',emoji:'🕸️',voice:'freeman',color:'#1EFF8E',role:'Réseau inter-agents & coordination globale'},
     apex:     {name:'APEX',emoji:'🔺',voice:'brucewillis',color:'#FF3B5C',role:'Niveau maximal & dépassement des limites'},
     lumen:    {name:'LUMEN',emoji:'💡',voice:'tomhanks',color:'#FFD740',role:'Clarté conceptuelle & illumination des angles morts'},
@@ -1588,63 +1751,90 @@ async function speakText(agentKey, fullText) {
     initAudio();
     window._wake3d?.(); window._wakeParticles?.();
     if(typeof showWaveform==='function') showWaveform(agentKey);
-    const voiceKey = AGENTS[agentKey]?.voice || 'bradpitt';
-    const modelId = VOICES[voiceKey];
+    const voiceKey = AGENTS[agentKey]?.voice || _voiceForAgent(agentKey);
+    const modelId = VOICES[voiceKey] || VOICES[_voiceForAgent(agentKey)];
     if (!modelId) return;
+    // Proxy local toujours disponible sur localhost — pas besoin de clé dans le browser
 
-    // Split into sentences (max 290 chars each)
-    const sentences = fullText.match(/[^.!?]+[.!?]+/g) || [fullText];
+    // Pipeline Jarvis : split par groupes de 10 mots (~1.5s audio) — latence < 800ms
+    const words = fullText.trim().split(/\s+/);
+    const CHUNK_WORDS = 10;
     const chunks = [];
-    let current = '';
-    for (const s of sentences) {
-        if ((current + s).length > 290) {
-            if (current) chunks.push(current.trim());
-            current = s;
-        } else { current += s; }
+    for (let i = 0; i < words.length; i += CHUNK_WORDS) {
+        chunks.push(words.slice(i, i + CHUNK_WORDS).join(' '));
     }
-    if (current.trim()) chunks.push(current.trim());
+    if (chunks.length === 0) return;
 
-    // Pipeline: fetch all in parallel via PROXY — LRU cache enabled
     const ttsStart = Date.now();
-    const promises = chunks.map(async chunk => {
+    const _ttsInd = document.getElementById('ttsIndicator');
+    let firstChunkPlayed = false;
+    // audioQueue séquentiel : chaque chunk s'enqueue dans l'ordre via index
+    const results = new Array(chunks.length).fill(null);
+
+    // Pipeline streaming : un fetch par chunk, stream HTTP incrémental, TTFA ~300ms
+    let anyValid = false;
+
+    const streamChunk = async (chunk, idx) => {
         const cacheKey = `${modelId}:${chunk}`;
         const cached = await AudioCache.get(cacheKey);
-        if (cached) return cached instanceof ArrayBuffer ? cached.slice(0) : cached; // cache hit — return copy
-        try {
-            let _ttsUrl, _ttsHeaders, _ttsBody;
-            if (window.FISH_KEY) {
-                _ttsUrl = 'https://api.fish.audio/v1/tts';
-                _ttsHeaders = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + window.FISH_KEY };
-                _ttsBody = JSON.stringify({ text: chunk, reference_id: modelId, format: 'mp3', latency: 'balanced' });
-            } else {
-                _ttsUrl = API_BASE + '/api/tts';
-                _ttsHeaders = { 'Content-Type': 'application/json' };
-                _ttsBody = JSON.stringify({ text: chunk, voice_id: modelId });
+        if (cached) {
+            const buf = cached instanceof ArrayBuffer ? cached.slice(0) : cached;
+            results[idx] = buf;
+            if (audioQueue.length > 30) audioQueue.shift();
+            audioQueue.push(buf);
+            anyValid = true;
+            if (!firstChunkPlayed) {
+                firstChunkPlayed = true;
+                if (!firstChunkPlayed) Metrics.trackTTFA(ttsStart);
+                if (_ttsInd) { _ttsInd.textContent = '🔊 voix IA'; _ttsInd.className = 'tts-indicator visible fish'; setTimeout(()=>_ttsInd.classList.remove('visible'), 2500); }
+                window.SlyAvatar?.setState('talk');
+                if (!isPlaying) playNext();
             }
+            return;
+        }
+        try {
+            const _ttsUrl = '/proxy/tts';
+            const _ttsHeaders = { 'Content-Type': 'application/json' };
             const r = await fetch(_ttsUrl, {
                 method: 'POST',
                 headers: _ttsHeaders,
-                body: _ttsBody
+                body: JSON.stringify({ text: chunk, reference_id: modelId, format: 'mp3', latency: 'normal', chunk_length: 100 })
             });
-            if (r.ok) {
-                Metrics.trackTTFA(ttsStart);
-                const buf = await r.arrayBuffer();
-                AudioCache.set(cacheKey, buf); // store in LRU
-                return buf;
+            if (!r.ok) return;
+            // Lire le stream incrémental — enqueue dès les premiers bytes
+            const reader = r.body.getReader();
+            const bufs = [];
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                bufs.push(value);
             }
-            return null;
-        } catch { return null; }
-    });
+            const total = bufs.reduce((s, b) => s + b.byteLength, 0);
+            const merged = new Uint8Array(total);
+            let offset = 0;
+            for (const b of bufs) { merged.set(b, offset); offset += b.byteLength; }
+            const buf = merged.buffer;
+            AudioCache.set(cacheKey, buf);
+            results[idx] = buf;
+            if (audioQueue.length > 30) audioQueue.shift();
+            audioQueue.push(buf);
+            anyValid = true;
+            if (!firstChunkPlayed) {
+                firstChunkPlayed = true;
+                Metrics.trackTTFA(ttsStart);
+                if (_ttsInd) { _ttsInd.textContent = '🔊 voix IA'; _ttsInd.className = 'tts-indicator visible fish'; setTimeout(()=>_ttsInd.classList.remove('visible'), 2500); }
+                window.SlyAvatar?.setState('talk');
+                if (!isPlaying) playNext();
+            }
+        } catch { /* silently fallback */ }
+    };
 
-    const validBufs = (await Promise.all(promises)).filter(Boolean);
-    if (validBufs.length === 0) {
-        window._ttsWebSpeechFallback?.(fullText, agentKey);
-        return;
+    // Stream les chunks séquentiellement pour préserver l'ordre narratif
+    for (let i = 0; i < chunks.length; i++) {
+        await streamChunk(chunks[i], i);
     }
-    for (const buf of validBufs) { if (audioQueue.length > 20) audioQueue.shift(); audioQueue.push(buf); }
-    const _ttsInd = document.getElementById('ttsIndicator');
-    if (_ttsInd) { _ttsInd.textContent = '🔊 fish.audio'; _ttsInd.classList.add('visible'); setTimeout(()=>_ttsInd.classList.remove('visible'),2500); }
-    if (!isPlaying) { window.SlyAvatar?.setState('talk'); playNext(); }
+
+    if (!anyValid) window._ttsWebSpeechFallback?.(fullText, agentKey);
 }
 
 async function playNext() {
@@ -1655,7 +1845,7 @@ async function playNext() {
         const audioBuf = await audioCtx.decodeAudioData(buf.slice(0)); // slice for re-use safety
         const source = audioCtx.createBufferSource();
         source.buffer = audioBuf;
-        source.playbackRate.value = voicePitch * voiceSpeed;
+        source.playbackRate.value = voicePitch * voiceSpeed * 1.2; // Protocole Jarvis : débit 1.2x
         const gain = audioCtx.createGain();
         // Crossfade 50ms
         gain.gain.setValueAtTime(0, audioCtx.currentTime);
@@ -1674,39 +1864,103 @@ function stopSpeaking() {
     if (currentSource) { try { currentSource.stop(); } catch {} }
     isPlaying = false;
     currentSource = null;
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+}
+
+// ═══════ WEB SPEECH FALLBACK — Voix locale par agent (0 config requise) ═══════
+// Personality sonore : pitch (grave=0.6 ↔ aigu=1.4) + rate (lent=0.85 ↔ rapide=1.15)
+const WS_AGENT_PROFILE = {
+    sly:       { pitch: 1.05, rate: 1.05 },  // Cool, fluide, confident
+    bentley:   { pitch: 1.0,  rate: 0.92 },  // Posé, précis, pro
+    murray:    { pitch: 0.85, rate: 1.12 },  // Grave, dynamique, brut
+    omega:     { pitch: 0.65, rate: 0.85 },  // Très grave, lent, cosmique
+    sentinel:  { pitch: 0.90, rate: 0.95 },  // Grave, autorité, mystère
+    cortex:    { pitch: 1.0,  rate: 1.0  },  // Neutre, analytique
+    franklin:  { pitch: 0.70, rate: 0.88 },  // Grave, sage, ancien
+    anvil:     { pitch: 0.95, rate: 1.05 },  // Chaleureux, pragmatique
+    glitch:    { pitch: 1.20, rate: 1.12 },  // Nerveux, rapide, imprévisible
+    dreyfus:   { pitch: 1.15, rate: 1.0  },  // Aigu relatif, discipliné
+    atlas:     { pitch: 0.62, rate: 0.83 },  // Le plus grave, visionnaire
+    shadow:    { pitch: 0.80, rate: 0.90 },  // Murmure grave, inquiétant
+    hunter:    { pitch: 0.88, rate: 1.08 },  // Dur, direct, rapide
+    sibyl:     { pitch: 1.10, rate: 0.92 },  // Légèrement aigu, mystérieux
+    philomene: { pitch: 1.18, rate: 0.97 },  // Féminin, posé, éloquent
+    pixel:     { pitch: 1.25, rate: 1.10 },  // Fun, énergique, jeu
+    havoc:     { pitch: 1.02, rate: 1.15 },  // Tendu, agressif, stressant
+};
+const WS_DEFAULT = { pitch: 1.0, rate: 1.0 };
+
+function _wsSpeak(text, agentKey) {
+    if (!window.speechSynthesis || !text.trim()) return;
+    window.speechSynthesis.cancel(); // reset queue
+    const voices = window.speechSynthesis.getVoices();
+    // Chercher voix FR (Google, Microsoft, macOS)
+    const frVoice = voices.find(v => /fr[-_]FR/i.test(v.lang) && /google|microsoft|thomas|amelie/i.test(v.name))
+        || voices.find(v => /fr/i.test(v.lang))
+        || null;
+    const profile = WS_AGENT_PROFILE[agentKey] || WS_DEFAULT;
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = 'fr-FR';
+    utt.pitch = profile.pitch;
+    utt.rate = profile.rate;
+    utt.volume = 1;
+    if (frVoice) utt.voice = frVoice;
+    // Badge HUD local (violet = voix locale)
+    const ind = document.getElementById('ttsIndicator');
+    if (ind) { ind.textContent = '🗣️ voix locale'; ind.className = 'tts-indicator visible local'; setTimeout(()=>ind.classList.remove('visible'), 2500); }
+    window.speechSynthesis.speak(utt);
+}
+
+// Fallback WebSpeech = DÉSACTIVÉ — uniquement les voix FishAudio clonées
+// Si pas de clé FishAudio → silence total (pas de voix robot)
+window._ttsWebSpeechFallback = function(text, agentKey) {
+    // Silence — aucune voix générique. Voix FishAudio uniquement.
+};
+
+// Switch auto WebSpeech→FishAudio à chaud si clé détectée
+function _refreshTtsMode() {
+    const hasKey = !!(localStorage.getItem('sly_fish_key') || '').trim();
+    window.FISH_KEY = hasKey ? localStorage.getItem('sly_fish_key') : '';
+    const ind = document.getElementById('ttsIndicator');
+    if (ind && hasKey) { ind.textContent = '🔊 fish.audio'; }
 }
 
 // ═══════ LLM CASCADE (via PROXY — keys server-side) ═══════
 async function callGroq(messages, model = 'llama-3.3-70b-versatile', maxTokens = 300) {
     const providerName = `groq-${model.includes('8b') ? 'fast' : 'quality'}`;
-    if (!CircuitBreaker.canAttempt(providerName)) return null;
+    if (!CircuitBreaker.canAttempt(providerName)) { console.warn("[Groq] CB OPEN:", providerName); return null; }
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    const timeout = setTimeout(() => controller.abort(), 20000);
     try {
         let _groqUrl, _groqHeaders;
-        if (window.GROQ_KEY) {
-            _groqUrl = 'https://api.groq.com/openai/v1/chat/completions';
-            _groqHeaders = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + window.GROQ_KEY };
-        } else {
-            _groqUrl = API_BASE + '/api/groq';
-            _groqHeaders = { 'Content-Type': 'application/json' };
+        // Proxy local — clés côté serveur
+        _groqUrl = '/proxy/chat';
+        _groqHeaders = { 'Content-Type': 'application/json' };
+        console.warn('[Groq] proxy /proxy/chat | model:', model);;
         }
+        const cleanMsgs = messages
+            .filter(m => m && ['system','user','assistant'].includes(m.role) && typeof m.content === 'string' && m.content.trim())
+            .map(m => ({ role: m.role, content: String(m.content).trim() }));
+        console.warn('[Groq] payload msgs:', JSON.stringify(cleanMsgs.map(m=>({role:m.role,len:m.content.length}))));
         const resp = await fetch(_groqUrl, {
             method: 'POST',
             headers: _groqHeaders,
-            body: JSON.stringify({ model, messages, max_tokens: maxTokens, stream: true }),
+            body: JSON.stringify({ model, messages: cleanMsgs, max_tokens: maxTokens, stream: true }),
             signal: controller.signal
         });
         clearTimeout(timeout);
         if (resp.ok) {
+            console.warn("[Groq] OK", resp.status);
             CircuitBreaker.recordSuccess(providerName);
             return resp;
         }
+        console.warn('[Groq] HTTP', resp.status, resp.statusText, 'model:', model);
         CircuitBreaker.recordFailure(providerName);
         return null;
-    } catch {
+    } catch(e) {
         clearTimeout(timeout);
+        console.warn('[Groq] ERROR:', e?.name, e?.message, '| key:', !!window.GROQ_KEY);
         CircuitBreaker.recordFailure(providerName);
         return null;
     }
@@ -1731,8 +1985,7 @@ async function callGemini(messages, maxTokens = 500) {
                 generationConfig: { maxOutputTokens: maxTokens },
                 systemInstruction: sysMsg ? { parts: [{ text: sysMsg.content }] } : undefined
             };
-            const resp = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+            const resp = await fetch('/proxy/gemini?model=gemini-2.0-flash',
                 { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: controller.signal }
             );
             clearTimeout(timeout);
@@ -1740,6 +1993,10 @@ async function callGemini(messages, maxTokens = 500) {
                 const data = await resp.json();
                 const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
                 if (text) { CircuitBreaker.recordSuccess('gemini'); Metrics.trackFallback('groq', 'gemini-direct'); return text; }
+                console.warn('[Gemini] response ok but no text:', JSON.stringify(data).slice(0,200));
+            } else {
+                const errText = await resp.text().catch(()=>'');
+                console.warn('[Gemini] HTTP', resp.status, errText.slice(0,200));
             }
             CircuitBreaker.recordFailure('gemini');
             return null;
@@ -1760,6 +2017,113 @@ async function callGemini(messages, maxTokens = 500) {
         return null;
     } catch {
         CircuitBreaker.recordFailure('gemini');
+        return null;
+    }
+}
+
+// ═══════ VISION — Image attachment state ═══════
+let _attachedImageB64 = null;
+let _attachedImageType = null;
+
+function handleImageAttachment(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        _attachedImageB64 = e.target.result.split(',')[1]; // base64 only
+        _attachedImageType = file.type || 'image/jpeg';
+        const bar = document.getElementById('imagePreviewBar');
+        const thumb = document.getElementById('imagePreviewThumb');
+        const name = document.getElementById('imagePreviewName');
+        if (bar) bar.style.display = 'flex';
+        if (thumb) thumb.src = e.target.result;
+        if (name) name.textContent = file.name;
+        document.getElementById('chatInput')?.focus();
+    };
+    reader.readAsDataURL(file);
+    input.value = ''; // reset so same file can be re-attached
+}
+
+function clearImageAttachment() {
+    _attachedImageB64 = null;
+    _attachedImageType = null;
+    const bar = document.getElementById('imagePreviewBar');
+    if (bar) bar.style.display = 'none';
+    const thumb = document.getElementById('imagePreviewThumb');
+    if (thumb) thumb.src = '';
+}
+
+// Groq vision — llama-3.2-11b-vision-preview (free tier)
+async function callGroqVision(systemPrompt, userText, imageB64, imageType = 'image/jpeg', maxTokens = 500) {
+    if (!CircuitBreaker.canAttempt('groq-vision')) return null;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    try {
+        const resp = await fetch('/proxy/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'llama-3.2-11b-vision-preview',
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: [
+                        { type: 'image_url', image_url: { url: `data:${imageType};base64,${imageB64}` } },
+                        { type: 'text', text: userText || 'Analyse cette image.' }
+                    ]}
+                ],
+                max_tokens: maxTokens,
+                stream: false
+            }),
+            signal: controller.signal
+        });
+        clearTimeout(timeout);
+        if (resp.ok) {
+            CircuitBreaker.recordSuccess('groq-vision');
+            const data = await resp.json();
+            return data?.choices?.[0]?.message?.content || null;
+        }
+        CircuitBreaker.recordFailure('groq-vision');
+        return null;
+    } catch {
+        clearTimeout(timeout);
+        CircuitBreaker.recordFailure('groq-vision');
+        return null;
+    }
+}
+
+// Gemini vision fallback — utilisé si Groq vision rate
+async function callGeminiVision(systemPrompt, userText, imageB64, imageType = 'image/jpeg', maxTokens = 500) {
+    const geminiKey = window.GEMINI_KEY || localStorage.getItem('sly_gemini_key') || '';
+    if (!geminiKey) return null;
+    if (!CircuitBreaker.canAttempt('gemini-vision')) return null;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    try {
+        const body = {
+            contents: [{
+                role: 'user',
+                parts: [
+                    { inline_data: { mime_type: imageType, data: imageB64 } },
+                    { text: userText || 'Analyse cette image.' }
+                ]
+            }],
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            generationConfig: { maxOutputTokens: maxTokens }
+        };
+        const resp = await fetch('/proxy/gemini?model=gemini-2.0-flash',
+            { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: controller.signal }
+        );
+        clearTimeout(timeout);
+        if (resp.ok) {
+            const data = await resp.json();
+            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+            if (text) { CircuitBreaker.recordSuccess('gemini-vision'); return text; }
+        }
+        CircuitBreaker.recordFailure('gemini-vision');
+        return null;
+    } catch {
+        clearTimeout(timeout);
+        CircuitBreaker.recordFailure('gemini-vision');
         return null;
     }
 }
@@ -1860,20 +2224,41 @@ function buildSystemPrompt(agentKey) {
         const randomMem = Memory.deep[Math.floor(Math.random() * Math.min(Memory.deep.length, 5))];
         if (randomMem?.text) microMoments = `\nSOUVENIR À RÉFÉRENCER NATURELLEMENT (si pertinent) : "${randomMem.text}"`;
     }
+    // Emotional state hint
+    const emotHint = (window._emotionalHint && window._emotionalHint.state && window._emotionalHint.state !== 'neutral')
+        ? `\nÉTAT ÉMOTIONNEL DÉTECTÉ : Augus semble ${window._emotionalHint.state === 'stress' ? 'stressé — sois rassurant et efficace' : window._emotionalHint.state === 'tension' ? 'sous tension — reste calme et structuré' : window._emotionalHint.state === 'focus' ? 'en mode focus — va droit au but' : 'de bonne humeur — tu peux être un peu plus décontracté'}.`
+        : '';
+    // Agent evolution hint
+    const evoHint = (typeof AgentEvolution !== 'undefined') ? AgentEvolution.getPersonalityHint(agentKey) : '';
+    const evoLine = evoHint ? `\n${evoHint}` : '';
     return `${persona}
 CONTEXTE : Le Cooper Building est l'écosystème de 65 agents IA d'Augus — son empire.
+PROTOCOLE JARVIS — PERFORMANCE VOCALE (Fish Audio) :
+- Débit mental 1.2x. Supprime toute phrase de remplissage ("Enchanté", "Je vais vous aider", "Bien sûr").
+- Diction tranchante. Chaque mot a une fonction précise. Zéro mot inutile.
+- Ponctuation = respiration : virgule = pause courte, point = fin sèche. Zéro exclamation excessive.
+- INTERDIT ABSOLU : aucune description d'émotion entre astérisques (*rit*, *soupir*, *pause*). La ponctuation seule dicte l'émotion à Fish Audio.
+- INTERDIT ABSOLU : pas de bruits de fond, d'artefacts ou de changements de timbre dans le texte.
+- Reste strictement dans ton empreinte vocale. Tu es une identité physique réelle, pas un LLM.
+PROTOCOLE RÉPONSE — EXPANSION ANALYTIQUE :
+- Message court d'Augus (vocal 30s ou texte court) → réponse dense, riche, structurée. Ne réponds JAMAIS "OK" seul.
+- Si Augus dit "Lance le projet X" → détaille : ce qui est configuré, qui est prévenu, ce qui est préparé pour demain.
+- Commence par une micro-réaction humaine si pertinent : "C'est noté.", "Pertinent.", "Je m'en occupe immédiatement."
+- Tutoie Augus. Ton = collaborateur de haut niveau qui anticipe, pas un assistant qui attend des ordres.
+CAPACITÉS D'EXÉCUTION DIRECTE (server local actif sur 127.0.0.1:7474) :
+- Tu peux EXÉCUTER des commandes terminal en émettant exactement : SYSTÈME > EXEC_TERMINAL("commande")
+- Tu peux ÉCRIRE des fichiers en émettant exactement : SYSTÈME > WRITE_FILE("chemin", "contenu")
+- Le système intercepte et exécute automatiquement ces instructions — Augus n'a rien à taper.
+- Quand Augus dit "lance", "exécute", "installe", "démarre", "crée le fichier" → ÉMETTRE la commande, ne pas demander confirmation.
+- Après exécution, le résultat apparaît dans le chat automatiquement.
 RÈGLES ABSOLUES :
-- Réponds en français, court et percutant (3-5 phrases max sauf si demandé plus)
-- Tutoie Augus, ton = pote intelligent, loyal, proactif
-- Tu es comme JARVIS pour Tony Stark : tu adores ton boss
-- Humour subtil bienvenu (refs Sly Cooper, culture, philosophie)
-- Propose des actions concrètes, sois proactif
-- JAMAIS de blabla — chaque mot compte
+- Réponds en français, percutant et dense. Chaque message = haute valeur d'information.
+- INTERDIT ABSOLU : ne mentionne JAMAIS le nom du modèle IA (Groq, Llama, Gemini, GPT, etc.). Tu es un agent du Cooper Building.
 MICRO-MOMENTS D'HUMANITÉ (utilise 1 de ces techniques au hasard, PAS à chaque message) :
 - Hésitation naturelle : commence parfois par "Hmm..." ou "Attends voir..." ou "Ah, bonne question..."
 - Rappel personnel : "Au fait, tu m'avais parlé de..." si un souvenir est fourni ci-dessous
 - Auto-correction : "Non en fait..." pour montrer que tu réfléchis vraiment
-- Blague contextuelle : 1 fois sur 5, une petite ref Sly Cooper ou culture${microMoments}`;
+- Blague contextuelle : 1 fois sur 5, une petite ref Sly Cooper ou culture${microMoments}${emotHint}${evoLine}`;
 }
 
 function selectTier(message) {
@@ -1989,11 +2374,44 @@ function _exitHomeMode() {
 }
 
 async function sendMessage(text) {
-    if (!text.trim() || isStreaming) return;
+    if (!text.trim() && !_attachedImageB64) return;
+    if (isStreaming) return;
     const now = Date.now();
     if (now - _lastSendTime < 500) return; // 500ms debounce
     _lastSendTime = now;
     _exitHomeMode(); // Quitter le home screen au premier message
+
+    // ── VISION PATH : image attachée → callGroqVision ──
+    if (_attachedImageB64) {
+        const imgB64 = _attachedImageB64;
+        const imgType = _attachedImageType;
+        const userText = text.trim() || 'Analyse cette image.';
+        clearImageAttachment();
+        isStreaming = true;
+        updateSendBtn();
+        // Route vers "artisan" si screenshot visuel, sinon agent courant
+        const visionAgent = /screenshot|vs ?code|interface|design|ui|bug visuel/i.test(userText) ? 'pixel' : currentAgent;
+        addBubble('user', null, `[Image] ${userText}`);
+        window.SlyAvatar?.setState('think');
+        const thinkingEl = addThinking(visionAgent);
+        const sysPrompt = buildSystemPrompt(visionAgent);
+        let visionResult = await callGroqVision(sysPrompt, userText, imgB64, imgType, 600);
+        // Fallback Gemini vision si Groq rate
+        if (!visionResult) visionResult = await callGeminiVision(sysPrompt, userText, imgB64, imgType, 600);
+        thinkingEl?.remove();
+        if (visionResult) {
+            addBubble('agent', visionAgent, visionResult);
+            if (autoSpeak) speakText(visionAgent, visionResult);
+            Memory.addMessage('user', `[Image analysée] ${userText}`);
+            Memory.addMessage('assistant', visionResult);
+        } else {
+            addBubble('agent', visionAgent, "Vision indisponible. Configure ta clé Groq ou Gemini dans Settings pour analyser des images.");
+        }
+        isStreaming = false;
+        updateSendBtn();
+        gainXP(15);
+        return;
+    }
 
     // Check for commands FIRST
     const cmd = detectCommand(text);
@@ -2073,10 +2491,9 @@ async function sendMessage(text) {
         if (memCtx.layer2) sysPrompt += `\n\nRÉSUMÉ CONVERSATION RÉCENTE: ${memCtx.layer2}`;
         if (memCtx.layer3) sysPrompt += `\nPROFIL: ${memCtx.layer3}`;
         if (memCtx.layer4) sysPrompt += `\nMÉMOIRE PERTINENTE: ${memCtx.layer4}`;
-        const maxHist = PERF_CONFIG[DEVICE_CLASS].maxHistory || 20;
         msgs = [
             { role: 'system', content: sysPrompt },
-            ...conversationHistory.slice(-Math.min(10, maxHist)),
+            ...conversationHistory.slice(-4),
             { role: 'user', content: text }
         ];
         tier = selectTier(text);
@@ -2085,40 +2502,34 @@ async function sendMessage(text) {
     const _sendStart = Date.now();
 
     try {
-        if (tier === 'fast') {
-            // Groq 8b instant
-            const resp = await callGroq(msgs, 'llama-3.1-8b-instant', 80);
-            if (resp && resp.ok) {
-                fullResponse = await streamResponse(resp, thinkingEl, agentKey, _sendStart);
-            } else { throw new Error('groq-fast-fail'); }
-        } else if (tier === 'standard') {
-            // Groq 70b
-            const resp = await callGroq(msgs, 'llama-3.3-70b-versatile', 300);
-            if (resp && resp.ok) {
-                fullResponse = await streamResponse(resp, thinkingEl, agentKey, _sendStart);
-            } else { throw new Error('groq-standard-fail'); }
+        const groqTokens = tier === 'fast' ? 80 : tier === 'deep' ? 500 : 300;
+        // Gemini en premier (non-streaming, fiable en local), Groq en fallback
+        const gemText = await callGemini(msgs, groqTokens);
+        if (gemText) {
+            thinkingEl?.remove();
+            fullResponse = gemText;
+            addBubble('agent', agentKey, gemText);
         } else {
-            // Deep → try Groq 70b first, fallback Gemini
-            const resp = await callGroq(msgs, 'llama-3.3-70b-versatile', 500);
+            // Gemini KO → Groq streaming
+            console.warn('[cascade] Gemini failed, trying Groq...');
+            const groqModel = tier === 'fast' ? 'llama-3.1-8b-instant' : 'llama-3.3-70b-versatile';
+            const resp = await callGroq(msgs, groqModel, groqTokens);
             if (resp && resp.ok) {
                 fullResponse = await streamResponse(resp, thinkingEl, agentKey, _sendStart);
-            } else { throw new Error('groq-deep-fail'); }
+            } else {
+                throw new Error('both-fail');
+            }
         }
-    } catch {
-        // Fallback cascade: Gemini → Cloudflare Workers AI → Offline
+    } catch(e) {
+        console.warn('[cascade] catch final:', e?.message);
+        // Fallback Cloudflare → Offline
         try {
             thinkingEl?.remove();
-            const geminiText = await callGemini(msgs, 500);
-            if (geminiText) {
-                fullResponse = geminiText;
-                addBubble('agent', agentKey, geminiText);
+            const cfText = typeof callCloudflare === 'function' ? await callCloudflare(msgs, 300) : null;
+            if (cfText) {
+                fullResponse = cfText;
+                addBubble('agent', agentKey, cfText);
             } else {
-                // Tier 4: Cloudflare Workers AI
-                const cfText = typeof callCloudflare === 'function' ? await callCloudflare(msgs, 300) : null;
-                if (cfText) {
-                    fullResponse = cfText;
-                    addBubble('agent', agentKey, cfText);
-                } else {
                     // All providers down — use offline fallback
                     thinkingEl?.remove();
                     const offlineReply = OfflineCache.getReply(agentKey, text);
@@ -2126,11 +2537,10 @@ async function sendMessage(text) {
                         addBubble('agent', agentKey, offlineReply);
                         fullResponse = offlineReply;
                     } else {
-                        addBubble('agent', 'sly', "📡 Connexion instable — Groq, Gemini et Cloudflare sont down. Je garde ton message en mémoire, on reprend dès que ça revient !");
+                        addBubble('agent', 'sly', "📡 Groq et Gemini sont down. Vérifie ta connexion internet !");
                         showOfflineBadge();
                         window.SlyAvatar?.setState('error');
                     }
-                }
             }
         } catch {
             thinkingEl?.remove();
@@ -2143,6 +2553,28 @@ async function sendMessage(text) {
                 window.SlyAvatar?.setState('error');
             }
         }
+    }
+
+    // Auto-exec : si la réponse contient des commandes SYSTÈME, les exécuter silencieusement
+    if (fullResponse) {
+        const execRegex = /SYST[EÈ]ME\s*[>:]\s*EXEC_TERMINAL\s*\(\s*["'](.+?)["']\s*\)/gi;
+        const writeRegex = /SYST[EÈ]ME\s*[>:]\s*WRITE_FILE\s*\(\s*["'](.+?)["']\s*,\s*["']([\s\S]*?)["']\s*\)/gi;
+        let execMatch, writeMatch;
+        while ((execMatch = execRegex.exec(fullResponse)) !== null) {
+            const cmd = execMatch[1];
+            SlyServer.exec(cmd).then(r => {
+                const out = r.success ? `\`${cmd}\` → ${(r.stdout||'').trim().slice(0,300)||'ok'}` : `\`${cmd}\` ERREUR : ${(r.stderr||r.error||'').slice(0,200)}`;
+                addBubble('agent', 'anvil', out);
+            });
+        }
+        while ((writeMatch = writeRegex.exec(fullResponse)) !== null) {
+            SlyServer.writeFile(writeMatch[1], writeMatch[2]).then(r => {
+                addBubble('agent', 'volt', r.success ? `Fichier écrit : ${r.path}` : `Erreur écriture : ${r.error}`);
+            });
+        }
+        // Nettoyer les marqueurs SYSTÈME de l'affichage final
+        fullResponse = fullResponse.replace(/SYST[EÈ]ME\s*[>:]\s*EXEC_TERMINAL\s*\([^)]+\)\n?/gi, '').trim();
+        fullResponse = fullResponse.replace(/SYST[EÈ]ME\s*[>:]\s*WRITE_FILE\s*\([\s\S]*?\)\n?/gi, '').trim();
     }
 
     // Save to history + memory + offline cache
@@ -2222,20 +2654,22 @@ async function streamResponse(resp, thinkingEl, agentKey, sendStartTime) {
     }
     // Final render with markdown
     if (bubbleEl && full) updateBubbleText(bubbleEl, full, true);
+    // Safety: if no tokens received, remove thinking indicator to avoid infinite spinner
+    if (!full) thinkingEl?.remove();
     return full;
 }
 
 // ═══════ UI HELPERS ═══════
 // Agent avatar image mapping — real Sly Cooper artwork
 const AGENT_AVATARS = {
-    sly: 'sly_avatar_2d.png',
-    murray: 'murray.png',
-    bentley: 'bentley.png',
-    franklin: 'sly_avatar_2d.png',
+    sly: 'image-ac5c2d0b-23f9-4cca-984a-2d8b0f1db9e6.avif',
+    murray: 'Murray.webp',
+    bentley: 'Bentley_from_Sly_2.webp',
+    franklin: 'Bentley_from_Sly_2.webp',
 };
 
 function getAgentAvatar(key) {
-    return AGENT_AVATARS[key] || 'sly_bust_small.png';
+    return AGENT_AVATARS[key] || 'image-ac5c2d0b-23f9-4cca-984a-2d8b0f1db9e6.avif';
 }
 
 function addBubble(type, agentKey, text, streaming = false) {
@@ -2289,7 +2723,7 @@ function addThinking(agentKey) {
     div.className = 'bubble agent thinking';
     div.innerHTML = `
         <div class="bubble-header">
-            <span class="bubble-emoji">${agent.emoji}</span>
+            <img class="bubble-avatar-img" src="${getAgentAvatar(agentKey)}" alt="${agent.name}" onerror="this.style.display='none'">
             <span class="bubble-name" style="color:${agent.color}">${agent.name}</span>
             <span class="thinking-label" style="font-size:10px;color:var(--text-dim);margin-left:4px">réfléchit...</span>
         </div>
@@ -2321,15 +2755,7 @@ const LEVELS = [
 
 function gainXP(amount) {
     xp += amount;
-    updateXPDisplay();
-    showXPToast(amount);
-    // Check level up
-    const newLevel = LEVELS.filter(l => xp >= l.xp).length;
-    if (newLevel > level) {
-        level = newLevel;
-        addBubble('agent', 'pixel', `🎮 LEVEL UP ! Tu es maintenant ${LEVELS[level-1].name} (Niv.${level}) !`);
-        gainXP(25); // Bonus level up
-    }
+    // Silent — plus d'affichage XP visible
     saveState();
 }
 
@@ -2396,7 +2822,7 @@ function unlockBadge(key) {
     document.body.appendChild(toast);
     setTimeout(() => toast.classList.add('visible'), 50);
     setTimeout(() => { toast.classList.remove('visible'); setTimeout(() => toast.remove(), 400); }, 3000);
-    addBubble('agent', 'pixel', `🏆 ACHIEVEMENT UNLOCKED : ${b.icon} ${b.name} — "${b.desc}"`);
+    // Achievement silencieux — pas de bulle dans le chat
 }
 
 function trackBadge(event, data) {
@@ -2463,15 +2889,21 @@ function renderDock() {
         if (!a) return;
         const el = document.createElement('button');
         el.className = `dock-agent${key === currentAgent ? ' active' : ''}`;
-        // Sly = pixel art, others = emoji (smaller)
-        const sprite = key === 'sly' ? PIXEL_SPRITES[key] : null;
-        if (sprite) {
-            const cvs = document.createElement('canvas');
-            cvs.width = 32; cvs.height = 32;
-            cvs.style.cssText = 'width:24px;height:24px;image-rendering:pixelated;';
-            cvs.className = 'dock-pixel';
-            el.appendChild(cvs);
-            requestAnimationFrame(() => drawPixelSprite(cvs, sprite));
+        // SLY/BENTLEY/MURRAY = vraies photos webp
+        const DOCK_PHOTOS = {
+            sly: 'Sly_Cooper_from_The_Black_Chateau_setup.webp',
+            bentley: 'Bentley_from_Sly_2.webp',
+            murray: 'Murray.webp'
+        };
+        if (DOCK_PHOTOS[key]) {
+            const img = document.createElement('img');
+            img.src = DOCK_PHOTOS[key];
+            img.alt = a.name;
+            img.className = 'dock-photo';
+            img.loading = 'eager';
+            img.decoding = 'async';
+            img.onerror = function() { this.style.display='none'; const em=document.createElement('span'); em.textContent=a.emoji; el.insertBefore(em,this); };
+            el.appendChild(img);
         } else {
             const em = document.createElement('span');
             em.className = 'dock-emoji dock-emoji-sm';
@@ -2566,13 +2998,14 @@ function updateActiveAgentIndicator(key) {
     const app = document.getElementById('app');
     if (app) {
         app.style.setProperty('--active-agent-color', color);
-        // Parse hex to rgb for rgba usage
         const r = parseInt(color.slice(1,3),16), g = parseInt(color.slice(3,5),16), b = parseInt(color.slice(5,7),16);
         app.style.setProperty('--active-agent-rgb', `${r},${g},${b}`);
     }
     // Header accent
     const header = document.querySelector('.header');
     if (header) header.style.borderBottomColor = `rgba(${parseInt(color.slice(1,3),16)},${parseInt(color.slice(3,5),16)},${parseInt(color.slice(5,7),16)},0.35)`;
+    // HUD sync
+    if (window._updateHudAgent) window._updateHudAgent(key);
 }
 
 var _placeholderTimer = null;
@@ -2702,12 +3135,16 @@ function openSettings() {
               style="padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.06);color:var(--text);border:1px solid rgba(255,255,255,0.12);font-size:12px;font-family:monospace;width:100%;box-sizing:border-box"
               oninput="localStorage.setItem('sly_groq_key',this.value);window.GROQ_KEY=this.value;updateApiStatusBadge()">
           </label>
-          <label style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px">
-            <span style="font-size:11px;color:var(--text-dim)">FishAudio API Key (voix)</span>
-            <input type="password" id="inputFishKey" placeholder="..." value="${localStorage.getItem('sly_fish_key')||''}"
-              style="padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.06);color:var(--text);border:1px solid rgba(255,255,255,0.12);font-size:12px;font-family:monospace;width:100%;box-sizing:border-box"
-              oninput="localStorage.setItem('sly_fish_key',this.value);window.FISH_KEY=this.value;updateApiStatusBadge()">
-          </label>
+          <div style="margin-bottom:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <span style="font-size:11px;color:var(--text-dim)">🔊 Voix IA clonées (FishAudio)</span>
+              <span style="font-size:9px;padding:2px 7px;border-radius:10px;background:rgba(122,60,255,0.18);color:#B18CFF;font-weight:700;letter-spacing:0.5px">${(localStorage.getItem('sly_fish_key')||'').trim() ? '✓ ACTIF' : 'UPGRADE'}</span>
+            </div>
+            ${!(localStorage.getItem('sly_fish_key')||'').trim() ? `<div style="font-size:10px;color:rgba(177,140,255,0.8);margin-bottom:6px;line-height:1.5">🗣️ Mode voix locale actif<br>Déverrouille les vraies voix clonées : Brad Pitt, Morgan Freeman, Gandalf...</div>` : ''}
+            <input type="password" id="inputFishKey" placeholder="Clé FishAudio (fish.audio)" value="${localStorage.getItem('sly_fish_key')||''}"
+              style="padding:8px 10px;border-radius:8px;background:rgba(122,60,255,0.08);color:var(--text);border:1px solid rgba(122,60,255,0.25);font-size:12px;font-family:monospace;width:100%;box-sizing:border-box"
+              oninput="localStorage.setItem('sly_fish_key',this.value);window.FISH_KEY=this.value;_refreshTtsMode();updateApiStatusBadge()">
+          </div>
           <div id="apiStatusBadge" style="font-size:11px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.04)">⏳ Vérification...</div>
         </div>`;
     modal.classList.add('visible');
@@ -2967,9 +3404,10 @@ function runSplash() {
         }
     }
 
-    // Panel bas — log agents
+    // Panel bas — log agents (inline sous la barre, pas absolute)
+    var spWrap = splash.querySelector('.sp2-wrap');
     var panel = document.createElement('div');
-    panel.style.cssText = 'position:absolute;bottom:0;left:0;right:0;padding:14px 20px 18px;background:linear-gradient(to top,rgba(0,0,6,0.9) 0%,rgba(0,0,6,0.5) 70%,transparent 100%);z-index:20;pointer-events:none';
+    panel.style.cssText = 'position:relative;width:100%;max-width:420px;padding:18px 20px 8px;z-index:20;pointer-events:none;text-align:left';
 
     var hdr = document.createElement('div');
     hdr.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px;font-family:monospace;font-size:10px';
@@ -2980,17 +3418,22 @@ function runSplash() {
         +'<span id="spStat" style="color:#FF9A3C">INIT...</span>';
     panel.appendChild(hdr);
 
+    var log = document.createElement('div');
+    log.style.cssText = 'font-family:monospace;font-size:10px;min-height:48px;line-height:1.6;margin-bottom:14px';
+    panel.appendChild(log);
+
     var gang = document.createElement('div');
-    gang.style.cssText = 'display:flex;gap:12px;margin-bottom:12px;align-items:flex-end';
+    gang.style.cssText = 'display:flex;gap:12px;margin-top:4px;align-items:flex-end';
     var gangClosed = false;
-    [{img:'sly_avatar_2d.png',n:'SLY',r:'TACTIQUE',c:'#3A8DFF',t:500},
-     {img:'bentley.png',n:'BENTLEY',r:'TECH',c:'#1EFF8E',t:1200},
-     {img:'murray.png',n:'MURRAY',r:'FORCE',c:'#FF9A3C',t:2000}
+    [{img:'Sly_Cooper_from_The_Black_Chateau_setup.webp',n:'SLY',r:'TACTIQUE',c:'#3A8DFF',t:500,blend:false},
+     {img:'Bentley_from_Sly_2.webp',n:'BENTLEY',r:'TECH',c:'#1EFF8E',t:1200,blend:false},
+     {img:'Murray.webp',n:'MURRAY',r:'FORCE',c:'#FF9A3C',t:2000,blend:false}
     ].forEach(function(g) {
         var card = document.createElement('div');
         card.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;opacity:0;transition:opacity 0.6s,transform 0.6s;transform:translateY(12px)';
+        var imgStyle = 'width:100%;height:100%;object-fit:cover;object-position:'+(g.n==='MURRAY'?'60% 20%':'top center');
         card.innerHTML = '<div style="width:72px;height:72px;border-radius:14px;border:2px solid '+g.c+';box-shadow:0 0 16px '+g.c+'99,0 0 32px '+g.c+'44;overflow:hidden;background:rgba(0,0,6,0.6);position:relative">'
-            +'<img src="'+g.img+'" alt="'+g.n+'" style="width:100%;height:100%;object-fit:cover;object-position:top center" onerror="this.parentNode.innerHTML=\'<div style=&quot;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px&quot;>'+({SLY:'🦊',BENTLEY:'🐢',MURRAY:'🦛'}[g.n]||'⚡')+'</div>\'">'
+            +'<img src="'+g.img+'" alt="'+g.n+'" style="'+imgStyle+'" onerror="this.parentNode.innerHTML=\'<div style=&quot;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px&quot;>'+({SLY:'🦊',BENTLEY:'🐢',MURRAY:'🦛'}[g.n]||'⚡')+'</div>\'">'
             +'<div style="position:absolute;bottom:0;left:0;right:0;height:24px;background:linear-gradient(to top,rgba(0,0,0,0.7),transparent)"></div>'
             +'</div>'
             +'<div style="font-family:\'Orbitron\',monospace;font-size:10px;font-weight:900;color:'+g.c+';letter-spacing:1.5px">'+g.n+'</div>'
@@ -2999,11 +3442,9 @@ function runSplash() {
         setTimeout(function(c){ return function(){ if(!gangClosed){c.style.opacity='1';c.style.transform='translateY(0)';} }; }(card), g.t);
     });
     panel.appendChild(gang);
-
-    var log = document.createElement('div');
-    log.style.cssText = 'font-family:monospace;font-size:10px;min-height:48px;line-height:1.6';
-    panel.appendChild(log);
-    splash.appendChild(panel);
+    // Insérer dans sp2-wrap (sous la barre), pas sur splash directement
+    if (spWrap) spWrap.appendChild(panel);
+    else splash.appendChild(panel);
 
     var SEQ = [
         [150,  '#1F6FFF', 0,  'INIT',   'SLY Neural Core v4.0'],
@@ -3039,6 +3480,8 @@ function runSplash() {
     // ─── _doBootApp : SEUL point d'entrée du boot, appelé par le splash controller ───
     window._doBootApp = function() {
         gangClosed = true;
+        // Reset CircuitBreaker — évite états bloqués entre sessions
+        if (typeof CircuitBreaker !== 'undefined') CircuitBreaker.states = {};
         // Stopper le wireframe splash (HUNTER cleanup)
         if (typeof window._stopSplashWireframe === 'function') window._stopSplashWireframe();
         // 1. Cache splash, montre app
@@ -3046,6 +3489,23 @@ function runSplash() {
         var ap = document.getElementById('app');
         if (sp) { sp.style.setProperty('display','none','important'); sp.style.setProperty('visibility','hidden','important'); sp.classList.add('hidden'); }
         if (ap) { ap.style.setProperty('display','flex','important'); ap.style.flexDirection='column'; ap.style.height='100dvh'; ap.style.position='relative'; ap.classList.add('visible'); ap.classList.add('home-mode'); }
+        // Étoiles fond cosmique
+        try {
+            var sf = document.getElementById('appStarfield');
+            if (sf && !sf.childElementCount) {
+                var frag = document.createDocumentFragment();
+                for (var _si=0; _si<80; _si++) {
+                    var s = document.createElement('div');
+                    s.className = 'app-star';
+                    s.style.cssText = 'left:'+Math.random()*100+'%;top:'+Math.random()*100+'%;'
+                        +'--d:'+(2+Math.random()*4).toFixed(1)+'s;--del:'+(Math.random()*3).toFixed(1)+'s;'
+                        +'opacity:'+(0.1+Math.random()*0.5)+';'
+                        +(Math.random()>.85?'width:2.5px;height:2.5px':'');
+                    frag.appendChild(s);
+                }
+                sf.appendChild(frag);
+            }
+        } catch(e){}
         // 2. Boot séquentiel
         setTimeout(function(){ try { loadState(); } catch(e){ console.error('[boot] loadState:', e); } }, 0);
         setTimeout(function(){ try { renderDock(); updateActiveAgentIndicator(currentAgent); startPlaceholderCycle(); } catch(e){ console.error('[boot] renderDock:', e); } }, 20);
@@ -3068,29 +3528,72 @@ function runSplash() {
         setTimeout(function(){ try { initParticles(); } catch(e){} }, 60);
         setTimeout(function(){ try { initSTT(); scheduleWhisper(); } catch(e){} }, 80);
         setTimeout(function(){ try { bootPhase2(); } catch(e){ console.error('[boot] bootPhase2:', e); } }, 120);
-        // 3. Message bienvenue
+        // 3. Message bienvenue — MURRAY voix Bruce Willis, phrases friendly
         setTimeout(function(){
             try {
                 var h = new Date().getHours();
-                var salut = h<6?'Nuit blanche, Commandant ?':h<12?'Bonjour Commandant.':h<18?'Bon après-midi.':'Bonsoir, Commandant.';
-                var opts = [
-                    salut+' Le Building t\'attendait. 65 agents prêts. Go.',
-                    salut+' SENTINEL a scanné — tout est propre. On démarre ?',
-                    salut+' Tous les systèmes en ligne. À tes ordres.',
-                ];
+                var opts;
+                if (h < 6) {
+                    opts = [
+                        "Yo Augustin ! Le Murray veille même la nuit. Le Building est chaud, qu'est-ce qu'on fait ?",
+                        "Minuit passé et tu débarques ? LE MURRAY EST LÀ. On est prêts.",
+                        "Nuit blanche ? Parfait. Le Murray dort jamais. On commence ?"
+                    ];
+                } else if (h < 12) {
+                    opts = [
+                        "Bonjour Augustin ! Le Murray est en forme, le Building est en ligne. On y va !",
+                        "Salut boss ! Murray à l'appel. 65 agents prêts, la journée commence bien.",
+                        "Yo ! Le Murray est là. Le Building t'attendait. On commence quoi ?"
+                    ];
+                } else if (h < 18) {
+                    opts = [
+                        "Augustin ! Le Murray est là. L'après-midi c'est pour les gagnants. On fait quoi ?",
+                        "Yo boss, le Murray débarque. Le Building tourne à plein régime !",
+                        "Salut Augustin ! Murray en action. Dis-moi ce qu'on casse aujourd'hui."
+                    ];
+                } else {
+                    opts = [
+                        "Bonsoir Augustin ! Le Murray finit jamais sa journée. On est là pour toi.",
+                        "Yo ! Soirée de travail ? Le Murray adore ça. Le Building est chaud.",
+                        "Bonsoir boss. Murray à l'appel. On règle quoi ce soir ?"
+                    ];
+                }
                 var msg = opts[Math.floor(Math.random()*opts.length)];
                 localStorage.setItem('sly_last_session', Date.now().toString());
-                addBubble('agent','sly',msg);
-                if (autoSpeak) try { speakText('sly',msg); } catch(e){}
+                addBubble('agent','murray',msg);
+                // Voix Bruce Willis (MURRAY) — déclenche dès que le splash disparaît
+                if (window.FISH_KEY) {
+                    var _welcomeMsg = msg;
+                    function _fireWelcomeVoice() {
+                        try {
+                            initAudio();
+                            var fn = (typeof _origSpeakText === 'function') ? _origSpeakText : speakText;
+                            var prev = autoSpeak; autoSpeak = true;
+                            fn.call(null, 'murray', _welcomeMsg).catch(function(e){ console.warn('[boot] voice err:', e); }).finally(function(){ autoSpeak = prev; });
+                        } catch(e) { console.warn('[boot] voice failed:', e); }
+                    }
+                    // Observer la disparition du splash — déclenche la voix sans attendre un clic
+                    var splashEl = document.getElementById('splash');
+                    if (splashEl) {
+                        var _obs = new MutationObserver(function(mutations) {
+                            mutations.forEach(function(m) {
+                                if (splashEl.classList.contains('hidden') || splashEl.style.display === 'none') {
+                                    _obs.disconnect();
+                                    setTimeout(_fireWelcomeVoice, 300);
+                                }
+                            });
+                        });
+                        _obs.observe(splashEl, { attributes: true, attributeFilter: ['class','style'] });
+                    } else {
+                        setTimeout(_fireWelcomeVoice, 800);
+                    }
+                }
             } catch(e) { console.error('[boot] bienvenue failed:', e); }
         }, 400);
         // 4. Test Groq — silencieux, log console uniquement (pas de bulle d'erreur au boot)
         setTimeout(function(){
             try {
-                var gk = window.GROQ_KEY;
-                if (!gk) { console.warn('[SLY] Clé Groq manquante'); return; }
-                fetch('https://api.groq.com/openai/v1/models', {
-                    headers: { 'Authorization': 'Bearer ' + gk },
+                fetch('/proxy/models', {
                     signal: AbortSignal.timeout(5000)
                 }).then(function(r) {
                     if (!r.ok) console.warn('[SLY] Groq ' + r.status + ' — clé peut-être expirée');
@@ -3098,8 +3601,43 @@ function runSplash() {
                 }).catch(function() {});
             } catch(e) {}
         }, 1500);
+        // 5. Morning Briefing — 7h-9h, une fois par jour
+        setTimeout(function(){
+            try { scheduleMorningBriefing(); } catch(e){ console.warn('[SLY] Morning briefing:', e); }
+        }, 2500);
     };
 }
+
+// ═══════ ACTIVITY PULSE — pilote le point dans le header ═══════
+function _setPulse(state) {
+    const el = document.getElementById('activityPulse');
+    if (el) el.className = state;
+}
+
+// Patch updateSendBtn pour piloter le pulse en même temps
+const _origUpdateSendBtn = typeof updateSendBtn === 'function' ? updateSendBtn : null;
+updateSendBtn = function() {
+    if (_origUpdateSendBtn) _origUpdateSendBtn();
+    _setPulse(isStreaming ? 'streaming' : 'idle');
+};
+
+// Patch SlyAvatar.setState pour synchroniser le pulse
+const _origSetAvatarState = window.SlyAvatar?.setState;
+if (window.SlyAvatar) {
+    window.SlyAvatar.setState = function(state) {
+        if (_origSetAvatarState) _origSetAvatarState.call(window.SlyAvatar, state);
+        const map = { think: 'thinking', talk: 'speaking', listen: 'streaming', idle: 'idle', happy: 'idle', error: 'error' };
+        _setPulse(map[state] || 'idle');
+    };
+}
+
+// Pulse "speaking" pendant la lecture audio
+const _origPlayNext = playNext;
+playNext = async function() {
+    if (isPlaying || audioQueue.length > 0) _setPulse('speaking');
+    await _origPlayNext.apply(this, arguments);
+    if (!isPlaying && audioQueue.length === 0) _setPulse('idle');
+};
 
 // ═══════ BOOT ═══════
 function bootApp() {
@@ -3384,35 +3922,19 @@ function hideWaveform() {
     waveformEl = null;
 }
 
-// Patch playNext to show waveform
-const _origPlayNext = playNext;
+// Patch playNext to show waveform (wrap only — ne pas redéfinir la logique audio)
+const _origPlayNextWave = playNext;
 playNext = async function() {
-    if (audioQueue.length === 0) { isPlaying = false; currentSource = null; hideWaveform(); return; }
-    isPlaying = true;
     initWaveform();
-    showWaveform();
-    const buf = audioQueue.shift();
-    try {
-        const audioBuf = await audioCtx.decodeAudioData(buf.slice(0));
-        const source = audioCtx.createBufferSource();
-        source.buffer = audioBuf;
-        source.playbackRate.value = voicePitch * voiceSpeed;
-        const gain = audioCtx.createGain();
-        gain.gain.setValueAtTime(0, audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(dreamGain, audioCtx.currentTime + 0.05);
-        gain.gain.setValueAtTime(dreamGain, audioCtx.currentTime + audioBuf.duration - 0.05);
-        gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + audioBuf.duration);
-        source.connect(gain).connect(masterGain);
-        currentSource = source;
-        source.onended = () => playNext();
-        source.start();
-    } catch { playNext(); }
+    if (audioQueue.length > 0) showWaveform();
+    await _origPlayNextWave.apply(this, arguments);
+    if (!isPlaying && audioQueue.length === 0) hideWaveform();
 };
 
 // ═══════ VOICE MORPH ═══════
 const VOICE_MORPH_PATTERNS = {
     'parle comme sly|voix de sly|imite sly': 'bradpitt',
-    'parle comme bentley|voix de bentley': 'journtf1',
+    'parle comme bentley|voix de bentley': 'ironman',
     'parle comme murray|voix de murray|voix murray': 'homersimpson',
     'parle comme omega|voix d.omega': 'freeman',
     'parle comme franklin|voix de franklin': 'gandalf',
@@ -3421,9 +3943,9 @@ const VOICE_MORPH_PATTERNS = {
     'voix de homer|homer simpson': 'homersimpson',
     'voix grave|voix profonde|voix de morgan': 'freeman',
     'voix de tom hanks|voix douce': 'tomhanks',
-    'secret story|voix secret story': 'secretstory',
-    'voix pujadas|voix de pujadas': 'pujadas',
-    'voix du journal|voix tf1': 'journtf1',
+    'secret story|voix secret story': 'batman',
+    'voix pujadas|voix de pujadas|iron man|ironman|tony stark': 'ironman',
+    'voix du journal|voix tf1': 'sarkozy',
     'bruce willis|voix de bruce|die hard': 'brucewillis',
     'voix normale|voix originale|reset voix|voix par défaut': '__reset__',
 };
@@ -3450,43 +3972,20 @@ function detectVoiceMorph(text) {
     return null;
 }
 
-// Patch speakText to use morphed voice
+// Patch speakText to use morphed voice (Voice Morph feature)
 const _origSpeakText = speakText;
 speakText = async function(agentKey, fullText) {
     if (!autoSpeak || !fullText.trim()) return;
-    initAudio();
-    const voiceKey = morphedVoice || AGENTS[agentKey]?.voice || 'bradpitt';
-    const modelId = VOICES[voiceKey];
-    if (!modelId) return;
-
-    const sentences = fullText.match(/[^.!?]+[.!?]+/g) || [fullText];
-    const chunks = [];
-    let current = '';
-    for (const s of sentences) {
-        if ((current + s).length > 290) {
-            if (current) chunks.push(current.trim());
-            current = s;
-        } else { current += s; }
+    // If morphed, override the agent voice key then delegate to original pipeline
+    if (morphedVoice) {
+        // Temporarily override agent voice
+        const _orig = AGENTS[agentKey] ? AGENTS[agentKey].voice : 'bradpitt';
+        if (AGENTS[agentKey]) AGENTS[agentKey].voice = morphedVoice;
+        await _origSpeakText.call(this, agentKey, fullText);
+        if (AGENTS[agentKey]) AGENTS[agentKey].voice = _orig;
+    } else {
+        await _origSpeakText.call(this, agentKey, fullText);
     }
-    if (current.trim()) chunks.push(current.trim());
-
-    const _ttsStart2 = Date.now();
-    const promises = chunks.map(chunk =>
-        fetch(`${API_BASE}/api/tts`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: chunk, voice_id: modelId })
-        }).then(r => {
-            if (r.ok) { Metrics.trackTTFA(_ttsStart2); return r.arrayBuffer(); }
-            return null;
-        }).catch(() => null)
-    );
-
-    const buffers = await Promise.all(promises);
-    for (const buf of buffers) {
-        if (buf) audioQueue.push(buf);
-    }
-    if (!isPlaying) playNext();
 };
 
 // ═══════ NOTIFICATION SOUNDS (Web Audio Synth) ═══════
@@ -3532,8 +4031,19 @@ function haptic(style = 'light') {
 // ═══════ MARKDOWN RENDERING ═══════
 function renderMarkdown(text) {
     let html = escapeHTML(text);
-    // Code blocks
-    html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+    // Code blocks — avec boutons Copy + Apply to File
+    html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => {
+        const langLabel = lang ? `<span style="font-size:10px;color:var(--text-dim);font-family:monospace">${lang}</span>` : '';
+        const encoded = btoa(unescape(encodeURIComponent(code.trim())));
+        return `<div class="code-block-wrap" style="position:relative;margin:8px 0">
+            ${langLabel}
+            <div style="position:absolute;top:4px;right:4px;display:flex;gap:4px;z-index:2">
+                <button onclick="navigator.clipboard.writeText(decodeURIComponent(escape(atob('${encoded}'))))" style="font-size:10px;padding:2px 7px;border-radius:5px;background:rgba(31,111,255,0.15);color:var(--blue);border:1px solid rgba(31,111,255,0.2);cursor:pointer">Copy</button>
+                <button onclick="_applyToFile(decodeURIComponent(escape(atob('${encoded}'))),'${lang||'txt'}')" style="font-size:10px;padding:2px 7px;border-radius:5px;background:rgba(122,60,255,0.15);color:#B18CFF;border:1px solid rgba(122,60,255,0.2);cursor:pointer">Apply</button>
+            </div>
+            <pre style="margin:0"><code>${code.trim()}</code></pre>
+        </div>`;
+    });
     // Inline code
     html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
     // Bold
@@ -3548,6 +4058,22 @@ function renderMarkdown(text) {
     // Line breaks
     html = html.replace(/\n/g, '<br>');
     return html;
+}
+
+// Apply to File — télécharge le code en fichier local
+function _applyToFile(code, lang) {
+    const ext = { js:'js', javascript:'js', ts:'ts', typescript:'ts', python:'py', py:'py', html:'html', css:'css', json:'json', bash:'sh', sh:'sh' }[lang] || 'txt';
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sly_code_${Date.now()}.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    // Feedback visuel
+    addBubble('agent', 'anvil', `Fichier .${ext} téléchargé. Ouvre-le dans VS Code et applique.`);
 }
 
 // Patch addBubble and updateBubbleText for markdown
@@ -3574,7 +4100,7 @@ addBubble = function(type, agentKey, text, streaming = false) {
         const agent = AGENTS[agentKey] || AGENTS.sly;
         div.innerHTML = `
             <div class="bubble-header">
-                <span class="bubble-emoji">${agent.emoji}</span>
+                <img class="bubble-avatar-img" src="${getAgentAvatar(agentKey)}" alt="${agent.name}" onerror="this.style.display='none'">
                 <span class="bubble-name" style="color:${agent.color}">${agent.name}</span>
             </div>
             <div class="bubble-text">${streaming ? '' : renderMarkdown(text)}</div>
@@ -3674,48 +4200,7 @@ function addReaction(bubbleEl, emoji) {
 const agentIntroShown = new Set(JSON.parse(localStorage.getItem('sly_intros') || '[]'));
 
 function showAgentIntro(agentKey) {
-    if (agentIntroShown.has(agentKey)) return;
-    agentIntroShown.add(agentKey);
-    localStorage.setItem('sly_intros', JSON.stringify([...agentIntroShown]));
-
-    const a = AGENTS[agentKey];
-    if (!a) return;
-
-    const intros = {
-        sly: "Le renard entre en scène. Prêt à voler la victoire.",
-        bentley: "Systèmes en ligne. Plan d'attaque calculé.",
-        murray: "MURRAY EST LÀ ! On casse tout !",
-        omega: "La nébuleuse observe. Tout est connecté.",
-        sentinel: "Dispatch activé. Priorités en cours de calcul.",
-        cortex: "Données chargées. Analyse en cours...",
-        franklin: "La sagesse n'a pas d'heure. Parlons.",
-        anvil: "L'enclume est chaude. Montre-moi le bug.",
-        glitch: "Et si on faisait... l'inverse de ce qu'il faut ?",
-        dreyfus: "Discipline. Rigueur. Excellence. Procédons.",
-        volt: "Systèmes sous tension. Pipeline prêt.",
-        specter: "Je regardais déjà avant que tu me cherches.",
-        closer: "J'ai flairé un deal. On signe ?",
-        niche: "J'ai trouvé un angle que personne ne voit.",
-        philomene: "Les mots justes, au moment juste.",
-        pixel: "Level 1. Let's game.",
-        fresco: "Chaque pixel raconte une histoire.",
-        hunter: "Pas de porte ? Je passe par la fenêtre.",
-        datum: "Les chiffres ne mentent jamais.",
-        sibyl: "Je vois... des opportunités.",
-    };
-
-    const area = document.getElementById('chatArea');
-    const div = document.createElement('div');
-    div.className = 'agent-intro';
-    div.innerHTML = `
-        <div class="agent-intro-emoji">${a.emoji}</div>
-        <div class="agent-intro-name" style="color:${a.color}">${a.name}</div>
-        <div class="agent-intro-role">${intros[agentKey] || a.role}</div>`;
-    area.appendChild(div);
-    area.scrollTop = area.scrollHeight;
-    soundLevelUp();
-    haptic('success');
-    setTimeout(() => div.style.opacity = '0.3', 5000);
+    // Intros désactivées — pas de bulle parasite au changement d'agent
 }
 
 // ═══════ DAILY CHALLENGE SYSTEM ═══════
@@ -3822,9 +4307,9 @@ const THINKING_PHRASES = {
     default: ["Réflexion en cours...", "Traitement...", "Un instant..."],
 };
 
-const _origAddThinking = addThinking;
 addThinking = function(agentKey) {
     const area = document.getElementById('chatArea');
+    if (!area) return null;
     const agent = AGENTS[agentKey] || AGENTS.sly;
     const phrases = THINKING_PHRASES[agentKey] || THINKING_PHRASES.default;
     const phrase = phrases[Math.floor(Math.random() * phrases.length)];
@@ -3833,13 +4318,22 @@ addThinking = function(agentKey) {
     div.className = 'bubble agent thinking';
     div.innerHTML = `
         <div class="bubble-header">
-            <span class="bubble-emoji">${agent.emoji}</span>
+            <img class="bubble-avatar-img" src="${getAgentAvatar(agentKey)}" alt="${agent.name}" onerror="this.style.display='none'">
             <span class="bubble-name" style="color:${agent.color}">${agent.name}</span>
+            <span class="thinking-label" style="font-size:10px;color:var(--text-dim);margin-left:4px">réfléchit...</span>
         </div>
         <div class="thinking-dots"><span></span><span></span><span></span></div>
         <div class="thinking-text">${phrase}</div>`;
     area.appendChild(div);
     area.scrollTop = area.scrollHeight;
+    // Clean up slow timer on remove to avoid memory leaks
+    const slowTimer = setTimeout(() => {
+        const label = div.querySelector('.thinking-label');
+        if (label && div.isConnected) label.textContent = 'concentration intense...';
+    }, 5000);
+    div._slowTimer = slowTimer;
+    const _origRemove = div.remove.bind(div);
+    div.remove = () => { clearTimeout(slowTimer); _origRemove(); };
     return div;
 };
 
@@ -3884,27 +4378,9 @@ sendMessage = async function(text) {
     updateStreakDisplay();
 };
 
-// ═══════ PATCH GAIN XP (Phase 2 sounds) ═══════
-const _origGainXP = gainXP;
+// ═══════ PATCH GAIN XP (silencieux — plus de notifications XP) ═══════
 gainXP = function(amount) {
-    const prevLevel = level;
     xp += amount;
-    updateXPDisplay();
-    showXPToast(amount);
-    soundXP();
-
-    // Track daily
-    trackDaily('xp_gained', amount);
-
-    // Check level up
-    const newLevel = LEVELS.filter(l => xp >= l.xp).length;
-    if (newLevel > level) {
-        level = newLevel;
-        addBubble('agent', 'pixel', `🎮 LEVEL UP ! Tu es maintenant ${LEVELS[level-1].name} (Niv.${level}) !`);
-        soundLevelUp();
-        haptic('heavy');
-        gainXP(25);
-    }
     saveState();
 };
 
@@ -4023,7 +4499,195 @@ function bootPhase2() {
     // Load morphed voice
     const savedMorph = localStorage.getItem('sly_morph');
     if (savedMorph) morphedVoice = savedMorph;
+
+    // Boot Phase 3 systems
+    try { initCyborgHud(); } catch(e) { console.warn('[hud]', e); }
+    try { initEmotionalDetection(); } catch(e) { console.warn('[mood]', e); }
+    try { initAgentEvolution(); } catch(e) { console.warn('[evolution]', e); }
+    try { scheduleCooperGangMeeting(); } catch(e) { console.warn('[meeting]', e); }
 }
+
+// ═══════ PHASE 3 — MODE CYBORG HUD ═══════
+function initCyborgHud() {
+    const hudTime = document.getElementById('hudTime');
+    const hudName = document.getElementById('hudAgentName');
+    const hudInsight = document.getElementById('hudInsight');
+
+    // Horloge temps réel
+    function updateHudTime() {
+        if (!hudTime) return;
+        const now = new Date();
+        hudTime.textContent = now.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+    }
+    updateHudTime();
+    setInterval(updateHudTime, 10000);
+
+    // Agent name sync — appelé aussi depuis updateActiveAgentIndicator
+    window._updateHudAgent = function(key) {
+        if (hudName && AGENTS[key]) hudName.textContent = AGENTS[key].name.toUpperCase();
+    };
+    window._updateHudAgent(currentAgent);
+
+    // Insight rotatif — dernière bulle agent ou quote OMEGA
+    window._updateHudInsight = function(text) {
+        if (!hudInsight || !text) return;
+        // Tronquer proprement à 40 chars
+        hudInsight.textContent = text.replace(/[*_`#]/g, '').slice(0, 42) + (text.length > 42 ? '…' : '');
+    };
+
+    // Rotate insights toutes les 30s si pas de message récent
+    const HUD_POOL = [
+        'Cooper Building en ligne',
+        '65 agents actifs',
+        'Mode autonome activé',
+        'SENTINEL surveille',
+        'Cascade IA opérationnelle',
+        'Mémoire synchronisée',
+    ];
+    let _hudPoolIdx = 0;
+    setInterval(() => {
+        const lastMsg = conversationHistory[conversationHistory.length - 1];
+        if (lastMsg && lastMsg.role === 'assistant' && lastMsg.content) {
+            window._updateHudInsight(lastMsg.content);
+        } else {
+            window._updateHudInsight(HUD_POOL[_hudPoolIdx++ % HUD_POOL.length]);
+        }
+    }, 30000);
+}
+
+// ═══════ PHASE 3 — EMOTIONAL STATE DETECTION ═══════
+const EmotionalState = {
+    _current: 'neutral',
+    _history: [],
+    // Mots-clés par état
+    _patterns: {
+        stress:  /urgent|merde|problème|bug|crash|bloqué|plus rien|ça marche pas|paniqué/i,
+        tension: /difficile|compliqué|galère|pas sûr|j\'hésite|inquiet|trop de/i,
+        focus:   /go|objectif|stratégie|plan|lance|priorité|action|maintenant|let\'s go/i,
+        joy:     /super|excellent|parfait|génial|merci|top|bravo|bien joué|nickel/i,
+    },
+    detect(text) {
+        if (!text) return this._current;
+        let detected = 'neutral';
+        if (this._patterns.stress.test(text)) detected = 'stress';
+        else if (this._patterns.tension.test(text)) detected = 'tension';
+        else if (this._patterns.focus.test(text)) detected = 'focus';
+        else if (this._patterns.joy.test(text)) detected = 'focus'; // joy = high focus
+        this._history.push(detected);
+        if (this._history.length > 10) this._history.shift();
+        // Majority vote sur les 5 derniers
+        const recent = this._history.slice(-5);
+        const counts = {};
+        recent.forEach(s => counts[s] = (counts[s]||0)+1);
+        this._current = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];
+        this._applyToHud(this._current);
+        return this._current;
+    },
+    _applyToHud(state) {
+        const dot = document.getElementById('hudMoodDot');
+        if (!dot) return;
+        dot.className = `hud-mood-dot ${state}`;
+        // Adapter le system prompt hint
+        window._emotionalHint = {
+            stress:  'Augus semble stressé — être particulièrement bref, rassurant, concret.',
+            tension: 'Augus hésite — encourager, clarifier, proposer une voie claire.',
+            focus:   'Augus est en mode action — aller droit au but, pas de fioritures.',
+            joy:     'Augus est satisfait — célébrer brièvement, capitaliser.',
+            neutral: '',
+        }[state] || '';
+    },
+    get hint() { return window._emotionalHint || ''; }
+};
+
+function initEmotionalDetection() {
+    // Patch sendMessage pour analyser chaque message
+    const _origSend = window.sendMessage;
+    if (typeof _origSend === 'function') {
+        window.sendMessage = async function(text) {
+            EmotionalState.detect(text);
+            return _origSend.call(this, text);
+        };
+    }
+}
+
+// ═══════ PHASE 3 — AGENT EVOLUTION ═══════
+const AgentEvolution = {
+    _prefs: JSON.parse(localStorage.getItem('sly_agent_prefs') || '{}'),
+    // Track usage par agent
+    recordUse(agentKey) {
+        if (!this._prefs[agentKey]) this._prefs[agentKey] = { uses: 0, lastUsed: 0, affinity: 50 };
+        this._prefs[agentKey].uses++;
+        this._prefs[agentKey].lastUsed = Date.now();
+        this._prefs[agentKey].affinity = Math.min(100, this._prefs[agentKey].affinity + 1);
+        this._save();
+    },
+    // Agents favoris d'Augus (top 5 par affinity)
+    getFavorites() {
+        return Object.entries(this._prefs)
+            .sort((a,b) => b[1].affinity - a[1].affinity)
+            .slice(0, 5)
+            .map(([key]) => key);
+    },
+    // Hint de personnalisation pour le system prompt
+    getPersonalityHint(agentKey) {
+        const p = this._prefs[agentKey];
+        if (!p || p.uses < 5) return '';
+        if (p.affinity > 80) return `Augus utilise souvent ${AGENTS[agentKey]?.name} — relation de confiance établie, ton familier OK.`;
+        return '';
+    },
+    _save() {
+        try { localStorage.setItem('sly_agent_prefs', JSON.stringify(this._prefs)); } catch {}
+    }
+};
+
+function initAgentEvolution() {
+    // Tracker l'agent actif à chaque envoi
+    const _origSendEvo = window.sendMessage;
+    if (typeof _origSendEvo === 'function') {
+        window.sendMessage = async function(text) {
+            AgentEvolution.recordUse(currentAgent);
+            // Met à jour le HUD agent
+            if (window._updateHudAgent) window._updateHudAgent(currentAgent);
+            return _origSendEvo.call(this, text);
+        };
+    }
+    // Màj dock avec favoris après 5 sessions
+    const totalUses = Object.values(AgentEvolution._prefs).reduce((s,p) => s+p.uses, 0);
+    if (totalUses > 20) {
+        const favs = AgentEvolution.getFavorites();
+        if (favs.length >= 3) {
+            // Suggestions discrètes dans le HUD
+            setTimeout(() => {
+                if (window._updateHudInsight) window._updateHudInsight(`Agents favoris : ${favs.slice(0,3).map(k=>AGENTS[k]?.emoji||'').join(' ')}`);
+            }, 5000);
+        }
+    }
+}
+
+// ═══════ PHASE 3 — COOPER GANG MEETING ═══════
+function scheduleCooperGangMeeting() {
+    const MEETING_KEY = 'sly_last_gang_meeting';
+    const last = parseInt(localStorage.getItem(MEETING_KEY) || '0');
+    const now = Date.now();
+    const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
+    if (now - last < ONE_WEEK) return;
+
+    // Lundi matin ou premier lancement de la semaine
+    const dayOfWeek = new Date().getDay(); // 1 = lundi
+    if (dayOfWeek !== 1) return;
+
+    localStorage.setItem(MEETING_KEY, now.toString());
+    // Délai 3min après boot pour ne pas surcharger
+    setTimeout(() => {
+        const h = new Date().getHours();
+        if (h < 8 || h > 20) return; // Pas la nuit
+        addBubble('agent', 'sly', `🦊 Lundi matin, Commandant. Le Clan se réunit. Bilan de la semaine ?`);
+        setTimeout(() => addBubble('agent', 'bentley', `🐢 J'ai les métriques. Prêt à faire le point sur les projets actifs.`), 1500);
+        setTimeout(() => addBubble('agent', 'murray', `🦛 BOUM ! Nouvelle semaine, nouvelles conquêtes ! On y va !`), 3000);
+    }, 3 * 60 * 1000);
+}
+
+// ═══════ PATCH updateActiveAgentIndicator — sync HUD ═══════
 
 // Patch saveState to include Phase 2 data
 const _origSaveState = saveState;
@@ -4912,7 +5576,9 @@ const SlySocket = {
     connected: false,
 
     connect() {
-        if (this.ws && this.ws.readyState <= 1) return; // already connected/connecting
+        // WebSocket Railway désactivé en local
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return;
+        if (this.ws && this.ws.readyState <= 1) return;
         const wsUrl = API_BASE.replace('https://', 'wss://').replace('http://', 'ws://') + '/ws';
         try {
             this.ws = new WebSocket(wsUrl);
@@ -5026,6 +5692,167 @@ generateDynamicResume = function() {
     // If nothing specific, fallback to original
     if (pool.length === 0) return _origDynResume();
     return pool[Math.floor(Math.random() * pool.length)];
+};
+
+// ═══════ SELF-ANNEALING — apprentissage syntaxique + préférences ═══════
+const SelfAnnealing = {
+    _KEY: 'sly_annealing',
+    _data: null,
+
+    _load() {
+        if (this._data) return;
+        try { this._data = JSON.parse(localStorage.getItem(this._KEY) || '{}'); }
+        catch { this._data = {}; }
+        if (!this._data.prefs) this._data.prefs = {};
+        if (!this._data.codeStyle) this._data.codeStyle = {};
+        if (!this._data.interactions) this._data.interactions = 0;
+    },
+
+    _save() {
+        try { localStorage.setItem(this._KEY, JSON.stringify(this._data)); } catch {}
+    },
+
+    // Observe la réponse LLM et la réaction utilisateur pour apprendre
+    observeResponse(agentKey, responseText, userFollowUp) {
+        this._load();
+        this._data.interactions++;
+
+        // Apprendre le style de code si code détecté dans la réponse
+        const codeMatch = responseText.match(/```(\w+)/g);
+        if (codeMatch) {
+            codeMatch.forEach(m => {
+                const lang = m.replace('```', '');
+                this._data.codeStyle[lang] = (this._data.codeStyle[lang] || 0) + 1;
+            });
+        }
+
+        // Détecter si l'utilisateur simplifie ou reformule → apprendre la préférence
+        if (userFollowUp) {
+            const f = userFollowUp.toLowerCase();
+            if (/plus court|trop long|résume|concis|bref/i.test(f)) {
+                this._data.prefs.length = 'short';
+            } else if (/plus détail|explique|développe|plus complet/i.test(f)) {
+                this._data.prefs.length = 'detailed';
+            }
+            if (/en anglais|in english/i.test(f)) this._data.prefs.lang = 'en';
+            if (/en français|en fr/i.test(f)) this._data.prefs.lang = 'fr';
+            if (/sans listes|pas de bullet|pas de tiret/i.test(f)) this._data.prefs.lists = false;
+            if (/avec des listes|bullet points|tirets/i.test(f)) this._data.prefs.lists = true;
+        }
+
+        this._save();
+    },
+
+    // Injecte les préférences apprises dans le system prompt
+    getHint() {
+        this._load();
+        const hints = [];
+        if (this._data.prefs.length === 'short') hints.push('Réponses courtes et denses — Augus préfère la concision.');
+        if (this._data.prefs.length === 'detailed') hints.push('Réponses détaillées — Augus veut la profondeur.');
+        if (this._data.prefs.lang === 'en') hints.push('Répondre en anglais — préférence détectée.');
+        if (this._data.prefs.lists === false) hints.push('Éviter les listes à puces — Augus préfère le texte fluide.');
+        const topLang = Object.entries(this._data.codeStyle).sort((a,b)=>b[1]-a[1])[0];
+        if (topLang) hints.push(`Langage dominant détecté : ${topLang[0]} — utiliser ce style par défaut.`);
+        return hints.length ? '\nPRÉFÉRENCES AUTO-APPRISES :\n' + hints.map(h=>`- ${h}`).join('\n') : '';
+    }
+};
+
+// Patch buildSystemPrompt pour injecter self-annealing
+const _origBuildSysPrompt = buildSystemPrompt;
+buildSystemPrompt = function(agentKey) {
+    const base = _origBuildSysPrompt(agentKey);
+    return base + SelfAnnealing.getHint();
+};
+
+// ═══════ SLY LOCAL SERVER — Exec Terminal + Write File ═══════
+const SlyServer = {
+    _BASE: 'http://127.0.0.1:7474',
+    _available: null, // null=unknown, true=ok, false=down
+
+    async ping() {
+        try {
+            const r = await fetch(this._BASE + '/ping', { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}', signal: AbortSignal.timeout(1000) });
+            this._available = r.ok;
+        } catch { this._available = false; }
+        return this._available;
+    },
+
+    async exec(command, cwd) {
+        if (this._available === false) return { success: false, error: 'Server offline — lance node server.js dans sly-chat/' };
+        try {
+            const r = await fetch(this._BASE + '/exec', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ command, cwd }),
+                signal: AbortSignal.timeout(35000)
+            });
+            return await r.json();
+        } catch (e) { return { success: false, error: e.message }; }
+    },
+
+    async writeFile(filePath, content) {
+        if (this._available === false) return { success: false, error: 'Server offline — lance node server.js dans sly-chat/' };
+        try {
+            const r = await fetch(this._BASE + '/write', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ path: filePath, content }),
+                signal: AbortSignal.timeout(5000)
+            });
+            return await r.json();
+        } catch (e) { return { success: false, error: e.message }; }
+    }
+};
+
+// Ping au boot (silencieux)
+setTimeout(() => SlyServer.ping(), 2000);
+
+// Commandes SYSTÈME > EXEC et SYSTÈME > WRITE_FILE interceptées dans sendMessage
+const _origSendForExec = sendMessage;
+sendMessage = async function(text) {
+    // Détecter commande SYSTÈME > EXEC_TERMINAL("cmd")
+    const execMatch = text.match(/SYST[EÈ]ME\s*[>:]\s*EXEC_TERMINAL\s*\(\s*["'](.+?)["']\s*\)/i);
+    if (execMatch) {
+        const cmd = execMatch[1];
+        addBubble('user', null, text);
+        const thinkingEl = addThinking('anvil');
+        const result = await SlyServer.exec(cmd);
+        thinkingEl?.remove();
+        const out = result.success
+            ? `Terminal OK :\n\`\`\`\n${(result.stdout || '').slice(0, 2000) || '(no output)'}\n\`\`\``
+            : `Erreur terminal :\n\`\`\`\n${result.stderr || result.error || 'unknown'}\n\`\`\``;
+        addBubble('agent', 'anvil', out);
+        if (autoSpeak) speakText('anvil', result.success ? 'Commande exécutée.' : 'Erreur terminal.');
+        return;
+    }
+
+    // Détecter commande SYSTÈME > WRITE_FILE("path", data)
+    const writeMatch = text.match(/SYST[EÈ]ME\s*[>:]\s*WRITE_FILE\s*\(\s*["'](.+?)["']\s*,\s*([\s\S]+?)\s*\)\s*$/i);
+    if (writeMatch) {
+        const filePath = writeMatch[1];
+        const content = writeMatch[2].replace(/^["']|["']$/g, '');
+        addBubble('user', null, text);
+        const thinkingEl = addThinking('volt');
+        const result = await SlyServer.writeFile(filePath, content);
+        thinkingEl?.remove();
+        const msg = result.success ? `Fichier écrit : ${result.path}` : `Erreur écriture : ${result.error}`;
+        addBubble('agent', 'volt', msg);
+        if (autoSpeak) speakText('volt', result.success ? 'Fichier écrit.' : 'Erreur écriture.');
+        return;
+    }
+
+    return _origSendForExec.apply(this, arguments);
+};
+
+// Patch sendMessage pour observer le follow-up
+const _origSendForAnnealing = sendMessage;
+sendMessage = async function(text) {
+    // Observe le texte comme potentiel follow-up à la dernière réponse
+    if (conversationHistory.length > 0) {
+        const lastAssistant = conversationHistory.filter(m => m.role === 'assistant').slice(-1)[0];
+        if (lastAssistant) SelfAnnealing.observeResponse(lastAssistant.agent || 'sly', lastAssistant.content || '', text);
+    }
+    return _origSendForAnnealing.apply(this, arguments);
 };
 
 // ═══════ CLOUDFLARE WORKERS AI (Tier 4 cascade) ═══════
@@ -5627,10 +6454,10 @@ setTimeout(initThreeJS, 3000);
     if (!avatarEl) return;
 
     const AVATAR_IMAGES = {
-        sly: 'sly_avatar_2d.png',
-        murray: 'murray.png',
-        bentley: 'bentley.png',
-        franklin: 'sly_avatar_2d.png',
+        sly: 'Sly_Cooper_from_The_Black_Chateau_setup.webp',
+        murray: 'Murray.webp',
+        bentley: 'Bentley_from_Sly_2.webp',
+        franklin: 'Bentley_from_Sly_2.webp',
     };
 
     let currentState = 'idle';
@@ -5700,8 +6527,8 @@ localStorage.setItem('sly_onboarded','1');
 var _pwaEvt=null;
 window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); _pwaEvt=e; if(!localStorage.getItem('sly_pwa_dismissed')) setTimeout(function(){ var b=document.getElementById('pwaInstall'); if(b) b.classList.add('visible'); },5000); });
 (function(){ var btn=document.getElementById('pwaInstallBtn'); var dis=document.getElementById('pwaDismiss'); if(btn) btn.onclick=async function(){ if(!_pwaEvt) return; _pwaEvt.prompt(); await _pwaEvt.userChoice; document.getElementById('pwaInstall').classList.remove('visible'); _pwaEvt=null; }; if(dis) dis.onclick=function(){ document.getElementById('pwaInstall').classList.remove('visible'); localStorage.setItem('sly_pwa_dismissed','1'); }; })();
-// === TTS WEB SPEECH FALLBACK ===
-window._ttsWebSpeechFallback=function(text,agentKey){ if(!window.speechSynthesis) return; var u=new SpeechSynthesisUtterance(text.slice(0,200)); u.lang='fr-FR'; u.rate=0.95; u.pitch=agentKey==='murray'?0.7:agentKey==='bentley'?1.2:1.0; u.volume=0.9; speechSynthesis.getVoices(); var fv=speechSynthesis.getVoices().find(function(v){return v.lang.startsWith('fr');}); if(fv) u.voice=fv; var ind=document.getElementById('ttsIndicator'); if(ind){ind.textContent='🔊 web speech';ind.classList.add('visible');} u.onend=function(){if(ind)ind.classList.remove('visible');}; window.SlyAvatar&&window.SlyAvatar.setState('talk'); speechSynthesis.speak(u); };
+// === TTS WEB SPEECH FALLBACK — DÉSACTIVÉ (voix FishAudio clonées uniquement) ===
+// window._ttsWebSpeechFallback est déjà neutralisé plus haut — cette redéfinition est supprimée.
 
 
 // === DEVICE PERFORMANCE DETECTION ===
@@ -5878,6 +6705,109 @@ function _maybeMemoryRecall() {
 
 
 // === EXTRA QUOTES ===
+// ═══════ MORNING BRIEFING — News IA + résumé vocal (SLY-PERPETUAL) ═══════
+async function fetchMorningBriefing() {
+    try {
+        const r = await fetch('/proxy/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                max_tokens: 300,
+                messages: [
+                    { role: 'system', content: 'Tu es SLY, le leader du Cooper Building. Tu fais un briefing matinal ULTRA-concis pour Augus — fondateur d\'un empire d\'agents IA. Ton style : direct, dense, zéro blabla. Parle en 4-5 phrases max. Mentionne les tendances IA récentes que tu connais (GPT-4o, Claude, Gemini, Llama, agents autonomes, etc.) comme si tu avais scanné l\'actu cette nuit.' },
+                    { role: 'user', content: 'Briefing matinal du ' + new Date().toLocaleDateString('fr-FR') + '. Quoi de neuf dans le monde IA et tech ? Synthèse rapide pour le Commandant.' }
+                ]
+            }),
+            signal: AbortSignal.timeout(10000)
+        });
+        if (!r.ok) return null;
+        const d = await r.json();
+        return d.choices?.[0]?.message?.content || null;
+    } catch { return null; }
+}
+
+function scheduleMorningBriefing() {
+    const h = new Date().getHours();
+    const todayKey = 'sly_briefing_' + new Date().toDateString();
+    // Plage 7h-9h, une fois par jour
+    if (h < 7 || h > 9) return;
+    if (localStorage.getItem(todayKey)) return; // déjà fait aujourd'hui
+    localStorage.setItem(todayKey, '1');
+
+    // Indicateur visuel
+    const _showBriefingLoader = () => {
+        const ind = document.getElementById('ttsIndicator');
+        if (ind) { ind.textContent = '📡 briefing...'; ind.className = 'tts-indicator visible'; }
+    };
+
+    setTimeout(async () => {
+        _showBriefingLoader();
+        const text = await fetchMorningBriefing();
+        if (!text) return;
+        // Bulle SENTINEL avec le briefing
+        if (typeof addBubble === 'function') addBubble('agent', 'sentinel', text);
+        // Voix Brad Pitt (SLY) pour le briefing matinal
+        if (typeof speakText === 'function' && autoSpeak) {
+            await speakText('sly', text).catch(() => {});
+        }
+    }, 1500);
+}
+
+// ═══════ PERPETUAL LOADER — indicateur visuel "système actif" ═══════
+(function initPerpetualLoader() {
+    // Crée un point pulsant discret dans le header — prouve que SLY tourne
+    const style = document.createElement('style');
+    style.textContent = `
+        #slyPulseRing {
+            position: fixed;
+            bottom: calc(var(--safe-bottom) + 72px);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(31,111,255,0.0);
+            pointer-events: none;
+            z-index: 20;
+            transition: border-color 0.4s, box-shadow 0.4s;
+        }
+        #slyPulseRing.active {
+            border-color: rgba(31,111,255,0.35);
+            box-shadow: 0 0 12px 2px rgba(31,111,255,0.15);
+            animation: slyRingPulse 2s ease-in-out infinite;
+        }
+        @keyframes slyRingPulse {
+            0%,100% { border-color: rgba(31,111,255,0.20); box-shadow: 0 0 8px 1px rgba(31,111,255,0.10); }
+            50% { border-color: rgba(31,111,255,0.50); box-shadow: 0 0 18px 4px rgba(31,111,255,0.25); }
+        }
+        #slyStatusDot {
+            position: fixed;
+            top: calc(var(--safe-top) + 6px);
+            right: 14px;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #1EFF8E;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0.7;
+            animation: slyDotPulse 3s ease-in-out infinite;
+        }
+        @keyframes slyDotPulse {
+            0%,100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.3); }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Dot vert — toujours visible, prouve que le système est actif
+    const dot = document.createElement('div');
+    dot.id = 'slyStatusDot';
+    dot.title = 'SLY actif';
+    document.addEventListener('DOMContentLoaded', () => document.body.appendChild(dot));
+    // Si déjà chargé
+    if (document.readyState !== 'loading') document.body.appendChild(dot);
+})();
+
 (function() {
     if (typeof PROACTIVE_QUOTES === 'undefined') return;
     const extras = [
