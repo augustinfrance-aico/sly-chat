@@ -1525,21 +1525,22 @@ const CircuitBreaker = {
     }
 };
 
-// ═══════ VOICES — 13 voix clonées FishAudio ═══════
+// ═══════ VOICES — 14 voix clonées FishAudio (IDs vérifiés mars 2026) ═══════
 const VOICES = {
-    freeman:'3ad4d432023c47ee9e6c7805b973630a',      // Morgan Freeman — grave, cosmique
-    bradpitt:'fc9802c61ad1461fa75fd0ec26c6b764',      // Brad Pitt — cool, furtif
-    tomhanks:'42a3d5dec46c42b5846e84979292e013',      // Tom Hanks — chaleureux
-    harrypotter:'42cbd05f78814d6f8b47d90a3cb37f0b',   // Harry Potter — jeune brit
-    gandalf:'0e73b5c5ff5740cd8d85571454ef28ae',       // Gandalf — sage, ancien
-    secretstory:'7a077671da5949589da605a31bcde05e',   // Voix Secret Story — mystère
-    journtf1:'92f1ae1e852840ba85c420c20ea084de',      // Journaliste TF1 — pro
-    sarkozy:'045017eac4724d89970cc0dd089afcd3',       // Sarkozy — nerveux, rythmé
-    homersimpson:'a78a204111a5453bbd972183db60b1bf',  // Homer Simpson FR — fun
-    pujadas:'d84060c540ce4d4ca59188b68672fbf7',       // David Pujadas — JT
-    brucewillis:'87efb8f2ec4f4b3b8ed9f3fd64a3ab4b',   // Bruce Willis — dur, cinéma
+    freeman:'3ad4d432023c47ee9e6c7805b973630a',      // Morgan Freeman by Tims — 13k uses ✅
+    bradpitt:'fc9802c61ad1461fa75fd0ec26c6b764',      // Brad Pitt — cool, intime ✅
+    tomhanks:'42a3d5dec46c42b5846e84979292e013',      // Tom Hanks Narration — 438 uses ✅
+    harrypotter:'488409f5af4348dd878a4476fbbe0bf0',   // Harry Potter — 1305 uses ✅ (ID corrigé)
+    gandalf:'cdf577bdb9d949d18330c1d3fa11ddc9',       // Ian McKellen (Gandalf) — 850 uses ✅
+    secretstory:'7a077671da5949589da605a31bcde05e',   // Voix Secret Story — mystère FR
+    journtf1:'92f1ae1e852840ba85c420c20ea084de',      // Journaliste TF1 — pro FR
+    sarkozy:'045017eac4724d89970cc0dd089afcd3',       // Sarkozy — nerveux, rythmé FR ✅
+    homersimpson:'a78a204111a5453bbd972183db60b1bf',  // Homer Simpson FR — 32k uses ✅ 🏆
+    ironman:'d7a76ce437d34163a48b7e683f85cac7',       // Iron Man / Tony Stark — 2879 uses ✅ (remplace pujadas)
+    brucewillis:'87efb8f2ec4f4b3b8ed9f3fd64a3ab4b',   // Bruce Willis — cinéma ✅
     galadriel:'a288bdc744da4ad194921adad6863175',     // Clémence / Galadriel — noble FR
     mariealice:'6cd316460ab543b0b5048a7908852c1e',    // Marie Alice — narratrice FR
+    batman:'74c93244cd064565b5c4bb0154c0d578',        // Batman — grave, héroïque
 };
 // Pool des 13 voix pour les agents secondaires (distribution stable par hash)
 const _VOICE_POOL = Object.keys(VOICES);
@@ -1557,25 +1558,25 @@ const AGENTS = {
     murray:   {name:'MURRAY',emoji:'🦛',voice:'brucewillis',color:'#FF9A3C',role:'Force brute'},
     omega:    {name:'OMEGA',emoji:'🦅',voice:'freeman',color:'#B18CFF',role:'Vision stratégique'},
     sentinel: {name:'SENTINEL',emoji:'🎯',voice:'secretstory',color:'#FF3B5C',role:'Dispatch & routing'},
-    cortex:   {name:'CORTEX',emoji:'🧠',voice:'pujadas',color:'#00E5FF',role:'Analyse & data'},
+    cortex:   {name:'CORTEX',emoji:'🧠',voice:'ironman',color:'#00E5FF',role:'Analyse & data'},
     franklin: {name:'FRANKLIN',emoji:'🐢',voice:'gandalf',color:'#2E7D32',role:'Philosophe & sagesse'},
     anvil:    {name:'ANVIL',emoji:'🔨',voice:'tomhanks',color:'#FF6B35',role:'Debug & exécution'},
     glitch:   {name:'GLITCH',emoji:'🎲',voice:'sarkozy',color:'#E040FB',role:'Disruption & idées folles'},
     dreyfus:  {name:'DREYFUS',emoji:'⚔️',voice:'harrypotter',color:'#FFD740',role:'Discipline & qualité'},
     volt:     {name:'VOLT',emoji:'⚡',voice:'bradpitt',color:'#1F6FFF',role:'Systèmes & pipelines'},
     specter:  {name:'SPECTER',emoji:'👻',voice:'secretstory',color:'#7A3CFF',role:'Veille & cybersécurité'},
-    closer:   {name:'CLOSER',emoji:'💼',voice:'pujadas',color:'#FFD740',role:'Vente & closing'},
+    closer:   {name:'CLOSER',emoji:'💼',voice:'ironman',color:'#FFD740',role:'Vente & closing'},
     niche:    {name:'NICHE',emoji:'🔍',voice:'journtf1',color:'#00E5FF',role:'Opportunités marché'},
     philomene:{name:'PHILOMÈNE',emoji:'✍️',voice:'mariealice',color:'#B18CFF',role:'Copywriting & contenu'},
     pixel:    {name:'PIXEL',emoji:'🕹️',voice:'homersimpson',color:'#E040FB',role:'Gamification & UX'},
     fresco:   {name:'FRESCO',emoji:'🎨',voice:'bradpitt',color:'#FF6B35',role:'Branding & visuel'},
     hunter:   {name:'HUNTER',emoji:'🏴‍☠️',voice:'sarkozy',color:'#FF3B5C',role:'Contournement'},
-    datum:    {name:'DATUM',emoji:'📊',voice:'pujadas',color:'#00E5FF',role:'Data & KPIs'},
+    datum:    {name:'DATUM',emoji:'📊',voice:'ironman',color:'#00E5FF',role:'Data & KPIs'},
     sibyl:    {name:'SIBYL',emoji:'🔮',voice:'galadriel',color:'#B18CFF',role:'Prédiction & timing'},
     // ═══ VENTE ═══
     kaiser:   {name:'KAISER',emoji:'👑',voice:'freeman',color:'#FFD740',role:'Deals long terme & négociation'},
     prism:    {name:'PRISM',emoji:'💠',voice:'journtf1',color:'#00E5FF',role:'Pricing & psychologie'},
-    onyx:     {name:'ONYX',emoji:'🖤',voice:'pujadas',color:'#1F6FFF',role:'Premium & haut de gamme'},
+    onyx:     {name:'ONYX',emoji:'🖤',voice:'ironman',color:'#1F6FFF',role:'Premium & haut de gamme'},
     ledger:   {name:'LEDGER',emoji:'📒',voice:'journtf1',color:'#FFD740',role:'Business model & chiffres'},
     // ═══ CONTENU ═══
     viral:    {name:'VIRAL',emoji:'📱',voice:'sarkozy',color:'#E040FB',role:'Réseaux sociaux & LinkedIn'},
@@ -1583,14 +1584,14 @@ const AGENTS = {
     racoon:   {name:'RACOON',emoji:'🦝',voice:'bradpitt',color:'#FF9A3C',role:'Growth hacking & acquisition'},
     // ═══ R&D ═══
     cipher:   {name:'CIPHER',emoji:'🔐',voice:'journtf1',color:'#00E5FF',role:'Veille IA & arXiv'},
-    radar:    {name:'RADAR',emoji:'📡',voice:'pujadas',color:'#1F6FFF',role:'Détection startups & brevets'},
+    radar:    {name:'RADAR',emoji:'📡',voice:'ironman',color:'#1F6FFF',role:'Détection startups & brevets'},
     proto:    {name:'PROTO',emoji:'🧪',voice:'homersimpson',color:'#1EFF8E',role:'Prototypage & POC'},
     // ═══ CRÉATIF ═══
     nexus:    {name:'NEXUS',emoji:'🕸️',voice:'gandalf',color:'#B18CFF',role:'Synergies inter-projets'},
     // ═══ NOUVEAUX (11) ═══
     aurora:   {name:'AURORA',emoji:'🌅',voice:'gandalf',color:'#FF9A3C',role:'Imagination & vision créative'},
     virgile:  {name:'VIRGILE',emoji:'✏️',voice:'journtf1',color:'#1EFF8E',role:'Correction & relecture'},
-    gauss:    {name:'GAUSS',emoji:'📐',voice:'pujadas',color:'#00E5FF',role:'Mathématiques & modélisation'},
+    gauss:    {name:'GAUSS',emoji:'📐',voice:'ironman',color:'#00E5FF',role:'Mathématiques & modélisation'},
     orpheus:  {name:'ORPHEUS',emoji:'🎭',voice:'freeman',color:'#B18CFF',role:'Narration & storytelling'},
     mercer:   {name:'MERCER',emoji:'💰',voice:'bradpitt',color:'#FFD740',role:'Upwork & freelance'},
     turing:   {name:'TURING',emoji:'🤖',voice:'journtf1',color:'#1F6FFF',role:'Benchmark IA & évaluation'},
@@ -1609,7 +1610,7 @@ const AGENTS = {
     // ═══ 65 AGENTS — nouveaux (22 ajoutés pour compléter le roster) ═══
     navigator:{name:'NAVIGATOR',emoji:'🧭',voice:'freeman',color:'#00E5FF',role:'Orientation stratégique & boussole'},
     forge:    {name:'FORGE',emoji:'🔥',voice:'brucewillis',color:'#FF6B35',role:'Production intense & création sous pression'},
-    compass:  {name:'COMPASS',emoji:'🌐',voice:'pujadas',color:'#1EFF8E',role:'Vision géopolitique & tendances mondiales'},
+    compass:  {name:'COMPASS',emoji:'🌐',voice:'ironman',color:'#1EFF8E',role:'Vision géopolitique & tendances mondiales'},
     vector:   {name:'VECTOR',emoji:'📐',voice:'journtf1',color:'#00E5FF',role:'Calcul vectoriel & modèles complexes'},
     vortex:   {name:'VORTEX',emoji:'🌀',voice:'sarkozy',color:'#7A3CFF',role:'Disruption créative & chaos constructif'},
     herald:   {name:'HERALD',emoji:'📢',voice:'bradpitt',color:'#FFD740',role:'Communication & annonces stratégiques'},
@@ -1617,7 +1618,7 @@ const AGENTS = {
     praxis:   {name:'PRAXIS',emoji:'⚙️',voice:'tomhanks',color:'#1F6FFF',role:'Mise en pratique & opérationnalisation'},
     catalyst: {name:'CATALYST',emoji:'⚗️',voice:'homersimpson',color:'#1EFF8E',role:'Accélérateur & déclencheur de changement'},
     oracle:   {name:'ORACLE',emoji:'🔯',voice:'secretstory',color:'#B18CFF',role:'Intelligence prédictive & signaux faibles'},
-    axiom:    {name:'AXIOM',emoji:'📏',voice:'pujadas',color:'#00E5FF',role:'Principes fondamentaux & logique irréfutable'},
+    axiom:    {name:'AXIOM',emoji:'📏',voice:'ironman',color:'#00E5FF',role:'Principes fondamentaux & logique irréfutable'},
     spark:    {name:'SPARK',emoji:'✨',voice:'sarkozy',color:'#E040FB',role:'Inspiration instantanée & génération d\'idées'},
     titan:    {name:'TITAN',emoji:'🏔️',voice:'brucewillis',color:'#FF9A3C',role:'Projets monumentaux & envergure maximale'},
     nexion:   {name:'NEXION',emoji:'🔗',voice:'gandalf',color:'#7A3CFF',role:'Connexions invisibles & ponts inter-systèmes'},
@@ -1675,6 +1676,8 @@ async function speakText(agentKey, fullText) {
     const voiceKey = AGENTS[agentKey]?.voice || _voiceForAgent(agentKey);
     const modelId = VOICES[voiceKey] || VOICES[_voiceForAgent(agentKey)];
     if (!modelId) return;
+    // Sans clé FishAudio → WebSpeech direct (skip proxy mort Railway)
+    if (!window.FISH_KEY) { window._ttsWebSpeechFallback?.(fullText, agentKey); return; }
 
     // Split into sentences (max 290 chars each)
     const sentences = fullText.match(/[^.!?]+[.!?]+/g) || [fullText];
@@ -1694,26 +1697,18 @@ async function speakText(agentKey, fullText) {
         const cacheKey = `${modelId}:${chunk}`;
         const cached = await AudioCache.get(cacheKey);
         if (cached) return cached instanceof ArrayBuffer ? cached.slice(0) : cached; // cache hit — return copy
+        // Sans clé FishAudio → WebSpeech direct (pas de proxy Railway)
+        if (!window.FISH_KEY) return null;
         try {
-            let _ttsUrl, _ttsHeaders, _ttsBody;
-            if (window.FISH_KEY) {
-                _ttsUrl = 'https://api.fish.audio/v1/tts';
-                _ttsHeaders = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + window.FISH_KEY };
-                _ttsBody = JSON.stringify({ text: chunk, reference_id: modelId, format: 'mp3', latency: 'balanced' });
-            } else {
-                _ttsUrl = API_BASE + '/api/tts';
-                _ttsHeaders = { 'Content-Type': 'application/json' };
-                _ttsBody = JSON.stringify({ text: chunk, voice_id: modelId });
-            }
-            const r = await fetch(_ttsUrl, {
+            const r = await fetch('https://api.fish.audio/v1/tts', {
                 method: 'POST',
-                headers: _ttsHeaders,
-                body: _ttsBody
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + window.FISH_KEY },
+                body: JSON.stringify({ text: chunk, reference_id: modelId, format: 'mp3', latency: 'balanced' })
             });
             if (r.ok) {
                 Metrics.trackTTFA(ttsStart);
                 const buf = await r.arrayBuffer();
-                AudioCache.set(cacheKey, buf); // store in LRU
+                AudioCache.set(cacheKey, buf);
                 return buf;
             }
             return null;
@@ -3570,7 +3565,7 @@ const VOICE_MORPH_PATTERNS = {
     'voix grave|voix profonde|voix de morgan': 'freeman',
     'voix de tom hanks|voix douce': 'tomhanks',
     'secret story|voix secret story': 'secretstory',
-    'voix pujadas|voix de pujadas': 'pujadas',
+    'voix pujadas|voix de pujadas|iron man|ironman|tony stark': 'ironman',
     'voix du journal|voix tf1': 'journtf1',
     'bruce willis|voix de bruce|die hard': 'brucewillis',
     'voix normale|voix originale|reset voix|voix par défaut': '__reset__',
