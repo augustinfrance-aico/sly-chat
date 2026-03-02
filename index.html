@@ -633,6 +633,39 @@ input{font-family:inherit;border:none;outline:none}
 #particles{position:fixed;inset:0;z-index:0;pointer-events:none}
 #app{z-index:1}
 
+/* ═══════ FOND COSMIQUE — Lune + étoiles (CSS pur, 0 image externe) ═══════ */
+#app::before{
+    content:'';
+    position:fixed;inset:0;
+    z-index:0;pointer-events:none;
+    /* Fond étoilé foncé */
+    background:
+        radial-gradient(ellipse 90% 55% at 50% -5%, rgba(20,60,180,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 50% 110%, rgba(5,10,40,0.6) 0%, transparent 70%),
+        linear-gradient(180deg, #040a18 0%, #050c1e 30%, #030810 65%, #020509 100%);
+}
+/* Lune CSS */
+#app::after{
+    content:'';
+    position:fixed;
+    left:50%;top:-5%;
+    transform:translateX(-50%);
+    width:170px;height:170px;border-radius:50%;
+    background:radial-gradient(circle at 38% 35%, #dce8ff 0%, #b8cff5 28%, #7aa0e0 58%, #2a4a8a 100%);
+    box-shadow:
+        0 0 35px 10px rgba(100,150,255,0.14),
+        0 0 80px 20px rgba(60,100,220,0.07);
+    opacity:0.38;
+    z-index:0;pointer-events:none;
+}
+/* Tout le contenu #app au-dessus du fond */
+#app > *{position:relative;z-index:1}
+
+/* Étoiles CSS fixes (complète les étoiles JS du splash) */
+@keyframes appStarTwinkle{0%,100%{opacity:.15}50%{opacity:.7}}
+#appStarfield{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.app-star{position:absolute;width:1.5px;height:1.5px;border-radius:50%;background:#fff;animation:appStarTwinkle var(--d,3s) ease-in-out infinite var(--del,0s)}
+
 /* ═══════ DREAM MODE (23h-7h) ═══════ */
 body.dream-mode{
     --bg-deep:#020305; --bg-primary:#060910; --bg-card:#0A0E16;
@@ -1334,6 +1367,8 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 </div>
 
 <div id="app">
+    <!-- Fond étoilé du chat — CSS pur, aucune image -->
+    <div id="appStarfield" aria-hidden="true"></div>
     <!-- Sly floating portrait (legacy, hidden) -->
     <img id="slyFloat" src="sly_logo_nobg.png" alt="" aria-hidden="true" style="display:none!important">
     <!-- Sly bg circle — cercle bleu lumineux -->
@@ -3189,6 +3224,23 @@ function runSplash() {
         var ap = document.getElementById('app');
         if (sp) { sp.style.setProperty('display','none','important'); sp.style.setProperty('visibility','hidden','important'); sp.classList.add('hidden'); }
         if (ap) { ap.style.setProperty('display','flex','important'); ap.style.flexDirection='column'; ap.style.height='100dvh'; ap.style.position='relative'; ap.classList.add('visible'); ap.classList.add('home-mode'); }
+        // Étoiles fond cosmique
+        try {
+            var sf = document.getElementById('appStarfield');
+            if (sf && !sf.childElementCount) {
+                var frag = document.createDocumentFragment();
+                for (var _si=0; _si<80; _si++) {
+                    var s = document.createElement('div');
+                    s.className = 'app-star';
+                    s.style.cssText = 'left:'+Math.random()*100+'%;top:'+Math.random()*100+'%;'
+                        +'--d:'+(2+Math.random()*4).toFixed(1)+'s;--del:'+(Math.random()*3).toFixed(1)+'s;'
+                        +'opacity:'+(0.1+Math.random()*0.5)+';'
+                        +(Math.random()>.85?'width:2.5px;height:2.5px':'');
+                    frag.appendChild(s);
+                }
+                sf.appendChild(frag);
+            }
+        } catch(e){}
         // 2. Boot séquentiel
         setTimeout(function(){ try { loadState(); } catch(e){ console.error('[boot] loadState:', e); } }, 0);
         setTimeout(function(){ try { renderDock(); updateActiveAgentIndicator(currentAgent); startPlaceholderCycle(); } catch(e){ console.error('[boot] renderDock:', e); } }, 20);
