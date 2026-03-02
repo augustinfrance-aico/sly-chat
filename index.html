@@ -875,39 +875,58 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 <!-- SPLASH CLOSER — script autonome, indépendant du main script, s'exécute à 5s quoi qu'il arrive -->
 <script>
 (function(){
-    // Skip splash si ouvert il y a moins de 2h
-    var _lastSplash = parseInt(localStorage.getItem('sly_last_splash') || '0');
-    if (Date.now() - _lastSplash < 7200000) {
+    // ═══ SPLASH CONTROLLER ═══
+    // Deux paths : skip (visité < 2h) ou full splash (5s)
+    // Dans les deux cas, appelle window._splashDone() quand l'app doit démarrer
+
+    function showApp() {
         var sp = document.getElementById('splash');
         var ap = document.getElementById('app');
-        if (sp) sp.style.setProperty('display','none','important');
-        if (ap) { ap.style.setProperty('display','flex','important'); ap.classList.add('visible'); }
-        // _splashDone peut ne pas être encore définie (script chargé en fin de body)
-        // On attend que le DOM soit prêt puis on l'appelle
-        if (typeof window._splashDone === 'function') {
-            window._splashDone();
+        if (sp) { sp.style.cssText += ';display:none!important;visibility:hidden!important;pointer-events:none!important'; sp.classList.add('hidden'); }
+        if (ap) { ap.style.setProperty('display','flex','important'); ap.style.flexDirection='column'; ap.style.height='100dvh'; ap.style.position='relative'; ap.classList.add('visible'); }
+    }
+
+    function triggerBoot() {
+        showApp();
+        // Polling : attend que _splashDone soit défini par le main script (chargé en fin de body)
+        var attempts = 0;
+        var interval = setInterval(function() {
+            attempts++;
+            if (typeof window._splashDone === 'function') {
+                clearInterval(interval);
+                window._splashDone();
+            } else if (attempts > 100) { // 5s max
+                clearInterval(interval);
+                console.warn('[splash] _splashDone never defined after 5s');
+            }
+        }, 50);
+    }
+
+    var _lastSplash = parseInt(localStorage.getItem('sly_last_splash') || '0');
+    var skipSplash = Date.now() - _lastSplash < 7200000;
+
+    if (skipSplash) {
+        // Pas de splash — boot immédiat après chargement DOM
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', triggerBoot);
         } else {
-            window._pendingSplashDone = true; // flag — main script appellera bootApp au load
+            triggerBoot();
         }
         return;
     }
+
+    // === FULL SPLASH (5s) ===
     localStorage.setItem('sly_last_splash', Date.now().toString());
     var SPLASH_DUR = 5000;
     var _splashClosed = false;
+
     function closeSplash() {
         if (_splashClosed) return;
         _splashClosed = true;
-        var sp = document.getElementById('splash');
-        var ap = document.getElementById('app');
-        if (sp) { sp.style.setProperty('display','none','important'); sp.style.setProperty('visibility','hidden','important'); sp.style.setProperty('pointer-events','none','important'); sp.classList.add('hidden'); }
-        if (ap) { ap.style.setProperty('display','flex','important'); ap.style.flexDirection='column'; ap.style.height='100dvh'; ap.style.position='relative'; ap.classList.add('visible'); }
-        // Notifie le main script si dispo
-        if (typeof window._splashDone === 'function') window._splashDone();
+        triggerBoot();
     }
     window._closeSplash = closeSplash;
-    // Fermeture automatique à 5s — garanti, aucune dépendance
     setTimeout(closeSplash, SPLASH_DUR);
-    // "COOPER BUILDING" → bleu à mi-chemin
     setTimeout(function(){ var s=document.getElementById('splashSub'); if(s) s.classList.add('loaded'); }, SPLASH_DUR * 0.45);
 })();
 </script>
@@ -2601,13 +2620,7 @@ function runSplash() {
         }, ms);
     });
 
-    // Callback quand le splash autonome ferme
-    // Si le skip-splash s'est déclenché avant que ce script soit chargé → on boot immédiatement
-    if (window._pendingSplashDone) {
-        window._pendingSplashDone = false;
-        // Déclencher via setTimeout pour laisser le DOM se stabiliser
-        setTimeout(function(){ if (typeof window._splashDone === 'function') window._splashDone(); }, 50);
-    }
+    // _splashDone est appelé par le splash controller (ci-dessus) quand l'app doit démarrer
     window._splashDone = function() {
         // Signal au fallback 7s qu'on a bien démarré
         if (typeof _bootFallbackFired !== 'undefined') _bootFallbackFired = true;
