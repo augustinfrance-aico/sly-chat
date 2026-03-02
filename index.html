@@ -330,10 +330,16 @@ input{font-family:inherit;border:none;outline:none}
 }
 .bubble.agent{
     margin-right:auto;
-    border-left:2px solid var(--agent-color, var(--blue));
-    padding-left:12px;
-    background:rgba(31,111,255,0.04);
-    border-radius:0 8px 8px 0;
+    border-left:3px solid var(--agent-color, var(--blue));
+    padding-left:14px;
+    background:linear-gradient(90deg, rgba(var(--active-agent-rgb,31,111,255),0.07) 0%, transparent 100%);
+    border-radius:0 10px 10px 0;
+    box-shadow:inset 3px 0 12px rgba(var(--active-agent-rgb,31,111,255),0.06);
+    animation:bubbleIn .3s cubic-bezier(0.34,1.56,0.64,1), agentBorderGlow 3s ease-in-out infinite 0.3s;
+}
+@keyframes agentBorderGlow{
+    0%,100%{border-left-color:var(--agent-color,var(--blue));box-shadow:inset 3px 0 12px rgba(var(--active-agent-rgb,31,111,255),0.06)}
+    50%{border-left-color:var(--agent-color,var(--blue));box-shadow:inset 3px 0 18px rgba(var(--active-agent-rgb,31,111,255),0.14),0 0 8px rgba(var(--active-agent-rgb,31,111,255),0.08)}
 }
 /* Couleur bordure par agent — injectée via style attr */
 .bubble.agent[data-agent="sly"]      { --agent-color:#3A8DFF }
