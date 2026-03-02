@@ -398,3 +398,39 @@
 ### 2026-03-02 — SLY-CHAT MEGA UPGRADE â€” 7 modules JARVIS intÃ©grÃ©s
 - **Commit** : 4b22d80
 - **Impact** : sly-chat/index.html
+
+### 2026-03-02 — Audit systeme complet â€” coherence directives + hierarchie sources de verite
+- **Commit** : 04bdfc8
+- **Impact** : CLAUDE.md, directives/ADD_AGENT.md, directives/ARCHITECTURE.md, directives/CONTEXT_BOOT.md, directives/DIRECTIVES_OPERATOIRES.md (+8 fichiers)
+
+### 2026-03-02 — Audit systeme complet â€” coherence directives + hierarchie sources de verite
+- **Commit** : 04bdfc8
+- **Impact** : CLAUDE.md, directives/ADD_AGENT.md, directives/ARCHITECTURE.md, directives/CONTEXT_BOOT.md, directives/DIRECTIVES_OPERATOIRES.md (+8 fichiers)
+
+### 2026-03-02 — Vague 2 â€” 8 nouveaux agents integres (50 â†’ 58)
+- **Commit** : 3742138
+- **Impact** : CLAUDE.md, personnalites/CASTING.md, personnalites/castafiore.md, personnalites/haddock.md, personnalites/milou.md (+5 fichiers)
+
+### 2026-03-02 — Vague 2 â€” 8 nouveaux agents integres (50 â†’ 58)
+- **Commit** : 3742138
+- **Impact** : CLAUDE.md, personnalites/CASTING.md, personnalites/castafiore.md, personnalites/haddock.md, personnalites/milou.md (+5 fichiers)
+
+### 2026-03-02 — Vague 3 â€” 7 agents integres + 3 fiches enrichies (58 â†’ 65)
+- **Commit** : 8277a3e
+- **Impact** : CLAUDE.md, personnalites/CASTING.md, personnalites/cassandre.md, personnalites/colbert.md, personnalites/darwin.md (+7 fichiers)
+
+### 2026-03-02 — Vague 3 â€” 7 agents integres + 3 fiches enrichies (58 â†’ 65)
+- **Commit** : 8277a3e
+- **Impact** : CLAUDE.md, personnalites/CASTING.md, personnalites/cassandre.md, personnalites/colbert.md, personnalites/darwin.md (+7 fichiers)
+
+### 2026-03-02 — Vague 3 â€” 7 agents integres + 3 fiches enrichies (58 â†’ 65)
+- **Commit** : 8277a3e
+- **Impact** : CLAUDE.md, personnalites/CASTING.md, personnalites/cassandre.md, personnalites/colbert.md, personnalites/darwin.md (+7 fichiers)
+
+### 2026-03-02 — Vague 3 â€” 7 agents integres + 3 fiches enrichies (58 â†’ 65)
+- **Commit** : 8277a3e
+- **Impact** : CLAUDE.md, personnalites/CASTING.md, personnalites/cassandre.md, personnalites/colbert.md, personnalites/darwin.md (+7 fichiers)
+
+### 2026-03-02 — Vague 3 â€” 7 agents integres + 3 fiches enrichies (58 â†’ 65)
+- **Commit** : 8277a3e
+- **Impact** : CLAUDE.md, personnalites/CASTING.md, personnalites/cassandre.md, personnalites/colbert.md, personnalites/darwin.md (+7 fichiers)

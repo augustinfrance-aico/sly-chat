@@ -1,0 +1,249 @@
+{
+  "name": "Content Liquefactor — YouTube → Review FR → Telegram",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "name": "Check toutes les 30 min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300],
+      "notes": "Vérifie les nouvelles vidéos des chaînes surveillées toutes les 30 min"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "liquefact",
+        "responseMode": "lastNode"
+      },
+      "name": "Webhook — URL manuelle",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 520],
+      "notes": "Augus envoie manuellement une URL YouTube à analyser"
+    },
+    {
+      "parameters": {
+        "url": "https://www.youtube.com/feeds/videos.xml?channel_id={{ $json.channel_id }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "name": "Fetch YouTube RSS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300],
+      "notes": "Récupère le flux RSS de la chaîne YouTube pour détecter les nouvelles vidéos"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "channels",
+              "value": "UCbo-KbSjJDG6JWQ_MTZ_rNA,UCbRP3c757lWg9M-U7TyEkXA,UC4JX40jDee_tINbkjycV4Sg,UCsBjURrPoezykLs9EqgamOA,UCnUYZLuoy1rq1aVMwx4piYg,UCX6OQ3DkcsbYNE6H8uQQuVA"
+            }
+          ]
+        }
+      },
+      "name": "Liste des chaînes",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [480, 140],
+      "notes": "IDs des chaînes YouTube à surveiller. Nick Saraev (prioritaire — automation/Make.com), AI Jason, Matt Wolfe, Fireship, Two Minute Papers, The AI Advantage. Modifier ici pour ajouter/retirer des chaînes."
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "channels",
+        "options": {
+          "delimiter": ","
+        }
+      },
+      "name": "Split Channels",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [660, 140],
+      "notes": "Transforme la liste CSV en items individuels pour itérer"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.published }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "name": "Filtre nouvelles vidéos",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [660, 300],
+      "notes": "Ne garde que les vidéos publiées dans les dernières 30 min (à ajuster avec expression)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLY_BACKEND_URL || 'https://YOUR-RAILWAY-URL.railway.app' }}/api/liquefact",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $json.url || $json.body?.url || $json.link }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "name": "SLY Bot — Liquefact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 400],
+      "notes": "Appelle le endpoint /api/liquefact du SLY bot sur Railway. Timeout 3 min (transcription + analyse IA). Retourne la Review Numérique complète en français."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.error }}",
+              "operation": "isEmpty"
+            }
+          ]
+        }
+      },
+      "name": "Check succès",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [1120, 400],
+      "notes": "Vérifie que la review a bien été générée (pas d'erreur)"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "=🎬 *REVIEW NUMÉRIQUE*\n\n📹 *{{ $json.title }}*\n⏱ {{ $json.duration_str }} | 🔗 {{ $json.url }}\n\n{{ $json.review }}\n\n---\n_🤖 Content Liquefactor — Cooper Building_",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "name": "Telegram — Envoyer Review",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1340, 400],
+      "credentials": {
+        "telegramApi": {
+          "id": "VOTRE_CREDENTIAL_ID",
+          "name": "SLY Bot Telegram"
+        }
+      },
+      "notes": "Envoie la Review Numérique formatée sur Telegram à Augus. Parse mode Markdown pour la mise en forme."
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "=⚠️ *Liquefactor Error*\n\nURL: {{ $json.url || 'N/A' }}\nErreur: {{ $json.error || 'Inconnue' }}\n\n_Vérifie le bot SLY sur Railway._",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "name": "Telegram — Erreur",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1340, 600],
+      "credentials": {
+        "telegramApi": {
+          "id": "VOTRE_CREDENTIAL_ID",
+          "name": "SLY Bot Telegram"
+        }
+      },
+      "notes": "Notification d'erreur si la transcription/analyse échoue"
+    }
+  ],
+  "connections": {
+    "Check toutes les 30 min": {
+      "main": [
+        [
+          { "node": "Liste des chaînes", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Liste des chaînes": {
+      "main": [
+        [
+          { "node": "Split Channels", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Split Channels": {
+      "main": [
+        [
+          { "node": "Fetch YouTube RSS", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Fetch YouTube RSS": {
+      "main": [
+        [
+          { "node": "Filtre nouvelles vidéos", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Filtre nouvelles vidéos": {
+      "main": [
+        [
+          { "node": "SLY Bot — Liquefact", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Webhook — URL manuelle": {
+      "main": [
+        [
+          { "node": "SLY Bot — Liquefact", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "SLY Bot — Liquefact": {
+      "main": [
+        [
+          { "node": "Check succès", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Check succès": {
+      "main": [
+        [
+          { "node": "Telegram — Envoyer Review", "type": "main", "index": 0 }
+        ],
+        [
+          { "node": "Telegram — Erreur", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "meta": {
+    "instanceId": "augustin-aico-n8n-cloud",
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    { "name": "youtube" },
+    { "name": "automation" },
+    { "name": "content-liquefactor" }
+  ]
+}

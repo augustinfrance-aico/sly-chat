@@ -35,3 +35,6 @@ Thumbs.db
 # TITAN memory (runtime data)
 execution/titan/memory/*.json
 !execution/titan/memory/.gitkeep
+
+# GitHub Pages deploy repo (repo imbriqué — géré indépendamment)
+reviews/

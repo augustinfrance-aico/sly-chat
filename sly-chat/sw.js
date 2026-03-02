@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sly-chat-v8';
+const CACHE_NAME = 'sly-chat-v9';
 
 // Core assets — precached on install
 const PRECACHE_ASSETS = [
@@ -67,6 +67,11 @@ self.addEventListener('fetch', e => {
         return;
     }
 
+    // index.html → network only, NEVER cache (toujours version fraîche)
+    if (url.pathname === '/' || url.pathname === '/index.html') {
+        return; // Let browser handle, no SW interception
+    }
+
     // Local assets → network first, fallback cache
     e.respondWith(
         fetch(e.request).then(resp => {
@@ -75,6 +80,6 @@ self.addEventListener('fetch', e => {
                 caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
             }
             return resp;
-        }).catch(() => caches.match(e.request).then(r => r || caches.match('/index.html')))
+        }).catch(() => caches.match(e.request))
     );
 });

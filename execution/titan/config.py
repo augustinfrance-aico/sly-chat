@@ -101,6 +101,17 @@ EXECUTION_DIR = TITAN_DIR.parent
 # Ensure dirs exist
 MEMORY_DIR.mkdir(exist_ok=True)
 
+# === LIQUEFACTOR CONFIG ===
+LIQUEFACTOR_CHANNELS = {
+    "UCbo-KbSjJDG6JWQ_MTZ_rNA": "Nick Saraev",
+    "UCbRP3c757lWg9M-U7TyEkXA": "AI Jason",
+    "UC4JX40jDee_tINbkjycV4Sg": "Matt Wolfe",
+    "UCsBjURrPoezykLs9EqgamOA": "Fireship",
+    "UCnUYZLuoy1rq1aVMwx4piYg": "Two Minute Papers",
+    "UCX6OQ3DkcsbYNE6H8uQQuVA": "The AI Advantage",
+}
+GITHUB_PAGES_BASE_URL = "https://augustinfrance-aico.github.io/sly-command"
+
 # === NEWS CONFIG ===
 NEWS_FEEDS = {
     "tech": [

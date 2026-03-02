@@ -26,6 +26,10 @@ API Endpoints:
   POST /api/chat          — Chat avec le LLM (Ollama/Groq/Gemini)
   POST /api/extension     — Activer/désactiver une extension
   POST /api/anneal        — Déclencher self-annealing
+  POST /api/transcribe    — YouTube URL → transcript (yt-dlp + Groq Whisper)
+  POST /api/liquefact     — YouTube URL → Review HTML longue (Liquefactor v2) → GitHub Pages + Telegram
+  POST /api/news-digest   — Trigger manuel du digest IA quotidien (page HTML)
+  POST /api/breaking-check — Trigger manuel de la vérification breaking news IA
 """
 
 import json
@@ -816,6 +820,78 @@ class CommandHandler(SimpleHTTPRequestHandler):
             except Exception as e:
                 self._json_response({"error": str(e)})
 
+        # === TRANSCRIBE & LIQUEFACT ENDPOINTS ===
+        elif path == "/api/transcribe":
+            # YouTube URL → transcript text (yt-dlp + Groq Whisper)
+            body = _read_body(self)
+            url = body.get("url", "")
+            if not url:
+                self._json_response({"error": "url required"}, 400)
+                self._log_request(path, _t0)
+                return
+            if "youtube.com" not in url and "youtu.be" not in url:
+                self._json_response({"error": "URL YouTube invalide"}, 400)
+                self._log_request(path, _t0)
+                return
+            log.info(f"Transcribe: {url[:80]}")
+            try:
+                from execution.titan.modules.transcribe import transcribe_youtube_sync
+                result = transcribe_youtube_sync(url)
+                self._json_response(result)
+                log.info(f"Transcribe OK: {result.get('title', '?')} ({result.get('char_count', 0)} chars)")
+            except Exception as e:
+                log.error(f"Transcribe error: {e}")
+                self._json_response({"error": str(e)}, 500)
+
+        elif path == "/api/liquefact":
+            # Content Liquefactor v2 — YouTube URL → HTML review longue → GitHub Pages + Telegram
+            body = _read_body(self)
+            url = body.get("url", "")
+            if not url:
+                self._json_response({"error": "url required"}, 400)
+                self._log_request(path, _t0)
+                return
+            if "youtube.com" not in url and "youtu.be" not in url:
+                self._json_response({"error": "URL YouTube invalide"}, 400)
+                self._log_request(path, _t0)
+                return
+            log.info(f"Liquefact v2: {url[:80]}")
+            try:
+                from execution.titan.modules.liquefactor import ContentLiquefactor
+                liq = ContentLiquefactor()
+                result = liq.generate_review(url)
+                self._json_response(result)
+                log.info(f"Liquefact v2 OK: {result.get('title', '?')} → {result.get('url', '?')}")
+            except Exception as e:
+                log.error(f"Liquefact v2 error: {e}")
+                self._json_response({"error": str(e)}, 500)
+
+        elif path == "/api/news-digest":
+            # Trigger manuel du digest IA quotidien (page HTML + Telegram)
+            log.info("Manual news digest trigger")
+            try:
+                from execution.titan.modules.liquefactor import ContentLiquefactor
+                liq = ContentLiquefactor()
+                result = liq.generate_daily_digest()
+                self._json_response(result or {"status": "no_news"})
+                log.info(f"News digest OK: {result.get('url', '?') if result else 'empty'}")
+            except Exception as e:
+                log.error(f"News digest error: {e}")
+                self._json_response({"error": str(e)}, 500)
+
+        elif path == "/api/breaking-check":
+            # Trigger manuel de la vérification breaking news IA
+            log.info("Manual breaking news check")
+            try:
+                from execution.titan.modules.liquefactor import ContentLiquefactor
+                liq = ContentLiquefactor()
+                result = liq.check_breaking_news()
+                self._json_response(result or {"status": "nothing_breaking"})
+                log.info(f"Breaking check: {'BREAKING' if result else 'nothing'}")
+            except Exception as e:
+                log.error(f"Breaking check error: {e}")
+                self._json_response({"error": str(e)}, 500)
+
         elif path == "/api/tts":
             # Proxy TTS FishAudio — clé API côté serveur, jamais exposée au frontend
             body = _read_body(self)
@@ -857,11 +933,12 @@ class CommandHandler(SimpleHTTPRequestHandler):
                 self._json_response({"error": str(e)}, 502)
 
         elif path == "/api/groq":
-            # Proxy Groq LLM — clé API côté serveur
+            # Proxy Groq LLM — clé API côté serveur, SSE streaming
             body = _read_body(self)
             messages = body.get("messages", [])
             model = body.get("model", "llama-3.3-70b-versatile")
             max_tokens = min(body.get("max_tokens", 300), 2000)
+            stream = body.get("stream", True)
             if not messages:
                 self._json_response({"error": "messages required"}, 400)
                 self._log_request(path, _t0)
@@ -872,21 +949,127 @@ class CommandHandler(SimpleHTTPRequestHandler):
                 self._log_request(path, _t0)
                 return
             try:
+                import http.client as httpclient
+                payload = json.dumps({
+                    "model": model, "messages": messages,
+                    "max_tokens": max_tokens, "temperature": 0.7,
+                    "stream": bool(stream)
+                }).encode("utf-8")
+
+                conn = httpclient.HTTPSConnection("api.groq.com", timeout=30)
+                conn.request("POST", "/openai/v1/chat/completions", body=payload, headers={
+                    "Authorization": f"Bearer {groq_key}",
+                    "Content-Type": "application/json",
+                    "Accept": "text/event-stream" if stream else "application/json"
+                })
+                upstream = conn.getresponse()
+
+                if not stream or upstream.status != 200:
+                    # Non-streaming fallback
+                    result = json.loads(upstream.read().decode("utf-8"))
+                    conn.close()
+                    self._json_response(result, upstream.status if upstream.status != 200 else 200)
+                    log.info(f"Groq proxy (non-stream): model={model}, {len(messages)} msgs")
+                else:
+                    # SSE streaming — relay chunks to client
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/event-stream")
+                    self.send_header("Cache-Control", "no-cache")
+                    self.send_header("Connection", "keep-alive")
+                    self.send_header("Access-Control-Allow-Origin", "*")
+                    self.end_headers()
+                    total_chars = 0
+                    try:
+                        while True:
+                            line = upstream.readline()
+                            if not line:
+                                break
+                            decoded = line.decode("utf-8", errors="replace")
+                            self.wfile.write(line)
+                            self.wfile.flush()
+                            if decoded.strip().startswith("data: ") and decoded.strip() != "data: [DONE]":
+                                try:
+                                    d = json.loads(decoded.strip()[6:])
+                                    t = d.get("choices", [{}])[0].get("delta", {}).get("content", "")
+                                    total_chars += len(t)
+                                except Exception:
+                                    pass
+                    except (BrokenPipeError, ConnectionResetError):
+                        pass
+                    finally:
+                        conn.close()
+                    log.info(f"Groq proxy (stream): model={model}, {len(messages)} msgs, {total_chars} chars")
+            except Exception as e:
+                log.error(f"Groq proxy error: {e}")
+                self._json_response({"error": str(e)}, 502)
+
+        elif path == "/api/gemini":
+            # Proxy Gemini LLM — clé API côté serveur
+            body = _read_body(self)
+            messages = body.get("messages", [])
+            max_tokens = min(body.get("max_tokens", 500), 2000)
+            if not messages:
+                self._json_response({"error": "messages required"}, 400)
+                self._log_request(path, _t0)
+                return
+            gemini_key = os.environ.get("GEMINI_API_KEY", "")
+            if not gemini_key:
+                self._json_response({"error": "GEMINI_API_KEY not configured"}, 503)
+                self._log_request(path, _t0)
+                return
+            try:
                 import urllib.request as urlreq
-                payload = json.dumps({"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": 0.7}).encode("utf-8")
+                # Convert OpenAI format to Gemini format
+                contents = []
+                system_text = ""
+                for m in messages:
+                    if m.get("role") == "system":
+                        system_text = m.get("content", "")
+                    else:
+                        contents.append({
+                            "role": "model" if m.get("role") == "assistant" else "user",
+                            "parts": [{"text": m.get("content", "")}]
+                        })
+                gemini_body = {"contents": contents, "generationConfig": {"maxOutputTokens": max_tokens}}
+                if system_text:
+                    gemini_body["systemInstruction"] = {"parts": [{"text": system_text}]}
+                payload = json.dumps(gemini_body).encode("utf-8")
                 req = urlreq.Request(
-                    "https://api.groq.com/openai/v1/chat/completions",
+                    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={gemini_key}",
                     data=payload,
-                    headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
+                    headers={"Content-Type": "application/json"},
                     method="POST",
                 )
                 with urlreq.urlopen(req, timeout=30) as resp:
                     result = json.loads(resp.read().decode("utf-8"))
-                self._json_response(result)
-                log.info(f"Groq proxy: model={model}, {len(messages)} msgs")
+                text = result.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                self._json_response({"choices": [{"message": {"content": text}}]})
+                log.info(f"Gemini proxy: {len(messages)} msgs → {len(text)} chars")
             except Exception as e:
-                log.error(f"Groq proxy error: {e}")
+                log.error(f"Gemini proxy error: {e}")
                 self._json_response({"error": str(e)}, 502)
+
+        elif path == "/api/metrics":
+            # SLY-CHAT metrics ingestion — stocke les métriques client
+            body = _read_body(self)
+            events = body if isinstance(body, list) else body.get("events", [])
+            try:
+                metrics_file = MEMORY_DIR / "slychat_metrics.json"
+                existing = []
+                if metrics_file.exists():
+                    try:
+                        existing = json.loads(metrics_file.read_text(encoding="utf-8"))
+                    except Exception:
+                        existing = []
+                existing.extend(events[-200:])  # Keep last 200 events max
+                if len(existing) > 1000:
+                    existing = existing[-1000:]
+                metrics_file.write_text(json.dumps(existing, ensure_ascii=False), encoding="utf-8")
+                self._json_response({"ok": True, "stored": len(events)})
+                log.info(f"Metrics: stored {len(events)} events")
+            except Exception as e:
+                log.error(f"Metrics error: {e}")
+                self._json_response({"error": str(e)}, 500)
 
         elif path == "/api/anneal":
             body = _read_body(self)

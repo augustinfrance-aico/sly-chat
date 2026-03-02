@@ -8083,7 +8083,9 @@ const AgentMood = (() => {
         const data = getInteractions();
         const last = data[agentName];
         if (!last) return 'neutral';
-        const daysSince = (Date.now() - last) / (1000 * 60 * 60 * 24);
+        const minsSince = (Date.now() - last) / (1000 * 60);
+        if (minsSince < 30) return 'alert';       // Active right now
+        const daysSince = minsSince / (60 * 24);
         if (daysSince < 3) return 'motivated';
         if (daysSince < 7) return 'neutral';
         return 'bored';

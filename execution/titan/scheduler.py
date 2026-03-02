@@ -37,6 +37,7 @@ from .modules.library import TitanLibrary
 from .modules.rdlab_digestor import TitanRDLabDigestor
 from .modules.rdlab_scout import TitanRDLabScout
 from .modules.rdlab_horizon import TitanRDLabHorizon
+from .modules.liquefactor import ContentLiquefactor
 
 log = logging.getLogger("titan.scheduler")
 
@@ -61,6 +62,7 @@ class TitanScheduler:
         self.rdlab_digestor = TitanRDLabDigestor()
         self.rdlab_scout = TitanRDLabScout()
         self.rdlab_horizon = TitanRDLabHorizon()
+        self.liquefactor = ContentLiquefactor()
 
         # Lazy-loaded modules for nightshift
         self._upwork = None
@@ -76,6 +78,9 @@ class TitanScheduler:
         self.last_rdlab_daily = None
         self.last_rdlab_scout_alert = None
         self.last_rdlab_horizon = None
+        self.last_breaking_check = None   # Timestamp dernier check breaking news
+        self.last_youtube_check = None     # Timestamp dernier check YouTube
+        self.last_liquefactor_digest = None  # Date dernier digest Liquefactor
 
     def send_telegram(self, text: str):
         """Send a message to Telegram. Truncate if too long."""
@@ -280,6 +285,69 @@ class TitanScheduler:
                 log.info("R&D Lab horizon forecast sent.")
             except Exception as e:
                 log.error(f"RDLab horizon error: {e}")
+
+    # === CONTENT LIQUEFACTOR — Breaking news, YouTube monitoring, digest HTML ===
+
+    async def breaking_news_check(self):
+        """Check for breaking AI news every 15 min (8h-23h). Silent if nothing."""
+        now = _now_paris()
+        if not (8 <= now.hour <= 23):
+            return
+        # Throttle: 15 min minimum between checks
+        if self.last_breaking_check:
+            elapsed = (now - self.last_breaking_check).total_seconds()
+            if elapsed < 900:  # 15 min
+                return
+        self.last_breaking_check = now
+        try:
+            result = await asyncio.to_thread(self.liquefactor.check_breaking_news)
+            if result:
+                log.info(f"BREAKING NEWS detected: {result.get('title', '?')}")
+            # Silent if nothing — liquefactor handles Telegram internally
+        except Exception as e:
+            log.error(f"Breaking news check error: {e}")
+
+    async def youtube_channel_check(self):
+        """Check monitored YouTube channels every 30 min for new videos."""
+        now = _now_paris()
+        # Throttle: 30 min minimum between checks
+        if self.last_youtube_check:
+            elapsed = (now - self.last_youtube_check).total_seconds()
+            if elapsed < 1800:  # 30 min
+                return
+        self.last_youtube_check = now
+        try:
+            new_videos = await asyncio.to_thread(self.liquefactor.check_youtube_channels)
+            if new_videos:
+                log.info(f"New YouTube videos detected: {len(new_videos)}")
+                for vid in new_videos:
+                    url = vid.get("url", "")
+                    if url:
+                        log.info(f"Auto-reviewing: {vid.get('title', url)}")
+                        try:
+                            await asyncio.to_thread(self.liquefactor.generate_review, url)
+                        except Exception as e:
+                            log.error(f"Auto-review error for {url}: {e}")
+        except Exception as e:
+            log.error(f"YouTube channel check error: {e}")
+
+    async def liquefactor_afternoon_digest(self):
+        """Generate HTML AI digest page at 14h — replaces text-only aggregator."""
+        now = _now_paris()
+        if now.hour == 14 and now.minute < 5:
+            today = now.strftime("%Y-%m-%d")
+            if self.last_liquefactor_digest == today:
+                return
+            self.last_liquefactor_digest = today
+            log.info("Generating Liquefactor daily digest (HTML page)...")
+            try:
+                result = await asyncio.to_thread(self.liquefactor.generate_daily_digest)
+                if result:
+                    log.info(f"Liquefactor digest deployed: {result.get('url', '?')}")
+                else:
+                    log.warning("Liquefactor digest: no result returned.")
+            except Exception as e:
+                log.error(f"Liquefactor digest error: {e}")
 
     # === NIGHTSHIFT — Configurable via /nightshift on Telegram ===
 
@@ -500,8 +568,11 @@ class TitanScheduler:
                 await self.daily_health_check()        # 6h — santé système
                 await self.rdlab_daily_digest()        # 7h30 — R&D Lab papers
                 await self.smart_morning_digest()      # 8h — digest du matin
+                await self.breaking_news_check()       # Toutes les 15 min (8h-23h) — breaking news IA
+                await self.youtube_channel_check()     # Toutes les 30 min — monitoring YouTube
                 await self.rdlab_scout_alert()         # 12h — alertes innovations (silent si rien)
-                await self.afternoon_digest()          # 14h — agrégateur
+                await self.liquefactor_afternoon_digest()  # 14h — digest HTML Liquefactor (remplace aggregator texte)
+                await self.afternoon_digest()          # 14h — agrégateur texte (backup si Liquefactor échoue)
                 await self.evening_reminder()          # 21h — rappel habitudes
                 await self.evening_journal_prompt()    # 21h30 — journal du soir
                 await self.rdlab_horizon_monthly()     # 1er du mois 9h — forecast
