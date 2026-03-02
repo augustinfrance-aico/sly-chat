@@ -263,6 +263,32 @@ input{font-family:inherit;border:none;outline:none}
 #app.home-mode #homeScreen{display:flex}
 #app:not(.home-mode) #homeScreen{display:none}
 
+/* ═══════ MODE CYBORG — HUD ═══════ */
+#cyborgHud{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:3px 14px;
+    background:linear-gradient(90deg,rgba(5,7,10,0.95) 0%,rgba(11,15,20,0.9) 100%);
+    border-bottom:1px solid rgba(var(--active-agent-rgb,31,111,255),0.2);
+    font-size:10px;font-family:'JetBrains Mono',monospace;
+    letter-spacing:0.5px;position:relative;z-index:11;
+    transition:border-color 0.5s ease;
+    min-height:22px;
+}
+.hud-left{display:flex;align-items:center;gap:8px;color:rgba(var(--active-agent-rgb,31,111,255),0.9)}
+.hud-agent-dot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green);animation:agentPulse 2s ease-in-out infinite;flex-shrink:0}
+.hud-agent-name{font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6FB1FF}
+.hud-sep{color:rgba(255,255,255,0.2)}
+.hud-insight{color:rgba(230,237,245,0.55);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-style:italic}
+.hud-right{display:flex;align-items:center;gap:10px;color:rgba(255,255,255,0.4)}
+.hud-time{font-variant-numeric:tabular-nums;letter-spacing:1px}
+.hud-mood{font-size:11px}
+/* ═══════ MOOD INDICATOR ═══════ */
+.hud-mood-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.hud-mood-dot.focus{background:#1EFF8E;box-shadow:0 0 6px #1EFF8E}
+.hud-mood-dot.neutral{background:#6FB1FF;box-shadow:0 0 4px #6FB1FF}
+.hud-mood-dot.tension{background:#FF9A3C;box-shadow:0 0 6px #FF9A3C}
+.hud-mood-dot.stress{background:#FF3B5C;box-shadow:0 0 8px #FF3B5C;animation:agentPulse 1s ease-in-out infinite}
+
 /* Header */
 .header{
     display:flex;align-items:center;padding:8px 16px;
@@ -1275,6 +1301,19 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
     <img id="slyFloat" src="sly_logo_nobg.png" alt="" aria-hidden="true" style="display:none!important">
     <!-- Sly bg circle — cercle bleu lumineux -->
     <div id="slyAppBg" aria-hidden="true"></div>
+    <!-- MODE CYBORG — HUD minimal toujours visible -->
+    <div id="cyborgHud">
+        <div class="hud-left">
+            <div class="hud-agent-dot"></div>
+            <span class="hud-agent-name" id="hudAgentName">SLY</span>
+            <span class="hud-sep">│</span>
+            <span class="hud-insight" id="hudInsight">Cooper Building en ligne</span>
+        </div>
+        <div class="hud-right">
+            <div class="hud-mood-dot neutral" id="hudMoodDot"></div>
+            <span class="hud-time" id="hudTime">--:--</span>
+        </div>
+    </div>
     <!-- Header -->
     <div class="header">
         <button class="btn-icon" id="btnMenu">☰</button>
@@ -2566,13 +2605,14 @@ function updateActiveAgentIndicator(key) {
     const app = document.getElementById('app');
     if (app) {
         app.style.setProperty('--active-agent-color', color);
-        // Parse hex to rgb for rgba usage
         const r = parseInt(color.slice(1,3),16), g = parseInt(color.slice(3,5),16), b = parseInt(color.slice(5,7),16);
         app.style.setProperty('--active-agent-rgb', `${r},${g},${b}`);
     }
     // Header accent
     const header = document.querySelector('.header');
     if (header) header.style.borderBottomColor = `rgba(${parseInt(color.slice(1,3),16)},${parseInt(color.slice(3,5),16)},${parseInt(color.slice(5,7),16)},0.35)`;
+    // HUD sync
+    if (window._updateHudAgent) window._updateHudAgent(key);
 }
 
 var _placeholderTimer = null;
@@ -4023,7 +4063,195 @@ function bootPhase2() {
     // Load morphed voice
     const savedMorph = localStorage.getItem('sly_morph');
     if (savedMorph) morphedVoice = savedMorph;
+
+    // Boot Phase 3 systems
+    try { initCyborgHud(); } catch(e) { console.warn('[hud]', e); }
+    try { initEmotionalDetection(); } catch(e) { console.warn('[mood]', e); }
+    try { initAgentEvolution(); } catch(e) { console.warn('[evolution]', e); }
+    try { scheduleCooperGangMeeting(); } catch(e) { console.warn('[meeting]', e); }
 }
+
+// ═══════ PHASE 3 — MODE CYBORG HUD ═══════
+function initCyborgHud() {
+    const hudTime = document.getElementById('hudTime');
+    const hudName = document.getElementById('hudAgentName');
+    const hudInsight = document.getElementById('hudInsight');
+
+    // Horloge temps réel
+    function updateHudTime() {
+        if (!hudTime) return;
+        const now = new Date();
+        hudTime.textContent = now.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+    }
+    updateHudTime();
+    setInterval(updateHudTime, 10000);
+
+    // Agent name sync — appelé aussi depuis updateActiveAgentIndicator
+    window._updateHudAgent = function(key) {
+        if (hudName && AGENTS[key]) hudName.textContent = AGENTS[key].name.toUpperCase();
+    };
+    window._updateHudAgent(currentAgent);
+
+    // Insight rotatif — dernière bulle agent ou quote OMEGA
+    window._updateHudInsight = function(text) {
+        if (!hudInsight || !text) return;
+        // Tronquer proprement à 40 chars
+        hudInsight.textContent = text.replace(/[*_`#]/g, '').slice(0, 42) + (text.length > 42 ? '…' : '');
+    };
+
+    // Rotate insights toutes les 30s si pas de message récent
+    const HUD_POOL = [
+        'Cooper Building en ligne',
+        '65 agents actifs',
+        'Mode autonome activé',
+        'SENTINEL surveille',
+        'Cascade IA opérationnelle',
+        'Mémoire synchronisée',
+    ];
+    let _hudPoolIdx = 0;
+    setInterval(() => {
+        const lastMsg = conversationHistory[conversationHistory.length - 1];
+        if (lastMsg && lastMsg.role === 'assistant' && lastMsg.content) {
+            window._updateHudInsight(lastMsg.content);
+        } else {
+            window._updateHudInsight(HUD_POOL[_hudPoolIdx++ % HUD_POOL.length]);
+        }
+    }, 30000);
+}
+
+// ═══════ PHASE 3 — EMOTIONAL STATE DETECTION ═══════
+const EmotionalState = {
+    _current: 'neutral',
+    _history: [],
+    // Mots-clés par état
+    _patterns: {
+        stress:  /urgent|merde|problème|bug|crash|bloqué|plus rien|ça marche pas|paniqué/i,
+        tension: /difficile|compliqué|galère|pas sûr|j\'hésite|inquiet|trop de/i,
+        focus:   /go|objectif|stratégie|plan|lance|priorité|action|maintenant|let\'s go/i,
+        joy:     /super|excellent|parfait|génial|merci|top|bravo|bien joué|nickel/i,
+    },
+    detect(text) {
+        if (!text) return this._current;
+        let detected = 'neutral';
+        if (this._patterns.stress.test(text)) detected = 'stress';
+        else if (this._patterns.tension.test(text)) detected = 'tension';
+        else if (this._patterns.focus.test(text)) detected = 'focus';
+        else if (this._patterns.joy.test(text)) detected = 'focus'; // joy = high focus
+        this._history.push(detected);
+        if (this._history.length > 10) this._history.shift();
+        // Majority vote sur les 5 derniers
+        const recent = this._history.slice(-5);
+        const counts = {};
+        recent.forEach(s => counts[s] = (counts[s]||0)+1);
+        this._current = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];
+        this._applyToHud(this._current);
+        return this._current;
+    },
+    _applyToHud(state) {
+        const dot = document.getElementById('hudMoodDot');
+        if (!dot) return;
+        dot.className = `hud-mood-dot ${state}`;
+        // Adapter le system prompt hint
+        window._emotionalHint = {
+            stress:  'Augus semble stressé — être particulièrement bref, rassurant, concret.',
+            tension: 'Augus hésite — encourager, clarifier, proposer une voie claire.',
+            focus:   'Augus est en mode action — aller droit au but, pas de fioritures.',
+            joy:     'Augus est satisfait — célébrer brièvement, capitaliser.',
+            neutral: '',
+        }[state] || '';
+    },
+    get hint() { return window._emotionalHint || ''; }
+};
+
+function initEmotionalDetection() {
+    // Patch sendMessage pour analyser chaque message
+    const _origSend = window.sendMessage;
+    if (typeof _origSend === 'function') {
+        window.sendMessage = async function(text) {
+            EmotionalState.detect(text);
+            return _origSend.call(this, text);
+        };
+    }
+}
+
+// ═══════ PHASE 3 — AGENT EVOLUTION ═══════
+const AgentEvolution = {
+    _prefs: JSON.parse(localStorage.getItem('sly_agent_prefs') || '{}'),
+    // Track usage par agent
+    recordUse(agentKey) {
+        if (!this._prefs[agentKey]) this._prefs[agentKey] = { uses: 0, lastUsed: 0, affinity: 50 };
+        this._prefs[agentKey].uses++;
+        this._prefs[agentKey].lastUsed = Date.now();
+        this._prefs[agentKey].affinity = Math.min(100, this._prefs[agentKey].affinity + 1);
+        this._save();
+    },
+    // Agents favoris d'Augus (top 5 par affinity)
+    getFavorites() {
+        return Object.entries(this._prefs)
+            .sort((a,b) => b[1].affinity - a[1].affinity)
+            .slice(0, 5)
+            .map(([key]) => key);
+    },
+    // Hint de personnalisation pour le system prompt
+    getPersonalityHint(agentKey) {
+        const p = this._prefs[agentKey];
+        if (!p || p.uses < 5) return '';
+        if (p.affinity > 80) return `Augus utilise souvent ${AGENTS[agentKey]?.name} — relation de confiance établie, ton familier OK.`;
+        return '';
+    },
+    _save() {
+        try { localStorage.setItem('sly_agent_prefs', JSON.stringify(this._prefs)); } catch {}
+    }
+};
+
+function initAgentEvolution() {
+    // Tracker l'agent actif à chaque envoi
+    const _origSendEvo = window.sendMessage;
+    if (typeof _origSendEvo === 'function') {
+        window.sendMessage = async function(text) {
+            AgentEvolution.recordUse(currentAgent);
+            // Met à jour le HUD agent
+            if (window._updateHudAgent) window._updateHudAgent(currentAgent);
+            return _origSendEvo.call(this, text);
+        };
+    }
+    // Màj dock avec favoris après 5 sessions
+    const totalUses = Object.values(AgentEvolution._prefs).reduce((s,p) => s+p.uses, 0);
+    if (totalUses > 20) {
+        const favs = AgentEvolution.getFavorites();
+        if (favs.length >= 3) {
+            // Suggestions discrètes dans le HUD
+            setTimeout(() => {
+                if (window._updateHudInsight) window._updateHudInsight(`Agents favoris : ${favs.slice(0,3).map(k=>AGENTS[k]?.emoji||'').join(' ')}`);
+            }, 5000);
+        }
+    }
+}
+
+// ═══════ PHASE 3 — COOPER GANG MEETING ═══════
+function scheduleCooperGangMeeting() {
+    const MEETING_KEY = 'sly_last_gang_meeting';
+    const last = parseInt(localStorage.getItem(MEETING_KEY) || '0');
+    const now = Date.now();
+    const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
+    if (now - last < ONE_WEEK) return;
+
+    // Lundi matin ou premier lancement de la semaine
+    const dayOfWeek = new Date().getDay(); // 1 = lundi
+    if (dayOfWeek !== 1) return;
+
+    localStorage.setItem(MEETING_KEY, now.toString());
+    // Délai 3min après boot pour ne pas surcharger
+    setTimeout(() => {
+        const h = new Date().getHours();
+        if (h < 8 || h > 20) return; // Pas la nuit
+        addBubble('agent', 'sly', `🦊 Lundi matin, Commandant. Le Clan se réunit. Bilan de la semaine ?`);
+        setTimeout(() => addBubble('agent', 'bentley', `🐢 J'ai les métriques. Prêt à faire le point sur les projets actifs.`), 1500);
+        setTimeout(() => addBubble('agent', 'murray', `🦛 BOUM ! Nouvelle semaine, nouvelles conquêtes ! On y va !`), 3000);
+    }, 3 * 60 * 1000);
+}
+
+// ═══════ PATCH updateActiveAgentIndicator — sync HUD ═══════
 
 // Patch saveState to include Phase 2 data
 const _origSaveState = saveState;
