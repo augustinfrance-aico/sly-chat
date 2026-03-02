@@ -1,8 +1,9 @@
-# CASTING — Les 50 Agents du Cooper Building
+# CASTING — Les 58 Agents du Cooper Building
 
-> 1 nebuleuse + 3 leaders + 6 meta + 40 operationnels
+> 1 nebuleuse + 3 leaders + 6 meta + 48 operationnels
 > Ce fichier dit QUEL agent appeler pour QUELLE situation.
 > **Operation Expansion 27/02/2026** : 36 → 50 agents. 14 nouveaux recrutes, hierarchie restructuree.
+> **Vague 2 — 02/03/2026** : 50 → 58 agents. 8 nouveaux : Rhadamante, Haddock, Tournesol, Milou, Castafiore, Soron, Rick, Verlaine.
 
 ---
 
@@ -145,6 +146,31 @@ Bon     : "Cette situation appelle CLOSER pour le pitch + PHILOMENE pour la reda
 | **JUSTICE** | ⚖️ | justice.md | Droit des contrats, RGPD, IP, conformite |
 | **ECHO** | 🎙️ | echo.md | Sound design, podcast, audio branding |
 
+### VAGUE 2 — Operation Expansion 02/03/2026 (8 agents — #51 a #58)
+
+#### Pole Qualite & Validation (5 agents)
+
+| Agent | Emoji | Fichier | Appeler pour... |
+|-------|-------|---------|-----------------|
+| **RHADAMANTE** | ⚖️ | rhadamante.md | Juge qualite impitoyable — valide que c'est VRAIMENT fini avant de declarer termine |
+| **HADDOCK** | 🚢 | haddock.md | Debugger d'idees — cherche la faille dans tout plan qui semble brillant |
+| **TOURNESOL** | 🔬 | tournesol.md | Specialiste iOS/Web/Three.js — contraintes Safari, PWA, AudioContext, GLB |
+| **MILOU** | 🐕 | milou.md | Narrative Builder — marque personnelle Augus, identite machine-readable, brand empire |
+| **CASTAFIORE** | 🎭 | castafiore.md | Prospectiviste personnelle — signaux marche, fenetres d'opportunite, timing Upwork/IA |
+
+#### Pole Forge de l'Empire (2 agents)
+
+| Agent | Emoji | Fichier | Appeler pour... |
+|-------|-------|---------|-----------------|
+| **SORON** | 🏗️ | soron.md | Architecte du setup — CLAUDE.md, directives, workspace VS Code, hooks, .claude/ |
+| **RICK** | 🧪 | rick.md | Brainstorm connexions improbables — idees radicales, combines de domaines incompatibles |
+
+#### Pole Memoire Vivante (1 agent)
+
+| Agent | Emoji | Fichier | Appeler pour... |
+|-------|-------|---------|-----------------|
+| **VERLAINE** | 📖 | verlaine.md | Second Brain — connaissance personnelle Augus, connexions inter-idees, memoire A-MEM |
+
 ### META-COUCHE — OLYMPE (6 agents)
 
 | Agent | Emoji | Fichier | Appeler pour... |
@@ -200,6 +226,13 @@ Bon     : "Cette situation appelle CLOSER pour le pitch + PHILOMENE pour la reda
 | **Legal** | JUSTICE + LEDGER + KAISER + ONYX |
 | **Audio** | ECHO + FRESCO + ORPHEUS + VIRAL |
 | **Cooper Gang Ops** | SLY + BENTLEY + MURRAY + OMEGA |
+| **Validation qualite** | RHADAMANTE + HADDOCK + TOURNESOL + DREYFUS |
+| **SLY-CHAT iOS/3D** | TOURNESOL + ANVIL + VOLT + PULSE + AURORA |
+| **Brand empire** | MILOU + FRESCO + ORPHEUS + VIRAL + ONYX |
+| **Opportunites marche** | CASTAFIORE + SIBYL + NICHE + CORTEX |
+| **Setup workspace** | SORON + VOLT + PULSE + DATUM |
+| **Ideation radicale** | RICK + GLITCH + AURORA + HUNTER |
+| **Memoire systeme** | VERLAINE + DATUM + CORTEX + FRANKLIN |
 
 ---
 
