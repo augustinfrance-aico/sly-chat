@@ -25,7 +25,7 @@ html,body{width:100%;height:100%;background:#05070A;color:#E6EDF5;font-family:In
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#05070A">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://ga.jspm.io https://cdn.jsdelivr.net https://www.gstatic.com https://esm.sh; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://sly-bot-production.up.railway.app https://api.groq.com https://*.groq.com https://generativelanguage.googleapis.com https://*.googleapis.com https://api.fish.audio https://*.fish.audio https://cdn.jsdelivr.net; img-src 'self' data: blob: https:; media-src 'self' blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; script-src-elem 'self' 'unsafe-inline' https://ga.jspm.io https://cdn.jsdelivr.net https://www.gstatic.com">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://ga.jspm.io https://cdn.jsdelivr.net https://www.gstatic.com https://esm.sh; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://sly-bot-production.up.railway.app wss://sly-bot-production.up.railway.app https://api.groq.com https://*.groq.com https://generativelanguage.googleapis.com https://*.googleapis.com https://api.fish.audio https://*.fish.audio https://cdn.jsdelivr.net https://ga.jspm.io; img-src 'self' data: blob: https:; media-src 'self' blob:; worker-src 'self' blob: https://cdn.jsdelivr.net; script-src-elem 'self' 'unsafe-inline' https://ga.jspm.io https://cdn.jsdelivr.net https://www.gstatic.com">
 <title>SLY-CHAT v6</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -2632,16 +2632,17 @@ function runSplash() {
                 if (autoSpeak) try { speakText('sly',msg); } catch(e){}
             } catch(e) { console.error('[boot] bienvenue failed:', e); }
         }, 400);
-        // 4. Test Groq silencieux
+        // 4. Test Groq — silencieux, log console uniquement (pas de bulle d'erreur au boot)
         setTimeout(function(){
             try {
                 var gk = window.GROQ_KEY;
-                if (!gk) { addBubble('agent','volt','⚠️ Clé Groq manquante — tape tes paramètres dans ⚙'); return; }
+                if (!gk) { console.warn('[SLY] Clé Groq manquante'); return; }
                 fetch('https://api.groq.com/openai/v1/models', {
                     headers: { 'Authorization': 'Bearer ' + gk },
                     signal: AbortSignal.timeout(5000)
                 }).then(function(r) {
-                    if (!r.ok) addBubble('agent','volt','⚠️ Groq API error ('+r.status+') — vérifie la clé dans ⚙');
+                    if (!r.ok) console.warn('[SLY] Groq ' + r.status + ' — clé peut-être expirée');
+                    else console.log('[SLY] Groq OK ✓');
                 }).catch(function() {});
             } catch(e) {}
         }, 1500);
