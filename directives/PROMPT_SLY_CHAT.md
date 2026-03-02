@@ -52,14 +52,19 @@ L'app existe déjà sur GitHub Pages : https://augustinfrance-aico.github.io/sly
 - Conversation Rewind (sessions multiples)
 - Cascade IA : Groq → Gemini → Cloudflare fallback
 
-**❌ MANQUANT (priorités) :**
-1. Proxy backend opérationnel (Railway SLY bot à reconnecter)
-2. Capacitor iOS natif (storage keychain, push APNS, haptics natifs)
-3. WebSocket bridge vers SLY bot Railway (streaming bidirectionnel)
-4. GLB Sly Cooper déployé dans le repo (3D prête, modèle manquant)
-5. APNS push notifications
-6. Cache audio IndexedDB
-7. Raccourci Siri + Live Activity
+**❌ MANQUANT (priorités — mode LOCAL uniquement) :**
+
+> MODE ACTUEL : Local. Clé Groq dans localStorage = ACCEPTÉ (décision Augus, répétée).
+> Railway, Capacitor, APNS, Siri, Live Activity = HORS SCOPE jusqu'à décision explicite d'Augus.
+> NE JAMAIS suggérer proxy Railway ou sécurité clé tant qu'Augus n'a pas dit "on passe en prod".
+
+1. ~~Proxy backend opérationnel~~ — HORS SCOPE (Railway = phase prod, pas maintenant)
+2. ~~Capacitor iOS natif~~ — HORS SCOPE
+3. ~~WebSocket bridge vers SLY bot Railway~~ — HORS SCOPE
+4. GLB Sly Cooper déployé dans le repo (3D prête, modèle manquant) — PRIORITE LOCALE
+5. ~~APNS push notifications~~ — HORS SCOPE
+6. Cache audio IndexedDB — PRIORITE LOCALE
+7. ~~Raccourci Siri + Live Activity~~ — HORS SCOPE
 
 ---
 

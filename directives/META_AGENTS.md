@@ -41,6 +41,7 @@ Les méta-agents ne remplacent aucun agent existant. Ils ajoutent une intelligen
 | Situation | Méta-agent(s) | Raison |
 |-----------|---------------|--------|
 | Performance agent en baisse | **DARWIN** | Diagnostic + mutation corrective |
+| `/audit-session` ou session C4+ terminée | **DARWIN** | Audit post-session (5 axes) → mutations concrètes |
 | Incohérence entre agents | **SHADOW** | Détection en silence, alerte si grave |
 | Décision avec 3+ options valides | **AGORA** | Vote pondéré, consensus émerge |
 | Choix architecture à long terme | **CHRONOS** | Simulation 3 futurs, dette technique |

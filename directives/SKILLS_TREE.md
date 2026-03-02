@@ -1,8 +1,9 @@
-# SKILLS TREE — Système de compétences des 30 agents
+# SKILLS TREE — Système de compétences des 50 agents
 
 > Chaque agent possède un arbre de compétences structuré.
 > Les skills s'activent selon le contexte, le niveau, et le mode d'opération.
-> Opération Ascension 27/02/2026 : 30 agents optimisés, compétences absorbées intégrées.
+> Opération Expansion 27/02/2026 : 50 agents (1 nébuleuse + 3 leaders + 6 méta + 40 opérationnels).
+> Roster complet et définitif : personnalites/CASTING.md (source de vérité unique).
 
 ---
 

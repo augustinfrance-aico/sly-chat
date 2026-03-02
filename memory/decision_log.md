@@ -122,3 +122,279 @@
 ### 2026-02-28 — Purge Ascension â€” suppression 42 anciens agents absorbÃ©s + decision_log maj
 - **Commit** : d74f746
 - **Impact** : AGENT_OMEGA.md, memory/decision_log.md, personnalites/AGENT_OMEGA.md, personnalites/aladin.md, personnalites/analytics.md (+38 fichiers)
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — Cascade IA v3 â€” Cerebras fallback + Gemini 2.5 Flash migration
+- **Commit** : 892485a
+- **Impact** : .env.example, execution/titan/ai_client.py, execution/titan/command_server.py
+
+### 2026-03-01 — SLY-CHAT â€” splash 7.5s â†’ 2.5s, boot log compact 4 lignes
+- **Commit** : d312339
+- **Impact** : sly-chat/index.html
+
+### 2026-03-01 — SLY-CHAT â€” splash 7.5s â†’ 2.5s, boot log compact 4 lignes
+- **Commit** : d312339
+- **Impact** : sly-chat/index.html
+
+### 2026-03-01 — SLY-CHAT â€” agents rÃ©pondent en anglais
+- **Commit** : 38bdf14
+- **Impact** : sly-chat/index.html
+
+### 2026-03-01 — SLY-CHAT â€” revert agents en franÃ§ais
+- **Commit** : 10f97ad
+- **Impact** : sly-chat/index.html
+
+### 2026-03-01 — SLY-CHAT â€” revert agents en franÃ§ais
+- **Commit** : 10f97ad
+- **Impact** : sly-chat/index.html
+
+### 2026-03-01 — SLY-CHAT â€” revert agents en franÃ§ais
+- **Commit** : 10f97ad
+- **Impact** : sly-chat/index.html
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-01 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-02 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-02 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-02 — SLY-CHAT v2.0 â€” Blueprint patches + PROMPT V2.0 + image fix
+- **Commit** : 5f4c7c9
+- **Impact** : directives/PROMPT_SLY_CHAT.md, sly-chat/index.html, sly-chat/sly_logo_nobg.png, sly-chat/sw.js
+
+### 2026-03-02 — SLY-CHAT â€” Emotion States + Agent Wheel + Amica Life
+- **Commit** : 07b3f36
+- **Impact** : sly-chat/index.html
+
+### 2026-03-02 — SLY-CHAT â€” Emotion States + Agent Wheel + Amica Life
+- **Commit** : 07b3f36
+- **Impact** : sly-chat/index.html
+
+### 2026-03-02 — fix: update Groq API key (new)
+- **Commit** : 3ce3162
+- **Impact** : sly-chat/index.html
+
+### 2026-03-02 — SLY-CHAT MEGA UPGRADE â€” 7 modules JARVIS intÃ©grÃ©s
+- **Commit** : 4b22d80
+- **Impact** : sly-chat/index.html
+
+### 2026-03-02 — SLY-CHAT MEGA UPGRADE â€” 7 modules JARVIS intÃ©grÃ©s
+- **Commit** : 4b22d80
+- **Impact** : sly-chat/index.html
+
+### 2026-03-02 — SLY-CHAT MEGA UPGRADE â€” 7 modules JARVIS intÃ©grÃ©s
+- **Commit** : 4b22d80
+- **Impact** : sly-chat/index.html
+
+### 2026-03-02 — SLY-CHAT MEGA UPGRADE â€” 7 modules JARVIS intÃ©grÃ©s
+- **Commit** : 4b22d80
+- **Impact** : sly-chat/index.html
+
+### 2026-03-02 — SLY-CHAT MEGA UPGRADE â€” 7 modules JARVIS intÃ©grÃ©s
+- **Commit** : 4b22d80
+- **Impact** : sly-chat/index.html
+
+### 2026-03-02 — SLY-CHAT MEGA UPGRADE â€” 7 modules JARVIS intÃ©grÃ©s
+- **Commit** : 4b22d80
+- **Impact** : sly-chat/index.html

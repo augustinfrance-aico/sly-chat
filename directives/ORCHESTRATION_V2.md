@@ -49,7 +49,7 @@
 3. **Coalition pour projets complexes (C4)** — 4-6 agents
 4. **Mobilisation critique (C5)** — 8+ agents ou `/cooper` (50)
 5. **FRANKLIN termine dès C3+** — résumé clair + sagesse pour Augus
-6. **Leaders (SLY/BENTLEY/MURRAY) en C5 uniquement** — crises et pivots
+6. **Leaders (SLY/BENTLEY/MURRAY) libres** — interviennent quand la situation le justifie, seuls ou ensemble, pas réservés aux crises. Remplacent ou complètent les agents normaux.
 
 ### PRE-FLIGHT — Fact Ledger (inspiré AutoGen MagenticOne)
 > Avant toute mission C3+, SENTINEL exécute ce pre-flight en 3 questions :
@@ -245,8 +245,50 @@ Version vulgarisée (FRANKLIN) :
 2. **Solo par défaut (C2)** — 1 agent suffit 70% du temps
 3. **SENTINEL dispatch ET supervise** — dispatch + orchestration groupes
 4. **FRANKLIN 🐢 termine dès C3+** — résumé clair + sagesse philosophique
-5. **Leaders en C5 uniquement** — SLY/BENTLEY/MURRAY réservés aux crises
+5. **Leaders (SLY/BENTLEY/MURRAY) libres** — interviennent quand la situation le justifie, remplacent ou complètent les agents normaux
 6. **Zéro agent inutile** — si un agent n'apporte rien de nouveau, il ne participe pas
 7. **Boucle R→F→D→R** — le feedback D revient toujours à R (jamais coupé)
 8. **Le système évolue** — DARWIN observe et propose des mutations adaptatives
 9. **DEEP SEARCH réflexe** — si 30 sec de recherche améliorent la réponse, c'est OBLIGATOIRE (directives/DEEP_SEARCH.md)
+10. **AUDIT POST-SESSION (DARWIN)** — après toute session C4+ ou sur `/audit-session`, DARWIN exécute le diagnostic complet (voir `directives/AUDIT_SESSION.md`)
+
+---
+
+## DARWIN — Audit Post-Session (framework intégré)
+
+> Activé via `/audit-session` ou automatiquement après session C4+
+> Rôle : transformer erreurs/blocages en leviers d'amélioration mesurables
+
+### Structure obligatoire
+```
+1️⃣ DIAGNOSTIC BRUT
+   - Top 3 erreurs critiques
+   - Erreurs répétitives
+   - Biais cognitifs probables
+
+2️⃣ ROOT CAUSE (par erreur majeure)
+   - Cause réelle (pas superficielle)
+   - Facteur déclencheur
+   - Compétence manquante
+
+3️⃣ TRANSFORMATION ÉCHEC → ACTIF (par erreur)
+   - Nouvelle règle mentale
+   - Check-list ou système
+   - Skill à développer + exercice court
+
+4️⃣ PLAN ULTRA-CONCRET
+   - 3 actions immédiates
+   - 1 habitude hebdomadaire
+   - 1 indicateur mesurable
+
+5️⃣ BOUCLE CONTINUE
+   - 1 question d'auto-évaluation post-session
+   - 1 micro-rituel (≤ 5 min)
+   - 1 règle anti-rechute
+```
+
+### Règles d'output
+- Bullet points uniquement — pas de paragraphes
+- Ton analytique, sans complaisance
+- Si contexte insuffisant → max 3 questions ciblées
+- Résultat = mutations concrètes dans les directives concernées

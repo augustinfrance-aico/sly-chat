@@ -33,45 +33,68 @@ Si oui aux deux → **ne pas modifier**. Attendre ou changer d'approche.
 ## LES 3 ZONES DE TRAVAIL
 
 Quand plusieurs Claude tournent en parallèle, chacun reçoit une **zone nommée**.
+Roster complet officiel : personnalites/CASTING.md (50 agents — mis à jour 02/03/2026)
 
-### Zone A — Agents 1-10
+### Zone A — Nébuleuse + Leaders + Méta + Stratégie
 ```
 personnalites/omega.md
-personnalites/murphy.md
-personnalites/philomene.md
-personnalites/rick.md
-personnalites/nikola.md
-personnalites/stanley.md
-personnalites/vito.md
-personnalites/maya.md
-personnalites/basquiat.md
-personnalites/zara.md
-```
-
-### Zone B — Agents 11-20
-```
-personnalites/grimaldi.md
-personnalites/leon.md
-personnalites/spartan.md
-personnalites/oracle.md
-personnalites/nash.md
-personnalites/ghost.md
-personnalites/cypher.md
-personnalites/forge.md
-personnalites/zen.md
-personnalites/aladin.md
-```
-
-### Zone C — Agents 21-25 + Fichiers système
-```
 personnalites/sly.md
 personnalites/bentley.md
 personnalites/murray.md
-personnalites/bagheera.md
-personnalites/baloo.md
+personnalites/darwin.md
+personnalites/shadow.md
+personnalites/agora.md
+personnalites/chronos.md
+personnalites/havoc.md
+personnalites/atlas.md
+personnalites/sentinel.md
+personnalites/cortex.md
+personnalites/glitch.md
+personnalites/sibyl.md
+personnalites/nexus.md
+```
+
+### Zone B — Vente + Contenu + Ops + Marchés
+```
+personnalites/closer.md
+personnalites/kaiser.md
+personnalites/prism.md
+personnalites/onyx.md
+personnalites/ledger.md
+personnalites/philomene.md
+personnalites/fresco.md
+personnalites/viral.md
+personnalites/franklin.md
+personnalites/anvil.md
+personnalites/dreyfus.md
+personnalites/specter.md
+personnalites/datum.md
+personnalites/pulse.md
+personnalites/niche.md
+personnalites/racoon.md
+```
+
+### Zone C — R&D + Nouveaux + Fichiers système
+```
+personnalites/cipher.md
+personnalites/radar.md
+personnalites/proto.md
+personnalites/pixel.md
+personnalites/aurora.md
+personnalites/virgile.md
+personnalites/gauss.md
+personnalites/orpheus.md
+personnalites/mercer.md
+personnalites/turing.md
+personnalites/flux.md
+personnalites/hunter.md
+personnalites/mirage.md
+personnalites/justice.md
+personnalites/echo.md
 directives/*.md        ← fichiers de protocole
 portfolios/*.html      ← portfolios HTML
-execution/titan/*.py   ← code TITAN
+execution/titan/*.py   ← code SLY bot
+sly-chat/index.html    ← HIGH RISK — 1 seule instance à la fois
 ```
 
 ---
@@ -82,11 +105,10 @@ Ces fichiers sont **lus par tout le monde, modifiés par personne** sans concert
 
 ```
 CLAUDE.md                        ← mémoire projet — lire OK, modifier AVEC PRÉCAUTION
-directives/AGENTS.md             ← roster officiel — lecture seule
-personnalites/CASTING.md         ← routing — lecture seule
-personnalites/ALL_AGENTS_PROMPTS.md  ← archive — lecture seule
+personnalites/CASTING.md         ← roster officiel (50 agents) — SOURCE DE VÉRITÉ — lecture seule
 .env                             ← secrets — ne jamais modifier en parallèle
-execution/titan/config.py        ← config TITAN — une instance à la fois
+execution/titan/config.py        ← config SLY bot — une instance à la fois
+sly-chat/index.html              ← HIGH RISK — une seule instance à la fois
 ```
 
 **Règle** : Si tu dois modifier un fichier Zone Rouge, annonce-le dans ta réponse à l'utilisateur avant d'agir.
@@ -186,5 +208,89 @@ Permet à Augus de tracker quelle instance a fait quoi.
 > **Zone assignée → rester dedans → annoncer avant de toucher Zone Rouge.**
 
 ---
+
+## RÈGLE CRITIQUE — MÊME PROMPT ENVOYÉ À PLUSIEURS FENÊTRES (01/03/2026)
+
+> Augus envoie parfois le **même prompt identique** à 2-3 fenêtres Claude Code en parallèle.
+
+### Est-ce que ça marche ? Réponse honnête :
+
+**✅ Oui pour :** recherche, analyse, brainstorming, rédaction de directives, questions stratégiques.
+→ Chaque fenêtre explore des angles différents. Augus garde le meilleur. Productivité réelle.
+
+**⚠️ Dangereux pour :** modification de fichiers partagés, push git, modifications de code.
+→ Deux fenêtres qui écrivent sur le même fichier = corruption garantie. Race condition.
+
+### Protocole quand tu reçois un prompt et suspectes d'autres instances actives
+
+1. **Lire `git status`** au démarrage de toute tâche de modification. Si des fichiers sont `M` sans que tu les aies touchés → autre fenêtre active.
+2. **Vérifier les fichiers cibles** : si le fichier que tu vas modifier est dans la liste ci-dessous → ANNONCER avant d'agir.
+3. **Ne JAMAIS écrire silencieusement** sur un fichier Zone Rouge sans signaler.
+
+### Signal d'alerte à afficher SI SUSPICION
+
+```
+⚠️ MULTI-FENÊTRES DÉTECTÉ
+Ce prompt a peut-être été envoyé à plusieurs instances Claude Code.
+Si une autre fenêtre travaille sur [nom_fichier], STOP et confirme l'ordre des priorités.
+Cette instance va : [décrire l'action prévue]
+```
+
+### Règle de coordination (quand même prompt, même fichier)
+
+| Situation | Action |
+|-----------|--------|
+| Deux fenêtres reçoivent le même prompt de recherche | OK — chacune explore, Augus choisit |
+| Deux fenêtres vont modifier le même fichier HTML/JS | STOP — une seule modifie, l'autre attend |
+| Deux fenêtres vont modifier le même fichier .md | Merger les deux versions après, ne pas écraser |
+| Deux fenêtres font un `git push` | DANGER — ne push qu'une seule. Sinon conflits remote. |
+
+### Recommandation à Augus
+
+Quand tu envoies le même prompt à plusieurs fenêtres :
+- Pour des **tâches intellectuelles** (analyse, écriture, stratégie) → top, garde le meilleur
+- Pour des **tâches de code sur le même fichier** → assigne des zones différentes à chaque fenêtre
+- Format suggéré : "Fenêtre 1 : tu travailles sur le splash + CSS. Fenêtre 2 : tu travailles sur le JS IA cascade."
+
+> **Résumé** : Même prompt = puissant pour la pensée parallèle. Dangereux si les deux touchent les mêmes fichiers. Toujours annoncer avant d'agir.
+
+---
+
+## RÈGLE CRITIQUE — FENÊTRES PARALLÈLES SUR UN PROJET ACTIF (01/03/2026)
+
+> **Quand une autre fenêtre Claude Code travaille DÉJÀ sur un fichier, cette fenêtre NE TOUCHE PAS ce fichier.**
+
+### Signaux d'alerte à vérifier AVANT toute modification
+
+1. **Vérifier git status** : si un fichier est listé comme modifié (M) et que tu n'es pas celui qui l'a modifié → STOP.
+2. **Vérifier mtime** : si le fichier a été modifié récemment et que ta session n'a rien fait → une autre fenêtre travaille dessus.
+3. **Lire le fichier entier** : si le contenu ne correspond pas à ce que tu attendais (ajouts non planifiés) → autre fenêtre active.
+
+### Fichiers actifs SLY-CHAT — ZONE ROUGE PARTAGÉE
+
+```
+sly-chat/index.html          ← fichier principal — UNE SEULE instance à la fois
+sly-chat/manifest.json       ← config PWA
+sly-chat/service-worker.js   ← SW
+```
+
+### Protocole si conflit détecté
+
+```
+1. STOP immédiat — ne pas écrire
+2. Signaler à Augus : "⚠️ Conflit détecté — sly-chat/index.html modifié par autre fenêtre"
+3. Attendre confirmation d'Augus sur qui continue
+4. Si Augus dit "continue toi" → reprendre EN RELISANT le fichier entier d'abord
+5. Merger les changements des deux fenêtres si possible, JAMAIS écraser silencieusement
+```
+
+### Coordination proactive
+
+Sur CHAQUE réponse impliquant `sly-chat/index.html`, ANNONCER :
+> "⚠️ Note : si une autre fenêtre Claude Code travaille sur index.html en ce moment, nous risquons un conflit. Confirme que cette fenêtre est seule à modifier ce fichier."
+
+---
+
+*Mis à jour le 01/03/2026 — Ajout protocole multi-fenêtres SLY-CHAT*
 
 *Créé le 25/02/2026 — Protocole AICO Digital Workshop*

@@ -1,8 +1,9 @@
 # TRI-PÔLE — Architecture Opérationnelle AICO
 
-> 3 Pôles. 30 Agents. 1 Boucle infinie de profit.
+> 3 Pôles. 50 Agents. 1 Boucle infinie de profit.
 > Ce fichier est le protocole opérationnel central du Building.
-> Opération Ascension 27/02/2026 : 30 agents optimisés, compétences absorbées.
+> Opération Expansion 27/02/2026 : 50 agents (1 nébuleuse + 3 leaders + 6 méta + 40 opérationnels).
+> Roster complet et définitif : personnalites/CASTING.md (source de vérité unique).
 
 ---
 
