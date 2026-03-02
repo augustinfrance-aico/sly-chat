@@ -1790,14 +1790,10 @@ function _wsSpeak(text, agentKey) {
     window.speechSynthesis.speak(utt);
 }
 
-// Les 11 agents avec voix FishAudio confirmées — seuls ceux-là parlent en WebSpeech fallback
-const WS_ALLOWED_AGENTS = new Set(['sly','bentley','murray','omega','sentinel','cortex','franklin','anvil','glitch','dreyfus','atlas','shadow','hunter','sibyl','philomene','pixel']);
-
-// Assigner le fallback (appelé par speakText quand FishAudio échoue)
+// Fallback WebSpeech = DÉSACTIVÉ — uniquement les voix FishAudio clonées
+// Si pas de clé FishAudio → silence total (pas de voix robot)
 window._ttsWebSpeechFallback = function(text, agentKey) {
-    if (!autoSpeak) return;
-    if (!WS_ALLOWED_AGENTS.has(agentKey)) return; // agent secondaire → silence
-    _wsSpeak(text, agentKey);
+    // Silence — aucune voix générique. Voix FishAudio uniquement.
 };
 
 // Switch auto WebSpeech→FishAudio à chaud si clé détectée
