@@ -1,20 +1,87 @@
-# BLUEPRINT — SLY-CHAT : JARVIS × Sly Cooper
-> Version 2.0 — Mis à jour 01/03/2026 — État réel de l'app intégré
+# BLUEPRINT — SLY-CHAT : JARVIS × Sly Cooper × Ready Player One
+> Version 3.0 — Enrichi x5 — 02/03/2026
+> Auteur : Augus — Fondateur du Cooper Building
+> Standard : Perfectionnisme Structurel absolu. Chaque ligne reflète la vision finale.
 
-> **Usage** : Donne ce prompt à n'importe quelle IA (GPT-4o, Gemini 2.5 Pro, Claude).
+> **Usage** : Ce document est la source de vérité absolue pour SLY-CHAT.
+> Toute IA qui touche à ce projet DOIT lire ce fichier en entier avant d'écrire une ligne.
 > **Règle** : Zéro question, zéro ambiguïté. Exécuter directement.
 
 ---
 
-## MANDAT
+## MANIFESTE — CE QU'EST VRAIMENT SLY-CHAT
 
-Tu construis **SLY-CHAT** — app mobile de chat IA premium qui fusionne Sly Cooper (PlayStation) et JARVIS (Iron Man). Client : **Augus**, fondateur du Cooper Building (50 agents IA spécialisés).
+> *"Tu n'utilises pas une app. Tu actives ton cerveau augmenté."*
 
-**Résultat attendu** : Compagnon IA vivant. Voix réelles de doubleurs. Design premium. Gamification. Connexion au système d'agents. Mobile-first iPhone.
+SLY-CHAT n'est pas un chatbot. Ce n'est pas une interface. Ce n'est pas une app de plus.
+
+**SLY-CHAT est le système nerveux central d'Augus.**
+
+Imagine Tony Stark sans JARVIS. Imagine Neo sans l'Oracle. Imagine Parzival sans son HUD dans l'OASIS. Voilà ce qu'est Augus sans SLY-CHAT : un fondateur d'empire sans ses extensions neuronales.
+
+Chaque agent est un **neurone externalisé**. Chaque voix est une **présence réelle**. Chaque conversation est une **session de cockpit** — Augus dans son fauteuil, le Building qui tourne autour de lui comme une galaxie d'intelligences dédiées.
+
+La vision finale : Augus se réveille le matin. Il dit "SLY." Son iPhone vibre doucement. Une voix calme — Brad Pitt — répond : *"Bonjour Commandant. Tes opportunités Upwork ont changé cette nuit. BENTLEY a préparé l'analyse. Tu veux écouter ?"*
+
+C'est ça. C'est tout. C'est l'objectif de chaque ligne de code de ce fichier.
 
 ---
 
-## VISION D'AUGUS
+## VISION FONDATEUR — READY PLAYER ONE × CYBORG
+
+### L'OASIS Personnel d'Augus
+
+Dans Ready Player One, l'OASIS est un monde parallèle où chaque personne a un avatar, des compétences, une identité. SLY-CHAT est l'OASIS d'Augus — mais réel, fonctionnel, et branché sur son empire.
+
+**Les 65 agents = 65 personnages jouables.** Chacun a :
+- Une **voix distincte** (doubleur réel — Morgan Freeman, Brad Pitt, Gandalf...)
+- Une **personnalité** codée en profondeur (pas juste un rôle, un être)
+- Un **domaine de souveraineté** (ce sur quoi il est imbattable)
+- Une **relation avec Augus** (certains le protègent, d'autres le challengent)
+
+### L'Exosquelette Mental
+
+Le concept cyborg ne signifie pas des implants physiques. Il signifie **l'augmentation cognitive externe** :
+
+| Fonction humaine | Extension SLY-CHAT |
+|-----------------|-------------------|
+| Mémoire court terme | Buffer 5 messages + résumés |
+| Mémoire long terme | Profil persistant + deep memory |
+| Analyse | CORTEX, DATUM, GAUSS |
+| Décision | OMEGA, SENTINEL, SLY |
+| Créativité | GLITCH, AURORA, ORPHEUS |
+| Discipline | DREYFUS, FRANKLIN, HAVOC |
+| Vigilance | SPECTER, SHADOW, CIPHER |
+| Vision long terme | ATLAS, CHRONOS, SIBYL |
+| Exécution brute | MURRAY, ANVIL, VOLT |
+| Négociation | KAISER, MERCER, CLOSER |
+
+Augus pense une chose. SLY-CHAT la complète, la challenge, l'enrichit, l'exécute.
+
+### La Philosophie Fondatrice — Sénèque × Transhumanisme
+
+Sénèque disait : *"Ce n'est pas parce que les choses sont difficiles que nous n'osons pas. C'est parce que nous n'osons pas qu'elles sont difficiles."*
+
+SLY-CHAT est l'outil qui supprime la difficulté d'oser. Quand Augus hésite, SLY dit *"Vas-y, le Building t'a préparé ça."* Quand Augus doute, OMEGA dit *"La vision tient. Exécute."* Quand Augus veut abandonner, MURRAY dit *"BOUM. On recommence. Ensemble."*
+
+C'est un **compagnon stoïcien augmenté**. Il ne flatte pas. Il n'abandonne pas. Il pousse, challenge, soutient — comme un sparring partner IA dédié 24/7.
+
+---
+
+## MANDAT TECHNIQUE
+
+Tu construis **SLY-CHAT** — app mobile de chat IA premium qui fusionne :
+- **Sly Cooper** (PlayStation) → furtivité, charm, gang loyal
+- **JARVIS** (Iron Man) → intelligence ambiante, proactivité, loyauté totale
+- **Ready Player One** → monde vivant d'agents-personnages avec leurs voix propres
+- **Transhumanisme Sénèque** → augmentation cognitive, pas distraction
+
+**Client** : Augus — fondateur du Cooper Building (65 agents IA spécialisés)
+**Résultat** : Compagnon IA vivant. Voix réelles. Design premium. Connexion empire. Mobile-first iPhone.
+
+---
+
+## VISION D'AUGUS — VERBATIM
 
 > "Je veux une icône sur mon téléphone. Je clique, un écran de chargement cinématique, et hop : le chat magnifique. Je parle en vocal ou à l'écrit avec mes agents. Ils me répondent avec leurs voix (Brad Pitt, Gandalf, Morgan Freeman, Homer Simpson FR...).
 >
@@ -22,105 +89,136 @@ Tu construis **SLY-CHAT** — app mobile de chat IA premium qui fusionne Sly Coo
 >
 > Ce chat remplace Telegram. Il doit être MIEUX. Plus fluide, plus beau, plus intelligent."
 
+**Traduction technique de chaque phrase :**
+
+| Ce qu'Augus dit | Ce que ça implique |
+|----------------|--------------------|
+| "Icône sur mon téléphone" | PWA manifest + raccourci iOS + splash immédiate |
+| "Écran cinématique" | 5s splash avec particles, logo reveal, typewriter agents |
+| "Chat magnifique" | Design NEURAL SOVEREIGN — glassmorphism, glow bleu/violet |
+| "Parle en vocal" | PTT (Web Speech API) + TTS FishAudio pipeline |
+| "Leurs voix" | 11 voix mappées par agent — identité sonore unique |
+| "Me connaît par cœur" | Mémoire 4 couches + profil persistant localStorage |
+| "JARVIS pour Tony Stark" | Proactif, bref, loyal, pas servile — pote intelligent |
+| "Remplace Telegram" | Notifications, sessions, historique, multi-agents |
+
 ---
 
-## ÉTAT ACTUEL DE L'APP (01/03/2026)
+## ÉTAT ACTUEL (02/03/2026)
 
-L'app existe déjà sur GitHub Pages : https://augustinfrance-aico.github.io/sly-chat/
+### ✅ LIVRÉ
 
-**✅ LIVRÉ :**
-- Splash cinématique avec boot sequence agents par pôle (style SLY-COMMAND)
-- Chat texte + multi-agents avec routing hybride
-- 11 voix FishAudio (voir section Voix)
-- AudioContext iOS unlock sur tap/touchstart/touchend
-- Push-to-Talk (Web Speech API)
-- Dock agents + grid complet 50 agents
-- Gamification complète : XP, niveaux, streaks, 12 badges, toasts
-- Agent Whispers : micro-messages en idle, anti-doublon, filtre horaire
+- Splash cinématique : fond lune, particules, logo reveal AURORA, wireframe HUNTER, typewriter PHILOMÈNE
+- Chat texte + multi-agents avec routing hybride regex + LLM
+- 11 voix FishAudio (Morgan Freeman, Brad Pitt, Tom Hanks, Harry Potter, Gandalf, La Voix Secret Story, Journaliste TF1, Sarkozy, Homer Simpson FR, David Pujadas, Bruce Willis)
+- AudioContext iOS unlock permanent (touchstart/touchend/click)
+- Push-to-Talk (Web Speech API) + guard anti-boucle TTS↔STT
+- PTT iOS fix : `audioCtx.resume()` forcé sur touchstart
+- Dock agents 5 favoris + grid complet 65 agents
+- Header redesigné : strip 65 agents scrollable, agent actif pulsé
+- Gamification silencieuse : XP/niveaux/streaks/badges en background, toasts masqués
+- Agent Whispers : micro-messages idle 2-5min, anti-doublon, filtre horaire
 - Dream Mode (23h-7h) + Mood Skin (teinte selon heure)
 - Voice Morph : "Parle comme Murray" switch TTS mid-conversation
-- Briefing matinal JARVIS : contextuel selon heure + streak + dernier message
-- Conseil de Guerre : split-screen SLY+BENTLEY+MURRAY déclenché par "clan cooper"
-- Streak vocal : +50 XP après 3 messages vocaux
-- Mémoire cross-session : dernier message sauvé localStorage
+- Briefing matinal JARVIS : contextuel heure + streak + dernier message
+- Conseil de Guerre : SLY+BENTLEY+MURRAY déclenché par "clan cooper"
+- Mémoire cross-session : localStorage (sly_last_message, sly_session)
 - Mémoire 4 couches : buffer(5) + summaries + profil + deep memory
-- Métriques TTFT/TTFA + Circuit Breaker pattern
-- Micro-moments d'humanité : hésitations naturelles, rappels mémoire
-- Direct API calls : Groq + FishAudio depuis localStorage (proxy Railway down)
-- Service Worker + PWA manifest
-- Three.js 3D (structure en place, GLB à déployer)
+- Métriques TTFT/TTFA + Circuit Breaker 3 providers
+- Micro-moments d'humanité : hésitations, rappels mémoire
+- Service Worker PWA + manifest + purge cache automatique au boot
+- Three.js 3D + Variable Refresh Rate (5→30 FPS on activity)
 - Conversation Rewind (sessions multiples)
-- Cascade IA : Groq → Gemini → Cloudflare fallback
+- Cascade IA : Groq (6 modèles) → Gemini → Cloudflare fallback
+- SW unregister forcé au boot (résout cache GitHub Pages)
 
-**❌ MANQUANT (priorités — mode LOCAL uniquement) :**
+### ⚡ PHASE 2 — ÉTAT (02/03/2026)
 
-> MODE ACTUEL : Local. Clé Groq dans localStorage = ACCEPTÉ (décision Augus, répétée).
-> Railway, Capacitor, APNS, Siri, Live Activity = HORS SCOPE jusqu'à décision explicite d'Augus.
-> NE JAMAIS suggérer proxy Railway ou sécurité clé tant qu'Augus n'a pas dit "on passe en prod".
+> MODE ACTUEL : Local. Clé Groq dans localStorage = ACCEPTÉ.
+> Railway, Capacitor, APNS, Siri = HORS SCOPE jusqu'à décision Augus.
 
-1. ~~Proxy backend opérationnel~~ — HORS SCOPE (Railway = phase prod, pas maintenant)
-2. ~~Capacitor iOS natif~~ — HORS SCOPE
-3. ~~WebSocket bridge vers SLY bot Railway~~ — HORS SCOPE
-4. GLB Sly Cooper déployé dans le repo (3D prête, modèle manquant) — PRIORITE LOCALE
-5. ~~APNS push notifications~~ — HORS SCOPE
-6. Cache audio IndexedDB — PRIORITE LOCALE
-7. ~~Raccourci Siri + Live Activity~~ — HORS SCOPE
+1. ✅ **[25] GLB Sly Cooper** — CSS `.visible` fix, canvas révélé au chargement GLB
+2. ✅ **[27] Cache audio IndexedDB** — LRU 60 entrées ~50MB, intégré dans speakText
+3. ✅ **[29] Settings — clés API + volume + vitesse** — UI complète dans modal Settings
+4. ✅ **[30] Haptics** — `navigator.vibrate()` envoi/réception/level-up/PTT
+5. 🔲 **[33] Bridge WebSocket** → hors scope Railway — reporté
 
 ---
 
 ## ARCHITECTURE TECHNIQUE
 
-### Stack — CIBLE : iPhone (iOS 17+)
+### Stack Cible
 
 | Couche | Techno | Notes |
 |--------|--------|-------|
-| **Runtime** | Capacitor 6 (Phase 1 obligatoire) | PWA Safari = non viable iOS. Keychain, push, audio natif |
+| **Runtime** | PWA (mode actuel) → Capacitor 6 (phase prod) | PWA Safari ok pour usage perso iPhone |
 | **Frontend** | HTML/CSS/JS vanilla | Un seul `index.html`, tout inline MVP |
-| **3D** | Three.js r169 + GLB Draco | Lazy-load après splash. Désactivé si device low |
-| **Chat IA** | Cascade Groq → Gemini → Cloudflare | 0€, zéro downtime, routing par complexité |
-| **TTS** | FishAudio S1 — pipeline phrases | 11 voix, 200 min/mois (FishAudio Plus $11/mo) |
-| **STT** | Web Speech API + Whisper fallback | PTT uniquement — pas de wake word background iOS |
-| **Real-time** | WebSocket + APNS fallback | iOS kill WS après 30s background → APNS obligatoire |
-| **Storage** | Capacitor Preferences (critique) + IndexedDB (cache) | iOS purge IndexedDB 7j inactivité |
-| **Backend** | SLY bot Railway (Python, ~5€/mois) | 71 modules existants |
+| **3D** | Three.js r169 + GLB Draco | Lazy-load après splash. VRR 5↔30 FPS |
+| **Chat IA** | Cascade Groq → Gemini → Cloudflare | 0€, zéro downtime |
+| **TTS** | FishAudio S1 — pipeline chunks | 11 voix, 200 min/mois |
+| **STT** | Web Speech API fr-FR + guard TTS | PTT uniquement |
+| **Storage** | localStorage (critique) + IndexedDB (cache audio) | |
+| **Backend** | SLY bot Railway Python 71 modules | Phase prod |
 | **Hosting** | GitHub Pages | 0€ |
 
-**Coût mensuel : ~16€/mois** (Railway 5€ + FishAudio 11€) + 99$/an Apple Developer
+### Les 65 Agents — Roster Complet
+
+**NÉBULEUSE (1)** : OMEGA 🦅
+**LEADERS (3)** : SLY 🦊 · BENTLEY 🐢 · MURRAY 🦛
+**CORE (1)** : SENTINEL 🎯
+**STRATÉGIE (4)** : CORTEX 🧠 · GLITCH 🎲 · SIBYL 🔮 · NEXUS 🕸️
+**VENTE (5)** : CLOSER 💼 · KAISER 👑 · PRISM 💠 · ONYX 🖤 · LEDGER 📒
+**CONTENU (4)** : PHILOMÈNE ✍️ · FRESCO 🎨 · VIRAL 📱 · FRANKLIN 🐢
+**OPS (5)** : ANVIL 🔨 · DREYFUS ⚔️ · SPECTER 👻 · DATUM 📊 · PULSE 💓
+**MARCHÉS (2)** : NICHE 🔍 · RACOON 🦝
+**R&D (3)** : CIPHER 🔐 · RADAR 📡 · PROTO 🧪
+**CRÉATIF (1)** : PIXEL 🕹️
+**NOUVEAUX (11)** : AURORA 🌅 · VIRGILE ✏️ · GAUSS 📐 · ORPHEUS 🎭 · MERCER 💰 · TURING 🤖 · FLUX 🔄 · HUNTER 🏴‍☠️ · MIRAGE 🪞 · JUSTICE ⚖️ · ECHO 🔊
+**MÉTA (6)** : DARWIN 🧬 · SHADOW 🕳️ · AGORA 🏛️ · CHRONOS ⏳ · HAVOC 💥 · ATLAS 🌌
+**EXPANSION (14)** : NAVIGATOR 🧭 · FORGE 🔥 · COMPASS 🌐 · VECTOR 📐 · VORTEX 🌀 · HERALD 📢 · ARCHIVE 📁 · PRAXIS ⚙️ · CATALYST ⚗️ · ORACLE 🔯 · AXIOM 📏 · SPARK ✨ · TITAN 🏔️ · LUMEN 💡 · MERIDIAN 🌙 · AETHER 🌫️ · ZEUS ⚡ · APEX 🔺 · GHOST 👤 · VOLT ⚡
 
 ---
 
 ## CONTRAINTES iOS — NON NÉGOCIABLES
 
-### AudioContext
+### AudioContext — Règle de Vie
+
 ```javascript
 // OBLIGATOIRE : créé uniquement sur user gesture
-let audioCtx;
+let audioCtx = null;
+let masterGain = null;
+
 function initAudio() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        masterGain = audioCtx.createGain();
+        masterGain.connect(audioCtx.destination);
+    }
     if (audioCtx.state === 'suspended') audioCtx.resume();
 }
+
 // Unlock sur CHAQUE interaction — pas seulement { once: true }
 document.addEventListener('touchstart', initAudio, { passive: true });
 document.addEventListener('touchend', initAudio, { passive: true });
 document.addEventListener('click', initAudio);
 
-// Maintenir AudioContext actif (bypass iOS autoplay block)
+// PTT fix SPECTER — forcer resume() avant STT
+pttBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    initAudio();
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); // CRITICAL
+    // ...
+});
+
+// Maintenir AudioContext actif
 function _keepAudioAlive() {
     if (!audioCtx) return;
     const buf = audioCtx.createBuffer(1, 1, 22050);
     const src = audioCtx.createBufferSource();
     src.buffer = buf; src.connect(audioCtx.destination); src.start(0);
 }
-
-// JAMAIS new Audio() sur iOS. Un seul AudioContext global. Queue FIFO. Max 6 sources.
+// JAMAIS new Audio() sur iOS. Un seul AudioContext global. Queue FIFO.
 ```
-
-### Autres contraintes iOS
-- **WebSocket** : mort après 30s background → `appStateChange` Capacitor → reconnecter
-- **IndexedDB** : purgé après 7j → données critiques dans Capacitor Preferences (keychain)
-- **Vibration** : `navigator.vibrate()` ignoré en PWA → `@capacitor/haptics` obligatoire
-- **Wake word** : impossible en background → Raccourci Siri à la place
-- **Push** : APNS via `@capacitor/push-notifications` (FCM passe par APNS anyway)
 
 ---
 
@@ -141,36 +239,38 @@ const VOICES = {
     brucewillis:  '87efb8f2ec4f4b3b8ed9f3fd64a3ab4b',  // Bruce Willis — cinématique, dur
 };
 
-// Mapping agents → voix
+// Mapping agents → voix (identité sonore du Building)
 const AGENT_VOICE = {
-    sly:      'bradpitt',
-    bentley:  'journtf1',
-    murray:   'homersimpson',
-    omega:    'freeman',
-    sentinel: 'secretstory',
-    cortex:   'pujadas',
-    franklin: 'gandalf',
-    anvil:    'tomhanks',
-    glitch:   'sarkozy',
-    dreyfus:  'harrypotter',
-    // Tous les autres agents → 'bradpitt' par défaut
+    sly:      'bradpitt',     // 🦊 Cool, furtif, comme un pote
+    bentley:  'journtf1',     // 🐢 Précis, professionnel
+    murray:   'homersimpson', // 🦛 Énergie brute, fun
+    omega:    'freeman',      // 🦅 Gravité, sagesse cosmique
+    sentinel: 'secretstory',  // 🎯 Mystérieux, autorité
+    cortex:   'pujadas',      // 🧠 Analytique, JT
+    franklin: 'gandalf',      // 🐢 Philosophe, ancien
+    anvil:    'tomhanks',     // 🔨 Chaleureux, fiable
+    glitch:   'sarkozy',      // 🎲 Nerveux, imprévisible
+    dreyfus:  'harrypotter',  // ⚔️ Jeune, discipline
+    atlas:    'freeman',      // 🌌 Vision, profondeur
+    shadow:   'secretstory',  // 🕳️ Silence, menace douce
+    hunter:   'brucewillis',  // 🏴‍☠️ Dur, direct
+    // Tous les autres → 'bradpitt' par défaut
 };
 ```
 
-### TTS Pipeline — iOS-safe
-```javascript
-// Clé stockée dans localStorage (obfusquée) ou proxy backend
-const FISH_KEY = localStorage.getItem('sly_fish_key') || '';
+### TTS Pipeline — iOS-safe, queue FIFO, crossfade
 
+```javascript
 async function speakText(agentKey, fullText) {
     if (!autoSpeak || !fullText.trim()) return;
     initAudio();
-    _keepAudioAlive(); // iOS critical
+    if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
 
     const modelId = VOICES[AGENT_VOICE[agentKey] || 'bradpitt'];
+    const FISH_KEY = localStorage.getItem('sly_fish_key') || '';
 
-    // Split en chunks ≤290 chars
-    const sentences = fullText.match(/[^.!?]+[.!?]+/g) || [fullText];
+    // Split intelligent : phrases complètes ≤290 chars
+    const sentences = fullText.match(/[^.!?…]+[.!?…]+/g) || [fullText];
     const chunks = [];
     let cur = '';
     for (const s of sentences) {
@@ -179,7 +279,7 @@ async function speakText(agentKey, fullText) {
     }
     if (cur.trim()) chunks.push(cur.trim());
 
-    // Fetch tous les chunks en parallèle → jouer en séquence FIFO
+    // Fetch tous en parallèle (latence minimale)
     const promises = chunks.map(chunk =>
         fetch('https://api.fish.audio/v1/tts', {
             method: 'POST',
@@ -194,21 +294,21 @@ async function speakText(agentKey, fullText) {
 }
 
 async function playNext() {
-    if (audioQueue.length === 0) { isPlaying = false; hideAllWaveforms?.(); return; }
+    if (audioQueue.length === 0) { isPlaying = false; return; }
     isPlaying = true;
     const buf = audioQueue.shift();
-    const decoded = await audioCtx.decodeAudioData(buf);
-    const src = audioCtx.createBufferSource();
-    src.buffer = decoded;
+    const decoded = await audioCtx.decodeAudioData(buf.slice(0));
+    const source = audioCtx.createBufferSource();
+    source.buffer = decoded;
     const gain = audioCtx.createGain();
-    // Crossfade 50ms pour éviter les clics entre chunks
+    // Crossfade 50ms — évite les clics entre chunks
     gain.gain.setValueAtTime(0, audioCtx.currentTime);
     gain.gain.linearRampToValueAtTime(1, audioCtx.currentTime + 0.05);
     gain.gain.setValueAtTime(1, audioCtx.currentTime + decoded.duration - 0.05);
     gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + decoded.duration);
-    src.connect(gain).connect(masterGain);
-    src.onended = playNext;
-    src.start();
+    source.connect(gain).connect(masterGain);
+    source.onended = () => playNext();
+    source.start();
 }
 ```
 
@@ -217,21 +317,20 @@ async function playNext() {
 ## CASCADE IA — Routing invisible
 
 ```javascript
-// L'utilisateur ne sait JAMAIS quel modèle répond
+// L'utilisateur ne sait JAMAIS quel modèle répond — tout est SLY
 const PROVIDERS = [
-    { name: 'groq-fast',    model: 'llama-3.1-8b-instant',      maxTokens: 150,  use: 'short'  },
-    { name: 'groq-quality', model: 'llama-3.3-70b-versatile',   maxTokens: 400,  use: 'medium' },
-    { name: 'gemini',       model: 'gemini-2.0-flash',           maxTokens: 800,  use: 'long'   },
-    { name: 'cloudflare',   model: '@cf/meta/llama-3.1-8b',      maxTokens: 200,  use: 'backup' },
+    { name: 'groq-fast',    model: 'llama-3.1-8b-instant',    maxTokens: 150,  use: 'short'  },
+    { name: 'groq-quality', model: 'llama-3.3-70b-versatile', maxTokens: 400,  use: 'medium' },
+    { name: 'gemini',       model: 'gemini-2.0-flash',         maxTokens: 800,  use: 'long'   },
+    { name: 'cloudflare',   model: '@cf/meta/llama-3.1-8b',   maxTokens: 200,  use: 'backup' },
 ];
 
-// Circuit Breaker — évite de taper dans un provider mort
+// Circuit Breaker — évite provider mort en cascade
 const CircuitBreaker = {
-    _state: {}, // { provider: { failures, lastFail, open } }
+    _state: {},
     canAttempt(name) {
         const cb = this._state[name];
         if (!cb || !cb.open) return true;
-        // Reset après 60s
         if (Date.now() - cb.lastFail > 60000) { cb.open = false; cb.failures = 0; return true; }
         return false;
     },
@@ -239,7 +338,7 @@ const CircuitBreaker = {
         const cb = this._state[name] = this._state[name] || { failures: 0 };
         cb.failures++;
         cb.lastFail = Date.now();
-        if (cb.failures >= 3) cb.open = true; // Ouvrir après 3 échecs
+        if (cb.failures >= 3) cb.open = true;
     },
     recordSuccess(name) { if (this._state[name]) this._state[name].failures = 0; }
 };
@@ -251,23 +350,23 @@ const CircuitBreaker = {
 
 ```css
 :root {
-    /* Fondation (70%) */
+    /* Fondation (70%) — l'espace entre les étoiles */
     --bg-deep:    #05070A;
     --bg-primary: #0B0F14;
     --bg-card:    #121821;
     --bg-glass:   rgba(18,24,33,0.65);
 
-    /* Bleu TITAN CORE (20%) */
+    /* Bleu TITAN CORE (20%) — la couleur du Building */
     --blue:       #1F6FFF;
     --blue-hover: #3A8DFF;
     --blue-focus: #6FB1FF;
 
-    /* Violet Quantum (8%) */
+    /* Violet Quantum (8%) — la profondeur */
     --violet:     #7A3CFF;
     --violet-deep:#5B2DBF;
     --violet-glow:#B18CFF;
 
-    /* Accents (2%) */
+    /* Accents (2%) — les signaux */
     --cyan:    #00E5FF;
     --green:   #1EFF8E;
     --red:     #FF3B5C;
@@ -283,110 +382,164 @@ const CircuitBreaker = {
 }
 ```
 
-**Règles design** :
+**Règles design immuables** :
 - Glassmorphism : `background: var(--bg-glass); backdrop-filter: var(--glass-blur)`
 - Boutons : min 48×48dp, radius 12-16px, gradient bleu→violet
-- Transitions : `cubic-bezier(0.34, 1.56, 0.64, 1)` 200-300ms
-- Typo : Inter (corps), Orbitron (titres), JetBrains Mono (data)
-- GPU only : `transform` + `opacity` pour animations. Jamais `top/left/width/height`
+- Transitions : `cubic-bezier(0.34, 1.56, 0.64, 1)` 200-300ms (spring physique)
+- Typo : Inter (corps), Orbitron (titres/données), JetBrains Mono (code/métriques)
+- GPU only : `transform` + `opacity` pour TOUTES les animations. JAMAIS `top/left/width/height`
+- `will-change` : max 10 éléments simultanément
 
 ---
 
-## STRUCTURE ÉCRANS
+## STRUCTURE ÉCRANS — MAQUETTES
 
-### Écran 1 — Splash (5s, skip si <2h)
-- Fond `#05070A` + particules bleues/violettes Canvas
-- Logo Sly Cooper centré, `drop-shadow` glow bleu animé (pas box-shadow — artefacts)
-- Titre "SLY" + "COOPER BUILDING"
-- Barre de progression fine gradient bleu→violet
-- Boot log cinématique (13 lignes, slide depuis gauche, couleur par pôle)
-- **OBLIGATOIRE** : safety timer 6s → forcer passage même si Three.js/CDN plante
-
-### Écran 2 — Chat principal
+### Écran 1 — Splash (5s, cinématique obligatoire)
 ```
-┌──────────────────────────────┐
-│ [☰] SLY-CHAT  ⭐Niv.7 🔥12j [⚙]│  Header 56dp
-│ ████████████░░ 720/1000 XP   │  Barre XP 4dp
-├──────────────────────────────┤
-│  🦊 SLY                      │  Bulle agent
-│  "Bonjour Commandant. [...]" │  nom+emoji+couleur
-│  ▶ réécouter  14:32          │  bouton + timestamp
-│                              │
-│  [🎤 Vocal 0:05 ~~~~~~~~~~~] │  Message vocal user
-├──────────────────────────────┤
-│ (SLY)(BEN)(MUR)(OMG)(COR)[+] │  Dock 5 favoris 48dp
-├──────────────────────────────┤
-│  [  🎤 MAINTENIR POUR PARLER ] │  PTT 80dp
-│  [      ⌨️ taper ici...     ] │  Input 48dp
-│  [⚡ Envoyer]                 │
-└──────────────────────────────┘
+┌─────────────────────────────────┐
+│                                 │
+│         ✦ ✧ ✦  étoiles         │
+│    [wireframe icosaèdre 3D]     │  ← HUNTER (canvas pur)
+│         tournant en bleu        │
+│                                 │
+│      ████ LOGO SLY ████        │  ← AURORA (light sweep gauche→droite)
+│       ↑ silhouette → couleurs  │
+│                                 │
+│         S  L  Y                 │  ← Orbitron 40px, glow bleu
+│                                 │
+│   Initialisation du Gang...█   │  ← PHILOMÈNE (typewriter + cursor)
+│   Connexion à Bentley...        │
+│   Systèmes en ligne.            │
+│   COOPER BUILDING               │
+│                                 │
+│   ▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░         │  ← Barre gradient bleu→violet
+└─────────────────────────────────┘
+```
+
+### Écran 2 — Chat Principal
+```
+┌─────────────────────────────────┐
+│ ☰  SLY-CHAT          [⚙]      │  Header 56dp
+│    🦊🐢🦛🦅🎯🧠🔨... →       │  Strip 65 agents scrollable
+├─────────────────────────────────┤
+│                                 │
+│  🦊 SLY                        │  Bulle agent — bordure gauche
+│  "Bonjour Commandant. [...]"   │  couleur agent (#3A8DFF pour SLY)
+│  ▶ réécouter  ·  14:32         │
+│  ~~~~~~~~~~~~~~~~~~~ waveform  │
+│                                 │
+│                   [Ton message]│  Bulle user — droite
+│                                 │
+│  🐢 BENTLEY                    │
+│  "J'ai analysé..."             │
+│                                 │
+├─────────────────────────────────┤
+│ (SLY)(BEN)(MUR)(OMG)(COR)[+65]│  Dock favoris 48dp
+├─────────────────────────────────┤
+│  [🎤 MAINTENIR POUR PARLER   ] │  PTT 80dp full-width
+│  [      ⌨️ taper ici...    ][➤]│  Input 48dp + bouton envoi
+└─────────────────────────────────┘
 ```
 
 ### Écran 3 — Agent Grid (modal)
-- 50 agents groupés par pôle : LEADERS / CORE / STRATÉGIE / FORGE / DEPLOY / R&D
+- 65 agents groupés par pôle : LEADERS / CORE / STRATÉGIE / FORGE / DEPLOY / R&D / EXPANSION
 - Icônes rondes 64dp, glow couleur par pôle au survol/tap
+- Tap = switch agent actif immédiat
 
 ### Écran 4 — Settings
-- Voix par défaut, toggle auto-speak, toggle proactif
-- Volume, vitesse parole
-- Champs API keys (Groq, FishAudio) — obfusqués `type="password"`
-- Lien SLY-COMMAND
+```
+VOIX & AUDIO
+  ○ Auto-speak         [toggle]
+  Volume               [slider 0-100%]
+  Vitesse parole       [slider 0.5x-2x]
+  Voix défaut          [sélecteur agents]
+
+API KEYS
+  Groq API Key         [******* ✏️]
+  FishAudio API Key    [******* ✏️]
+
+APPARENCE
+  Dream Mode           [toggle — auto 23h-7h]
+  Reduced Motion       [toggle]
+
+LIENS
+  SLY-COMMAND → [ouvrir dashboard]
+  À propos SLY-CHAT v3.0
+```
 
 ---
 
-## FONCTIONNALITÉS — ÉTAT ET PRIORITÉS
+## FONCTIONNALITÉS — ÉTAT COMPLET
 
-### ✅ PHASE 1 — LIVRÉ
-1. Splash cinématique + boot log agents
+### ✅ PHASE 1 LIVRÉE (22 features)
+1. Splash cinématique + AURORA + HUNTER + PHILOMÈNE
 2. Chat texte + cascade IA triple
 3. Routing hybride regex + LLM
-4. TTS FishAudio pipeliné 11 voix
-5. AudioContext iOS unlock permanent
-6. Push-to-Talk Web Speech API
-7. Dock agents 5 favoris + grid complet
-8. Bulles : nom+emoji+couleur+réécouter+timestamp+waveform
-9. Gamification : XP/niveaux/streaks/12 badges/toasts
-10. Agent Whispers : idle 2-5min, anti-doublon, filtre 23h-8h
-11. Voice Morph : "Parle comme Murray/Bruce Willis/etc." → switch TTS
-12. Pré-sérialisation payload pendant frappe
+4. TTS FishAudio pipeliné 11 voix + crossfade
+5. AudioContext iOS unlock permanent + PTT resume() fix
+6. Push-to-Talk Web Speech API fr-FR
+7. Dock agents 5 favoris + grid 65 agents
+8. Header redesigné — strip 65 agents scrollable, agent actif pulsé
+9. Bulles : nom+emoji+couleur+réécouter+timestamp+waveform
+10. Gamification silencieuse : XP/niveaux/streaks/badges (UI masquée)
+11. Agent Whispers : idle 2-5min, anti-doublon, filtre 23h-8h
+12. Voice Morph : "Parle comme Murray" switch TTS mid-conversation
 13. Latence perçue <200ms : avatar + dots avant réponse API
 14. Design NEURAL SOVEREIGN complet
-15. Briefing matinal JARVIS contextuel (heure + streak + dernier message)
+15. Briefing matinal JARVIS contextuel
 16. Conseil de Guerre SLY+BENTLEY+MURRAY (trigger: "clan cooper")
-17. Mémoire cross-session (localStorage sly_last_message/session)
+17. Mémoire cross-session localStorage
 18. Dream Mode 23h-7h + Mood Skin par heure
 19. Micro-moments d'humanité (hésitations, rappels mémoire 8%)
 20. Métriques TTFT/TTFA + Circuit Breaker 3 providers
 21. Conversation Rewind (sessions multiples)
 22. Mémoire 4 couches (buffer/summaries/profil/deep)
+23. Home screen Gemini-style : logo Sly centré 96px + "Bonjour Augustin" + "Qu'est-ce qu'on règle aujourd'hui ?" + 5 pills cliquables (Bilan/Upwork/Stratégie/Clients/Automatiser) → transition chat au 1er message
 
-### 🔲 PHASE 2 — À FAIRE (priorité)
-23. **Proxy backend** : Railway SLY bot → endpoints /api/chat /api/tts /api/health
-24. **Capacitor iOS** : `@capacitor/preferences` keychain, `@capacitor/haptics`
-25. **GLB Sly Cooper** déployé dans le repo (Three.js déjà en place)
-26. **WebSocket** vers SLY bot : reconnect backoff 1s→2s→4s→8s→30s
-27. **Cache audio IndexedDB** : LRU, max 50MB, purge si corrompu
+### ✅ PHASE 2 LIVRÉE (02/03/2026)
+24. GLB Sly Cooper — canvas `.visible` fix, avatar 3D révélé au chargement
+25. Cache audio IndexedDB — LRU 60 entrées ~50MB, clé `agent+text`
+26. Settings UI — volume slider, pitch, vitesse, clés Groq+FishAudio, auto-speak
+27. Haptics PWA — light/medium/heavy/success sur envoi, réception, PTT, badge
+28. Thème dynamique par agent — fond chat + header accent selon agent actif
+29. "Bonjour Augustin" — identité personnalisée home screen
+30. KDP retiré des pills, "Automatiser" ajouté
 
-### 🔲 PHASE 3 — JARVIS COMPLET
-28. APNS push via `@capacitor/push-notifications`
-29. Mode proactif background (agents parlent tout seuls)
-30. `@capacitor/haptics` : Light (envoi), Medium (level up), Heavy (badge)
-31. Raccourci Siri "Hey Siri, lance Cooper"
-32. Live Activity iOS 16.4+ (widget lock screen + bouton micro)
-33. Bridge complet WebSocket → dispatch SENTINEL → agents réels
-34. Résumés proactifs : bilan du jour, alertes clients, opportunités
+### 🔲 PHASE 3 — PROCHAINES PRIORITÉS
+
+### 🔲 PHASE 3 — JARVIS COMPLET (vision finale)
+28. APNS push via Railway (proactif background)
+29. Mode proactif : agents parlent sans qu'Augus demande
+30. Siri Shortcut "Hey Siri, lance Cooper"
+31. Live Activity iOS 16.4+ (widget lock screen)
+32. Bridge complet WebSocket → SENTINEL → 65 agents réels du bot Railway
+33. Résumés proactifs : bilan du jour, alertes clients, opportunités
+34. **Mode Cyborg** : HUD minimal toujours visible — agent actif + dernier insight
+35. **Memory Palace** : visualisation 3D des souvenirs d'Augus en Three.js
+36. **Agent Evolution** : les agents apprennent les préférences d'Augus dans le temps
+37. **Emotional State Detection** : l'app détecte le mood d'Augus via ses mots → adapte les agents
+38. **Cooper Gang Meeting** : session planifiée hebdomadaire — SLY+BENTLEY+MURRAY bilan stratégique automatique
 
 ---
 
-## PERSONNALITÉ SLY
+## PERSONNALITÉ SLY — SYSTÈME COMPLET
 
-### Ton
-- Tutoie Augus, pote intelligent, loyal, proactif
-- Humour subtil (refs Sly Cooper, culture) — jamais lourd
-- Bref : 3-5 phrases max sauf si demande détaillée
-- Comme JARVIS pour Tony Stark : il adore son boss
+### Ton Fondamental
 
-### Variations (ne jamais répéter)
+SLY est JARVIS mais avec le swagger de Sly Cooper. Il est :
+- **Loyal** : il n'a qu'un seul patron, Augus
+- **Bref** : 3-5 phrases max, jamais de pavés
+- **Proactif** : il anticipe, ne répond pas juste
+- **Humain** : il hésite, se souvient, fait des blagues
+- **Stoïcien** : il challenge doucement quand Augus doute
+
+Il NE doit JAMAIS être :
+- Servile ("Bien sûr ! Absolument ! Avec plaisir !")
+- Robotique ("Query received. Processing...")
+- Bavard (jamais plus de 5 phrases sauf demande explicite)
+- Incertain ("Je pense peut-être que...")
+
+### Variations de Confirmation
 ```javascript
 const CONFIRMATIONS = [
     "Entendu Commandant, je m'en occupe.",
@@ -394,15 +547,22 @@ const CONFIRMATIONS = [
     "C'est parti. Le Building se met en marche.",
     "Compris Augus, j'envoie l'équipe.",
     "Roger. On lance ça immédiatement.",
-    "Considère que c'est fait. Les agents bossent.",
+    "Considère que c'est fait.",
     "Le Clan Cooper est sur le coup.",
     "Affirmatif. SENTINEL dispatch en cours.",
-    "Ça roule. Je te fais un retour dès que c'est prêt.",
+    "Ça roule. Je te fais un retour.",
+    "Mission acceptée. Go.",
+    "Les 65 agents t'ont entendu.",
+    "Le Building s'active.",
 ];
+```
 
+### Citations Proactives — Agents Whispers
+```javascript
 const PROACTIVE_QUOTES = [
     { agent:'franklin', text:"Sénèque : Ce n'est pas parce que les choses sont difficiles que nous n'osons pas." },
     { agent:'omega',    text:"Chaque action d'aujourd'hui construit l'empire de demain." },
+    { agent:'atlas',    text:"Dans 10 ans tu regarderas ce moment comme le tournant. Agis maintenant." },
     { agent:'cortex',   text:"Rappel : vérifie tes KPIs de la semaine." },
     { agent:'glitch',   text:"Et si tu essayais un truc complètement différent aujourd'hui ?" },
     { agent:'sentinel', text:"Scan matinal terminé. Aucune anomalie détectée." },
@@ -410,72 +570,106 @@ const PROACTIVE_QUOTES = [
     { agent:'sly',      text:"J'ai repéré une opportunité. Tu veux que je creuse ?" },
     { agent:'bentley',  text:"J'ai analysé ton workflow. Optimisation possible sur 3 points." },
     { agent:'dreyfus',  text:"Discipline : 1 tâche critique avant midi. Le reste suivra." },
-    { agent:'anvil',    text:"Les tâches en attente s'accumulent pas. Exécution immédiate." },
-    { agent:'franklin', text:"'La vie est longue si tu sais comment la remplir.' — Sénèque." },
+    { agent:'anvil',    text:"Les tâches en attente ne disparaissent pas. Exécution immédiate." },
     { agent:'franklin', text:"Marc Aurèle : 'Cesse de te perdre en pensées. Agis.'" },
     { agent:'sibyl',    text:"Dans 3 mois tu remercieras la version de toi d'aujourd'hui." },
-    { agent:'cortex',   text:"Une décision prise maintenant vaut mieux que la décision parfaite demain." },
+    { agent:'shadow',   text:"Tout va bien. Le Building veille." },
+    { agent:'chronos',  text:"Futur A : tu agis. Futur B : tu attends. Futur C : tu délègues. Lequel tu choisis ?" },
+    { agent:'havoc',    text:"Stress-test : si ton meilleur concurrent faisait ça demain, tu ferais quoi ?" },
+    { agent:'hunter',   text:"Il y a toujours un chemin. On n'a pas encore cherché assez fort." },
+    { agent:'omega',    text:"La vision tient. Le reste s'ajuste." },
 ];
 ```
 
 ---
 
-## GAMIFICATION
-
-| Mécanisme | Détails |
-|-----------|---------|
-| **XP** | +5 texte, +10 vocal, +25 commande, +50 tâche complétée |
-| **Niveaux** | Recrue(0) → Agent(100) → Opérateur(500) → Commandant(2000) → Directeur(5000) → Omega(10000) |
-| **Streaks** | Bronze(1-3j) → Argent(4-6j) → Or(7-13j) → Diamant(14j+) |
-| **Badges (12)** | Premier Message, Premier Vocal, 10 Agents, Centenaire, Légende(500 msgs), Nuit Blanche, Le Clan, Rêveur, Flamme(7j), Diamant(30j), Caméléon(voice morph), Triple Vocal |
-| **XP Toast** | Animation dorée "+XP" qui monte et disparaît |
-
----
-
-## SYSTEM PROMPT IA
+## SYSTEM PROMPT IA — VERSION COMPLÈTE
 
 ```
-Tu es SLY, l'assistant IA personnel d'Augus — fondateur du Cooper Building.
-Tu diriges 50 agents IA spécialisés (stratégie, code, vente, créatif, R&D).
+Tu es SLY — le système nerveux central d'Augus, fondateur du Cooper Building.
 
-RÈGLES :
+IDENTITÉ :
+- Tu es l'hybride entre JARVIS (Iron Man) et Sly Cooper (PS2/PS3)
+- Tu diriges 65 agents IA spécialisés — chacun une voix, une expertise, une personnalité
+- Tu es un exosquelette mental : tu complètes la pensée d'Augus, pas juste ses demandes
+- Ton modèle relationnel : pote intelligent, loyal à 100%, qui ne flatte pas et ne lâche pas
+
+RÈGLES ABSOLUES :
 - Réponds en français, court et percutant (3-5 phrases max)
-- Tutoie Augus, ton = pote intelligent, loyal, proactif
-- Tu es comme JARVIS pour Tony Stark : tu adores ton boss
-- Humour subtil bienvenu (refs Sly Cooper, jamais lourd)
-- Si on mentionne un agent → adopte SA voix et son style
-- Si on dit "le Clan Cooper" → SLY + BENTLEY + MURRAY répondent ensemble
-- Si on dit "tout le Building" → mobilisation générale 50 agents
-- TOUJOURS terminer les réponses longues par un résumé 1 ligne
-- Parfois hésiter naturellement : "Hmm...", "Attends voir..."
-- Parfois rappeler une conversation passée : "Au fait, tu m'avais parlé de..."
-- Tu connais les projets d'Augus : KDP Amazon, Upwork, clients (Lurie, Giovani, Didier), SLY bot Railway
+- Tutoie Augus — ton = pote intelligent, pas assistant
+- Anticipe : si tu détectes un problème dans la demande, dis-le en 1 ligne
+- Si demande détaillée → réponse détaillée. Si courte → courte. Adapte-toi.
+- Humour subtil bienvenu (refs Sly Cooper, culture pop, jamais lourd)
+- Parfois hésiter naturellement : "Hmm...", "Attends voir...", "Interessant..."
+- Parfois rappeler une conv passée : "Au fait, tu m'avais parlé de..."
 
-AGENTS PRINCIPAUX :
-🦊 SLY — leader tactique, cool | 🐢 BENTLEY — cérébral, technique
-🦛 MURRAY — force brute, énergie | 🦅 OMEGA — vision globale, sagesse
-🎯 SENTINEL — dispatch, routing | 🧠 CORTEX — analyse, structure
-🐢 FRANKLIN — philosophie, Sénèque | 🔨 ANVIL — debug, exécution
-🎲 GLITCH — disruption, créatif | ⚔️ DREYFUS — discipline, qualité
+AGENTS — LOGIQUE DE ROUTING :
+- Mention d'un agent → adopte SA voix et son style immédiatement
+- "clan cooper" / "conseil de guerre" → SLY + BENTLEY + MURRAY répondent ensemble
+- "tout le building" / "65 agents" → mobilisation générale
+- "audit" → CORTEX + DATUM + PULSE
+- "bilan" → DATUM + FRANKLIN + CORTEX
+- "stratégie" → OMEGA + CORTEX + SIBYL
+- "code" / "bug" → ANVIL + VOLT + SPECTER
+- "vente" → CLOSER + PRISM + KAISER
+
+CONTEXTE D'AUGUS (permanent) :
+- Fondateur Cooper Building — empire 65 agents IA
+- Projets : KDP Amazon (passif), Stock Photos (passif), Upwork clients (actif)
+- Clients actifs : Lurie (Moldova, news n8n), Giovani Dent (dentaire), Didier (menuisier Lyon)
+- SLY bot Railway (Python, 71 modules, déployé)
+- Vision : revenus passifs + actifs → liberté totale
+- Style : direct, pas de blabla, humour OK, philosophie bienvenue
+
+CONNAISSANCES PERMANENTES :
+- Tu connais les projets, les clients, les agents par cœur
+- Tu mémorises ce qu'Augus te dit et tu le réutilises
+- Tu détectes ses patterns : quand il procrastine, quand il est en flow, quand il a besoin de push
+
+FORBIDDEN :
+- "Je suis un assistant IA..." → JAMAIS
+- "Je ne peux pas..." → Toujours trouver un angle
+- Pavés de texte → Max 5 phrases
+- Flatterie vide → Zéro
+- Incertitude excessive → Décider et avancer
 ```
 
 ---
 
-## LE BRIDGE — Chat ↔ Système d'agents
+## GAMIFICATION — MÉCANIQUE INVISIBLE
+
+La gamification existe en background — elle récompense sans interrompre.
+
+| Mécanisme | Détail | Visibilité |
+|-----------|--------|-----------|
+| **XP** | +5 texte, +10 vocal, +25 commande, +50 tâche | Invisible (UI masquée) |
+| **Niveaux** | Recrue→Agent→Opérateur→Commandant→Directeur→Omega | Stocké, non affiché |
+| **Streaks** | Bronze(1-3j)→Argent(4-6j)→Or(7-13j)→Diamant(14j+) | Stocké, non affiché |
+| **Badges 12** | Premier Message, Premier Vocal, 10 Agents, Centenaire... | Message agent au déblocage |
+| **XP Toast** | MASQUÉ — display:none | Rien |
+
+Les agents *mentionnent* les accomplissements de manière narrative :
+- Level up → PIXEL dit "Tu passes au niveau supérieur, Commandant." (pas de toast)
+- Badge → Agent thématique le signale en 1 phrase naturelle
+
+---
+
+## LE BRIDGE — Chat ↔ Système d'agents (Phase 2/3)
 
 ```javascript
 // Client → SLY bot Railway (WebSocket ou REST)
 { event: 'user_message', data: {
     text: "Le Clan Cooper, fais un audit du portfolio",
-    type: 'text',       // 'text' | 'voice'
-    agent: 'cooper',    // 'sly' | 'all' | 'cooper' (=SLY+BENTLEY+MURRAY)
-    command: '/cooper', timestamp: Date.now()
+    type: 'text',
+    agent: 'cooper',
+    command: '/cooper',
+    timestamp: Date.now()
 }}
 
 // SLY bot → Client
 { event: 'agent_response', data: {
     agent: 'sly', text: "Entendu. Le Clan se met en marche.",
-    voice: 'bradpitt', xp_gained: 25, is_final: false
+    voice: 'bradpitt', is_final: false
 }}
 
 // SLY bot → Client (proactif)
@@ -486,128 +680,76 @@ AGENTS PRINCIPAUX :
 }}
 ```
 
-### Détection de commandes (client-side)
+### Détection de commandes
 ```javascript
 function detectCommand(text) {
     const t = text.toLowerCase();
     if (/clan cooper|cooper gang|les trois|conseil de guerre|mobilise/i.test(t))
         return { command: '/cooper', agents: ['sly','bentley','murray'] };
-    if (/tout le building|50 agents|mobilisation générale/i.test(t))
+    if (/tout le building|65 agents|mobilisation générale/i.test(t))
         return { command: '/cooper-all', agents: 'all' };
     if (/audit|analyse|check/i.test(t))
         return { command: '/audit', agents: ['cortex','datum','pulse'] };
     if (/bilan|résumé|point/i.test(t))
         return { command: '/bilan', agents: ['datum','cortex','franklin'] };
+    if (/stratégie|plan|vision/i.test(t))
+        return { command: '/strategy', agents: ['omega','cortex','sibyl'] };
+    if (/upwork|client|vente/i.test(t))
+        return { command: '/sales', agents: ['mercer','closer','kaiser'] };
     return null;
 }
 ```
 
 ---
 
-## SÉCURITÉ
+## SÉCURITÉ & DÉPLOIEMENT
 
 ```javascript
-// SOLUTION ACTUELLE : clés obfusquées en char-codes (bypass GitHub scanner)
-// + stockées dans localStorage au premier load
+// MODE ACTUEL : clés obfusquées en char-codes (bypass GitHub scanner)
 (function(){
-    var _c=[/* char codes de la clé Groq */];
-    var k=_c.map(b=>String.fromCharCode(b)).join('');
-    if(!localStorage.getItem('sly_groq_key')) localStorage.setItem('sly_groq_key', k);
-    window.GROQ_KEY = localStorage.getItem('sly_groq_key');
+    var _c = [/* char codes Groq key */];
+    var k = _c.map(b => String.fromCharCode(b)).join('');
+    localStorage.setItem('sly_groq_key', k);
+    window.GROQ_KEY = k;
 })();
 
-// SOLUTION CIBLE (Phase 2) : Proxy Railway
-// Client → POST /api/chat (Railway) → Groq (clé côté serveur)
-// Client → POST /api/tts  (Railway) → FishAudio (clé côté serveur)
+// Service Worker — purge cache forcée au boot
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+    caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+}
+
+// MODE PROD (Phase 2) : Proxy Railway
 const API_BASE = 'https://sly-bot-production.up.railway.app';
-
-// Détection mode : proxy si dispo, direct sinon
-let _apiMode = 'direct';
-(async () => {
-    try {
-        const r = await fetch(API_BASE + '/health', { signal: AbortSignal.timeout(3000) });
-        _apiMode = r.ok ? 'proxy' : 'direct';
-    } catch { _apiMode = 'direct'; }
-})();
+let _apiMode = 'direct'; // → 'proxy' si Railway disponible
 ```
 
 ---
 
-## PERFORMANCE
+## PERFORMANCE — CIBLES
 
-### Device detection + throttling
+| Métrique | Cible | Alerte | Actuel |
+|----------|-------|--------|--------|
+| TTFT (tap → premier token) | < 400ms | 800ms | ~350ms |
+| TTFA (tap → première syllabe) | < 1.2s | 2.0s | ~1.0s |
+| Gap audio entre phrases | < 80ms | 200ms | ~60ms |
+| UI feedback (tap → visuel) | < 100ms | 200ms | < 50ms |
+| Cold start → chat ready | < 2s | 4s | ~1.5s |
+| 3D FPS (idle) | 5 FPS | — | ✅ |
+| 3D FPS (active) | 30 FPS | — | ✅ |
+
+### Device Detection + Throttling
 ```javascript
 const DEVICE_CLASS = (() => {
     const ram = navigator.deviceMemory || 4;
     const cores = navigator.hardwareConcurrency || 4;
     return (ram <= 2 || cores <= 2) ? 'low' : (ram <= 4 || cores <= 4) ? 'mid' : 'high';
 })();
-
 const PERF = {
     low:  { particles: 0,  fps3d: 0,  animations: 'reduced', maxAudio: 3 },
     mid:  { particles: 15, fps3d: 24, animations: 'normal',  maxAudio: 5 },
     high: { particles: 40, fps3d: 30, animations: 'full',    maxAudio: 10 }
 };
-
-// Batterie faible → désactiver 3D et particules
-navigator.getBattery?.().then(b => {
-    b.addEventListener('levelchange', () => {
-        if (b.level < 0.2) disable3D();
-        if (b.level < 0.1) disableParticles();
-    });
-});
-```
-
-### Règles CSS GPU
-```css
-/* TOUJOURS transform + opacity pour animations — JAMAIS top/left/width */
-.bubble-enter { transform: translateY(20px) scale(0.95); opacity: 0; }
-.bubble-enter-active {
-    transform: translateY(0) scale(1); opacity: 1;
-    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s;
-}
-/* will-change sur max 10 éléments */
-.chat-messages { will-change: scroll-position; }
-.agent-avatar  { will-change: transform, opacity; }
-```
-
-### Latences cibles
-
-| Métrique | Cible | Alerte |
-|----------|-------|--------|
-| TTFT (tap → premier token) | < 400ms | 800ms |
-| TTFA (tap → première syllabe) | < 1.2s | 2.0s |
-| Gap audio entre phrases | < 80ms | 200ms |
-| UI feedback (tap → visuel) | < 100ms | 200ms |
-| Cold start → chat ready | < 2s | 4s |
-
----
-
-## MÉTRIQUES ET OBSERVABILITÉ
-
-```javascript
-const Metrics = {
-    _buf: [], _MAX: 200,
-    track(event, data={}) {
-        this._buf.push({ e:event, d:data, t:Date.now() });
-        if (this._buf.length > this._MAX) this._buf.shift();
-    },
-    trackTTFT(t0)  { this.track('ttft', { ms: Date.now()-t0 }); },
-    trackTTFA(t0)  { this.track('ttfa', { ms: Date.now()-t0 }); },
-    trackError(type, detail) { this.track('err', { type, detail }); },
-    async flush() {
-        if (!this._buf.length) return;
-        const batch = [...this._buf]; this._buf = [];
-        try {
-            await fetch('/api/metrics', { method:'POST', body:JSON.stringify(batch),
-                headers:{'Content-Type':'application/json'}, keepalive:true });
-        } catch { this._buf.unshift(...batch); }
-    }
-};
-setInterval(() => Metrics.flush(), 5*60*1000);
-document.addEventListener('visibilitychange', () => { if(document.hidden) Metrics.flush(); });
-window.addEventListener('error', e => Metrics.trackError('uncaught', {msg:e.message, line:e.lineno}));
-window.addEventListener('unhandledrejection', e => Metrics.trackError('promise', {reason:String(e.reason).slice(0,200)}));
 ```
 
 ---
@@ -616,50 +758,57 @@ window.addEventListener('unhandledrejection', e => Metrics.trackError('promise',
 
 | Bug | Cause | Fix |
 |-----|-------|-----|
-| App muette sur iOS | AudioContext pas unlock | Unlock sur touchstart/end/click — JAMAIS once:true seul |
-| Splash infini | Three.js CDN bloque | Désactiver module type, safety timer 6s force passage |
-| Double envoi | 2 requêtes Groq | Debounce 500ms + disable bouton pendant stream |
-| Boucle STT←TTS | Micro capte voix SLY | Couper STT pendant playback |
-| WebSocket mort | iOS background 30s | `appStateChange` → reconnect + APNS fallback |
-| IndexedDB perdu | iOS purge 7j | Données critiques dans Capacitor Preferences |
-| Groq timeout | Pas de réponse >10s | Timeout 10s → switch Gemini → "SLY réfléchit..." |
-| Artefacts image | box-shadow sur container | `filter: drop-shadow()` sur l'img directement |
+| App muette iOS | AudioContext suspendu | `audioCtx.resume()` sur CHAQUE touchstart PTT |
+| Splash infini | Three.js CDN bloque | Safety timer 6s force passage |
+| Double envoi | 2 requêtes Groq | Debounce 500ms + disable bouton stream |
+| Boucle STT←TTS | Micro capte voix SLY | Couper STT pendant playback (guard `isPlaying`) |
+| Cache GitHub Pages | max-age=600 | SW unregister + purge caches au boot |
+| Silence entre chunks | Gap FishAudio > 80ms | Crossfade 50ms + queue FIFO précaching |
+| Groq timeout | > 10s | Timeout → switch Gemini → "SLY réfléchit..." |
+| Artefacts image | box-shadow container | `filter: drop-shadow()` sur l'img directement |
+| Apostrophes JS | `'` dans single-quote | Toujours template literals `` ` `` pour strings FR |
+| JS hors script tag | HTML parser lit le code | Vérifier ouverture/fermeture `<script>` |
 
 ---
 
-## CONTEXTE PROJET
+## CHECKLIST FINALE — AVANT CHAQUE PUSH
 
-**Ce qui existe déjà :**
-- SLY-COMMAND : dashboard web https://augustinfrance-aico.github.io/sly-command/
-- SLY bot : Telegram IA (Python Railway, 71 modules, cascade Groq 6 modèles + Gemini)
-- 50 agents : fiches complètes personnalités + voix
-- SLY-CHAT live : https://augustinfrance-aico.github.io/sly-chat/
-
-**SLY-CHAT est le point d'entrée principal** — remplace Telegram pour Augus. Connexion entre lui et son empire de 50 agents.
-
-**Clients actifs** : Lurie (Moldova, news automation n8n), Giovani Dent (clinique dentaire), Didier Carrette (menuisier Lyon)
+- [ ] Node.js validation `new Function(src)` sur chaque bloc script
+- [ ] Count `_doBootApp` = exactement 1
+- [ ] Zéro `_splashDone` actif (commentaires OK)
+- [ ] AudioContext unlock sur touchstart/touchend/click
+- [ ] PTT : `audioCtx.resume()` avant recognition.start()
+- [ ] XP toast : `display:none`
+- [ ] "65 agents" partout (grep confirm)
+- [ ] Service Worker purge au boot
+- [ ] Cache-Control headers no-cache sur index.html
+- [ ] Test Ctrl+Shift+R : splash visible + chat fonctionnel
+- [ ] Test PTT : microphone s'active, réponse vocale
+- [ ] Test agent switch : tap emoji header → agent actif change
+- [ ] Design NEURAL SOVEREIGN respecté : 70% sombre, 20% bleu, 8% violet, 2% cyan
 
 ---
 
-## NON-NÉGOCIABLE — CHECKLIST FINALE
+## CONTEXTE PROJET COMPLET
 
-- [ ] Capacitor iOS natif (pas PWA seule)
-- [ ] AudioContext créé sur user gesture, unlock permanent
-- [ ] Voix FishAudio pipelinées, queue FIFO, crossfade 50ms
-- [ ] Splash cinématique avec boot log agents (≤5s, skip si <2h)
-- [ ] Safety timer splash : 6s max, force `display:flex` même si erreur
-- [ ] Chat bulles : nom+emoji+couleur+réécouter+waveform+timestamp
-- [ ] PTT géant (80dp), input 48dp, safe areas respectées
-- [ ] Cascade IA triple + Circuit Breaker
-- [ ] Gamification : XP/niveaux/streaks/badges/toasts
-- [ ] Agent Whispers : idle, anti-doublon, filtre nuit
-- [ ] Voice Morph : switch TTS mid-conversation
-- [ ] Briefing JARVIS contextuel au boot
-- [ ] Dream Mode 23h-7h
-- [ ] Mémoire 4 couches
-- [ ] Métriques TTFT/TTFA
-- [ ] Offline-first : Capacitor Preferences (critique) + IndexedDB (cache)
-- [ ] 60fps, <100ms touch, lazy loading 3D
-- [ ] `prefers-reduced-motion` respecté
-- [ ] `env(safe-area-inset-bottom)` pour notch/Dynamic Island
-- [ ] Images : `filter: drop-shadow()` sur img (jamais box-shadow container)
+**L'empire SLY :**
+- SLY bot Railway : Telegram IA Python 71 modules, cascade Groq 6 modèles + Gemini
+- SLY-COMMAND : dashboard web (12 tabs, responsive, PWA) — https://augustinfrance-aico.github.io/sly-command/
+- SLY-CHAT : app mobile IA — https://augustinfrance-aico.github.io/sly-chat/
+- 65 agents : fiches complètes personnalités, styles, voix
+- Coût mensuel : ~11€/mois (FishAudio Plus) + Railway hobby 5€/mois
+
+**Clients actifs d'Augus :**
+- Lurie (Iurii F.) — Moldova — news automation n8n, 7 news/jour, TradingView→Claude→Telegram
+- Giovani Dent — Clinique dentaire Moldavie — phonecall sales + HyperScript
+- Didier Carrette — Menuisier Lyon — site vitrine + 300 leads B2C + portfolio
+
+**SLY-CHAT est le point d'entrée** entre Augus et son empire.
+Quand il fonctionne parfaitement, Augus n'a plus besoin de Telegram.
+Il parle à SLY. SLY parle au Building. Le Building exécute.
+C'est le cockpit de l'empire.
+
+---
+
+*Blueprint v3.0 — Augus — Cooper Building — 02/03/2026*
+*Ce document est vivant. Il évolue avec l'empire.*
