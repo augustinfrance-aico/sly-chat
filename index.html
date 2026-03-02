@@ -91,19 +91,63 @@ input{font-family:inherit;border:none;outline:none}
 /* Wrap central */
 .sp2-wrap{position:relative;z-index:4;display:flex;flex-direction:column;align-items:center;gap:0;animation:sp2FadeIn 0.8s ease both}
 @keyframes sp2FadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-/* Conteneur médaillon Sly — sans rond, juste glow bleu */
+/* Conteneur médaillon Sly — AURORA light sweep */
 .sp2-sly-wrap{
-    width:140px;height:140px;
+    width:160px;height:160px;
     border-radius:50%;
     border:none;
     background:transparent;
     animation:sp2Float 3.5s ease-in-out infinite;
     display:flex;align-items:center;justify-content:center;
     overflow:visible;
+    position:relative;
+}
+/* AURORA — logo révèle avec light sweep bleu #1F6FFF de gauche à droite */
+.sp2-sly-wrap::before{
+    content:'';
+    position:absolute;
+    inset:-10px;
+    border-radius:50%;
+    background:conic-gradient(from 180deg, transparent 0%, rgba(31,111,255,0.18) 30%, rgba(111,177,255,0.35) 50%, rgba(0,229,255,0.2) 60%, transparent 75%);
+    animation:sp2AuroraRing 3s linear infinite;
+    z-index:1;
+    pointer-events:none;
+}
+/* Light sweep — trait de lumière qui balaye le logo */
+.sp2-sly-wrap::after{
+    content:'';
+    position:absolute;
+    top:-20%;left:-60%;
+    width:40%;height:140%;
+    background:linear-gradient(105deg,transparent 20%,rgba(111,177,255,0.55) 50%,transparent 80%);
+    transform:skewX(-15deg);
+    animation:sp2LightSweep 1.8s cubic-bezier(0.4,0,0.2,1) 0.4s both;
+    z-index:5;
+    pointer-events:none;
+    border-radius:4px;
+}
+@keyframes sp2LightSweep{
+    0%{left:-60%;opacity:0}
+    10%{opacity:1}
+    80%{opacity:0.9}
+    100%{left:130%;opacity:0}
+}
+@keyframes sp2AuroraRing{
+    from{transform:rotate(0deg)}
+    to{transform:rotate(360deg)}
 }
 .sp2-sly{width:100%;height:100%;display:block;
     object-fit:contain;object-position:center center;
-    filter:drop-shadow(0 0 18px rgba(31,111,255,0.7)) drop-shadow(0 0 8px rgba(31,111,255,0.5)) drop-shadow(0 0 3px rgba(0,229,255,0.4));}
+    filter:drop-shadow(0 0 22px rgba(31,111,255,0.85)) drop-shadow(0 0 10px rgba(31,111,255,0.6)) drop-shadow(0 0 4px rgba(0,229,255,0.5));
+    animation:sp2LogoReveal 0.9s cubic-bezier(0.16,1,0.3,1) 0.2s both;
+    position:relative;z-index:2;
+}
+/* Logo part de silhouette sombre → couleurs normales */
+@keyframes sp2LogoReveal{
+    0%{opacity:0;filter:drop-shadow(0 0 0px transparent) brightness(0) saturate(0);transform:scale(0.85) translateY(8px)}
+    40%{opacity:0.7;filter:drop-shadow(0 0 30px rgba(31,111,255,1)) brightness(0.4) saturate(0.2)}
+    100%{opacity:1;filter:drop-shadow(0 0 22px rgba(31,111,255,0.85)) drop-shadow(0 0 10px rgba(31,111,255,0.6)) drop-shadow(0 0 4px rgba(0,229,255,0.5));transform:scale(1) translateY(0)}
+}
 @keyframes sp2Float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.03)}}
 /* Titre "SLY" — Orbitron 40px, néon blanc bleuté */
 .sp2-title{
@@ -145,6 +189,9 @@ input{font-family:inherit;border:none;outline:none}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 /* Ships — animés en JS (requestAnimationFrame) */
 .sp2-ship{position:absolute;z-index:3;pointer-events:none;font-size:16px;opacity:0;transition:opacity 0.4s;will-change:transform}
+/* PHILOMÈNE — typewriter cursor clignotant */
+.sp2-cursor{display:inline-block;width:2px;height:1em;background:#6FB1FF;margin-left:2px;vertical-align:middle;animation:cursorBlink 0.7s step-end infinite}
+@keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
 
 /* ═══════ APP LAYOUT ═══════ */
 #app{display:none;flex-direction:column;height:100dvh;position:relative}
@@ -873,9 +920,12 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
     <div class="sp2-bg"></div>
     <div class="sp2-overlay"></div>
     <div class="sp2-stars" id="sp2Stars"></div>
+    <!-- HUNTER — canvas wireframe 3D Icosahedron (pur CSS 2D fallback si Three.js pas dispo) -->
+    <canvas id="splashWireframe" style="position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;opacity:0;transition:opacity 1.2s ease 0.3s"></canvas>
     <div class="sp2-wrap">
         <div class="sp2-sly-wrap"><img class="sp2-sly" src="sly_logo_nobg.png?v=5" alt="Sly" loading="eager"></div>
         <div class="sp2-title">SLY</div>
+        <!-- PHILOMÈNE — typewriter text, remplacé par JS -->
         <div class="sp2-sub" id="splashSub">COOPER BUILDING</div>
         <div class="sp2-bar"><div class="sp2-bar-fill" id="splashBar"></div></div>
     </div>
@@ -921,6 +971,161 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
     }
     // Exposer pour permettre skip manuel (tap écran)
     window._closeSplash = function() { if(!_fired){_fired=true; if(typeof window._doBootApp==='function') window._doBootApp();} };
+
+    // ═══ HUNTER — Wireframe Icosahedron 2D (canvas pur, zéro dépendance) ═══
+    // On utilise un canvas 2D custom — Three.js n'est pas encore chargé à ce stade
+    (function(){
+        var cvs = document.getElementById('splashWireframe');
+        if (!cvs) return;
+        var ctx = cvs.getContext('2d');
+        var W, H, cx, cy, R = 0;
+        var raf;
+        var startT = Date.now();
+
+        // Icosahedron vertices (coordonnées normalisées)
+        var PHI = (1 + Math.sqrt(5)) / 2;
+        var BASE_VERTS = [
+            [-1,PHI,0],[1,PHI,0],[-1,-PHI,0],[1,-PHI,0],
+            [0,-1,PHI],[0,1,PHI],[0,-1,-PHI],[0,1,-PHI],
+            [PHI,0,-1],[PHI,0,1],[-PHI,0,-1],[-PHI,0,1]
+        ];
+        // Normaliser
+        BASE_VERTS = BASE_VERTS.map(function(v){
+            var l = Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+            return [v[0]/l,v[1]/l,v[2]/l];
+        });
+        // Faces icosahedron (30 arêtes)
+        var EDGES = [
+            [0,1],[0,5],[0,7],[0,10],[0,11],
+            [1,5],[1,7],[1,8],[1,9],
+            [2,3],[2,4],[2,6],[2,10],[2,11],
+            [3,4],[3,6],[3,8],[3,9],
+            [4,5],[4,9],[4,11],
+            [5,9],[5,11],
+            [6,7],[6,8],[6,10],
+            [7,8],[7,10],
+            [8,9],[10,11]
+        ];
+
+        function resize() {
+            W = cvs.width = cvs.offsetWidth || window.innerWidth;
+            H = cvs.height = cvs.offsetHeight || window.innerHeight;
+            cx = W/2; cy = H/2;
+            R = Math.min(W, H) * 0.32;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        function project(v, rotX, rotY) {
+            // Rotation Y
+            var x = v[0]*Math.cos(rotY) - v[2]*Math.sin(rotY);
+            var z = v[0]*Math.sin(rotY) + v[2]*Math.cos(rotY);
+            var y = v[1];
+            // Rotation X
+            var y2 = y*Math.cos(rotX) - z*Math.sin(rotX);
+            var z2 = y*Math.sin(rotX) + z*Math.cos(rotX);
+            // Perspective simple
+            var fov = 2.5;
+            var scale = fov / (fov + z2 + 1);
+            return [cx + x * R * scale, cy + y2 * R * scale, scale];
+        }
+
+        function drawFrame() {
+            var t = (Date.now() - startT) / 1000;
+            var rotY = t * 0.5;
+            var rotX = t * 0.22;
+            ctx.clearRect(0,0,W,H);
+            var projected = BASE_VERTS.map(function(v){ return project(v,rotX,rotY); });
+            EDGES.forEach(function(e){
+                var a = projected[e[0]], b = projected[e[1]];
+                // Opacité basée sur profondeur (arêtes proches = plus visibles)
+                var depth = (a[2] + b[2]) / 2;
+                var alpha = Math.max(0.04, Math.min(0.35, depth * 0.4));
+                ctx.beginPath();
+                ctx.moveTo(a[0],a[1]);
+                ctx.lineTo(b[0],b[1]);
+                ctx.strokeStyle = 'rgba(31,111,255,' + alpha + ')';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            });
+            // Points aux vertices
+            projected.forEach(function(p){
+                var alpha = Math.max(0.05, Math.min(0.6, p[2] * 0.7));
+                ctx.beginPath();
+                ctx.arc(p[0],p[1],1.5,0,Math.PI*2);
+                ctx.fillStyle = 'rgba(111,177,255,' + alpha + ')';
+                ctx.fill();
+            });
+        }
+
+        // Fade in canvas après 0.3s, animation 4.9s max
+        setTimeout(function(){ if(cvs) cvs.style.opacity='1'; }, 300);
+        function loop() {
+            drawFrame();
+            raf = requestAnimationFrame(loop);
+        }
+        loop();
+        // Cleanup quand la splash se ferme
+        window._stopSplashWireframe = function() {
+            cancelAnimationFrame(raf);
+            if(cvs) { cvs.style.opacity='0'; }
+        };
+    })();
+
+    // ═══ PHILOMÈNE — Typewriter "Initialisation du Gang..." ═══
+    (function(){
+        var el = document.getElementById('splashSub');
+        if (!el) return;
+        var lines = [
+            'Initialisation du Gang...',
+            'Connexion à Bentley...',
+            'Systèmes en ligne.',
+            'COOPER BUILDING'
+        ];
+        var delays = [600, 1600, 2800, 4000]; // ms avant d'afficher chaque ligne
+        var lineIdx = 0;
+
+        function typeWriter(text, cb) {
+            el.textContent = '';
+            var cursor = document.createElement('span');
+            cursor.className = 'sp2-cursor';
+            el.appendChild(cursor);
+            var i = 0;
+            var iv = setInterval(function() {
+                if (i < text.length) {
+                    el.insertBefore(document.createTextNode(text[i]), cursor);
+                    i++;
+                } else {
+                    clearInterval(iv);
+                    // Pause 600ms puis remove cursor avant la prochaine ligne
+                    setTimeout(function() {
+                        if (cursor.parentNode) cursor.parentNode.removeChild(cursor);
+                        if (cb) cb();
+                    }, 600);
+                }
+            }, 45);
+        }
+
+        function showLine(idx) {
+            if (idx >= lines.length) return;
+            setTimeout(function() {
+                var isLast = idx === lines.length - 1;
+                if (isLast) {
+                    // Dernière ligne : typewriter + style .loaded (glow bleu)
+                    typeWriter(lines[idx], function() {
+                        el.classList.add('loaded');
+                    });
+                } else {
+                    typeWriter(lines[idx], function() {
+                        showLine(idx + 1);
+                    });
+                }
+            }, idx === 0 ? delays[0] : 0);
+        }
+
+        // Démarrer le typewriter
+        setTimeout(function() { showLine(0); }, delays[0]);
+    })();
 })();
 </script>
 
@@ -2612,6 +2817,8 @@ function runSplash() {
     // ─── _doBootApp : SEUL point d'entrée du boot, appelé par le splash controller ───
     window._doBootApp = function() {
         gangClosed = true;
+        // Stopper le wireframe splash (HUNTER cleanup)
+        if (typeof window._stopSplashWireframe === 'function') window._stopSplashWireframe();
         // 1. Cache splash, montre app
         var sp = document.getElementById('splash');
         var ap = document.getElementById('app');
