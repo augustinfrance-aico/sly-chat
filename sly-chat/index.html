@@ -197,6 +197,56 @@ input{font-family:inherit;border:none;outline:none}
 #app{display:none;flex-direction:column;height:100dvh;position:relative}
 #app.visible{display:flex}
 
+/* ═══════ HOME SCREEN — GEMINI STYLE ═══════ */
+#homeScreen{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:24px 20px 16px;gap:0;
+    transition:opacity .3s ease,transform .3s ease;
+}
+#homeScreen.hidden{display:none}
+/* Logo Sly — rond bleu glow comme OpenAI mais SLY */
+.home-logo{
+    width:96px;height:96px;border-radius:50%;
+    border:2px solid rgba(31,111,255,0.6);
+    box-shadow:0 0 0 6px rgba(31,111,255,0.08),0 0 24px rgba(31,111,255,0.7),0 0 48px rgba(31,111,255,0.35);
+    background:url('sly_logo_nobg.png') center/82% no-repeat,rgba(6,10,18,0.7);
+    margin-bottom:28px;
+    animation:homeLogoPulse 3s ease-in-out infinite;
+}
+@keyframes homeLogoPulse{
+    0%,100%{box-shadow:0 0 0 6px rgba(31,111,255,0.08),0 0 24px rgba(31,111,255,0.7),0 0 48px rgba(31,111,255,0.35)}
+    50%{box-shadow:0 0 0 8px rgba(31,111,255,0.12),0 0 32px rgba(31,111,255,0.9),0 0 64px rgba(31,111,255,0.5)}
+}
+.home-greeting{
+    font-size:14px;font-weight:500;color:var(--text-dim);
+    margin-bottom:6px;letter-spacing:0.3px;
+}
+.home-title{
+    font-size:26px;font-weight:700;color:var(--text);
+    text-align:center;margin-bottom:28px;
+    font-family:'Inter',sans-serif;
+}
+/* Suggestions pills — Gemini style */
+.home-suggestions{
+    display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+    max-width:380px;margin-bottom:0;
+}
+.home-pill{
+    padding:10px 18px;border-radius:24px;
+    background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+    font-size:13px;color:var(--text);cursor:pointer;
+    transition:background .2s,border-color .2s,transform .15s;
+    white-space:nowrap;
+}
+.home-pill:hover,.home-pill:active{
+    background:rgba(31,111,255,0.15);border-color:rgba(31,111,255,0.4);
+    transform:scale(1.03);
+}
+/* Chat area masquée quand home screen actif */
+#app.home-mode .chat-area{display:none}
+#app.home-mode #homeScreen{display:flex}
+#app:not(.home-mode) #homeScreen{display:none}
+
 /* Header */
 .header{
     display:flex;align-items:center;padding:8px 16px;
@@ -204,16 +254,39 @@ input{font-family:inherit;border:none;outline:none}
     border-bottom:1px solid var(--glass-border);
     min-height:56px;gap:12px;position:relative;z-index:10;
 }
-.header-center{flex:1;display:flex;flex-direction:column;gap:2px}
-.header-title{font-family:'Orbitron',monospace;font-size:16px;font-weight:700;background:linear-gradient(135deg,var(--blue),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-center{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+.header-title{font-family:'Orbitron',monospace;font-size:16px;font-weight:700;background:linear-gradient(135deg,var(--blue),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
+/* Strip agents scrollable sous le titre */
+.header-agents-strip{
+    display:flex;align-items:center;gap:4px;
+    overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;
+    padding-bottom:1px;
+}
+.header-agents-strip::-webkit-scrollbar{display:none}
+.header-strip-label{
+    font-size:9px;font-weight:700;color:var(--text-dim);
+    text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;
+    flex-shrink:0;padding-right:4px;border-right:1px solid rgba(255,255,255,0.1);margin-right:2px;
+}
+.hsa{
+    font-size:13px;line-height:1;cursor:pointer;
+    transition:transform .15s,filter .15s;
+    flex-shrink:0;
+    filter:opacity(0.55);
+}
+.hsa:hover,.hsa.active{filter:opacity(1) drop-shadow(0 0 4px var(--blue));transform:scale(1.25)}
+.hsa.active{animation:hsaPulse 2s ease-in-out infinite}
+@keyframes hsaPulse{0%,100%{filter:opacity(1) drop-shadow(0 0 4px var(--blue))}50%{filter:opacity(1) drop-shadow(0 0 8px var(--blue)) drop-shadow(0 0 2px var(--cyan))}}
+/* Dot de statut en ligne */
 .header-agent-indicator{display:flex;align-items:center;gap:5px}
 .agent-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:agentPulse 2s ease-in-out infinite;flex-shrink:0}
 @keyframes agentPulse{0%,100%{opacity:1}50%{opacity:0.4}}
 .agent-label{font-size:10px;font-weight:600;color:var(--blue-focus);text-transform:uppercase;letter-spacing:1px}
-.header-stat{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--text-dim)}
-.header-stat .val{color:var(--text)}
-.xp-bar{height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;box-shadow:inset 0 0 4px rgba(0,0,0,0.3)}
-.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--violet),var(--cyan));border-radius:2px;transition:width .5s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 0 8px rgba(31,111,255,0.6)}
+/* XP bar masquée — garder le div mais invisible */
+.xp-bar{display:none}
+.xp-bar-fill{display:none}
+/* Header stats masqués */
+.header-stat{display:none}
 .btn-icon{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.06);color:var(--text);display:flex;align-items:center;justify-content:center;font-size:18px;transition:background .2s}
 .btn-icon:active{background:rgba(31,111,255,0.2)}
 
@@ -229,18 +302,19 @@ input{font-family:inherit;border:none;outline:none}
 
 /* Bubbles */
 .bubble{
-    max-width:85%;margin-bottom:12px;
-    padding:14px 16px;
-    background:var(--bg-glass);backdrop-filter:blur(16px) saturate(160%);
-    border:1px solid var(--glass-border);
-    animation:bubbleIn .35s cubic-bezier(0.34,1.56,0.64,1);
+    max-width:88%;margin-bottom:4px;
+    padding:8px 12px;
+    background:transparent;
+    border:none;
+    animation:bubbleIn .25s cubic-bezier(0.34,1.56,0.64,1);
     position:relative;
     will-change:transform,opacity;
 }
 .bubble.agent{
     margin-right:auto;
-    border-radius:4px 22px 22px 22px;
-    border-left:3px solid var(--agent-color, var(--blue));
+    border-left:2px solid var(--agent-color, var(--blue));
+    padding-left:12px;
+    background:transparent;
 }
 /* Couleur bordure par agent — injectée via style attr */
 .bubble.agent[data-agent="sly"]      { --agent-color:#3A8DFF }
@@ -269,16 +343,17 @@ input{font-family:inherit;border:none;outline:none}
 }
 .bubble.user{
     margin-left:auto;
-    background:rgba(31,111,255,0.18);
-    border-color:rgba(31,111,255,0.3);
-    border-radius:22px 4px 22px 22px;
+    background:rgba(31,111,255,0.12);
+    border-radius:18px 4px 18px 18px;
+    padding:8px 14px;
+    max-width:78%;
 }
 @keyframes bubbleIn{from{opacity:0;transform:translateY(16px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
-.bubble-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.bubble-avatar-img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(31,111,255,0.3);flex-shrink:0;background:transparent}
-.bubble-emoji{font-size:20px}
-.bubble-name{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
-.bubble-text{font-size:15px;line-height:1.55;word-break:break-word}
+.bubble-header{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.bubble-avatar-img{width:24px;height:24px;border-radius:50%;object-fit:cover;border:1px solid rgba(31,111,255,0.25);flex-shrink:0;background:transparent}
+.bubble-emoji{font-size:16px}
+.bubble-name{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--agent-color,var(--blue))}
+.bubble-text{font-size:14px;line-height:1.6;word-break:break-word;color:var(--text)}
 .bubble-meta{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:11px;color:var(--text-dim)}
 .bubble-replay{
     width:28px;height:28px;border-radius:50%;
@@ -317,15 +392,8 @@ input{font-family:inherit;border:none;outline:none}
 @keyframes whisperIn{from{opacity:0;transform:translateY(10px)}to{opacity:0.7;transform:translateY(0)}}
 @keyframes whisperOut{to{opacity:0;transform:translateY(-10px)}}
 
-/* XP Toast */
-.xp-toast{
-    position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-    font-family:'Orbitron',monospace;font-size:24px;font-weight:900;
-    color:var(--orange);text-shadow:0 0 20px rgba(255,154,60,0.5);
-    z-index:100;pointer-events:none;
-    animation:xpFloat 1.5s ease forwards;
-}
-@keyframes xpFloat{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-120%) scale(1.3)}}
+/* XP Toast — masqué (gamification en arrière-plan uniquement) */
+.xp-toast{display:none!important}
 
 /* ═══════ AGENT DOCK ═══════ */
 .dock{
@@ -662,15 +730,13 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 }
 .badge-toast.visible{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ═══════ 3D AVATAR CANVAS ═══════ */
+/* ═══════ 3D AVATAR CANVAS (legacy) ═══════ */
 #avatarCanvas{
     position:fixed;bottom:110px;right:4px;
     width:100px;height:100px;
     pointer-events:none;z-index:3;
-    opacity:0;transition:opacity .8s ease;
-    border-radius:50%;
+    opacity:0;transition:opacity .5s ease;
 }
-#avatarCanvas.visible{opacity:1}
 
 /* ═══════ 2D AVATAR FLOATING ═══════ */
 #avatarFloat{display:none!important}
@@ -905,8 +971,8 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 
 <div id="onboarding" class="hidden">
   <div id="obSlides">
-    <div class="ob-slide active" data-slide="0"><div class="ob-emoji">&#x1F98A;</div><div class="ob-title">SLY-CHAT</div><div class="ob-desc">Ton companion IA — JARVIS x Sly Cooper. 50 agents experts, des voix, de la memoire.</div></div>
-    <div class="ob-slide" data-slide="1"><div class="ob-emoji">&#x1F3E2;</div><div class="ob-title">COOPER BUILDING</div><div class="ob-desc">50 agents specialises. Chacun sa voix, son expertise, son caractere.</div><div class="ob-agents"><div class="ob-agent"><div class="ob-agent-emoji">&#x1F98A;</div><div class="ob-agent-name">SLY</div><div class="ob-agent-role">Tactique</div></div><div class="ob-agent"><div class="ob-agent-emoji">&#x1F422;</div><div class="ob-agent-name">BENTLEY</div><div class="ob-agent-role">Tech</div></div><div class="ob-agent"><div class="ob-agent-emoji">&#x1F99B;</div><div class="ob-agent-name">MURRAY</div><div class="ob-agent-role">Execution</div></div><div class="ob-agent"><div class="ob-agent-emoji">&#x1F9E0;</div><div class="ob-agent-name">CORTEX</div><div class="ob-agent-role">Strategie</div></div></div></div>
+    <div class="ob-slide active" data-slide="0"><div class="ob-emoji">&#x1F98A;</div><div class="ob-title">SLY-CHAT</div><div class="ob-desc">Ton companion IA — JARVIS x Sly Cooper. 65 agents experts, des voix, de la memoire.</div></div>
+    <div class="ob-slide" data-slide="1"><div class="ob-emoji">&#x1F3E2;</div><div class="ob-title">COOPER BUILDING</div><div class="ob-desc">65 agents specialises. Chacun sa voix, son expertise, son caractere.</div><div class="ob-agents"><div class="ob-agent"><div class="ob-agent-emoji">&#x1F98A;</div><div class="ob-agent-name">SLY</div><div class="ob-agent-role">Tactique</div></div><div class="ob-agent"><div class="ob-agent-emoji">&#x1F422;</div><div class="ob-agent-name">BENTLEY</div><div class="ob-agent-role">Tech</div></div><div class="ob-agent"><div class="ob-agent-emoji">&#x1F99B;</div><div class="ob-agent-name">MURRAY</div><div class="ob-agent-role">Execution</div></div><div class="ob-agent"><div class="ob-agent-emoji">&#x1F9E0;</div><div class="ob-agent-name">CORTEX</div><div class="ob-agent-role">Strategie</div></div></div></div>
     <div class="ob-slide" data-slide="2"><div class="ob-emoji">&#x1F50A;</div><div class="ob-title">VOICE MODE</div><div class="ob-desc">Maintiens le micro pour parler. SLY repond avec de vraies voix IA clonees.</div></div>
     <div class="ob-slide" data-slide="3"><div class="ob-emoji">&#x1F9E0;</div><div class="ob-title">MEMOIRE 4 COUCHES</div><div class="ob-desc">SLY se souvient de toi, de tes projets. Intelligence qui grandit avec toi.</div></div>
     <div class="ob-slide" data-slide="4"><div class="ob-emoji">&#x1F680;</div><div class="ob-title">PRET A DEMARRER</div><div class="ob-desc">Bienvenue dans le Cooper Building. Ton empire commence ici.</div></div>
@@ -1136,7 +1202,7 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 })();
 </script>
 
-<!-- 3D AVATAR CANVAS -->
+<!-- 3D AVATAR CANVAS (legacy — hidden) -->
 <canvas id="avatarCanvas"></canvas>
 
 <!-- 2D AVATAR FLOATING -->
@@ -1181,16 +1247,33 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
         <button class="btn-icon" id="btnMenu">☰</button>
         <div class="header-center">
             <div class="header-title">SLY-CHAT</div>
-            <div class="header-agent-indicator" id="activeAgentIndicator">
-                <span class="agent-dot"></span>
-                <span class="agent-label" id="activeAgentLabel">SLY</span>
+            <!-- Strip 65 agents scrollable — agent actif mis en avant -->
+            <div class="header-agents-strip" id="headerAgentsStrip">
+                <span class="header-strip-label">65 agents</span>
+                <!-- Généré dynamiquement par JS -->
             </div>
         </div>
-        <div class="header-stat">⭐<span class="val" id="levelDisplay">Niv.1</span></div>
-        <div class="header-stat">🔥<span class="val" id="streakDisplay">0j</span></div>
         <button class="btn-icon" id="btnSettings">⚙</button>
     </div>
-    <div class="xp-bar"><div class="xp-bar-fill" id="xpBar" style="width:0%"></div></div>
+    <!-- XP bar masquée mais fonctionnelle pour la logique -->
+    <div class="xp-bar" style="display:none"><div class="xp-bar-fill" id="xpBar" style="width:0%"></div></div>
+    <!-- Elements cachés pour la logique gamif -->
+    <span id="levelDisplay" style="display:none">Niv.1</span>
+    <span id="streakDisplay" style="display:none">0j</span>
+
+    <!-- HOME SCREEN — Gemini style (visible au boot, disparaît au 1er message) -->
+    <div id="homeScreen">
+        <div class="home-logo"></div>
+        <div class="home-greeting">Bonjour Augus 👋</div>
+        <div class="home-title">Qu'est-ce qu'on règle aujourd'hui ?</div>
+        <div class="home-suggestions" id="homeSuggestions">
+            <button class="home-pill" data-prompt="Bilan du jour — KPIs et opportunités">📊 Bilan du jour</button>
+            <button class="home-pill" data-prompt="Situation Upwork — nouvelles opportunités à saisir">💼 Upwork</button>
+            <button class="home-pill" data-prompt="Stratégie du jour — quelle est la priorité absolue ?">🎯 Stratégie</button>
+            <button class="home-pill" data-prompt="KDP — niches carnets Amazon à exploiter">📚 KDP</button>
+            <button class="home-pill" data-prompt="Situation clients — Lurie, Giovani, Didier">🤝 Clients</button>
+        </div>
+    </div>
 
     <!-- Chat -->
     <div class="chat-area" id="chatArea"><div class="scroll-anchor"></div></div>
@@ -1406,6 +1489,29 @@ const AGENTS = {
     havoc:    {name:'HAVOC',emoji:'💥',voice:'sarkozy',color:'#FF3B5C',role:'Stress-test & adversaire'},
     atlas:    {name:'ATLAS',emoji:'🌌',voice:'freeman',color:'#1F6FFF',role:'Vision civilisationnelle 10 ans'},
     pulse:    {name:'PULSE',emoji:'💓',voice:'tomhanks',color:'#FF3B5C',role:'Performance & monitoring'},
+    // ═══ 65 AGENTS — nouveaux (22 ajoutés pour compléter le roster) ═══
+    navigator:{name:'NAVIGATOR',emoji:'🧭',voice:'freeman',color:'#00E5FF',role:'Orientation stratégique & boussole'},
+    forge:    {name:'FORGE',emoji:'🔥',voice:'brucewillis',color:'#FF6B35',role:'Production intense & création sous pression'},
+    compass:  {name:'COMPASS',emoji:'🌐',voice:'pujadas',color:'#1EFF8E',role:'Vision géopolitique & tendances mondiales'},
+    vector:   {name:'VECTOR',emoji:'📐',voice:'journtf1',color:'#00E5FF',role:'Calcul vectoriel & modèles complexes'},
+    vortex:   {name:'VORTEX',emoji:'🌀',voice:'sarkozy',color:'#7A3CFF',role:'Disruption créative & chaos constructif'},
+    herald:   {name:'HERALD',emoji:'📢',voice:'bradpitt',color:'#FFD740',role:'Communication & annonces stratégiques'},
+    archive:  {name:'ARCHIVE',emoji:'📁',voice:'gandalf',color:'#B18CFF',role:'Mémoire long terme & historique décisions'},
+    praxis:   {name:'PRAXIS',emoji:'⚙️',voice:'tomhanks',color:'#1F6FFF',role:'Mise en pratique & opérationnalisation'},
+    catalyst: {name:'CATALYST',emoji:'⚗️',voice:'homersimpson',color:'#1EFF8E',role:'Accélérateur & déclencheur de changement'},
+    oracle:   {name:'ORACLE',emoji:'🔯',voice:'secretstory',color:'#B18CFF',role:'Intelligence prédictive & signaux faibles'},
+    axiom:    {name:'AXIOM',emoji:'📏',voice:'pujadas',color:'#00E5FF',role:'Principes fondamentaux & logique irréfutable'},
+    spark:    {name:'SPARK',emoji:'✨',voice:'sarkozy',color:'#E040FB',role:'Inspiration instantanée & génération d\'idées'},
+    titan:    {name:'TITAN',emoji:'🏔️',voice:'brucewillis',color:'#FF9A3C',role:'Projets monumentaux & envergure maximale'},
+    nexion:   {name:'NEXION',emoji:'🔗',voice:'gandalf',color:'#7A3CFF',role:'Connexions invisibles & ponts inter-systèmes'},
+    cipher2:  {name:'CIPHER-X',emoji:'🔒',voice:'secretstory',color:'#FF3B5C',role:'Chiffrement & sécurité avancée'},
+    ghost:    {name:'GHOST',emoji:'👤',voice:'secretstory',color:'#7A3CFF',role:'Opérations silencieuses & discrétion totale'},
+    nexus2:   {name:'NEXUS-II',emoji:'🕸️',voice:'freeman',color:'#1EFF8E',role:'Réseau inter-agents & coordination globale'},
+    apex:     {name:'APEX',emoji:'🔺',voice:'brucewillis',color:'#FF3B5C',role:'Niveau maximal & dépassement des limites'},
+    lumen:    {name:'LUMEN',emoji:'💡',voice:'tomhanks',color:'#FFD740',role:'Clarté conceptuelle & illumination des angles morts'},
+    meridian: {name:'MERIDIAN',emoji:'🌙',voice:'gandalf',color:'#B18CFF',role:'Équilibre & point zéro entre les forces'},
+    aether:   {name:'AETHER',emoji:'🌫️',voice:'freeman',color:'#00E5FF',role:'Abstraction pure & pensée méta-systémique'},
+    zeus:     {name:'ZEUS',emoji:'⚡',voice:'brucewillis',color:'#FFD740',role:'Décision souveraine & pouvoir de tranchage'},
 };
 
 const DOCK_DEFAULT = ['sly','bentley','murray'];
@@ -1722,7 +1828,7 @@ function buildSystemPrompt(agentKey) {
         if (randomMem?.text) microMoments = `\nSOUVENIR À RÉFÉRENCER NATURELLEMENT (si pertinent) : "${randomMem.text}"`;
     }
     return `${persona}
-CONTEXTE : Le Cooper Building est l'écosystème de 50 agents IA d'Augus — son empire.
+CONTEXTE : Le Cooper Building est l'écosystème de 65 agents IA d'Augus — son empire.
 RÈGLES ABSOLUES :
 - Réponds en français, court et percutant (3-5 phrases max sauf si demandé plus)
 - Tutoie Augus, ton = pote intelligent, loyal, proactif
@@ -1840,11 +1946,21 @@ function onTyping(text) {
 // ═══════ SEND MESSAGE ═══════
 let _lastSendTime = 0;
 let _isVocalMessage = false; // Flag for +10 XP on vocal
+function _exitHomeMode() {
+    const app = document.getElementById('app');
+    if (app && app.classList.contains('home-mode')) {
+        app.classList.remove('home-mode');
+        const chatArea = document.getElementById('chatArea');
+        if (chatArea) { chatArea.style.display = ''; }
+    }
+}
+
 async function sendMessage(text) {
     if (!text.trim() || isStreaming) return;
     const now = Date.now();
     if (now - _lastSendTime < 500) return; // 500ms debounce
     _lastSendTime = now;
+    _exitHomeMode(); // Quitter le home screen au premier message
 
     // Check for commands FIRST
     const cmd = detectCommand(text);
@@ -2306,6 +2422,7 @@ function drawPixelSprite(canvas, spriteData) {
 }
 
 function renderDock() {
+    renderHeaderStrip();
     const dock = document.getElementById('dock');
     dock.innerHTML = '';
     DOCK_DEFAULT.forEach(key => {
@@ -2355,9 +2472,50 @@ function showOfflineBadge() {
     _offlineBadgeTimer = setTimeout(function(){ badge.remove(); }, 5000);
 }
 
+function renderHeaderStrip() {
+    const strip = document.getElementById('headerAgentsStrip');
+    if (!strip) return;
+    // Garder le label "65 agents"
+    const label = strip.querySelector('.header-strip-label');
+    strip.innerHTML = '';
+    if (label) strip.appendChild(label);
+    else {
+        const lbl = document.createElement('span');
+        lbl.className = 'header-strip-label';
+        lbl.textContent = '65 agents';
+        strip.appendChild(lbl);
+    }
+    // Ordre : leaders en premier, puis tous les autres
+    const priority = ['sly','bentley','murray','omega','sentinel'];
+    const rest = AGENT_KEYS.filter(k => !priority.includes(k));
+    const ordered = [...priority, ...rest];
+    ordered.forEach(key => {
+        const a = AGENTS[key];
+        if (!a) return;
+        const sp = document.createElement('span');
+        sp.className = 'hsa' + (key === currentAgent ? ' active' : '');
+        sp.textContent = a.emoji;
+        sp.title = a.name + ' — ' + a.role;
+        sp.setAttribute('data-agent-key', key);
+        sp.onclick = () => {
+            currentAgent = key;
+            document.querySelectorAll('.hsa').forEach(el => el.classList.remove('active'));
+            sp.classList.add('active');
+            highlightDockAgent(key);
+            updateActiveAgentIndicator(key);
+            sp.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        };
+        strip.appendChild(sp);
+    });
+}
+
 function updateActiveAgentIndicator(key) {
     const lbl = document.getElementById('activeAgentLabel');
     if (lbl && AGENTS[key]) lbl.textContent = AGENTS[key].name;
+    // Mettre à jour le strip header
+    document.querySelectorAll('.hsa').forEach(el => {
+        el.classList.toggle('active', el.getAttribute('data-agent-key') === key);
+    });
 }
 
 var _placeholderTimer = null;
@@ -2545,7 +2703,7 @@ const DREAM_WHISPERS = [
     '🔨 Anvil a rangé ses outils. Même la forge dort.',
     '⚡ Volt met les systèmes en veille profonde...',
     '🏴‍☠️ Hunter patrouille les couloirs sombres...',
-    '🌙 Le Building respire. 50 agents rechargent leurs batteries.',
+    '🌙 Le Building respire. 65 agents rechargent leurs batteries.',
     '⚔️ Dreyfus monte la garde en silence...',
 ];
 
@@ -2830,10 +2988,25 @@ function runSplash() {
         var sp = document.getElementById('splash');
         var ap = document.getElementById('app');
         if (sp) { sp.style.setProperty('display','none','important'); sp.style.setProperty('visibility','hidden','important'); sp.classList.add('hidden'); }
-        if (ap) { ap.style.setProperty('display','flex','important'); ap.style.flexDirection='column'; ap.style.height='100dvh'; ap.style.position='relative'; ap.classList.add('visible'); }
+        if (ap) { ap.style.setProperty('display','flex','important'); ap.style.flexDirection='column'; ap.style.height='100dvh'; ap.style.position='relative'; ap.classList.add('visible'); ap.classList.add('home-mode'); }
         // 2. Boot séquentiel
         setTimeout(function(){ try { loadState(); } catch(e){ console.error('[boot] loadState:', e); } }, 0);
         setTimeout(function(){ try { renderDock(); updateActiveAgentIndicator(currentAgent); startPlaceholderCycle(); } catch(e){ console.error('[boot] renderDock:', e); } }, 20);
+        // Pills home screen — clic = remplir input + envoyer
+        setTimeout(function(){
+            try {
+                document.querySelectorAll('.home-pill').forEach(function(pill) {
+                    pill.addEventListener('click', function() {
+                        var prompt = pill.getAttribute('data-prompt');
+                        if (!prompt) return;
+                        var input = document.getElementById('chatInput');
+                        if (input) input.value = prompt;
+                        sendMessage(prompt);
+                        if (input) input.value = '';
+                    });
+                });
+            } catch(e) { console.error('[boot] pills:', e); }
+        }, 30);
         setTimeout(function(){ try { updateXPDisplay(); updateStreak(); } catch(e){} }, 40);
         setTimeout(function(){ try { initParticles(); } catch(e){} }, 60);
         setTimeout(function(){ try { initSTT(); scheduleWhisper(); } catch(e){} }, 80);
@@ -2844,7 +3017,7 @@ function runSplash() {
                 var h = new Date().getHours();
                 var salut = h<6?'Nuit blanche, Commandant ?':h<12?'Bonjour Commandant.':h<18?'Bon après-midi.':'Bonsoir, Commandant.';
                 var opts = [
-                    salut+' Le Building t\'attendait. 50 agents prêts. Go.',
+                    salut+' Le Building t\'attendait. 65 agents prêts. Go.',
                     salut+' SENTINEL a scanné — tout est propre. On démarre ?',
                     salut+' Tous les systèmes en ligne. À tes ordres.',
                 ];
@@ -2985,6 +3158,8 @@ function _bindAppListeners() {
             // Guard : ne pas démarrer STT pendant lecture TTS (évite boucle écho)
             if (isPlaying) { stopSpeaking(); return; }
             initAudio();
+            // SPECTER fix — forcer resume() iOS Safari (AudioContext suspendu après silence)
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
             stopSpeaking();
             if (recognition) {
                 isRecording = true;
@@ -4034,7 +4209,7 @@ function closeWarCouncil() {
 function detectCommand(text) {
     const t = text.toLowerCase().trim();
     if (/^\/help$/i.test(t)) return { command: '/help', handler: () => {
-        addBubble('agent', 'sentinel', `🎯 COMMANDES DISPONIBLES :\n/help — Cette aide\n/clear — Effacer le chat\n/stats — Statistiques complètes\n/cooper — Conseil de Guerre (SLY+BENTLEY+MURRAY)\n/agents — Grille 50 agents\n/voice [agent] — Changer de voix TTS\n/dream — Toggle Dream Mode 🌙\n/bridge — Status backend Railway\n\n🗣️ PHRASES NATURELLES :\n"Clan Cooper, [mission]" → Conseil de Guerre\n"Tout le Building" → 50 agents\n"Mon empire" / "Vision 10 ans" → ATLAS+OMEGA+CHRONOS\n"Stratégie Upwork" → MERCER+CLOSER+HUNTER\n"Audit complet" → CORTEX+DATUM+PULSE\n"Bilan du jour" → DATUM bilan express`);
+        addBubble('agent', 'sentinel', `🎯 COMMANDES DISPONIBLES :\n/help — Cette aide\n/clear — Effacer le chat\n/stats — Statistiques complètes\n/cooper — Conseil de Guerre (SLY+BENTLEY+MURRAY)\n/agents — Grille 65 agents\n/voice [agent] — Changer de voix TTS\n/dream — Toggle Dream Mode 🌙\n/bridge — Status backend Railway\n\n🗣️ PHRASES NATURELLES :\n"Clan Cooper, [mission]" → Conseil de Guerre\n"Tout le Building" → 65 agents\n"Mon empire" / "Vision 10 ans" → ATLAS+OMEGA+CHRONOS\n"Stratégie Upwork" → MERCER+CLOSER+HUNTER\n"Audit complet" → CORTEX+DATUM+PULSE\n"Bilan du jour" → DATUM bilan express`);
     }};
     if (/^\/clear$/i.test(t)) return { command: '/clear', handler: () => {
         document.getElementById('chatArea').innerHTML = '';
@@ -4071,10 +4246,10 @@ function detectCommand(text) {
         trackBadge('cooper_invoked');
         launchWarCouncil(text);
     }};
-    if (/tout le building|mobilisation|50 agents|tous les agents/i.test(t)) return { command: '/cooper-all', handler: () => {
-        addBubble('agent', 'sentinel', `🎯 ${pickConfirmation()} 50 agents déployés !`);
+    if (/tout le building|mobilisation|65 agents|tous les agents/i.test(t)) return { command: '/cooper-all', handler: () => {
+        addBubble('agent', 'sentinel', `🎯 ${pickConfirmation()} 65 agents déployés !`);
         // Lance 3 agents séquentiellement : OMEGA vision, CORTEX plan, SLY tactique
-        launchMultiAgent(['omega','cortex','sly'], text, "Mobilisation générale 50 agents. Analyse complète et plan d'action.");
+        launchMultiAgent(['omega','cortex','sly'], text, "Mobilisation générale 65 agents. Analyse complète et plan d'action.");
     }};
     if (/audit|analyse complète|check complet/i.test(t)) return { command: '/audit', handler: () => {
         addBubble('agent', 'cortex', `🧠 ${pickConfirmation()} Audit lancé — CORTEX + DATUM + PULSE.`);
@@ -4180,7 +4355,7 @@ const PROACTIVE_QUOTES = [
     { agent: 'franklin', text: "La fortune favorise les audacieux. — Virgile" },
     { agent: 'franklin', text: "Sénèque : Nous souffrons plus souvent en imagination qu'en réalité." },
     { agent: 'omega', text: "Chaque action d'aujourd'hui construit l'empire de demain." },
-    { agent: 'omega', text: "Le Building veille. 50 agents, 0 anomalie." },
+    { agent: 'omega', text: "Le Building veille. 65 agents, 0 anomalie." },
     { agent: 'omega', text: "La patience est la compagne de la sagesse. — Saint Augustin" },
     { agent: 'cortex', text: "Rappel : vérifie tes KPIs de la semaine." },
     { agent: 'cortex', text: "Tes données du jour sont prêtes pour analyse." },
@@ -4633,7 +4808,7 @@ setInterval(() => Sessions.saveCurrent(), 30000);
 window.addEventListener('beforeunload', () => Sessions.saveCurrent());
 
 // ═══════ PATCH AGENT MODAL ═══════
-// Ajouter les sections complètes pour les 50 agents
+// Ajouter les sections complètes pour les 65 agents
 const _origOpenModal = openAgentModal;
 openAgentModal = function() {
     const modal = document.getElementById('agentModal');
@@ -4904,14 +5079,12 @@ const SlyAvatar = (() => {
             powerPreference: 'default'
         });
         renderer.setClearColor(0x000000, 0);
-        const W = canvas.clientWidth || 100;
-        const H = canvas.clientHeight || 100;
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
-        renderer.setSize(W, H);
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
 
         scene = new THREE.Scene();
-        camera = new THREE.PerspectiveCamera(35, W / H, 0.1, 50);
+        camera = new THREE.PerspectiveCamera(35, canvas.clientWidth / canvas.clientHeight, 0.1, 50);
         camera.position.set(0, 1.2, 3);
         camera.lookAt(0, 0.8, 0);
 
@@ -5382,17 +5555,13 @@ const SlyAvatar = (() => {
         setTimeout(() => init(), 1500);
     }
 
-    // Expose 3D to global scope — PRIMARY avatar controller
+    // Expose 3D to global scope (legacy — hidden by CSS)
     window.SlyAvatar3D = { init, dispose, setState, lazyBoot, switchModel };
-    window.SlyAvatar = { init, dispose, setState, lazyBoot, switchModel };
 })();
 } catch(e) { console.log('3D init skipped:', e.message); }
 } // end initThreeJS
-// Lancer Three.js 3s après load (splash terminé) puis init l'avatar
-setTimeout(async () => {
-    await initThreeJS();
-    if (window.SlyAvatar3D) window.SlyAvatar3D.lazyBoot();
-}, 3000);
+// Lancer Three.js seulement 3s après load (splash terminé)
+setTimeout(initThreeJS, 3000);
 
 // ═══════ 2D AVATAR SYSTEM (replaces 3D) ═══════
 (() => {
@@ -5451,14 +5620,9 @@ setTimeout(async () => {
         avatarEl.classList.remove('visible');
     }
 
-    // 2D system — stand-alone, ne touche pas window.SlyAvatar (géré par 3D)
-    // Fallback : si 3D non disponible après 5s, activer le 2D
-    setTimeout(() => {
-        if (!window.SlyAvatar) {
-            window.SlyAvatar = { init, dispose, setState, lazyBoot: init, switchModel };
-            init();
-        }
-    }, 5000);
+    // Expose — OVERRIDES the 3D avatar
+    window.SlyAvatar = { init, dispose, setState, lazyBoot: init, switchModel };
+    init();
 })();
 </script>
 <script>
@@ -5521,7 +5685,7 @@ window._ttsWebSpeechFallback=function(text,agentKey){ if(!window.speechSynthesis
 function shareStreak() {
   const text = streak > 0
     ? "Je suis sur une serie de " + streak + " jours avec SLY-CHAT — mon companion IA JARVIS x Sly Cooper. Cooper Building en marche! https://augustinfrance-aico.github.io/sly-chat/"
-    : "J'utilise SLY-CHAT — JARVIS x Sly Cooper. 50 agents IA, memoire, voix. https://augustinfrance-aico.github.io/sly-chat/";
+    : "J'utilise SLY-CHAT — JARVIS x Sly Cooper. 65 agents IA, memoire, voix. https://augustinfrance-aico.github.io/sly-chat/";
   if (navigator.share) {
     navigator.share({ title: 'SLY-CHAT', text: text, url: 'https://augustinfrance-aico.github.io/sly-chat/' }).catch(()=>{});
   } else {
