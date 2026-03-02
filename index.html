@@ -197,6 +197,56 @@ input{font-family:inherit;border:none;outline:none}
 #app{display:none;flex-direction:column;height:100dvh;position:relative}
 #app.visible{display:flex}
 
+/* ═══════ HOME SCREEN — GEMINI STYLE ═══════ */
+#homeScreen{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:24px 20px 16px;gap:0;
+    transition:opacity .3s ease,transform .3s ease;
+}
+#homeScreen.hidden{display:none}
+/* Logo Sly — rond bleu glow comme OpenAI mais SLY */
+.home-logo{
+    width:96px;height:96px;border-radius:50%;
+    border:2px solid rgba(31,111,255,0.6);
+    box-shadow:0 0 0 6px rgba(31,111,255,0.08),0 0 24px rgba(31,111,255,0.7),0 0 48px rgba(31,111,255,0.35);
+    background:url('sly_logo_nobg.png') center/82% no-repeat,rgba(6,10,18,0.7);
+    margin-bottom:28px;
+    animation:homeLogoPulse 3s ease-in-out infinite;
+}
+@keyframes homeLogoPulse{
+    0%,100%{box-shadow:0 0 0 6px rgba(31,111,255,0.08),0 0 24px rgba(31,111,255,0.7),0 0 48px rgba(31,111,255,0.35)}
+    50%{box-shadow:0 0 0 8px rgba(31,111,255,0.12),0 0 32px rgba(31,111,255,0.9),0 0 64px rgba(31,111,255,0.5)}
+}
+.home-greeting{
+    font-size:14px;font-weight:500;color:var(--text-dim);
+    margin-bottom:6px;letter-spacing:0.3px;
+}
+.home-title{
+    font-size:26px;font-weight:700;color:var(--text);
+    text-align:center;margin-bottom:28px;
+    font-family:'Inter',sans-serif;
+}
+/* Suggestions pills — Gemini style */
+.home-suggestions{
+    display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+    max-width:380px;margin-bottom:0;
+}
+.home-pill{
+    padding:10px 18px;border-radius:24px;
+    background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+    font-size:13px;color:var(--text);cursor:pointer;
+    transition:background .2s,border-color .2s,transform .15s;
+    white-space:nowrap;
+}
+.home-pill:hover,.home-pill:active{
+    background:rgba(31,111,255,0.15);border-color:rgba(31,111,255,0.4);
+    transform:scale(1.03);
+}
+/* Chat area masquée quand home screen actif */
+#app.home-mode .chat-area{display:none}
+#app.home-mode #homeScreen{display:flex}
+#app:not(.home-mode) #homeScreen{display:none}
+
 /* Header */
 .header{
     display:flex;align-items:center;padding:8px 16px;
@@ -252,18 +302,19 @@ input{font-family:inherit;border:none;outline:none}
 
 /* Bubbles */
 .bubble{
-    max-width:85%;margin-bottom:12px;
-    padding:14px 16px;
-    background:var(--bg-glass);backdrop-filter:blur(16px) saturate(160%);
-    border:1px solid var(--glass-border);
-    animation:bubbleIn .35s cubic-bezier(0.34,1.56,0.64,1);
+    max-width:88%;margin-bottom:4px;
+    padding:8px 12px;
+    background:transparent;
+    border:none;
+    animation:bubbleIn .25s cubic-bezier(0.34,1.56,0.64,1);
     position:relative;
     will-change:transform,opacity;
 }
 .bubble.agent{
     margin-right:auto;
-    border-radius:4px 22px 22px 22px;
-    border-left:3px solid var(--agent-color, var(--blue));
+    border-left:2px solid var(--agent-color, var(--blue));
+    padding-left:12px;
+    background:transparent;
 }
 /* Couleur bordure par agent — injectée via style attr */
 .bubble.agent[data-agent="sly"]      { --agent-color:#3A8DFF }
@@ -292,16 +343,17 @@ input{font-family:inherit;border:none;outline:none}
 }
 .bubble.user{
     margin-left:auto;
-    background:rgba(31,111,255,0.18);
-    border-color:rgba(31,111,255,0.3);
-    border-radius:22px 4px 22px 22px;
+    background:rgba(31,111,255,0.12);
+    border-radius:18px 4px 18px 18px;
+    padding:8px 14px;
+    max-width:78%;
 }
 @keyframes bubbleIn{from{opacity:0;transform:translateY(16px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
-.bubble-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.bubble-avatar-img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(31,111,255,0.3);flex-shrink:0;background:transparent}
-.bubble-emoji{font-size:20px}
-.bubble-name{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
-.bubble-text{font-size:15px;line-height:1.55;word-break:break-word}
+.bubble-header{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.bubble-avatar-img{width:24px;height:24px;border-radius:50%;object-fit:cover;border:1px solid rgba(31,111,255,0.25);flex-shrink:0;background:transparent}
+.bubble-emoji{font-size:16px}
+.bubble-name{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--agent-color,var(--blue))}
+.bubble-text{font-size:14px;line-height:1.6;word-break:break-word;color:var(--text)}
 .bubble-meta{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:11px;color:var(--text-dim)}
 .bubble-replay{
     width:28px;height:28px;border-radius:50%;
@@ -1209,6 +1261,20 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
     <span id="levelDisplay" style="display:none">Niv.1</span>
     <span id="streakDisplay" style="display:none">0j</span>
 
+    <!-- HOME SCREEN — Gemini style (visible au boot, disparaît au 1er message) -->
+    <div id="homeScreen">
+        <div class="home-logo"></div>
+        <div class="home-greeting">Bonjour Augus 👋</div>
+        <div class="home-title">Qu'est-ce qu'on règle aujourd'hui ?</div>
+        <div class="home-suggestions" id="homeSuggestions">
+            <button class="home-pill" data-prompt="Bilan du jour — KPIs et opportunités">📊 Bilan du jour</button>
+            <button class="home-pill" data-prompt="Situation Upwork — nouvelles opportunités à saisir">💼 Upwork</button>
+            <button class="home-pill" data-prompt="Stratégie du jour — quelle est la priorité absolue ?">🎯 Stratégie</button>
+            <button class="home-pill" data-prompt="KDP — niches carnets Amazon à exploiter">📚 KDP</button>
+            <button class="home-pill" data-prompt="Situation clients — Lurie, Giovani, Didier">🤝 Clients</button>
+        </div>
+    </div>
+
     <!-- Chat -->
     <div class="chat-area" id="chatArea"><div class="scroll-anchor"></div></div>
     <button class="scroll-bottom" id="scrollBottom" aria-label="Scroll to bottom">↓</button>
@@ -1880,11 +1946,21 @@ function onTyping(text) {
 // ═══════ SEND MESSAGE ═══════
 let _lastSendTime = 0;
 let _isVocalMessage = false; // Flag for +10 XP on vocal
+function _exitHomeMode() {
+    const app = document.getElementById('app');
+    if (app && app.classList.contains('home-mode')) {
+        app.classList.remove('home-mode');
+        const chatArea = document.getElementById('chatArea');
+        if (chatArea) { chatArea.style.display = ''; }
+    }
+}
+
 async function sendMessage(text) {
     if (!text.trim() || isStreaming) return;
     const now = Date.now();
     if (now - _lastSendTime < 500) return; // 500ms debounce
     _lastSendTime = now;
+    _exitHomeMode(); // Quitter le home screen au premier message
 
     // Check for commands FIRST
     const cmd = detectCommand(text);
@@ -2912,10 +2988,25 @@ function runSplash() {
         var sp = document.getElementById('splash');
         var ap = document.getElementById('app');
         if (sp) { sp.style.setProperty('display','none','important'); sp.style.setProperty('visibility','hidden','important'); sp.classList.add('hidden'); }
-        if (ap) { ap.style.setProperty('display','flex','important'); ap.style.flexDirection='column'; ap.style.height='100dvh'; ap.style.position='relative'; ap.classList.add('visible'); }
+        if (ap) { ap.style.setProperty('display','flex','important'); ap.style.flexDirection='column'; ap.style.height='100dvh'; ap.style.position='relative'; ap.classList.add('visible'); ap.classList.add('home-mode'); }
         // 2. Boot séquentiel
         setTimeout(function(){ try { loadState(); } catch(e){ console.error('[boot] loadState:', e); } }, 0);
         setTimeout(function(){ try { renderDock(); updateActiveAgentIndicator(currentAgent); startPlaceholderCycle(); } catch(e){ console.error('[boot] renderDock:', e); } }, 20);
+        // Pills home screen — clic = remplir input + envoyer
+        setTimeout(function(){
+            try {
+                document.querySelectorAll('.home-pill').forEach(function(pill) {
+                    pill.addEventListener('click', function() {
+                        var prompt = pill.getAttribute('data-prompt');
+                        if (!prompt) return;
+                        var input = document.getElementById('chatInput');
+                        if (input) input.value = prompt;
+                        sendMessage(prompt);
+                        if (input) input.value = '';
+                    });
+                });
+            } catch(e) { console.error('[boot] pills:', e); }
+        }, 30);
         setTimeout(function(){ try { updateXPDisplay(); updateStreak(); } catch(e){} }, 40);
         setTimeout(function(){ try { initParticles(); } catch(e){} }, 60);
         setTimeout(function(){ try { initSTT(); scheduleWhisper(); } catch(e){} }, 80);
