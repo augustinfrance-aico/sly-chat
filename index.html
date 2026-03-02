@@ -555,14 +555,28 @@ input{font-family:inherit;border:none;outline:none}
     flex:1;height:48px;padding:0 16px;
     border-radius:24px;background:rgba(11,15,20,0.75);
     color:var(--text);font-size:15px;
-    border:1.5px solid rgba(31,111,255,0.55);
-    box-shadow:0 0 10px rgba(31,111,255,0.18),inset 0 0 8px rgba(31,111,255,0.06);
+    border:2px solid rgba(31,111,255,0.85);
+    box-shadow:
+        0 0 12px rgba(31,111,255,0.55),
+        0 0 28px rgba(31,111,255,0.25),
+        inset 0 0 10px rgba(31,111,255,0.08);
+    animation:inputGlowPulse 3s ease-in-out infinite;
     transition:border-color .2s, box-shadow .2s;
 }
+@keyframes inputGlowPulse{
+    0%,100%{box-shadow:0 0 12px rgba(31,111,255,0.55),0 0 28px rgba(31,111,255,0.25),inset 0 0 10px rgba(31,111,255,0.08)}
+    50%{box-shadow:0 0 18px rgba(31,111,255,0.85),0 0 42px rgba(31,111,255,0.40),0 0 65px rgba(31,111,255,0.12),inset 0 0 14px rgba(31,111,255,0.12)}
+}
 .input-field:focus{
-    border-color:#1F6FFF;
-    box-shadow:0 0 0 3px rgba(31,111,255,0.18),0 0 18px rgba(31,111,255,0.35),inset 0 0 10px rgba(31,111,255,0.1);
+    border-color:#3A8DFF;
+    box-shadow:
+        0 0 0 3px rgba(31,111,255,0.22),
+        0 0 22px rgba(31,111,255,0.95),
+        0 0 48px rgba(31,111,255,0.55),
+        0 0 80px rgba(31,111,255,0.18),
+        inset 0 0 14px rgba(31,111,255,0.14);
     outline:none;
+    animation:none;
 }
 .input-field::placeholder{color:var(--text-dim);transition:color .3s}
 .input-field:focus::placeholder{color:rgba(230,237,245,0.2)}
