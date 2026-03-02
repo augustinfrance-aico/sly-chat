@@ -1223,6 +1223,7 @@ document.addEventListener('touchstart',function _ft(){ _keepAudioAlive(); docume
 async function speakText(agentKey, fullText) {
     if (!autoSpeak || !fullText.trim()) return;
     initAudio();
+    window._wake3d?.(); window._wakeParticles?.();
     if(typeof showWaveform==='function') showWaveform(agentKey);
     const voiceKey = AGENTS[agentKey]?.voice || 'bradpitt';
     const modelId = VOICES[voiceKey];
@@ -1651,6 +1652,7 @@ async function sendMessage(text) {
 
     isStreaming = true;
     updateSendBtn();
+    window._wake3d?.(); window._wakeParticles?.();
 
     let agentKey = detectAgent(text);
     // If regex fell back to default → try async LLM classify (non-blocking for UX)
@@ -2468,13 +2470,33 @@ function initParticles() {
         });
     }
 
+    // ═══ VARIABLE REFRESH RATE — particules ═══
+    // Idle → 1 FPS (économie batterie), actif → 30 FPS
     let lastFrame = 0;
+    let _particleFPS = 30; // FPS courant
+    let _particleIdleTimer = null;
+    let _particleAnimId = null;
+
+    function _setParticleFPS(fps) {
+        _particleFPS = fps;
+    }
+    // Signal activité → repasser à 30 FPS, puis idle après 3s
+    window._wakeParticles = function() {
+        _setParticleFPS(30);
+        clearTimeout(_particleIdleTimer);
+        _particleIdleTimer = setTimeout(() => _setParticleFPS(1), 3000);
+    };
+
     function animate(ts) {
-        if (ts - lastFrame < 33) { requestAnimationFrame(animate); return; } // 30fps cap
+        _particleAnimId = requestAnimationFrame(animate);
+        const frameMs = 1000 / _particleFPS;
+        if (ts - lastFrame < frameMs) return;
         lastFrame = ts;
+        if (document.hidden) return; // pas de rendu si tab cachée
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         particles.forEach(p => {
-            p.x += p.vx; p.y += p.vy;
+            // En idle (1 FPS) on skip le mouvement pour économiser
+            if (_particleFPS > 1) { p.x += p.vx; p.y += p.vy; }
             if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0;
             if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0;
             ctx.beginPath();
@@ -2484,8 +2506,9 @@ function initParticles() {
             ctx.fill();
         });
         ctx.globalAlpha = 1;
-        requestAnimationFrame(animate);
     }
+    // Démarrer en idle — activer sur interaction
+    _setParticleFPS(1);
     requestAnimationFrame(animate);
 }
 
@@ -3684,6 +3707,7 @@ async function launchMultiAgent(agentKeys, userText, contextHint = '') {
     if (isStreaming) return;
     isStreaming = true;
     updateSendBtn();
+    window._wake3d?.(); window._wakeParticles?.();
     addBubble('user', null, userText);
 
     for (const agentKey of agentKeys) {
@@ -5037,12 +5061,25 @@ const SlyAvatar = (() => {
     document.addEventListener('mousemove', onPointerMove, { passive: true });
     document.addEventListener('touchmove', (e) => { if (e.touches[0]) onPointerMove(e.touches[0]); }, { passive: true });
 
-    // ═══ RENDER LOOP ═══
-    function animate() {
+    // ═══ RENDER LOOP — Variable Refresh Rate ═══
+    let _3dFPS = 5, _3dIdleTimer = null, _3dLastFrame = 0;
+    function _set3dFPS(fps) { _3dFPS = fps; }
+    window._wake3d = function() {
+        _set3dFPS(30);
+        clearTimeout(_3dIdleTimer);
+        _3dIdleTimer = setTimeout(() => _set3dFPS(5), 3000);
+    };
+
+    function animate(ts = 0) {
         animFrameId = requestAnimationFrame(animate);
 
         // Skip if hidden (perf)
         if (document.hidden || !canvas.classList.contains('visible')) return;
+
+        // Throttle to target FPS
+        const minInterval = 1000 / _3dFPS;
+        if (ts - _3dLastFrame < minInterval) return;
+        _3dLastFrame = ts;
 
         const delta = clock.getDelta();
         if (mixer) mixer.update(delta);
