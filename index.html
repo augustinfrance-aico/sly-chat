@@ -1899,6 +1899,13 @@ function buildSystemPrompt(agentKey) {
         const randomMem = Memory.deep[Math.floor(Math.random() * Math.min(Memory.deep.length, 5))];
         if (randomMem?.text) microMoments = `\nSOUVENIR À RÉFÉRENCER NATURELLEMENT (si pertinent) : "${randomMem.text}"`;
     }
+    // Emotional state hint
+    const emotHint = (window._emotionalHint && window._emotionalHint.state && window._emotionalHint.state !== 'neutral')
+        ? `\nÉTAT ÉMOTIONNEL DÉTECTÉ : Augus semble ${window._emotionalHint.state === 'stress' ? 'stressé — sois rassurant et efficace' : window._emotionalHint.state === 'tension' ? 'sous tension — reste calme et structuré' : window._emotionalHint.state === 'focus' ? 'en mode focus — va droit au but' : 'de bonne humeur — tu peux être un peu plus décontracté'}.`
+        : '';
+    // Agent evolution hint
+    const evoHint = (typeof AgentEvolution !== 'undefined') ? AgentEvolution.getPersonalityHint(agentKey) : '';
+    const evoLine = evoHint ? `\n${evoHint}` : '';
     return `${persona}
 CONTEXTE : Le Cooper Building est l'écosystème de 65 agents IA d'Augus — son empire.
 RÈGLES ABSOLUES :
@@ -1912,7 +1919,7 @@ MICRO-MOMENTS D'HUMANITÉ (utilise 1 de ces techniques au hasard, PAS à chaque 
 - Hésitation naturelle : commence parfois par "Hmm..." ou "Attends voir..." ou "Ah, bonne question..."
 - Rappel personnel : "Au fait, tu m'avais parlé de..." si un souvenir est fourni ci-dessous
 - Auto-correction : "Non en fait..." pour montrer que tu réfléchis vraiment
-- Blague contextuelle : 1 fois sur 5, une petite ref Sly Cooper ou culture${microMoments}`;
+- Blague contextuelle : 1 fois sur 5, une petite ref Sly Cooper ou culture${microMoments}${emotHint}${evoLine}`;
 }
 
 function selectTier(message) {
