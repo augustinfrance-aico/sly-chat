@@ -874,60 +874,45 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 </div>
 <!-- SPLASH CLOSER — script autonome, indépendant du main script, s'exécute à 5s quoi qu'il arrive -->
 <script>
+// ═══ SPLASH CONTROLLER — single authority ═══
+// Règle : _doBootApp() est la seule fonction qui lance l'app.
+// Le main script la définit. Ce controller attend qu'elle soit prête, puis la déclenche.
 (function(){
-    // ═══ SPLASH CONTROLLER ═══
-    // Deux paths : skip (visité < 2h) ou full splash (5s)
-    // Dans les deux cas, appelle window._splashDone() quand l'app doit démarrer
-
-    function showApp() {
-        var sp = document.getElementById('splash');
-        var ap = document.getElementById('app');
-        if (sp) { sp.style.cssText += ';display:none!important;visibility:hidden!important;pointer-events:none!important'; sp.classList.add('hidden'); }
-        if (ap) { ap.style.setProperty('display','flex','important'); ap.style.flexDirection='column'; ap.style.height='100dvh'; ap.style.position='relative'; ap.classList.add('visible'); }
-    }
-
-    function triggerBoot() {
-        showApp();
-        // Polling : attend que _splashDone soit défini par le main script (chargé en fin de body)
-        var attempts = 0;
-        var interval = setInterval(function() {
-            attempts++;
-            if (typeof window._splashDone === 'function') {
-                clearInterval(interval);
-                window._splashDone();
-            } else if (attempts > 100) { // 5s max
-                clearInterval(interval);
-                console.warn('[splash] _splashDone never defined after 5s');
-            }
-        }, 50);
-    }
-
-    var _lastSplash = parseInt(localStorage.getItem('sly_last_splash') || '0');
-    var skipSplash = Date.now() - _lastSplash < 7200000;
-
-    if (skipSplash) {
-        // Pas de splash — boot immédiat après chargement DOM
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', triggerBoot);
-        } else {
-            triggerBoot();
-        }
-        return;
-    }
-
-    // === FULL SPLASH (5s) ===
-    localStorage.setItem('sly_last_splash', Date.now().toString());
     var SPLASH_DUR = 5000;
-    var _splashClosed = false;
+    var _lastSplash = parseInt(localStorage.getItem('sly_last_splash') || '0');
+    var _skipSplash = (Date.now() - _lastSplash) < 7200000;
+    var _fired = false;
 
-    function closeSplash() {
-        if (_splashClosed) return;
-        _splashClosed = true;
-        triggerBoot();
+    // Attend que _doBootApp soit défini, puis fire après `delay` ms
+    function waitAndBoot(delay) {
+        var t0 = Date.now();
+        var iv = setInterval(function() {
+            if (typeof window._doBootApp === 'function') {
+                clearInterval(iv);
+                var remaining = delay - (Date.now() - t0);
+                if (remaining > 0) {
+                    setTimeout(function(){ if(!_fired){_fired=true; window._doBootApp();} }, remaining);
+                } else {
+                    if(!_fired){_fired=true; window._doBootApp();}
+                }
+            }
+        }, 30);
     }
-    window._closeSplash = closeSplash;
-    setTimeout(closeSplash, SPLASH_DUR);
-    setTimeout(function(){ var s=document.getElementById('splashSub'); if(s) s.classList.add('loaded'); }, SPLASH_DUR * 0.45);
+
+    if (_skipSplash) {
+        // Skip splash — cache immédiatement, boot dès que main script prêt
+        var sp = document.getElementById('splash');
+        if (sp) { sp.style.setProperty('display','none','important'); sp.classList.add('hidden'); }
+        waitAndBoot(0);
+    } else {
+        // Full splash — 5s puis boot
+        localStorage.setItem('sly_last_splash', Date.now().toString());
+        // Teaser texte "COOPER BUILDING" à mi-chemin
+        setTimeout(function(){ var s=document.getElementById('splashSub'); if(s) s.classList.add('loaded'); }, SPLASH_DUR * 0.45);
+        waitAndBoot(SPLASH_DUR);
+    }
+    // Exposer pour permettre skip manuel (tap écran)
+    window._closeSplash = function() { if(!_fired){_fired=true; if(typeof window._doBootApp==='function') window._doBootApp();} };
 })();
 </script>
 
@@ -2533,12 +2518,8 @@ function initParticles() {
 
 // ═══════ SPLASH ═══════
 function runSplash() {
-    // La barre est animée en CSS pur (@keyframes barFill)
-    // La fermeture est gérée par window._closeSplash (script autonome inline)
-    // Ce script gère uniquement : étoiles + log agents + boot app après fermeture
-
     var splash = document.getElementById('splash');
-    if (!splash) { window._splashDone = function(){ try{bootApp();}catch(e){} }; return; }
+    if (!splash) return;
 
     // Étoiles (20 max — léger)
     var starsEl = document.getElementById('sp2Stars');
@@ -2620,17 +2601,22 @@ function runSplash() {
         }, ms);
     });
 
-    // _splashDone est appelé par le splash controller (ci-dessus) quand l'app doit démarrer
-    window._splashDone = function() {
-        // Signal au fallback 7s qu'on a bien démarré
-        if (typeof _bootFallbackFired !== 'undefined') _bootFallbackFired = true;
+    // ─── _doBootApp : SEUL point d'entrée du boot, appelé par le splash controller ───
+    window._doBootApp = function() {
         gangClosed = true;
-        setTimeout(function(){ try { loadState(); } catch(e){ console.error('[_splashDone] loadState:', e); } }, 0);
-        setTimeout(function(){ try { renderDock(); updateActiveAgentIndicator(currentAgent); startPlaceholderCycle(); } catch(e){ console.error('[_splashDone] renderDock:', e); } }, 20);
+        // 1. Cache splash, montre app
+        var sp = document.getElementById('splash');
+        var ap = document.getElementById('app');
+        if (sp) { sp.style.setProperty('display','none','important'); sp.style.setProperty('visibility','hidden','important'); sp.classList.add('hidden'); }
+        if (ap) { ap.style.setProperty('display','flex','important'); ap.style.flexDirection='column'; ap.style.height='100dvh'; ap.style.position='relative'; ap.classList.add('visible'); }
+        // 2. Boot séquentiel
+        setTimeout(function(){ try { loadState(); } catch(e){ console.error('[boot] loadState:', e); } }, 0);
+        setTimeout(function(){ try { renderDock(); updateActiveAgentIndicator(currentAgent); startPlaceholderCycle(); } catch(e){ console.error('[boot] renderDock:', e); } }, 20);
         setTimeout(function(){ try { updateXPDisplay(); updateStreak(); } catch(e){} }, 40);
         setTimeout(function(){ try { initParticles(); } catch(e){} }, 60);
         setTimeout(function(){ try { initSTT(); scheduleWhisper(); } catch(e){} }, 80);
-        setTimeout(function(){ try { bootPhase2(); } catch(e){ console.error('[_splashDone] bootPhase2:', e); } }, 120);
+        setTimeout(function(){ try { bootPhase2(); } catch(e){ console.error('[boot] bootPhase2:', e); } }, 120);
+        // 3. Message bienvenue
         setTimeout(function(){
             try {
                 var h = new Date().getHours();
@@ -2642,12 +2628,11 @@ function runSplash() {
                 ];
                 var msg = opts[Math.floor(Math.random()*opts.length)];
                 localStorage.setItem('sly_last_session', Date.now().toString());
-                var bubbleEl = addBubble('agent','sly',msg);
-                if (!bubbleEl) console.error('[_splashDone] addBubble returned null — chatArea missing?');
+                addBubble('agent','sly',msg);
                 if (autoSpeak) try { speakText('sly',msg); } catch(e){}
-            } catch(e) { console.error('[_splashDone] bienvenue failed:', e); }
+            } catch(e) { console.error('[boot] bienvenue failed:', e); }
         }, 400);
-        // Test silencieux Groq au boot — affiche erreur si down
+        // 4. Test Groq silencieux
         setTimeout(function(){
             try {
                 var gk = window.GROQ_KEY;
@@ -2657,10 +2642,7 @@ function runSplash() {
                     signal: AbortSignal.timeout(5000)
                 }).then(function(r) {
                     if (!r.ok) addBubble('agent','volt','⚠️ Groq API error ('+r.status+') — vérifie la clé dans ⚙');
-                    else console.log('[SLY] Groq OK');
-                }).catch(function(e) {
-                    addBubble('agent','volt','⚠️ Groq unreachable — mode offline activé. ('+e.message+')');
-                });
+                }).catch(function() {});
             } catch(e) {}
         }, 1500);
     };
@@ -4655,64 +4637,10 @@ async function initSessions() {
 // ═══════ LAUNCH ═══════
 initSessions().then(() => {});
 
-// Sécurité race condition : définir _splashDone par défaut avant runSplash()
-// Si le script autonome ferme le splash avant que runSplash() l'override, on boot quand même
-if (typeof window._splashDone !== 'function') {
-    window._splashDone = function() {
-        try { loadState(); } catch(e) { console.error('[_splashDone fallback] loadState:', e); }
-        try { renderDock(); } catch(e) { console.error('[_splashDone fallback] renderDock:', e); }
-        try { bootPhase2(); } catch(e) { console.error('[_splashDone fallback] bootPhase2:', e); }
-        setTimeout(function(){
-            try {
-                var h = new Date().getHours();
-                var salut = h<6?'Nuit blanche, Commandant ?':h<12?'Bonjour Commandant.':h<18?'Bon après-midi.':'Bonsoir, Commandant.';
-                addBubble('agent','sly', salut+' Le Building t\'attendait. 50 agents prêts. Go.');
-            } catch(e) { console.error('[_splashDone fallback] bienvenue failed:', e); }
-        }, 300);
-    };
-}
-
-// runSplash gère tout : barre, boot log, fermeture, bootApp(), bootPhase2()
-try { runSplash(); } catch(e) {
-    console.error('runSplash failed:', e);
-    const app = document.getElementById('app');
-    if (app) { app.style.setProperty('display','flex','important'); app.classList.add('visible'); }
-    const sp = document.getElementById('splash');
-    if (sp) sp.style.setProperty('display','none','important');
-    if (typeof bootApp === 'function') bootApp();
-    try { bootPhase2(); } catch(e2) { console.error('bootPhase2 in runSplash catch:', e2); }
-}
-
-// FALLBACK GARANTI 7s — si _splashDone pas appelé ou si le boot a échoué silencieusement
-var _bootFallbackFired = false;
-setTimeout(function() {
-    if (_bootFallbackFired) return;
-    _bootFallbackFired = true;
-    console.warn('[FALLBACK BOOT 7s] Triggered — _splashDone may not have fired correctly');
-    try {
-        var sp = document.getElementById('splash');
-        var ap = document.getElementById('app');
-        if (sp) { sp.style.setProperty('display','none','important'); sp.style.setProperty('visibility','hidden','important'); }
-        if (ap) { ap.style.setProperty('display','flex','important'); ap.style.flexDirection='column'; ap.style.height='100dvh'; ap.classList.add('visible'); }
-        var chatArea = document.getElementById('chatArea');
-        // Only trigger fallback welcome if chat is empty
-        if (chatArea && chatArea.querySelectorAll('.bubble').length === 0) {
-            console.warn('[FALLBACK BOOT 7s] Chat empty — running emergency boot');
-            try { loadState(); } catch(e) { console.error('[FALLBACK] loadState:', e); }
-            try { renderDock(); } catch(e) { console.error('[FALLBACK] renderDock:', e); }
-            try { bootPhase2(); } catch(e) { console.error('[FALLBACK] bootPhase2:', e); }
-            setTimeout(function(){
-                try {
-                    var h = new Date().getHours();
-                    var salut = h<12?'Bonjour Commandant.':h<18?'Bon après-midi.':'Bonsoir, Commandant.';
-                    addBubble('agent','sly', salut+' Le Building t\'attendait. 50 agents prêts. Go.');
-                } catch(e) { console.error('[FALLBACK] bienvenue failed:', e); }
-            }, 200);
-        } else {
-            console.log('[FALLBACK BOOT 7s] Chat has messages — no action needed');
-        }
-    } catch(e) { console.error('[FALLBACK BOOT 7s] critical error:', e); }
-}, 6000);
+// ─── LAUNCH ───
+// runSplash initialise les animations du splash + définit window._doBootApp
+// Le splash controller (script inline head) appelle _doBootApp au bon moment
+try { runSplash(); } catch(e) { console.error('[runSplash]', e); }
 
 // Phase 3 boot — storage check
 setTimeout(() => { try { checkStorageEstimate(); } catch(e) {} }, 8000);
