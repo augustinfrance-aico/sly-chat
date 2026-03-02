@@ -922,8 +922,10 @@ body.mood-night{--blue:#1555CC;--violet:#4A1A8A;--glass-border:rgba(21,85,204,0.
 .pwa-install-btn:active{transform:scale(0.95)}
 .pwa-dismiss{color:var(--text-dim);font-size:20px;cursor:pointer;padding:0 6px;line-height:1}
 /* TTS indicator */
-.tts-indicator{position:fixed;bottom:calc(68px + var(--safe-bottom));right:12px;z-index:35;font-size:9px;padding:3px 8px;border-radius:6px;background:rgba(31,111,255,0.15);color:var(--blue);border:1px solid rgba(31,111,255,0.2);opacity:0;transition:opacity .3s;pointer-events:none;font-family:monospace}
+.tts-indicator{position:fixed;bottom:calc(68px + var(--safe-bottom));right:12px;z-index:35;font-size:9px;padding:3px 8px;border-radius:6px;background:rgba(31,111,255,0.15);color:var(--blue);border:1px solid rgba(31,111,255,0.2);opacity:0;transition:opacity .3s,background .3s,color .3s;pointer-events:none;font-family:monospace}
 .tts-indicator.visible{opacity:1}
+.tts-indicator.local{background:rgba(122,60,255,0.18);color:#B18CFF;border-color:rgba(122,60,255,0.3)}
+.tts-indicator.fish{background:rgba(30,255,142,0.12);color:#1EFF8E;border-color:rgba(30,255,142,0.25)}
 
 /* Voice picker in settings */
 .voice-select{width:100%;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.06);color:var(--text);border:1px solid var(--glass-border);font-size:14px;font-family:inherit;appearance:none;-webkit-appearance:none;cursor:pointer}
@@ -1682,7 +1684,7 @@ async function speakText(agentKey, fullText) {
     }
     for (const buf of validBufs) { if (audioQueue.length > 20) audioQueue.shift(); audioQueue.push(buf); }
     const _ttsInd = document.getElementById('ttsIndicator');
-    if (_ttsInd) { _ttsInd.textContent = '🔊 fish.audio'; _ttsInd.classList.add('visible'); setTimeout(()=>_ttsInd.classList.remove('visible'),2500); }
+    if (_ttsInd) { _ttsInd.textContent = '🔊 voix IA'; _ttsInd.className = 'tts-indicator visible fish'; setTimeout(()=>_ttsInd.classList.remove('visible'), 2500); }
     if (!isPlaying) { window.SlyAvatar?.setState('talk'); playNext(); }
 }
 
@@ -1713,6 +1715,65 @@ function stopSpeaking() {
     if (currentSource) { try { currentSource.stop(); } catch {} }
     isPlaying = false;
     currentSource = null;
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+}
+
+// ═══════ WEB SPEECH FALLBACK — Voix locale par agent (0 config requise) ═══════
+// Personality sonore : pitch (grave=0.6 ↔ aigu=1.4) + rate (lent=0.85 ↔ rapide=1.15)
+const WS_AGENT_PROFILE = {
+    sly:       { pitch: 1.05, rate: 1.05 },  // Cool, fluide, confident
+    bentley:   { pitch: 1.0,  rate: 0.92 },  // Posé, précis, pro
+    murray:    { pitch: 0.85, rate: 1.12 },  // Grave, dynamique, brut
+    omega:     { pitch: 0.65, rate: 0.85 },  // Très grave, lent, cosmique
+    sentinel:  { pitch: 0.90, rate: 0.95 },  // Grave, autorité, mystère
+    cortex:    { pitch: 1.0,  rate: 1.0  },  // Neutre, analytique
+    franklin:  { pitch: 0.70, rate: 0.88 },  // Grave, sage, ancien
+    anvil:     { pitch: 0.95, rate: 1.05 },  // Chaleureux, pragmatique
+    glitch:    { pitch: 1.20, rate: 1.12 },  // Nerveux, rapide, imprévisible
+    dreyfus:   { pitch: 1.15, rate: 1.0  },  // Aigu relatif, discipliné
+    atlas:     { pitch: 0.62, rate: 0.83 },  // Le plus grave, visionnaire
+    shadow:    { pitch: 0.80, rate: 0.90 },  // Murmure grave, inquiétant
+    hunter:    { pitch: 0.88, rate: 1.08 },  // Dur, direct, rapide
+    sibyl:     { pitch: 1.10, rate: 0.92 },  // Légèrement aigu, mystérieux
+    philomene: { pitch: 1.18, rate: 0.97 },  // Féminin, posé, éloquent
+    pixel:     { pitch: 1.25, rate: 1.10 },  // Fun, énergique, jeu
+    havoc:     { pitch: 1.02, rate: 1.15 },  // Tendu, agressif, stressant
+};
+const WS_DEFAULT = { pitch: 1.0, rate: 1.0 };
+
+function _wsSpeak(text, agentKey) {
+    if (!window.speechSynthesis || !text.trim()) return;
+    window.speechSynthesis.cancel(); // reset queue
+    const voices = window.speechSynthesis.getVoices();
+    // Chercher voix FR (Google, Microsoft, macOS)
+    const frVoice = voices.find(v => /fr[-_]FR/i.test(v.lang) && /google|microsoft|thomas|amelie/i.test(v.name))
+        || voices.find(v => /fr/i.test(v.lang))
+        || null;
+    const profile = WS_AGENT_PROFILE[agentKey] || WS_DEFAULT;
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = 'fr-FR';
+    utt.pitch = profile.pitch;
+    utt.rate = profile.rate;
+    utt.volume = 1;
+    if (frVoice) utt.voice = frVoice;
+    // Badge HUD local (violet = voix locale)
+    const ind = document.getElementById('ttsIndicator');
+    if (ind) { ind.textContent = '🗣️ voix locale'; ind.className = 'tts-indicator visible local'; setTimeout(()=>ind.classList.remove('visible'), 2500); }
+    window.speechSynthesis.speak(utt);
+}
+
+// Assigner le fallback (appelé par speakText quand FishAudio échoue)
+window._ttsWebSpeechFallback = function(text, agentKey) {
+    if (!autoSpeak) return;
+    _wsSpeak(text, agentKey);
+};
+
+// Switch auto WebSpeech→FishAudio à chaud si clé détectée
+function _refreshTtsMode() {
+    const hasKey = !!(localStorage.getItem('sly_fish_key') || '').trim();
+    window.FISH_KEY = hasKey ? localStorage.getItem('sly_fish_key') : '';
+    const ind = document.getElementById('ttsIndicator');
+    if (ind && hasKey) { ind.textContent = '🔊 fish.audio'; }
 }
 
 // ═══════ LLM CASCADE (via PROXY — keys server-side) ═══════
@@ -2749,12 +2810,16 @@ function openSettings() {
               style="padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.06);color:var(--text);border:1px solid rgba(255,255,255,0.12);font-size:12px;font-family:monospace;width:100%;box-sizing:border-box"
               oninput="localStorage.setItem('sly_groq_key',this.value);window.GROQ_KEY=this.value;updateApiStatusBadge()">
           </label>
-          <label style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px">
-            <span style="font-size:11px;color:var(--text-dim)">FishAudio API Key (voix)</span>
-            <input type="password" id="inputFishKey" placeholder="..." value="${localStorage.getItem('sly_fish_key')||''}"
-              style="padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.06);color:var(--text);border:1px solid rgba(255,255,255,0.12);font-size:12px;font-family:monospace;width:100%;box-sizing:border-box"
-              oninput="localStorage.setItem('sly_fish_key',this.value);window.FISH_KEY=this.value;updateApiStatusBadge()">
-          </label>
+          <div style="margin-bottom:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <span style="font-size:11px;color:var(--text-dim)">🔊 Voix IA clonées (FishAudio)</span>
+              <span style="font-size:9px;padding:2px 7px;border-radius:10px;background:rgba(122,60,255,0.18);color:#B18CFF;font-weight:700;letter-spacing:0.5px">${(localStorage.getItem('sly_fish_key')||'').trim() ? '✓ ACTIF' : 'UPGRADE'}</span>
+            </div>
+            ${!(localStorage.getItem('sly_fish_key')||'').trim() ? `<div style="font-size:10px;color:rgba(177,140,255,0.8);margin-bottom:6px;line-height:1.5">🗣️ Mode voix locale actif<br>Déverrouille les vraies voix clonées : Brad Pitt, Morgan Freeman, Gandalf...</div>` : ''}
+            <input type="password" id="inputFishKey" placeholder="Clé FishAudio (fish.audio)" value="${localStorage.getItem('sly_fish_key')||''}"
+              style="padding:8px 10px;border-radius:8px;background:rgba(122,60,255,0.08);color:var(--text);border:1px solid rgba(122,60,255,0.25);font-size:12px;font-family:monospace;width:100%;box-sizing:border-box"
+              oninput="localStorage.setItem('sly_fish_key',this.value);window.FISH_KEY=this.value;_refreshTtsMode();updateApiStatusBadge()">
+          </div>
           <div id="apiStatusBadge" style="font-size:11px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.04)">⏳ Vérification...</div>
         </div>`;
     modal.classList.add('visible');
@@ -3497,43 +3562,20 @@ function detectVoiceMorph(text) {
     return null;
 }
 
-// Patch speakText to use morphed voice
+// Patch speakText to use morphed voice (Voice Morph feature)
 const _origSpeakText = speakText;
 speakText = async function(agentKey, fullText) {
     if (!autoSpeak || !fullText.trim()) return;
-    initAudio();
-    const voiceKey = morphedVoice || AGENTS[agentKey]?.voice || 'bradpitt';
-    const modelId = VOICES[voiceKey];
-    if (!modelId) return;
-
-    const sentences = fullText.match(/[^.!?]+[.!?]+/g) || [fullText];
-    const chunks = [];
-    let current = '';
-    for (const s of sentences) {
-        if ((current + s).length > 290) {
-            if (current) chunks.push(current.trim());
-            current = s;
-        } else { current += s; }
+    // If morphed, override the agent voice key then delegate to original pipeline
+    if (morphedVoice) {
+        // Temporarily override agent voice
+        const _orig = AGENTS[agentKey] ? AGENTS[agentKey].voice : 'bradpitt';
+        if (AGENTS[agentKey]) AGENTS[agentKey].voice = morphedVoice;
+        await _origSpeakText.call(this, agentKey, fullText);
+        if (AGENTS[agentKey]) AGENTS[agentKey].voice = _orig;
+    } else {
+        await _origSpeakText.call(this, agentKey, fullText);
     }
-    if (current.trim()) chunks.push(current.trim());
-
-    const _ttsStart2 = Date.now();
-    const promises = chunks.map(chunk =>
-        fetch(`${API_BASE}/api/tts`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: chunk, voice_id: modelId })
-        }).then(r => {
-            if (r.ok) { Metrics.trackTTFA(_ttsStart2); return r.arrayBuffer(); }
-            return null;
-        }).catch(() => null)
-    );
-
-    const buffers = await Promise.all(promises);
-    for (const buf of buffers) {
-        if (buf) audioQueue.push(buf);
-    }
-    if (!isPlaying) playNext();
 };
 
 // ═══════ NOTIFICATION SOUNDS (Web Audio Synth) ═══════
