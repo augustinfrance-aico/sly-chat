@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Clarius One — Mission Control</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#05070A;--bg2:#0B0F14;--bg3:#121821;
+  --primary:#1F6FFF;--hover:#3A8DFF;--focus:#6FB1FF;
+  --violet:#7A3CFF;--violet-dim:#5B2DBF;
+  --cyan:#00E5FF;--green:#1EFF8E;--red:#FF3B5C;--orange:#FF9A3C;--gold:#DAA520;
+  --text:#E6EDF5;--text-dim:#9BA7B4;--text-faint:#6B7682;
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;overflow-x:hidden;min-height:100vh}
+::selection{background:var(--primary);color:#fff}
+
+/* ── SPLASH ── */
+#splash{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s,visibility .6s}
+#splash.hide{opacity:0;visibility:hidden;pointer-events:none}
+#splash .logo{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;background:linear-gradient(135deg,var(--primary),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:2px;animation:logoIn .8s ease}
+#splash .sub{color:var(--text-dim);font-size:clamp(.9rem,2vw,1.1rem);margin-top:12px;letter-spacing:6px;text-transform:uppercase;animation:logoIn .8s ease .2s both}
+#splash .bar{width:200px;height:3px;background:var(--bg3);border-radius:3px;margin-top:32px;overflow:hidden;animation:logoIn .8s ease .4s both}
+#splash .bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--cyan));border-radius:3px;animation:fillBar 2s ease .6s forwards}
+@keyframes logoIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fillBar{to{width:100%}}
+
+/* ── GRID BG ── */
+#gridbg{position:fixed;inset:0;z-index:0;opacity:.04;background-image:
+  linear-gradient(var(--primary) 1px,transparent 1px),
+  linear-gradient(90deg,var(--primary) 1px,transparent 1px);
+  background-size:60px 60px;animation:gridScroll 30s linear infinite}
+@keyframes gridScroll{to{background-position:60px 60px}}
+
+/* ── MAIN ── */
+main{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:clamp(20px,4vw,60px) clamp(16px,3vw,40px)}
+
+/* ── HEADER ── */
+.header{text-align:center;margin-bottom:clamp(40px,6vw,80px);animation:fadeUp .6s ease}
+.header h1{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;background:linear-gradient(135deg,var(--primary),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header .tagline{color:var(--text-dim);margin-top:8px;font-size:clamp(.85rem,1.5vw,1rem);letter-spacing:3px;text-transform:uppercase}
+.header .client{margin-top:20px;display:inline-flex;align-items:center;gap:8px;padding:8px 20px;background:var(--bg2);border:1px solid rgba(31,111,255,.2);border-radius:99px;font-size:.85rem;color:var(--text-dim)}
+.header .client .dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+
+/* ── STATS BAR ── */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(8px,2vw,16px);margin-bottom:clamp(40px,6vw,64px)}
+.stat{background:var(--bg2);border:1px solid rgba(31,111,255,.12);border-radius:12px;padding:clamp(14px,2vw,24px);text-align:center;transition:border-color .3s,box-shadow .3s}
+.stat:hover{border-color:rgba(31,111,255,.4);box-shadow:0 0 30px rgba(31,111,255,.1)}
+.stat .num{font-size:clamp(1.6rem,3vw,2.4rem);font-weight:800;color:var(--primary);font-variant-numeric:tabular-nums}
+.stat .num.green{color:var(--green)}.stat .num.cyan{color:var(--cyan)}.stat .num.violet{color:var(--violet)}.stat .num.gold{color:var(--gold)}
+.stat .label{color:var(--text-dim);font-size:clamp(.7rem,1.2vw,.8rem);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+
+/* ── MISSION CARDS ── */
+.missions{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(16px,2.5vw,24px);margin-bottom:clamp(40px,6vw,64px)}
+.mission{background:var(--bg2);border:1px solid rgba(31,111,255,.12);border-radius:16px;padding:clamp(20px,3vw,32px);transition:transform .3s,border-color .3s,box-shadow .3s;opacity:0;animation:fadeUp .5s ease forwards}
+.mission:nth-child(1){animation-delay:.1s}.mission:nth-child(2){animation-delay:.2s}
+.mission:nth-child(3){animation-delay:.3s}.mission:nth-child(4){animation-delay:.4s}
+.mission:hover{transform:translateY(-4px);border-color:rgba(31,111,255,.35);box-shadow:0 8px 40px rgba(31,111,255,.12),0 0 60px rgba(122,60,255,.06)}
+.mission-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.mission-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0}
+.mission-icon.blue{background:rgba(31,111,255,.15);border:1px solid rgba(31,111,255,.3)}
+.mission-icon.violet{background:rgba(122,60,255,.15);border:1px solid rgba(122,60,255,.3)}
+.mission-icon.cyan{background:rgba(0,229,255,.15);border:1px solid rgba(0,229,255,.3)}
+.mission-icon.green{background:rgba(30,255,142,.15);border:1px solid rgba(30,255,142,.3)}
+.mission-title{font-size:clamp(.7rem,1.1vw,.78rem);text-transform:uppercase;letter-spacing:2px;color:var(--text-dim)}
+.mission-name{font-size:clamp(1rem,1.8vw,1.2rem);font-weight:700;margin-top:2px}
+.mission-status{margin-left:auto;padding:4px 12px;border-radius:99px;font-size:.7rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;flex-shrink:0}
+.mission-status.active{background:rgba(30,255,142,.12);color:var(--green);border:1px solid rgba(30,255,142,.25)}
+.mission-status.armed{background:rgba(0,229,255,.12);color:var(--cyan);border:1px solid rgba(0,229,255,.25)}
+.mission-desc{color:var(--text-dim);font-size:clamp(.82rem,1.3vw,.9rem);line-height:1.6;margin-bottom:16px}
+.mission-stats{display:flex;gap:clamp(12px,2vw,20px);margin-bottom:16px;flex-wrap:wrap}
+.mission-stat{display:flex;align-items:center;gap:6px;font-size:.8rem}
+.mission-stat .val{font-weight:700;color:var(--primary);font-variant-numeric:tabular-nums}
+.mission-stat .key{color:var(--text-faint);font-size:.72rem;text-transform:uppercase;letter-spacing:.5px}
+
+/* Level bar */
+.level-bar{height:6px;background:var(--bg3);border-radius:6px;overflow:hidden;margin-bottom:16px}
+.level-fill{height:100%;border-radius:6px;width:0;transition:width 1.2s cubic-bezier(.22,1,.36,1)}
+.level-fill.blue{background:linear-gradient(90deg,var(--primary),var(--hover))}
+.level-fill.violet{background:linear-gradient(90deg,var(--violet),#B18CFF)}
+.level-fill.cyan{background:linear-gradient(90deg,#0099AA,var(--cyan))}
+.level-fill.green{background:linear-gradient(90deg,#0A8F50,var(--green))}
+.level-label{display:flex;justify-content:space-between;font-size:.7rem;color:var(--text-faint);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+
+/* Trigger block */
+.trigger{background:var(--bg);border:1px solid rgba(31,111,255,.1);border-radius:8px;padding:10px 14px;font-family:'Cascadia Code','Fira Code',monospace;font-size:.72rem;color:var(--text-dim);overflow-x:auto;margin-bottom:16px;white-space:nowrap}
+.trigger .method{color:var(--green);font-weight:700}
+.trigger .url{color:var(--focus)}
+.trigger .cron{color:var(--orange);font-weight:700}
+
+/* Squad */
+.squad{display:flex;gap:8px;flex-wrap:wrap}
+.squad-member{display:flex;align-items:center;gap:5px;padding:3px 10px;background:var(--bg);border:1px solid rgba(31,111,255,.1);border-radius:99px;font-size:.72rem;color:var(--text-dim);transition:border-color .2s}
+.squad-member:hover{border-color:rgba(31,111,255,.4)}
+.squad-member .av{font-size:.85rem}
+
+/* ── ACHIEVEMENTS ── */
+.achievements{margin-bottom:clamp(40px,6vw,64px)}
+.achievements h2{font-size:clamp(1.1rem,2vw,1.4rem);font-weight:700;margin-bottom:20px;color:var(--text)}
+.badges{display:flex;gap:clamp(12px,2vw,16px);flex-wrap:wrap}
+.badge{display:flex;align-items:center;gap:10px;padding:clamp(12px,2vw,16px) clamp(16px,2vw,24px);background:var(--bg2);border:1px solid rgba(218,165,32,.15);border-radius:12px;transition:border-color .3s,box-shadow .3s}
+.badge:hover{border-color:rgba(218,165,32,.4);box-shadow:0 0 30px rgba(218,165,32,.1)}
+.badge .icon{font-size:1.6rem}
+.badge .info .name{font-size:.85rem;font-weight:700;color:var(--gold)}
+.badge .info .desc{font-size:.72rem;color:var(--text-dim);margin-top:2px}
+
+/* ── TEAM ── */
+.team{margin-bottom:clamp(40px,6vw,64px)}
+.team h2{font-size:clamp(1.1rem,2vw,1.4rem);font-weight:700;margin-bottom:20px}
+.agents-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(140px,20vw,180px),1fr));gap:clamp(10px,1.5vw,14px)}
+.agent-card{background:var(--bg2);border:1px solid rgba(31,111,255,.1);border-radius:12px;padding:clamp(14px,2vw,18px);text-align:center;transition:border-color .3s,transform .3s}
+.agent-card:hover{border-color:rgba(31,111,255,.3);transform:translateY(-2px)}
+.agent-card .emoji{font-size:1.8rem;margin-bottom:6px}
+.agent-card .name{font-weight:700;font-size:.85rem;margin-bottom:2px}
+.agent-card .role{color:var(--text-dim);font-size:.72rem;margin-bottom:10px}
+.xp-bar{height:4px;background:var(--bg);border-radius:4px;overflow:hidden}
+.xp-fill{height:100%;border-radius:4px;width:0;background:linear-gradient(90deg,var(--primary),var(--violet));transition:width 1.5s cubic-bezier(.22,1,.36,1)}
+.xp-label{font-size:.65rem;color:var(--text-faint);margin-top:4px}
+
+/* ── HOW IT WORKS ── */
+.how{margin-bottom:clamp(40px,6vw,64px)}
+.how h2{font-size:clamp(1.1rem,2vw,1.4rem);font-weight:700;margin-bottom:20px}
+.flow{display:flex;align-items:center;gap:clamp(8px,1.5vw,16px);flex-wrap:wrap;justify-content:center}
+.flow-step{background:var(--bg2);border:1px solid rgba(31,111,255,.12);border-radius:12px;padding:clamp(14px,2vw,20px);text-align:center;min-width:120px;flex:1}
+.flow-step .step-icon{font-size:1.4rem;margin-bottom:6px}
+.flow-step .step-name{font-weight:700;font-size:.82rem}
+.flow-step .step-desc{color:var(--text-dim);font-size:.7rem;margin-top:4px}
+.flow-arrow{color:var(--primary);font-size:1.2rem;font-weight:700;flex-shrink:0}
+
+/* ── FOOTER ── */
+footer{text-align:center;padding:40px 20px;border-top:1px solid rgba(31,111,255,.08)}
+footer .brand{font-size:.85rem;color:var(--text-dim);letter-spacing:2px}
+footer .brand span{background:linear-gradient(135deg,var(--primary),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700}
+footer .copy{color:var(--text-faint);font-size:.7rem;margin-top:8px}
+
+/* ── ANIMS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes countUp{from{opacity:0}to{opacity:1}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:700px){
+  .missions{grid-template-columns:1fr}
+  .stats-bar{grid-template-columns:repeat(2,1fr)}
+  .flow{flex-direction:column}
+  .flow-arrow{transform:rotate(90deg)}
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="logo">CLARIUS ONE</div>
+  <div class="sub">Mission Control Loading</div>
+  <div class="bar"><div class="bar-fill"></div></div>
+</div>
+
+<!-- GRID BG -->
+<div id="gridbg"></div>
+
+<main>
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>Mission Control</h1>
+    <div class="tagline">4 Autonomous AI Workflows — Built &amp; Deployed</div>
+    <div class="client"><span class="dot"></span> Client: Clarius One — Nikola Stojanovic</div>
+  </div>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stat"><div class="num" data-target="100">0</div><div class="label">Leads Generated</div></div>
+    <div class="stat"><div class="num green" data-target="4">0</div><div class="label">Active Workflows</div></div>
+    <div class="stat"><div class="num cyan" data-target="0">0</div><div class="label">Critical Bugs</div></div>
+    <div class="stat"><div class="num violet" data-target="8">0</div><div class="label">Agents Deployed</div></div>
+  </div>
+
+  <!-- MISSIONS -->
+  <div class="missions">
+
+    <!-- WF2 LEAD GEN -->
+    <div class="mission" data-observed>
+      <div class="mission-head">
+        <div class="mission-icon blue">&#127919;</div>
+        <div>
+          <div class="mission-title">Mission Alpha</div>
+          <div class="mission-name">Lead Hunter</div>
+        </div>
+        <div class="mission-status active">Active</div>
+      </div>
+      <div class="mission-desc">
+        Send your criteria (industry, location, budget) and AI generates <strong>50 qualified B2B leads</strong> with emails, LinkedIn, revenue data, and a quality score. All saved to your Google Sheet automatically. Cold emails sent instantly.
+      </div>
+      <div class="mission-stats">
+        <div class="mission-stat"><span class="val">50</span><span class="key">Leads/Call</span></div>
+        <div class="mission-stat"><span class="val">10</span><span class="key">Data Columns</span></div>
+        <div class="mission-stat"><span class="val">~2min</span><span class="key">Exec Time</span></div>
+      </div>
+      <div class="level-label"><span>Complexity</span><span>LVL 5</span></div>
+      <div class="level-bar"><div class="level-fill blue" data-width="100%"></div></div>
+      <div class="trigger"><span class="method">POST</span> webhook/671319ec-...-62e827ac5ce1 <span style="color:var(--text-faint)">{ industry, location, company_size, budget_range, service_needed }</span></div>
+      <div class="squad">
+        <span class="squad-member"><span class="av">&#9881;</span> ANVIL</span>
+        <span class="squad-member"><span class="av">&#9889;</span> VOLT</span>
+        <span class="squad-member"><span class="av">&#128373;</span> SPECTER</span>
+        <span class="squad-member"><span class="av">&#129302;</span> SENTINEL</span>
+      </div>
+    </div>
+
+    <!-- WF1 REPORTS -->
+    <div class="mission" data-observed>
+      <div class="mission-head">
+        <div class="mission-icon violet">&#128202;</div>
+        <div>
+          <div class="mission-title">Mission Bravo</div>
+          <div class="mission-name">Performance Reports</div>
+        </div>
+        <div class="mission-status armed">Armed</div>
+      </div>
+      <div class="mission-desc">
+        Every 1st of the month at 8AM, this workflow pulls your <strong>Meta Ads performance data</strong>, asks AI to analyze trends, KPIs, and anomalies, then sends you a beautiful HTML email report with actionable recommendations.
+      </div>
+      <div class="mission-stats">
+        <div class="mission-stat"><span class="val">Monthly</span><span class="key">Frequency</span></div>
+        <div class="mission-stat"><span class="val">Auto</span><span class="key">Trigger</span></div>
+        <div class="mission-stat"><span class="val">HTML</span><span class="key">Format</span></div>
+      </div>
+      <div class="level-label"><span>Complexity</span><span>LVL 4</span></div>
+      <div class="level-bar"><div class="level-fill violet" data-width="80%"></div></div>
+      <div class="trigger"><span class="cron">CRON</span> 1st of each month — 08:00 AM</div>
+      <div class="squad">
+        <span class="squad-member"><span class="av">&#9889;</span> VOLT</span>
+        <span class="squad-member"><span class="av">&#128200;</span> DATUM</span>
+        <span class="squad-member"><span class="av">&#128373;</span> SPECTER</span>
+      </div>
+    </div>
+
+    <!-- WF3 CREATIVE ALERT -->
+    <div class="mission" data-observed>
+      <div class="mission-head">
+        <div class="mission-icon cyan">&#127912;</div>
+        <div>
+          <div class="mission-title">Mission Charlie</div>
+          <div class="mission-name">Creative Alert</div>
+        </div>
+        <div class="mission-status active">Active</div>
+      </div>
+      <div class="mission-desc">
+        When a client uploads creatives (images, videos) for a campaign, this workflow sends them an <strong>instant professional confirmation email</strong> with a summary of what was received. Lightning fast — under 3 seconds.
+      </div>
+      <div class="mission-stats">
+        <div class="mission-stat"><span class="val">&lt;3s</span><span class="key">Response</span></div>
+        <div class="mission-stat"><span class="val">Email</span><span class="key">Output</span></div>
+        <div class="mission-stat"><span class="val">Instant</span><span class="key">Trigger</span></div>
+      </div>
+      <div class="level-label"><span>Complexity</span><span>LVL 3</span></div>
+      <div class="level-bar"><div class="level-fill cyan" data-width="60%"></div></div>
+      <div class="trigger"><span class="method">POST</span> webhook/ca68fa57-...-916d254460d0 <span style="color:var(--text-faint)">{ client_name, client_email, platform, creative_count, ... }</span></div>
+      <div class="squad">
+        <span class="squad-member"><span class="av">&#9881;</span> ANVIL</span>
+        <span class="squad-member"><span class="av">&#9889;</span> VOLT</span>
+        <span class="squad-member"><span class="av">&#128161;</span> AURORA</span>
+      </div>
+    </div>
+
+    <!-- WF4 ANOMALY -->
+    <div class="mission" data-observed>
+      <div class="mission-head">
+        <div class="mission-icon green">&#128680;</div>
+        <div>
+          <div class="mission-title">Mission Delta</div>
+          <div class="mission-name">Anomaly Detector</div>
+        </div>
+        <div class="mission-status armed">Armed</div>
+      </div>
+      <div class="mission-desc">
+        Every 8 hours, this workflow scans all your <strong>Meta Ads accounts</strong>, compares last 7 days vs. previous 7, and flags anomalies (CTR drops, cost spikes). You get an alert email with details — or a "all clear" confirmation.
+      </div>
+      <div class="mission-stats">
+        <div class="mission-stat"><span class="val">8h</span><span class="key">Interval</span></div>
+        <div class="mission-stat"><span class="val">7d vs 7d</span><span class="key">Comparison</span></div>
+        <div class="mission-stat"><span class="val">Auto</span><span class="key">Trigger</span></div>
+      </div>
+      <div class="level-label"><span>Complexity</span><span>LVL 4</span></div>
+      <div class="level-bar"><div class="level-fill green" data-width="80%"></div></div>
+      <div class="trigger"><span class="cron">CRON</span> Every 8 hours — 24/7 monitoring</div>
+      <div class="squad">
+        <span class="squad-member"><span class="av">&#9881;</span> ANVIL</span>
+        <span class="squad-member"><span class="av">&#128373;</span> SPECTER</span>
+        <span class="squad-member"><span class="av">&#128302;</span> DREYFUS</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ACHIEVEMENTS -->
+  <div class="achievements">
+    <h2>Achievements Unlocked</h2>
+    <div class="badges">
+      <div class="badge">
+        <div class="icon">&#127942;</div>
+        <div class="info">
+          <div class="name">50 Leads in One Shot</div>
+          <div class="desc">Lead Hunter generates 50 qualified leads per single API call</div>
+        </div>
+      </div>
+      <div class="badge">
+        <div class="icon">&#128165;</div>
+        <div class="info">
+          <div class="name">Zero Critical Bugs</div>
+          <div class="desc">All 4 workflows passed conclave audit — 0 critical issues</div>
+        </div>
+      </div>
+      <div class="badge">
+        <div class="icon">&#9889;</div>
+        <div class="info">
+          <div class="name">Sub-3s Response</div>
+          <div class="desc">Creative Alert delivers confirmation email in under 3 seconds</div>
+        </div>
+      </div>
+      <div class="badge">
+        <div class="icon">&#128640;</div>
+        <div class="info">
+          <div class="name">4/4 Deployed</div>
+          <div class="desc">All workflows active in production on n8n Cloud</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="how">
+    <h2>How It Works</h2>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="step-icon">&#128232;</div>
+        <div class="step-name">Trigger</div>
+        <div class="step-desc">Webhook call or scheduled cron</div>
+      </div>
+      <div class="flow-arrow">&#10132;</div>
+      <div class="flow-step">
+        <div class="step-icon">&#129302;</div>
+        <div class="step-name">AI Processing</div>
+        <div class="step-desc">Claude analyzes data &amp; generates output</div>
+      </div>
+      <div class="flow-arrow">&#10132;</div>
+      <div class="flow-step">
+        <div class="step-icon">&#128196;</div>
+        <div class="step-name">Google Sheets</div>
+        <div class="step-desc">Data saved automatically</div>
+      </div>
+      <div class="flow-arrow">&#10132;</div>
+      <div class="flow-step">
+        <div class="step-icon">&#9993;</div>
+        <div class="step-name">Email Delivery</div>
+        <div class="step-desc">Reports, alerts &amp; cold emails sent</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEAM -->
+  <div class="team">
+    <h2>Squad — Agents Who Built This</h2>
+    <div class="agents-grid">
+      <div class="agent-card">
+        <div class="emoji">&#9881;</div>
+        <div class="name">ANVIL</div>
+        <div class="role">Core Engineer — Debug &amp; Fix</div>
+        <div class="xp-bar"><div class="xp-fill" data-width="95%"></div></div>
+        <div class="xp-label">XP 9500 / 10000</div>
+      </div>
+      <div class="agent-card">
+        <div class="emoji">&#9889;</div>
+        <div class="name">VOLT</div>
+        <div class="role">Pipeline Architect — Refactor</div>
+        <div class="xp-bar"><div class="xp-fill" data-width="90%"></div></div>
+        <div class="xp-label">XP 9000 / 10000</div>
+      </div>
+      <div class="agent-card">
+        <div class="emoji">&#129302;</div>
+        <div class="name">SENTINEL</div>
+        <div class="role">Routing &amp; Orchestration</div>
+        <div class="xp-bar"><div class="xp-fill" data-width="85%"></div></div>
+        <div class="xp-label">XP 8500 / 10000</div>
+      </div>
+      <div class="agent-card">
+        <div class="emoji">&#128373;</div>
+        <div class="name">SPECTER</div>
+        <div class="role">Security &amp; API Integrity</div>
+        <div class="xp-bar"><div class="xp-fill" data-width="88%"></div></div>
+        <div class="xp-label">XP 8800 / 10000</div>
+      </div>
+      <div class="agent-card">
+        <div class="emoji">&#128302;</div>
+        <div class="name">DREYFUS</div>
+        <div class="role">Audit &amp; Quality Assurance</div>
+        <div class="xp-bar"><div class="xp-fill" data-width="82%"></div></div>
+        <div class="xp-label">XP 8200 / 10000</div>
+      </div>
+      <div class="agent-card">
+        <div class="emoji">&#128161;</div>
+        <div class="name">AURORA</div>
+        <div class="role">Creative &amp; UX Design</div>
+        <div class="xp-bar"><div class="xp-fill" data-width="78%"></div></div>
+        <div class="xp-label">XP 7800 / 10000</div>
+      </div>
+      <div class="agent-card">
+        <div class="emoji">&#128200;</div>
+        <div class="name">DATUM</div>
+        <div class="role">Data &amp; Analytics</div>
+        <div class="xp-bar"><div class="xp-fill" data-width="75%"></div></div>
+        <div class="xp-label">XP 7500 / 10000</div>
+      </div>
+      <div class="agent-card">
+        <div class="emoji">&#128034;</div>
+        <div class="name">FRANKLIN</div>
+        <div class="role">Project Lead &amp; Synthesis</div>
+        <div class="xp-bar"><div class="xp-fill" data-width="92%"></div></div>
+        <div class="xp-label">XP 9200 / 10000</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHAT WAS FIXED -->
+  <div class="how">
+    <h2>Bugs Squashed</h2>
+    <div class="flow" style="flex-wrap:wrap;justify-content:flex-start">
+      <div class="flow-step" style="flex:none;width:auto;min-width:200px">
+        <div class="step-icon">&#128295;</div>
+        <div class="step-name">API Keys Fixed</div>
+        <div class="step-desc">Expression mode → static values on all 4 WFs</div>
+      </div>
+      <div class="flow-step" style="flex:none;width:auto;min-width:200px">
+        <div class="step-icon">&#128220;</div>
+        <div class="step-name">Sheets Mapping</div>
+        <div class="step-desc">Auto-mapping mode for reliable data storage</div>
+      </div>
+      <div class="flow-step" style="flex:none;width:auto;min-width:200px">
+        <div class="step-icon">&#128274;</div>
+        <div class="step-name">Cloud Compatibility</div>
+        <div class="step-desc">fetch() replaced with $http for n8n Cloud</div>
+      </div>
+      <div class="flow-step" style="flex:none;width:auto;min-width:200px">
+        <div class="step-icon">&#128268;</div>
+        <div class="step-name">Webhook Data Path</div>
+        <div class="step-desc">$json.body mapping fixed for all webhooks</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="brand">Powered by <span>Sly Society</span> — Cooper Building</div>
+  <div class="copy">Built with AI-powered automation &bull; n8n Cloud &bull; Claude API &bull; Meta Ads API</div>
+</footer>
+
+<script>
+// Splash dismiss
+setTimeout(()=>document.getElementById('splash').classList.add('hide'),2800);
+
+// Animated counters
+const counters=document.querySelectorAll('.stat .num');
+const animateCount=(el)=>{
+  const target=+el.dataset.target;
+  const dur=1500;
+  const start=performance.now();
+  const tick=(now)=>{
+    const p=Math.min((now-start)/dur,1);
+    const ease=1-Math.pow(1-p,3);
+    el.textContent=Math.round(target*ease);
+    if(p<1)requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+};
+
+// IntersectionObserver for bars + counters
+const obs=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting)return;
+    // Level bars
+    e.target.querySelectorAll('.level-fill,.xp-fill').forEach(bar=>{
+      bar.style.width=bar.dataset.width;
+    });
+    // Counters
+    if(e.target.classList.contains('stats-bar')){
+      counters.forEach(c=>animateCount(c));
+    }
+    obs.unobserve(e.target);
+  });
+},{threshold:.2});
+
+document.querySelectorAll('.mission,.team,.stats-bar').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
