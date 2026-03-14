@@ -1,0 +1,1906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 2 — Master Your AI Coding Tools | Advanced Guide</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #09090b;
+            --card: #111113;
+            --card-hover: #18181b;
+            --border: #27272a;
+            --text: #e4e4e7;
+            --dim: #71717a;
+            --blue: #3b82f6;
+            --cyan: #06b6d4;
+            --green: #22c55e;
+            --yellow: #eab308;
+            --purple: #a855f7;
+            --orange: #f97316;
+            --pink: #ec4899;
+            --red: #ef4444;
+            --emerald: #10b981;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            position: relative;
+            padding: 70px 24px 50px;
+            text-align: center;
+            overflow: hidden;
+            background: radial-gradient(ellipse at 50% 0%, #a855f720 0%, transparent 60%);
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #a855f715;
+            border: 1px solid #a855f730;
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            color: var(--purple);
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: clamp(1.8rem, 5vw, 3rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 14px;
+            background: linear-gradient(135deg, #fff 0%, #a855f7 40%, #ec4899 70%, #f97316 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: var(--dim);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 28px;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat .num {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .hero-stat .label {
+            font-size: 0.7rem;
+            color: var(--dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ===== XP BAR ===== */
+        .xp-bar-wrap {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: #09090bf0;
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 24px;
+        }
+
+        .xp-inner {
+            max-width: 860px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .xp-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--purple);
+            white-space: nowrap;
+        }
+
+        .xp-track {
+            flex: 1;
+            height: 8px;
+            background: #27272a;
+            border-radius: 100px;
+            overflow: hidden;
+        }
+
+        .xp-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--purple), var(--pink), var(--orange));
+            border-radius: 100px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .xp-pct {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--pink);
+            min-width: 40px;
+            text-align: right;
+        }
+
+        /* ===== CONTAINER ===== */
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 36px 24px 80px;
+        }
+
+        /* ===== NAV MAP ===== */
+        .nav-map {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 36px;
+        }
+
+        .nav-btn {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 12px;
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            border-color: var(--purple);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn .nav-icon { font-size: 1.3rem; margin-bottom: 4px; }
+
+        .nav-btn .nav-title {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .nav-btn .nav-sub {
+            font-size: 0.68rem;
+            color: var(--dim);
+        }
+
+        /* ===== CHAPTER ===== */
+        .chapter {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .chapter.completed { border-color: var(--green); box-shadow: 0 0 20px #22c55e10; }
+
+        .ch-header {
+            padding: 22px 26px 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        .ch-header:hover { background: var(--card-hover); }
+
+        .ch-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .ch-info { flex: 1; }
+
+        .ch-tag {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 3px;
+        }
+
+        .ch-info h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .ch-info .ch-desc {
+            font-size: 0.82rem;
+            color: var(--dim);
+        }
+
+        .ch-xp {
+            background: #27272a;
+            padding: 5px 12px;
+            border-radius: 100px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--yellow);
+            white-space: nowrap;
+        }
+
+        .ch-arrow {
+            color: var(--dim);
+            font-size: 1rem;
+            transition: transform 0.3s;
+        }
+
+        .chapter.open .ch-arrow { transform: rotate(180deg); }
+
+        .ch-body {
+            display: none;
+            padding: 0 26px 26px;
+            border-top: 1px solid var(--border);
+        }
+
+        .chapter.open .ch-body { display: block; }
+
+        /* ===== TASK ===== */
+        .task {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 0;
+            border-bottom: 1px solid #27272a40;
+        }
+
+        .task:last-child { border-bottom: none; }
+
+        .tcheck {
+            width: 22px;
+            height: 22px;
+            border-radius: 7px;
+            border: 2px solid var(--border);
+            flex-shrink: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            margin-top: 2px;
+            background: transparent;
+            color: transparent;
+            font-size: 0.75rem;
+        }
+
+        .tcheck:hover { border-color: var(--green); background: #22c55e15; }
+        .tcheck.checked { background: var(--green); border-color: var(--green); color: #fff; }
+        .task.done .tcontent h4 { text-decoration: line-through; color: var(--dim); }
+        .tcontent h4 { color: #fff; font-size: 0.92rem; font-weight: 600; margin-bottom: 3px; }
+        .tcontent p { color: var(--dim); font-size: 0.85rem; }
+
+        /* ===== CODE ===== */
+        .code {
+            background: #09090b;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .code-top {
+            background: #18181b;
+            padding: 7px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-top .lang {
+            font-size: 0.7rem;
+            color: var(--dim);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cbtn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--dim);
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .cbtn:hover { background: var(--purple); border-color: var(--purple); color: #fff; }
+
+        .code pre {
+            padding: 14px 18px;
+            font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+            font-size: 0.83rem;
+            color: var(--cyan);
+            overflow-x: auto;
+            line-height: 1.7;
+        }
+
+        .code pre .cm { color: #52525b; }
+        .code pre .kw { color: var(--purple); }
+        .code pre .str { color: var(--green); }
+        .code pre .fn { color: var(--yellow); }
+        .code pre .hl { color: var(--orange); }
+
+        /* ===== BOXES ===== */
+        .box {
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin: 14px 0;
+            display: flex;
+            gap: 11px;
+            align-items: flex-start;
+        }
+
+        .box .bi { font-size: 1rem; flex-shrink: 0; margin-top: 2px; }
+        .box p { font-size: 0.88rem; line-height: 1.6; }
+        .box strong { color: #fff; }
+
+        .box-tip { background: #3b82f610; border: 1px solid #3b82f625; }
+        .box-tip p { color: #93c5fd; }
+        .box-warn { background: #eab30810; border: 1px solid #eab30825; }
+        .box-warn p { color: #fde68a; }
+        .box-ok { background: #22c55e10; border: 1px solid #22c55e25; }
+        .box-ok p { color: #86efac; }
+        .box-fire { background: #ef444410; border: 1px solid #ef444425; }
+        .box-fire p { color: #fca5a5; }
+        .box-purple { background: #a855f710; border: 1px solid #a855f725; }
+        .box-purple p { color: #c4b5fd; }
+
+        /* ===== COMPARE TABLE ===== */
+        .compare {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            margin: 16px 0;
+            font-size: 0.85rem;
+        }
+
+        .compare th {
+            background: #18181b;
+            color: #fff;
+            font-weight: 700;
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .compare td {
+            padding: 10px 16px;
+            border-bottom: 1px solid #27272a40;
+            color: #a1a1aa;
+        }
+
+        .compare tr:last-child td { border-bottom: none; }
+        .compare tr:hover td { background: #18181b40; }
+
+        .compare .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+
+        .badge-free { background: #22c55e20; color: var(--green); }
+        .badge-paid { background: #eab30820; color: var(--yellow); }
+        .badge-best { background: #a855f720; color: var(--purple); }
+
+        /* ===== CARDS GRID ===== */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .gcard {
+            background: #18181b;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .gcard:hover { transform: translateY(-2px); border-color: #a855f740; }
+        .gcard .gi { font-size: 1.8rem; margin-bottom: 10px; }
+        .gcard h4 { color: #fff; font-size: 0.9rem; font-weight: 700; margin-bottom: 4px; }
+        .gcard p { color: var(--dim); font-size: 0.78rem; }
+
+        /* ===== CHEAT SHEET ===== */
+        .sheet {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            margin: 14px 0;
+        }
+
+        .sheet-item {
+            background: var(--card);
+            padding: 12px 16px;
+        }
+
+        .sheet-item .scmd {
+            font-family: 'Cascadia Code', monospace;
+            font-size: 0.82rem;
+            color: var(--cyan);
+            font-weight: 600;
+        }
+
+        .sheet-item .sdesc {
+            font-size: 0.75rem;
+            color: var(--dim);
+            margin-top: 2px;
+        }
+
+        /* ===== TIMELINE ===== */
+        .timeline {
+            position: relative;
+            padding-left: 28px;
+            margin: 16px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--purple), var(--pink), var(--cyan));
+        }
+
+        .tl-item {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .tl-item::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 7px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--purple);
+            border: 2px solid var(--bg);
+        }
+
+        .tl-item h4 { color: #fff; font-size: 0.95rem; margin-bottom: 2px; }
+        .tl-item .tl-time { color: var(--purple); font-size: 0.75rem; font-weight: 600; margin-bottom: 4px; }
+        .tl-item p { color: #888; font-size: 0.85rem; }
+
+        /* ===== SEPARATOR ===== */
+        .sep { height: 1px; background: var(--border); margin: 18px 0; }
+
+        /* ===== TABS ===== */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin: 16px 0 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab {
+            padding: 10px 18px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--dim);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            background: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .tab:hover { color: #fff; }
+        .tab.active { color: var(--purple); border-bottom-color: var(--purple); }
+
+        .tab-content { display: none; padding-top: 16px; }
+        .tab-content.active { display: block; }
+
+        /* ===== ACHIEVEMENT POPUP ===== */
+        .ach {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #18181b, #27272a);
+            border: 1px solid var(--yellow);
+            border-radius: 16px;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            box-shadow: 0 8px 40px #eab30830;
+            transition: top 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ach.show { top: 20px; }
+        .ach .ach-i { font-size: 1.8rem; }
+        .ach .ach-t h4 { color: var(--yellow); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .ach .ach-t p { color: #fff; font-size: 0.9rem; font-weight: 600; }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            text-align: center;
+            padding: 36px;
+            color: #333;
+            font-size: 0.72rem;
+            border-top: 1px solid #18181b;
+        }
+
+        .footer a { color: var(--purple); text-decoration: none; }
+
+        /* ===== CANVAS ===== */
+        #confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 640px) {
+            .hero { padding: 40px 18px 30px; }
+            .ch-header { padding: 16px 18px 12px; }
+            .ch-body { padding: 0 18px 18px; }
+            .sheet { grid-template-columns: 1fr; }
+            .grid { grid-template-columns: 1fr; }
+            .nav-map { grid-template-columns: repeat(3, 1fr); }
+            .compare { font-size: 0.75rem; }
+            .compare th, .compare td { padding: 8px 10px; }
+        }
+
+        /* ===== ANIM ===== */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chapter { animation: fadeUp 0.4s ease-out both; }
+        .chapter:nth-child(2) { animation-delay: 0.05s; }
+        .chapter:nth-child(3) { animation-delay: 0.1s; }
+        .chapter:nth-child(4) { animation-delay: 0.15s; }
+        .chapter:nth-child(5) { animation-delay: 0.2s; }
+        .chapter:nth-child(6) { animation-delay: 0.25s; }
+        .chapter:nth-child(7) { animation-delay: 0.3s; }
+        .chapter:nth-child(8) { animation-delay: 0.35s; }
+
+        html { scroll-behavior: smooth; }
+        a { color: var(--blue); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<!-- Achievement popup -->
+<div class="ach" id="ach">
+    <div class="ach-i" id="ach-i">🏆</div>
+    <div class="ach-t">
+        <h4>Achievement Unlocked!</h4>
+        <p id="ach-txt">Welcome Back</p>
+    </div>
+</div>
+
+<canvas id="confetti"></canvas>
+
+<!-- XP BAR -->
+<div class="xp-bar-wrap">
+    <div class="xp-inner">
+        <div class="xp-label">PHASE 2 — LVL <span id="lvl">1</span></div>
+        <div class="xp-track">
+            <div class="xp-fill" id="xpfill"></div>
+        </div>
+        <div class="xp-pct" id="xptxt">0%</div>
+    </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+    <div class="hero-badge">🎓 Phase 2 — Advanced</div>
+    <h1>Master Your AI<br>Coding Tools</h1>
+    <p>You set up Claude Code in Phase 1. Now learn to use it like a pro — plus explore Gemini, Copilot, and other AI tools.</p>
+    <div class="hero-stats">
+        <div class="hero-stat"><div class="num">8</div><div class="label">Chapters</div></div>
+        <div class="hero-stat"><div class="num">~30</div><div class="label">Minutes</div></div>
+        <div class="hero-stat"><div class="num">1000</div><div class="label">XP</div></div>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- NAV MAP -->
+    <div class="nav-map">
+        <a class="nav-btn" href="#ch1"><div class="nav-icon">📋</div><div class="nav-title">CLAUDE.md</div><div class="nav-sub">Directives</div></a>
+        <a class="nav-btn" href="#ch2"><div class="nav-icon">🧠</div><div class="nav-title">Memory</div><div class="nav-sub">How it learns</div></a>
+        <a class="nav-btn" href="#ch3"><div class="nav-icon">⚡</div><div class="nav-title">Commands</div><div class="nav-sub">Shortcuts</div></a>
+        <a class="nav-btn" href="#ch4"><div class="nav-icon">🔒</div><div class="nav-title">Safety</div><div class="nav-sub">Hooks & rules</div></a>
+        <a class="nav-btn" href="#ch5"><div class="nav-icon">🤖</div><div class="nav-title">Multi-AI</div><div class="nav-sub">Gemini & more</div></a>
+        <a class="nav-btn" href="#ch6"><div class="nav-icon">🛠️</div><div class="nav-title">Extensions</div><div class="nav-sub">Best tools</div></a>
+        <a class="nav-btn" href="#ch7"><div class="nav-icon">🚀</div><div class="nav-title">Workflows</div><div class="nav-sub">Real examples</div></a>
+        <a class="nav-btn" href="#ch8"><div class="nav-icon">🏆</div><div class="nav-title">Mastery</div><div class="nav-sub">Pro secrets</div></a>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- CHAPTER 1: MASTERING CLAUDE.MD -->
+    <!-- ====================================================== -->
+    <div class="chapter open" id="ch1" data-ch="1" data-xp="100">
+        <div class="ch-header" onclick="toggleCh(this)">
+            <div class="ch-icon" style="background:#3b82f615;">📋</div>
+            <div class="ch-info">
+                <div class="ch-tag" style="color:var(--blue);">Chapter 1</div>
+                <h2>Write Better Directives (CLAUDE.md)</h2>
+                <div class="ch-desc">The better your instructions, the smarter Claude becomes</div>
+            </div>
+            <div class="ch-xp">+100 XP</div>
+            <div class="ch-arrow">▼</div>
+        </div>
+        <div class="ch-body">
+
+            <div class="box box-purple">
+                <div class="bi">🎯</div>
+                <p><strong>CLAUDE.md is your superpower.</strong> It's the single most important file in your project. Claude reads it before every conversation. Think of it as the "employee handbook" — the better it is, the less you repeat yourself.</p>
+            </div>
+
+            <h3 style="color:#fff; margin: 18px 0 10px;">What to put in CLAUDE.md</h3>
+
+            <div class="grid">
+                <div class="gcard">
+                    <div class="gi">🏗️</div>
+                    <h4>Project Description</h4>
+                    <p>What your app does, who it's for, what problem it solves. 2-3 sentences max.</p>
+                </div>
+                <div class="gcard">
+                    <div class="gi">⚙️</div>
+                    <h4>Tech Stack</h4>
+                    <p>Every technology you use: framework, database, hosting, APIs, libraries.</p>
+                </div>
+                <div class="gcard">
+                    <div class="gi">📁</div>
+                    <h4>File Structure</h4>
+                    <p>Where things live: components, pages, API routes, styles, configs.</p>
+                </div>
+                <div class="gcard">
+                    <div class="gi">📏</div>
+                    <h4>Coding Rules</h4>
+                    <p>Your conventions: naming, formatting, patterns. "Always use TypeScript" etc.</p>
+                </div>
+                <div class="gcard">
+                    <div class="gi">🚫</div>
+                    <h4>Things to AVOID</h4>
+                    <p>Negative rules are powerful: "Never use inline CSS", "Don't modify auth".</p>
+                </div>
+                <div class="gcard">
+                    <div class="gi">📝</div>
+                    <h4>Important Notes</h4>
+                    <p>Production URLs, special configs, known issues, deployment process.</p>
+                </div>
+            </div>
+
+            <div class="task" data-task="1-1">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>I have a project description in my CLAUDE.md</h4>
+                    <p>At least 2 sentences explaining what the project does.</p>
+                </div>
+            </div>
+
+            <div class="task" data-task="1-2">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>I listed my entire tech stack</h4>
+                    <p>Framework, database, hosting, UI library, APIs — everything.</p>
+                </div>
+            </div>
+
+            <h3 style="color:#fff; margin: 18px 0 10px;">Advanced CLAUDE.md Template</h3>
+
+            <div class="code">
+                <div class="code-top">
+                    <span class="lang">CLAUDE.md — advanced example</span>
+                    <button class="cbtn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><span class="cm"># Project: My Awesome App</span>
+<span class="cm">## Description</span>
+<span class="str">A client portal where customers can view their analytics,
+manage subscriptions, and chat with support in real time.</span>
+
+<span class="cm">## Tech Stack</span>
+<span class="str">- Frontend: React 18 + TypeScript + Tailwind CSS</span>
+<span class="str">- Backend: Supabase (auth + database + storage)</span>
+<span class="str">- Payments: Stripe</span>
+<span class="str">- Hosting: Vercel</span>
+<span class="str">- Email: SendGrid</span>
+
+<span class="cm">## File Structure</span>
+<span class="str">src/
+├── components/     → Reusable UI components
+├── pages/          → Route-level page components
+├── hooks/          → Custom React hooks
+├── lib/            → Utilities, API clients, helpers
+├── types/          → TypeScript interfaces
+└── styles/         → Global styles and themes</span>
+
+<span class="cm">## Coding Rules</span>
+<span class="hl">1. ALWAYS use TypeScript — never plain .js files
+2. Use shadcn/ui components for all new UI elements
+3. All database queries go through Supabase client (src/lib/supabase.ts)
+4. Never expose API keys in frontend code
+5. Every component must have a clear, descriptive name
+6. Use "const" by default, "let" only when reassignment is needed
+7. Error handling: always wrap API calls in try/catch</span>
+
+<span class="cm">## Things to NEVER Do</span>
+<span class="hl">- Never modify the auth system without asking first
+- Never delete migration files
+- Never use "any" type in TypeScript
+- Never commit .env files</span>
+
+<span class="cm">## Deployment</span>
+<span class="str">- Production: my-app.vercel.app
+- Preview: auto-deployed on every branch push
+- Database: Supabase project "my-app-prod"</span>
+
+<span class="cm">## Current Focus</span>
+<span class="str">Working on: subscription management page
+Next up: admin analytics dashboard</span></pre>
+            </div>
+
+            <div class="task" data-task="1-3">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>I added coding rules and "things to never do"</h4>
+                    <p>The more specific your rules, the fewer mistakes Claude makes.</p>
+                </div>
+            </div>
+
+            <div class="box box-tip">
+                <div class="bi">💡</div>
+                <p><strong>Pro tip:</strong> Every time Claude makes a mistake, add a rule to prevent it next time. Your CLAUDE.md grows smarter over time. It's a living document.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- CHAPTER 2: MEMORY SYSTEM -->
+    <!-- ====================================================== -->
+    <div class="chapter" id="ch2" data-ch="2" data-xp="100">
+        <div class="ch-header" onclick="toggleCh(this)">
+            <div class="ch-icon" style="background:#22c55e15;">🧠</div>
+            <div class="ch-info">
+                <div class="ch-tag" style="color:var(--green);">Chapter 2</div>
+                <h2>How Claude Remembers Things</h2>
+                <div class="ch-desc">The memory system explained simply</div>
+            </div>
+            <div class="ch-xp">+100 XP</div>
+            <div class="ch-arrow">▼</div>
+        </div>
+        <div class="ch-body">
+
+            <p style="color:#a1a1aa; margin: 16px 0;">Claude Code has <strong style="color:#fff;">3 types of memory</strong>. Understanding them helps you work with Claude more effectively.</p>
+
+            <div class="grid">
+                <div class="gcard" style="border-color: #3b82f640;">
+                    <div class="gi">📄</div>
+                    <h4>1. CLAUDE.md (Manual)</h4>
+                    <p>YOU write this. Your rules, tech stack, project info. Claude reads it every session. It's the most important memory.</p>
+                </div>
+                <div class="gcard" style="border-color: #a855f740;">
+                    <div class="gi">🗂️</div>
+                    <h4>2. Auto-Memory (Automatic)</h4>
+                    <p>Claude saves things it learns about you: your preferences, coding patterns, feedback you gave. Stored in a .claude/ folder.</p>
+                </div>
+                <div class="gcard" style="border-color: #f9731640;">
+                    <div class="gi">💬</div>
+                    <h4>3. Conversation (Temporary)</h4>
+                    <p>The current chat session. Claude remembers everything said in this session. When you /clear, this resets.</p>
+                </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <h3 style="color:#fff; margin: 16px 0 10px;">How to tell Claude to remember things</h3>
+
+            <div class="code">
+                <div class="code-top">
+                    <span class="lang">messages you can type</span>
+                </div>
+                <pre><span class="cm"># Tell Claude to remember a preference</span>
+<span class="str">"Remember: I always want you to use Tailwind classes, never inline styles"</span>
+
+<span class="cm"># Tell Claude to remember a project detail</span>
+<span class="str">"Remember: our API base URL is https://api.myapp.com/v2"</span>
+
+<span class="cm"># Tell Claude to forget something</span>
+<span class="str">"Forget the rule about using semicolons — we removed that from our linter"</span>
+
+<span class="cm"># Ask Claude what it remembers</span>
+<span class="str">"What do you remember about this project?"</span>
+<span class="str">"Check your memory for my coding preferences"</span></pre>
+            </div>
+
+            <div class="task" data-task="2-1">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>I understand the 3 types of memory</h4>
+                    <p>Manual (CLAUDE.md) + Auto-memory (.claude/) + Conversation (current session).</p>
+                </div>
+            </div>
+
+            <div class="task" data-task="2-2">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>I told Claude to remember something</h4>
+                    <p>Try it: type "Remember: [something about your project]" in the chat.</p>
+                </div>
+            </div>
+
+            <div class="box box-tip">
+                <div class="bi">🔄</div>
+                <p><strong>Memory is cumulative.</strong> The more you work with Claude, the smarter it gets about YOUR project. After a few weeks, it will feel like working with someone who truly knows your codebase.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- CHAPTER 3: COMMANDS -->
+    <!-- ====================================================== -->
+    <div class="chapter" id="ch3" data-ch="3" data-xp="100">
+        <div class="ch-header" onclick="toggleCh(this)">
+            <div class="ch-icon" style="background:#06b6d415;">⚡</div>
+            <div class="ch-info">
+                <div class="ch-tag" style="color:var(--cyan);">Chapter 3</div>
+                <h2>Essential Commands & Shortcuts</h2>
+                <div class="ch-desc">Work faster with built-in commands</div>
+            </div>
+            <div class="ch-xp">+100 XP</div>
+            <div class="ch-arrow">▼</div>
+        </div>
+        <div class="ch-body">
+
+            <p style="color:#a1a1aa; margin: 16px 0;">Commands start with a <strong style="color:#fff;">/</strong> (slash). Type them directly in the Claude Code chat.</p>
+
+            <h3 style="color:#fff; margin: 16px 0 10px;">Must-Know Commands</h3>
+
+            <div class="sheet">
+                <div class="sheet-item">
+                    <div class="scmd">/clear</div>
+                    <div class="sdesc">Start a fresh conversation. Use between different tasks.</div>
+                </div>
+                <div class="sheet-item">
+                    <div class="scmd">/compact</div>
+                    <div class="sdesc">Compress the conversation to save memory. Use when chat gets long.</div>
+                </div>
+                <div class="sheet-item">
+                    <div class="scmd">/cost</div>
+                    <div class="sdesc">Shows how much this session cost in dollars.</div>
+                </div>
+                <div class="sheet-item">
+                    <div class="scmd">/model</div>
+                    <div class="sdesc">Switch between AI models (Opus = smartest, Sonnet = fastest).</div>
+                </div>
+                <div class="sheet-item">
+                    <div class="scmd">/commit</div>
+                    <div class="sdesc">Create a git commit with a summary of your changes.</div>
+                </div>
+                <div class="sheet-item">
+                    <div class="scmd">/help</div>
+                    <div class="sdesc">See all available commands.</div>
+                </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <h3 style="color:#fff; margin: 16px 0 10px;">Keyboard Shortcuts</h3>
+
+            <div class="sheet">
+                <div class="sheet-item">
+                    <div class="scmd">Ctrl + L</div>
+                    <div class="sdesc">Open Claude Code chat panel quickly</div>
+                </div>
+                <div class="sheet-item">
+                    <div class="scmd">Ctrl + Shift + P</div>
+                    <div class="sdesc">VSCode command palette — search for any action</div>
+                </div>
+                <div class="sheet-item">
+                    <div class="scmd">Select + ask</div>
+                    <div class="sdesc">Highlight code, then ask Claude about it — it sees your selection</div>
+                </div>
+                <div class="sheet-item">
+                    <div class="scmd">Enter</div>
+                    <div class="sdesc">Send your message to Claude</div>
+                </div>
+                <div class="sheet-item">
+                    <div class="scmd">Escape</div>
+                    <div class="sdesc">Cancel Claude's current action</div>
+                </div>
+                <div class="sheet-item">
+                    <div class="scmd">Ctrl + Z</div>
+                    <div class="sdesc">Undo Claude's last edit (regular VSCode undo)</div>
+                </div>
+            </div>
+
+            <div class="task" data-task="3-1">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>I used /cost to check my session cost</h4>
+                    <p>Type /cost in the chat and see how much you spent.</p>
+                </div>
+            </div>
+
+            <div class="task" data-task="3-2">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>I used /compact during a long conversation</h4>
+                    <p>When your chat gets long (30+ messages), use /compact to compress it.</p>
+                </div>
+            </div>
+
+            <div class="task" data-task="3-3">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>I tried selecting code and asking about it</h4>
+                    <p>Highlight a function, then type "explain this" in Claude's chat.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- CHAPTER 4: SAFETY (HOOKS) -->
+    <!-- ====================================================== -->
+    <div class="chapter" id="ch4" data-ch="4" data-xp="100">
+        <div class="ch-header" onclick="toggleCh(this)">
+            <div class="ch-icon" style="background:#ef444415;">🔒</div>
+            <div class="ch-info">
+                <div class="ch-tag" style="color:var(--red);">Chapter 4</div>
+                <h2>Safety & Permission System</h2>
+                <div class="ch-desc">How to protect your code and secrets</div>
+            </div>
+            <div class="ch-xp">+100 XP</div>
+            <div class="ch-arrow">▼</div>
+        </div>
+        <div class="ch-body">
+
+            <div class="box box-fire">
+                <div class="bi">🛡️</div>
+                <p><strong>Claude ALWAYS asks before doing anything risky.</strong> It won't delete files, push code, or change important configs without your explicit approval. You are always in control.</p>
+            </div>
+
+            <h3 style="color:#fff; margin: 18px 0 10px;">The 3 Permission Levels</h3>
+
+            <div class="grid">
+                <div class="gcard" style="border-color: #22c55e40;">
+                    <div class="gi">🟢</div>
+                    <h4>Safe (Auto-allowed)</h4>
+                    <p>Reading files, searching code, analyzing. These happen automatically — no permission needed.</p>
+                </div>
+                <div class="gcard" style="border-color: #eab30840;">
+                    <div class="gi">🟡</div>
+                    <h4>Moderate (Asks you)</h4>
+                    <p>Editing files, creating new files, running build commands. Claude shows you what it wants to do.</p>
+                </div>
+                <div class="gcard" style="border-color: #ef444440;">
+                    <div class="gi">🔴</div>
+                    <h4>Dangerous (Always asks)</h4>
+                    <p>Deleting files, running destructive commands, pushing to GitHub. Always requires your YES.</p>
+                </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <h3 style="color:#fff; margin: 16px 0 10px;">Golden Safety Rules</h3>
+
+            <div class="task" data-task="4-1">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>Never put secrets in CLAUDE.md</h4>
+                    <p>API keys, passwords, tokens → .env file only. CLAUDE.md is for instructions, not secrets.</p>
+                </div>
+            </div>
+
+            <div class="task" data-task="4-2">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>Always read Claude's changes before approving</h4>
+                    <p>When Claude says "I want to edit file X", read the diff. It takes 5 seconds and saves you hours.</p>
+                </div>
+            </div>
+
+            <div class="task" data-task="4-3">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>Commit after every successful change</h4>
+                    <p>Use git commits as "save points". If something goes wrong, you can always go back.</p>
+                </div>
+            </div>
+
+            <div class="task" data-task="4-4">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>My .gitignore includes .env</h4>
+                    <p>Open .gitignore and make sure ".env" is listed. This prevents accidentally sharing secrets.</p>
+                </div>
+            </div>
+
+            <div class="box box-warn">
+                <div class="bi">⚠️</div>
+                <p><strong>What if Claude does something wrong?</strong> Just press <strong>Ctrl + Z</strong> to undo, or type "undo that" in the chat. You can also close the file without saving. Nothing is permanent until you commit + push.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- CHAPTER 5: MULTI-AI (GEMINI, COPILOT, ETC) -->
+    <!-- ====================================================== -->
+    <div class="chapter" id="ch5" data-ch="5" data-xp="200">
+        <div class="ch-header" onclick="toggleCh(this)">
+            <div class="ch-icon" style="background:#a855f715;">🤖</div>
+            <div class="ch-info">
+                <div class="ch-tag" style="color:var(--purple);">Chapter 5 — Star Chapter</div>
+                <h2>Using Other AI Tools (Gemini, Copilot & More)</h2>
+                <div class="ch-desc">You're not limited to one AI — use the best tool for each job</div>
+            </div>
+            <div class="ch-xp">+200 XP</div>
+            <div class="ch-arrow">▼</div>
+        </div>
+        <div class="ch-body">
+
+            <div class="box box-purple">
+                <div class="bi">🌟</div>
+                <p><strong>The smartest developers use MULTIPLE AI tools.</strong> Each AI has strengths. Claude Code is great for deep project understanding, but Gemini, Copilot, and others have their own superpowers. Here's the full picture.</p>
+            </div>
+
+            <!-- TABS -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab(this, 'tab-compare')">Compare All</button>
+                <button class="tab" onclick="switchTab(this, 'tab-gemini')">Gemini</button>
+                <button class="tab" onclick="switchTab(this, 'tab-copilot')">Copilot</button>
+                <button class="tab" onclick="switchTab(this, 'tab-others')">Others</button>
+                <button class="tab" onclick="switchTab(this, 'tab-combo')">Best Combos</button>
+            </div>
+
+            <!-- TAB: COMPARE -->
+            <div class="tab-content active" id="tab-compare">
+                <table class="compare">
+                    <tr>
+                        <th>Tool</th>
+                        <th>Best For</th>
+                        <th>Cost</th>
+                        <th>VSCode?</th>
+                    </tr>
+                    <tr>
+                        <td><strong style="color:#fff;">Claude Code</strong></td>
+                        <td>Deep project work, full file edits, debugging, architecture</td>
+                        <td><span class="badge badge-paid">$20/mo or API</span></td>
+                        <td>✅ Extension</td>
+                    </tr>
+                    <tr>
+                        <td><strong style="color:#fff;">GitHub Copilot</strong></td>
+                        <td>Line-by-line autocomplete, quick suggestions while typing</td>
+                        <td><span class="badge badge-paid">$10/mo</span></td>
+                        <td>✅ Extension</td>
+                    </tr>
+                    <tr>
+                        <td><strong style="color:#fff;">Gemini (Google)</strong></td>
+                        <td>Research, documentation, understanding APIs, long context</td>
+                        <td><span class="badge badge-free">Free tier</span></td>
+                        <td>✅ Extension</td>
+                    </tr>
+                    <tr>
+                        <td><strong style="color:#fff;">Cline / Roo Code</strong></td>
+                        <td>Autonomous coding agents, multi-file changes</td>
+                        <td><span class="badge badge-free">Free (BYO key)</span></td>
+                        <td>✅ Extension</td>
+                    </tr>
+                    <tr>
+                        <td><strong style="color:#fff;">Continue</strong></td>
+                        <td>Open-source, works with ANY model, autocomplete</td>
+                        <td><span class="badge badge-free">Free</span></td>
+                        <td>✅ Extension</td>
+                    </tr>
+                    <tr>
+                        <td><strong style="color:#fff;">Cursor</strong></td>
+                        <td>Full IDE replacement with built-in AI</td>
+                        <td><span class="badge badge-paid">$20/mo</span></td>
+                        <td>❌ Separate app</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- TAB: GEMINI -->
+            <div class="tab-content" id="tab-gemini">
+                <h3 style="color:#fff; margin: 8px 0 12px;">Google Gemini — Setup Guide</h3>
+
+                <div class="box box-tip">
+                    <div class="bi">✨</div>
+                    <p><strong>Gemini is great for:</strong> Research, reading long documentation, understanding complex APIs, generating boilerplate, and brainstorming. It has a HUGE context window (can read very long files).</p>
+                </div>
+
+                <h4 style="color:#fff; margin: 16px 0 8px;">Option 1: Gemini in the Browser (Easiest)</h4>
+                <div class="code">
+                    <div class="code-top"><span class="lang">website</span></div>
+                    <pre><span class="cm">Just go to:</span>
+<span class="str">https://gemini.google.com</span>
+
+<span class="cm">Sign in with your Google account — it's FREE.
+You can paste code, ask questions, upload files.</span></pre>
+                </div>
+
+                <h4 style="color:#fff; margin: 16px 0 8px;">Option 2: Gemini Code Assist in VSCode</h4>
+                <div class="code">
+                    <div class="code-top"><span class="lang">steps</span></div>
+                    <pre><span class="cm">1. Open VSCode</span>
+<span class="cm">2. Press Ctrl + Shift + X (Extensions)</span>
+<span class="cm">3. Search "Gemini Code Assist"</span>
+<span class="cm">4. Install the one by Google</span>
+<span class="cm">5. Sign in with your Google account</span>
+<span class="cm">6. Done! Gemini now autocompletes your code as you type</span></pre>
+                </div>
+
+                <h4 style="color:#fff; margin: 16px 0 8px;">Option 3: Use Gemini API (For Developers)</h4>
+                <div class="code">
+                    <div class="code-top">
+                        <span class="lang">get your API key</span>
+                        <button class="cbtn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><span class="cm"># 1. Go to Google AI Studio:</span>
+<span class="str">https://aistudio.google.com/apikey</span>
+
+<span class="cm"># 2. Click "Create API Key"</span>
+<span class="cm"># 3. Copy the key</span>
+<span class="cm"># 4. Add it to your .env file:</span>
+
+<span class="kw">GEMINI_API_KEY</span>=<span class="str">your-key-here</span>
+
+<span class="cm"># You get 1500 free requests per day!</span></pre>
+                </div>
+
+                <div class="task" data-task="5-1">
+                    <button class="tcheck" onclick="check(this)">✓</button>
+                    <div class="tcontent">
+                        <h4>I tried Gemini (browser or VSCode extension)</h4>
+                        <p>Visit gemini.google.com or install the extension.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: COPILOT -->
+            <div class="tab-content" id="tab-copilot">
+                <h3 style="color:#fff; margin: 8px 0 12px;">GitHub Copilot — The Autocomplete King</h3>
+
+                <div class="box box-tip">
+                    <div class="bi">⚡</div>
+                    <p><strong>Copilot is best for:</strong> Real-time autocomplete while you type. It suggests the next line, completes functions, generates tests. Think of it as "predictive text for code".</p>
+                </div>
+
+                <div class="code">
+                    <div class="code-top"><span class="lang">setup steps</span></div>
+                    <pre><span class="cm"># 1. You need a GitHub account</span>
+<span class="str">https://github.com</span>
+
+<span class="cm"># 2. Subscribe to Copilot ($10/month or free for students)</span>
+<span class="str">https://github.com/features/copilot</span>
+
+<span class="cm"># 3. In VSCode: Extensions → Search "GitHub Copilot" → Install</span>
+<span class="cm"># 4. Sign in with your GitHub account</span>
+<span class="cm"># 5. Start typing code — suggestions appear in gray text</span>
+<span class="cm"># 6. Press TAB to accept a suggestion</span></pre>
+                </div>
+
+                <h4 style="color:#fff; margin: 16px 0 8px;">Copilot vs Claude Code — Different Tools!</h4>
+
+                <table class="compare">
+                    <tr>
+                        <th></th>
+                        <th>GitHub Copilot</th>
+                        <th>Claude Code</th>
+                    </tr>
+                    <tr>
+                        <td><strong style="color:#fff;">How it works</strong></td>
+                        <td>Autocompletes as you type (inline)</td>
+                        <td>You chat with it (sidebar)</td>
+                    </tr>
+                    <tr>
+                        <td><strong style="color:#fff;">Best for</strong></td>
+                        <td>Quick line completions, boilerplate</td>
+                        <td>Complex tasks, refactoring, debugging</td>
+                    </tr>
+                    <tr>
+                        <td><strong style="color:#fff;">Project awareness</strong></td>
+                        <td>Limited (mainly current file)</td>
+                        <td>Full project (reads all files + CLAUDE.md)</td>
+                    </tr>
+                    <tr>
+                        <td><strong style="color:#fff;">Can they coexist?</strong></td>
+                        <td colspan="2" style="text-align:center;"><strong style="color:var(--green);">YES! Use both at the same time.</strong></td>
+                    </tr>
+                </table>
+
+                <div class="task" data-task="5-2">
+                    <button class="tcheck" onclick="check(this)">✓</button>
+                    <div class="tcontent">
+                        <h4>I understand the difference between Copilot and Claude Code</h4>
+                        <p>Copilot = autocomplete while typing. Claude Code = chat for complex tasks. They complement each other.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: OTHERS -->
+            <div class="tab-content" id="tab-others">
+                <h3 style="color:#fff; margin: 8px 0 12px;">Other AI Tools Worth Knowing</h3>
+
+                <div class="grid">
+                    <div class="gcard">
+                        <div class="gi">🔄</div>
+                        <h4>Continue (Free, Open Source)</h4>
+                        <p>Works with ANY AI model — Claude, GPT, Gemini, Llama, Mistral. You bring your own API key. Great for autocomplete + chat.</p>
+                    </div>
+                    <div class="gcard">
+                        <div class="gi">🤖</div>
+                        <h4>Cline / Roo Code</h4>
+                        <p>Autonomous agent that can plan and execute multi-step tasks. Like Claude Code but uses any model. Free extension, you pay for the API.</p>
+                    </div>
+                    <div class="gcard">
+                        <div class="gi">💻</div>
+                        <h4>Cursor IDE</h4>
+                        <p>A separate code editor (not VSCode) with AI built-in everywhere. Very powerful but $20/mo and you switch editors.</p>
+                    </div>
+                    <div class="gcard">
+                        <div class="gi">🌐</div>
+                        <h4>ChatGPT / GPT-4</h4>
+                        <p>Good for general questions, brainstorming, and explaining concepts. Use it in the browser. Not great for actual coding compared to specialized tools.</p>
+                    </div>
+                </div>
+
+                <div class="code">
+                    <div class="code-top"><span class="lang">install Continue (free, works with any AI)</span></div>
+                    <pre><span class="cm"># In VSCode:</span>
+<span class="cm">1. Extensions → Search "Continue" → Install</span>
+<span class="cm">2. Click the Continue icon in the sidebar</span>
+<span class="cm">3. Choose your AI provider (Gemini, Claude API, OpenAI, etc.)</span>
+<span class="cm">4. Paste your API key</span>
+<span class="cm">5. Start coding! It autocompletes + has chat</span>
+
+<span class="cm"># Why it's great:</span>
+<span class="str">- Switch between models instantly</span>
+<span class="str">- Free and open source</span>
+<span class="str">- Works with local models too (Ollama)</span></pre>
+                </div>
+
+                <div class="task" data-task="5-3">
+                    <button class="tcheck" onclick="check(this)">✓</button>
+                    <div class="tcontent">
+                        <h4>I know at least 3 different AI coding tools</h4>
+                        <p>Claude Code, Gemini, Copilot, Continue, Cline, Cursor, ChatGPT...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: BEST COMBOS -->
+            <div class="tab-content" id="tab-combo">
+                <h3 style="color:#fff; margin: 8px 0 12px;">Best Combinations (Use Together)</h3>
+
+                <div class="box box-ok">
+                    <div class="bi">🏆</div>
+                    <p><strong>Recommended Setup #1 (Best overall):</strong><br>
+                    <strong>Claude Code</strong> (complex tasks, architecture, debugging) + <strong>GitHub Copilot</strong> (inline autocomplete). They don't conflict — Copilot suggests as you type, Claude helps through the chat panel.</p>
+                </div>
+
+                <div class="box box-tip">
+                    <div class="bi">💡</div>
+                    <p><strong>Budget Setup (Free / Low Cost):</strong><br>
+                    <strong>Claude Code</strong> (with API credits, pay as you go) + <strong>Gemini Code Assist</strong> (free autocomplete). Or use <strong>Continue</strong> with free Gemini API (1500 requests/day free).</p>
+                </div>
+
+                <div class="box box-purple">
+                    <div class="bi">🚀</div>
+                    <p><strong>Power User Setup:</strong><br>
+                    <strong>Claude Code</strong> (deep coding) + <strong>Copilot</strong> (autocomplete) + <strong>Gemini</strong> (in browser for research & documentation). Three AIs, three different strengths. Total cost: ~$30/month.</p>
+                </div>
+
+                <div class="sep"></div>
+
+                <h4 style="color:#fff; margin: 16px 0 8px;">When to use which AI?</h4>
+
+                <table class="compare">
+                    <tr><th>Task</th><th>Best Tool</th></tr>
+                    <tr><td>"Add a new feature to my app"</td><td><strong style="color:var(--blue);">Claude Code</strong> — understands your whole project</td></tr>
+                    <tr><td>"I'm typing a function and want autocomplete"</td><td><strong style="color:var(--green);">Copilot</strong> or <strong>Gemini Code Assist</strong></td></tr>
+                    <tr><td>"Explain this API documentation to me"</td><td><strong style="color:var(--yellow);">Gemini</strong> — huge context window, reads long docs</td></tr>
+                    <tr><td>"Fix this bug, here's the error"</td><td><strong style="color:var(--blue);">Claude Code</strong> — can read your files and fix them</td></tr>
+                    <tr><td>"Brainstorm architecture ideas"</td><td><strong style="color:var(--purple);">ChatGPT or Gemini</strong> in browser</td></tr>
+                    <tr><td>"Create a complete component from scratch"</td><td><strong style="color:var(--blue);">Claude Code</strong> — writes and creates files for you</td></tr>
+                    <tr><td>"Quickly write a regex or SQL query"</td><td><strong style="color:var(--green);">Copilot</strong> — type a comment, it suggests the code</td></tr>
+                </table>
+
+                <div class="task" data-task="5-4">
+                    <button class="tcheck" onclick="check(this)">✓</button>
+                    <div class="tcontent">
+                        <h4>I decided which combination to try</h4>
+                        <p>Pick the setup that fits your budget and needs. Start with one, add more later.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- CHAPTER 6: BEST EXTENSIONS -->
+    <!-- ====================================================== -->
+    <div class="chapter" id="ch6" data-ch="6" data-xp="100">
+        <div class="ch-header" onclick="toggleCh(this)">
+            <div class="ch-icon" style="background:#f9731615;">🛠️</div>
+            <div class="ch-info">
+                <div class="ch-tag" style="color:var(--orange);">Chapter 6</div>
+                <h2>Must-Have VSCode Extensions</h2>
+                <div class="ch-desc">Beyond AI — essential tools for every developer</div>
+            </div>
+            <div class="ch-xp">+100 XP</div>
+            <div class="ch-arrow">▼</div>
+        </div>
+        <div class="ch-body">
+
+            <p style="color:#a1a1aa; margin: 16px 0;">These extensions make VSCode much more powerful. All are <strong style="color:var(--green);">free</strong>.</p>
+
+            <h3 style="color:#fff; margin: 16px 0 10px;">Essential (Install These First)</h3>
+
+            <div class="grid">
+                <div class="gcard">
+                    <div class="gi">🎨</div>
+                    <h4>Prettier</h4>
+                    <p>Auto-formats your code to look clean and consistent. Must-have.</p>
+                </div>
+                <div class="gcard">
+                    <div class="gi">🔍</div>
+                    <h4>ESLint</h4>
+                    <p>Catches bugs and code problems before they happen. Shows warnings inline.</p>
+                </div>
+                <div class="gcard">
+                    <div class="gi">📁</div>
+                    <h4>GitLens</h4>
+                    <p>See who changed what, when, and why. Git history made visual and easy.</p>
+                </div>
+                <div class="gcard">
+                    <div class="gi">🌈</div>
+                    <h4>Error Lens</h4>
+                    <p>Shows errors and warnings directly on the line where they occur. No guessing.</p>
+                </div>
+            </div>
+
+            <h3 style="color:#fff; margin: 18px 0 10px;">Nice to Have</h3>
+
+            <div class="grid">
+                <div class="gcard">
+                    <div class="gi">🏷️</div>
+                    <h4>Auto Rename Tag</h4>
+                    <p>Change an HTML tag and the closing tag updates automatically.</p>
+                </div>
+                <div class="gcard">
+                    <div class="gi">📐</div>
+                    <h4>Tailwind CSS IntelliSense</h4>
+                    <p>If you use Tailwind — autocomplete for class names. Essential.</p>
+                </div>
+                <div class="gcard">
+                    <div class="gi">🖼️</div>
+                    <h4>Image Preview</h4>
+                    <p>See image previews when you hover over image paths in your code.</p>
+                </div>
+                <div class="gcard">
+                    <div class="gi">📊</div>
+                    <h4>Thunder Client</h4>
+                    <p>Test your API endpoints directly inside VSCode. Like Postman but built-in.</p>
+                </div>
+            </div>
+
+            <div class="code">
+                <div class="code-top"><span class="lang">install all essential extensions at once</span><button class="cbtn" onclick="copyCode(this)">Copy</button></div>
+                <pre><span class="cm"># Run this in your terminal (one line):</span>
+code --install-extension esbenp.prettier-vscode && code --install-extension dbaeumer.vscode-eslint && code --install-extension eamodio.gitlens && code --install-extension usernamehw.errorlens</pre>
+            </div>
+
+            <div class="task" data-task="6-1">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>I installed at least 2 essential extensions</h4>
+                    <p>Prettier + ESLint at minimum. GitLens and Error Lens are highly recommended.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- CHAPTER 7: REAL WORKFLOWS -->
+    <!-- ====================================================== -->
+    <div class="chapter" id="ch7" data-ch="7" data-xp="100">
+        <div class="ch-header" onclick="toggleCh(this)">
+            <div class="ch-icon" style="background:#ec489915;">🚀</div>
+            <div class="ch-info">
+                <div class="ch-tag" style="color:var(--pink);">Chapter 7</div>
+                <h2>Real-World Workflows</h2>
+                <div class="ch-desc">Step-by-step examples of how to use AI for real tasks</div>
+            </div>
+            <div class="ch-xp">+100 XP</div>
+            <div class="ch-arrow">▼</div>
+        </div>
+        <div class="ch-body">
+
+            <h3 style="color:#fff; margin: 16px 0 10px;">Workflow 1: Building a New Feature</h3>
+
+            <div class="timeline">
+                <div class="tl-item">
+                    <div class="tl-time">STEP 1</div>
+                    <h4>Describe what you want</h4>
+                    <p>"I need a settings page where users can update their profile: name, email, and avatar image"</p>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-time">STEP 2</div>
+                    <h4>Review Claude's plan</h4>
+                    <p>Claude will tell you which files it wants to create/edit. Read the plan. Approve it.</p>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-time">STEP 3</div>
+                    <h4>Approve each change</h4>
+                    <p>Claude edits files one by one. Review and approve each one. If something's wrong, say "no, do it differently".</p>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-time">STEP 4</div>
+                    <h4>Test it</h4>
+                    <p>"Run the dev server" — Claude starts your app. Check the result in your browser.</p>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-time">STEP 5</div>
+                    <h4>Commit</h4>
+                    <p>"Create a commit for these changes" — Claude creates a git commit with a meaningful message.</p>
+                </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <h3 style="color:#fff; margin: 16px 0 10px;">Workflow 2: Fixing a Bug</h3>
+
+            <div class="code">
+                <div class="code-top"><span class="lang">conversation example</span></div>
+                <pre><span class="cm"># You:</span>
+<span class="str">"I'm getting this error when I click the Submit button:
+TypeError: Cannot read properties of undefined (reading 'email')
+It happens in the ContactForm component."</span>
+
+<span class="cm"># Claude will:</span>
+<span class="cm">1. Read the ContactForm file</span>
+<span class="cm">2. Find the line causing the error</span>
+<span class="cm">3. Explain WHY it happens</span>
+<span class="cm">4. Show you the fix</span>
+<span class="cm">5. Ask permission to apply it</span>
+
+<span class="cm"># Pro tip: copy-paste the exact error message!</span>
+<span class="cm"># Claude works best with specific errors.</span></pre>
+            </div>
+
+            <div class="sep"></div>
+
+            <h3 style="color:#fff; margin: 16px 0 10px;">Workflow 3: Understanding Someone Else's Code</h3>
+
+            <div class="code">
+                <div class="code-top"><span class="lang">conversation example</span></div>
+                <pre><span class="cm"># You (after selecting code in the editor):</span>
+<span class="str">"Explain this file to me like I'm a beginner.
+What does each function do? What's the flow?"</span>
+
+<span class="cm"># Or for a whole project:</span>
+<span class="str">"Give me an overview of this project.
+What's the main structure? Where are the important files?"</span>
+
+<span class="cm"># Claude will create a clear, simple explanation.</span></pre>
+            </div>
+
+            <div class="task" data-task="7-1">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>I completed one real workflow with Claude</h4>
+                    <p>Build a feature, fix a bug, or have Claude explain a part of your code.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- CHAPTER 8: MASTERY -->
+    <!-- ====================================================== -->
+    <div class="chapter" id="ch8" data-ch="8" data-xp="100">
+        <div class="ch-header" onclick="toggleCh(this)">
+            <div class="ch-icon" style="background:#eab30815;">🏆</div>
+            <div class="ch-info">
+                <div class="ch-tag" style="color:var(--yellow);">Chapter 8 — Final</div>
+                <h2>Mastery: Secrets of Power Users</h2>
+                <div class="ch-desc">Advanced techniques that separate beginners from experts</div>
+            </div>
+            <div class="ch-xp">+100 XP</div>
+            <div class="ch-arrow">▼</div>
+        </div>
+        <div class="ch-body">
+
+            <h3 style="color:#fff; margin: 16px 0 10px;">🎯 The 10 Rules of AI-Assisted Coding</h3>
+
+            <div class="task" data-task="8-1">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>Rule 1: Be specific, not vague</h4>
+                    <p>❌ "Fix the page" → ✅ "The /settings page returns a 500 error when saving — the crash is in updateProfile()"</p>
+                </div>
+            </div>
+
+            <div class="task" data-task="8-2">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>Rule 2: One task at a time</h4>
+                    <p>Don't ask for 5 things at once. "Add a button" → approve → "Now style it" → approve → "Now add the logic".</p>
+                </div>
+            </div>
+
+            <div class="task" data-task="8-3">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>Rule 3: Use /clear between different tasks</h4>
+                    <p>Switching from bug fixing to building a feature? Start fresh. Clean context = better results.</p>
+                </div>
+            </div>
+
+            <div class="task" data-task="8-4">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>Rule 4: Commit after every success</h4>
+                    <p>Git commits are save points. If Claude breaks something later, you can always go back.</p>
+                </div>
+            </div>
+
+            <div class="task" data-task="8-5">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>Rule 5: Give feedback</h4>
+                    <p>"Don't use that approach" or "I prefer it this way" teaches Claude. It remembers for next time.</p>
+                </div>
+            </div>
+
+            <div class="task" data-task="8-6">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>Rule 6: Update CLAUDE.md regularly</h4>
+                    <p>New convention? Add it. New rule? Write it. Your CLAUDE.md should evolve with your project.</p>
+                </div>
+            </div>
+
+            <div class="task" data-task="8-7">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>Rule 7: Use the right AI for the job</h4>
+                    <p>Claude for deep work, Copilot for autocomplete, Gemini for research. Don't use a hammer for screws.</p>
+                </div>
+            </div>
+
+            <div class="task" data-task="8-8">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>Rule 8: Read the diff, always</h4>
+                    <p>Even if you trust the AI, spend 10 seconds reading what it changed. You'll catch issues early.</p>
+                </div>
+            </div>
+
+            <div class="task" data-task="8-9">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>Rule 9: Ask "explain" when confused</h4>
+                    <p>After any change: "explain what you did and why". Claude will break it down simply.</p>
+                </div>
+            </div>
+
+            <div class="task" data-task="8-10">
+                <button class="tcheck" onclick="check(this)">✓</button>
+                <div class="tcontent">
+                    <h4>Rule 10: Don't be afraid to say "no"</h4>
+                    <p>"No, undo that" or "Try a different approach". The AI works for you, not the other way around.</p>
+                </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="box box-ok">
+                <div class="bi">🎓</div>
+                <p><strong>Congratulations!</strong> If you've completed all 8 chapters, you know more about AI-assisted coding than 95% of developers. Keep practicing, keep updating your CLAUDE.md, and remember: the AI gets better as YOU get better at directing it.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- LINKS SECTION -->
+    <!-- ====================================================== -->
+    <div class="chapter open" data-ch="links" data-xp="0">
+        <div class="ch-header" onclick="toggleCh(this)">
+            <div class="ch-icon" style="background:#10b98115;">🔗</div>
+            <div class="ch-info">
+                <div class="ch-tag" style="color:var(--emerald);">Resources</div>
+                <h2>Quick Links & Next Steps</h2>
+                <div class="ch-desc">Everything you need in one place</div>
+            </div>
+            <div class="ch-xp">Bonus</div>
+            <div class="ch-arrow">▼</div>
+        </div>
+        <div class="ch-body">
+
+            <h3 style="color:#fff; margin: 16px 0 10px;">Official Links</h3>
+
+            <div class="sheet">
+                <div class="sheet-item">
+                    <div class="scmd"><a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></div>
+                    <div class="sdesc">Anthropic account — billing, API keys, usage</div>
+                </div>
+                <div class="sheet-item">
+                    <div class="scmd"><a href="https://gemini.google.com" target="_blank">gemini.google.com</a></div>
+                    <div class="sdesc">Google Gemini — free AI chat</div>
+                </div>
+                <div class="sheet-item">
+                    <div class="scmd"><a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a></div>
+                    <div class="sdesc">Gemini API key — free 1500 req/day</div>
+                </div>
+                <div class="sheet-item">
+                    <div class="scmd"><a href="https://github.com/features/copilot" target="_blank">GitHub Copilot</a></div>
+                    <div class="sdesc">$10/mo autocomplete — or free for students</div>
+                </div>
+                <div class="sheet-item">
+                    <div class="scmd"><a href="https://nodejs.org" target="_blank">nodejs.org</a></div>
+                    <div class="sdesc">Node.js download — required for Claude Code</div>
+                </div>
+                <div class="sheet-item">
+                    <div class="scmd"><a href="https://code.visualstudio.com" target="_blank">code.visualstudio.com</a></div>
+                    <div class="sdesc">VSCode download — free</div>
+                </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <h3 style="color:#fff; margin: 16px 0 10px;">Your Learning Path</h3>
+
+            <div class="timeline">
+                <div class="tl-item">
+                    <div class="tl-time">COMPLETED</div>
+                    <h4>Phase 1 — Setup</h4>
+                    <p>VSCode installed, Claude Code extension running, CLAUDE.md created, first conversation done.</p>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-time">NOW</div>
+                    <h4>Phase 2 — Master (this guide)</h4>
+                    <p>Advanced directives, memory system, multi-AI tools, real workflows, power user secrets.</p>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-time">NEXT</div>
+                    <h4>Phase 3 — Build</h4>
+                    <p>Start building real features with confidence. Use AI daily. Update your CLAUDE.md weekly. Try new tools.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+    <p>Built with care — 2026 | <a href="vscode_setup_guide.html">← Back to Phase 1 Guide</a></p>
+</div>
+
+<script>
+    // ===== STATE =====
+    let xp = 0;
+    const maxXP = 1000;
+    const done = new Set();
+    const STORE = 'claude-guide-p2';
+
+    // Load
+    try {
+        const s = localStorage.getItem(STORE);
+        if (s) {
+            JSON.parse(s).forEach(t => done.add(t));
+            document.querySelectorAll('.task').forEach(task => {
+                if (done.has(task.dataset.task)) {
+                    task.classList.add('done');
+                    task.querySelector('.tcheck').classList.add('checked');
+                }
+            });
+            calcXP();
+        }
+    } catch(e) {}
+
+    function toggleCh(h) {
+        h.closest('.chapter').classList.toggle('open');
+    }
+
+    function check(btn) {
+        const task = btn.closest('.task');
+        const id = task.dataset.task;
+        if (done.has(id)) {
+            done.delete(id);
+            btn.classList.remove('checked');
+            task.classList.remove('done');
+        } else {
+            done.add(id);
+            btn.classList.add('checked');
+            task.classList.add('done');
+            btn.style.transform = 'scale(1.3)';
+            setTimeout(() => btn.style.transform = '', 200);
+        }
+        localStorage.setItem(STORE, JSON.stringify([...done]));
+        calcXP();
+    }
+
+    function calcXP() {
+        const chXP = {};
+        document.querySelectorAll('.chapter[data-xp]').forEach(ch => {
+            const cid = ch.dataset.ch;
+            const pts = parseInt(ch.dataset.xp) || 0;
+            const tasks = ch.querySelectorAll('.task');
+            const checked = ch.querySelectorAll('.task.done');
+            if (tasks.length > 0 && checked.length === tasks.length) {
+                chXP[cid] = pts;
+                ch.classList.add('completed');
+            } else {
+                chXP[cid] = 0;
+                ch.classList.remove('completed');
+            }
+        });
+
+        const newXP = Object.values(chXP).reduce((a,b) => a+b, 0);
+        const changed = newXP !== xp;
+        xp = newXP;
+
+        const pct = Math.min((xp / maxXP) * 100, 100);
+        document.getElementById('xpfill').style.width = pct + '%';
+        document.getElementById('xptxt').textContent = Math.round(pct) + '%';
+
+        let lv = 1;
+        if (pct >= 100) lv = 5;
+        else if (pct >= 75) lv = 4;
+        else if (pct >= 50) lv = 3;
+        else if (pct >= 25) lv = 2;
+        document.getElementById('lvl').textContent = lv;
+
+        if (changed && xp > 0) {
+            const achs = {
+                100: ['📋', 'Directive Master — Ch.1 Done!'],
+                200: ['🧠', 'Memory Unlocked — Ch.2 Done!'],
+                300: ['⚡', 'Speed Runner — Ch.3 Done!'],
+                400: ['🔒', 'Safety First — Ch.4 Done!'],
+                600: ['🤖', 'Multi-AI Expert — Ch.5 Done!'],
+                700: ['🛠️', 'Tool Master — Ch.6 Done!'],
+                800: ['🚀', 'Workflow Pro — Ch.7 Done!'],
+                1000: ['🏆', 'PHASE 2 COMPLETE — You Are a Master!'],
+            };
+            const a = achs[xp];
+            if (a) showAch(a[0], a[1]);
+            if (xp >= maxXP) confetti();
+        }
+    }
+
+    function showAch(icon, text) {
+        const el = document.getElementById('ach');
+        document.getElementById('ach-i').textContent = icon;
+        document.getElementById('ach-txt').textContent = text;
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 3500);
+    }
+
+    function switchTab(btn, tabId) {
+        const parent = btn.closest('.ch-body');
+        parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        parent.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+    }
+
+    function copyCode(btn) {
+        const pre = btn.closest('.code').querySelector('pre');
+        navigator.clipboard.writeText(pre.innerText).then(() => {
+            btn.textContent = 'Copied!';
+            btn.style.background = 'var(--green)';
+            btn.style.color = '#fff';
+            btn.style.borderColor = 'var(--green)';
+            setTimeout(() => {
+                btn.textContent = 'Copy';
+                btn.style.background = '';
+                btn.style.color = '';
+                btn.style.borderColor = '';
+            }, 2000);
+        });
+    }
+
+    function confetti() {
+        const c = document.getElementById('confetti');
+        const ctx = c.getContext('2d');
+        c.width = window.innerWidth;
+        c.height = window.innerHeight;
+        const pcs = [];
+        const cols = ['#3b82f6','#06b6d4','#22c55e','#eab308','#a855f7','#ec4899','#f97316'];
+        for (let i = 0; i < 200; i++) {
+            pcs.push({
+                x: Math.random()*c.width, y: -20-Math.random()*300,
+                w: 5+Math.random()*7, h: 3+Math.random()*5,
+                col: cols[~~(Math.random()*cols.length)],
+                vy: 2+Math.random()*4, vx: -1.5+Math.random()*3,
+                r: Math.random()*360, rv: -3+Math.random()*6, op: 1
+            });
+        }
+        let fr = 0;
+        function draw() {
+            ctx.clearRect(0,0,c.width,c.height);
+            fr++;
+            pcs.forEach(p => {
+                p.x+=p.vx; p.y+=p.vy; p.r+=p.rv; p.vy+=0.05;
+                if(fr>100) p.op-=0.012;
+                ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r*Math.PI/180);
+                ctx.globalAlpha=Math.max(0,p.op); ctx.fillStyle=p.col;
+                ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
+            });
+            if(pcs.some(p=>p.op>0)) requestAnimationFrame(draw);
+            else ctx.clearRect(0,0,c.width,c.height);
+        }
+        draw();
+    }
+
+    calcXP();
+</script>
+
+</body>
+</html>
